@@ -5,78 +5,131 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * SpecSync theme — shadcn/Vercel structure, Ford Motor Company palette.
+ *
+ * Light-mode values were read from the live ford.com light theme (computed
+ * CSS custom properties and element colors on 2026-09-03):
+ *   Surfaces      #ffffff page · #fafafa subtle · #f0f0f0 footer/muted
+ *   Text          #000 primary · #333 secondary · #666 subtle
+ *   Borders       #e5e5e5 light · #b2b2b2 moderate
+ *   Button        #066fef bg · #044ea7 hover · #fff text
+ *   Accent/links  #0562d2 (active carousel crumb, links, headings)
+ *   Ford Blue     #00095b (navbar/brand base) · #00142e brand dark surface
+ *   Status        #d93025 error · #68b631 success · #ffc107 warning
+ *   Font          FordFont, Arial, sans-serif (Inter/Arial stand in here)
+ *
+ * Dark mode is derived from those values: ford.com's own dark surfaces
+ * (#0f0f0f, #1a1a1a) with neutral grays lifted for contrast, while the brand
+ * blues stay put so they still read as CTAs on dark surfaces.
+ *
+ * Mode-dependent tokens live in :root/.dark and are mirrored into
+ * `@theme inline` via var() so Tailwind utilities flip with the cascade.
+ */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --radius: 0.5rem;
+
+  /* Ford brand colors — invariant across light/dark, exposed for raw CSS */
+  --ford-blue: oklch(0.519 0.189 258); /* #0562d2 accent */
+  --ford-action: oklch(0.568 0.21 258.3); /* #066fef button */
+  --ford-action-hover: oklch(0.441 0.157 257.7); /* #044ea7 */
+  --ford-heritage: oklch(0.225 0.139 264.2); /* #00095b Ford Blue */
+  --ford-deep: oklch(0.192 0.06 253.4); /* #00142e */
+
+  /* Status — light */
+  --success: oklch(0.7 0.181 135.3); /* #68b631 */
+  --warning: oklch(0.844 0.172 84.9); /* #ffc107 */
+  --info: var(--ford-blue);
+
+  /* Semantic tokens — light (ford.com) */
+  --background: oklch(1 0 0); /* #ffffff */
+  --foreground: oklch(0 0 0); /* #000000 */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: var(--ford-action); /* #066fef */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.955 0 0); /* #f0f0f0 */
+  --secondary-foreground: oklch(0.321 0 0); /* #333333 */
+  --muted: oklch(0.955 0 0); /* #f0f0f0 */
+  --muted-foreground: oklch(0.51 0 0); /* #666666 */
+  --accent: oklch(0.985 0 0); /* #fafafa */
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.578 0.206 29); /* #d93025 */
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.922 0 0); /* #e5e5e5 */
+  --input: oklch(0.764 0 0); /* #b2b2b2 */
+  --ring: var(--ford-blue);
+
+  /* Charts: accent blue, Ford Blue, red, green, amber */
+  --chart-1: var(--ford-blue);
+  --chart-2: var(--ford-heritage);
+  --chart-3: oklch(0.578 0.206 29);
+  --chart-4: oklch(0.7 0.181 135.3);
+  --chart-5: oklch(0.844 0.172 84.9);
+
+  /* Sidebar — Ford Blue surface in both modes */
+  --sidebar: var(--ford-heritage);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: var(--ford-action);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: var(--ford-deep);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: var(--ford-blue);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --background: oklch(0.168 0 0); /* #0f0f0f — ford.com secondary background */
+  --foreground: oklch(0.955 0 0); /* #f0f0f0 — ford.com on-dark text */
+  --card: oklch(0.218 0 0); /* #1a1a1a */
+  --card-foreground: oklch(0.955 0 0);
+  --popover: oklch(0.218 0 0);
+  --popover-foreground: oklch(0.955 0 0);
+
+  /* Brand blues do not flip */
+  --primary: var(--ford-action);
+  --primary-foreground: oklch(1 0 0);
+  --ring: oklch(0.609 0.189 256.4); /* #2480f1 — lighter ring on dark */
+
+  --secondary: oklch(0.269 0 0); /* #262626 */
+  --secondary-foreground: oklch(0.922 0 0); /* #e5e5e5 */
   --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
+  --muted-foreground: oklch(0.764 0 0); /* #b2b2b2 */
   --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.205 0 0);
+  --accent-foreground: oklch(0.955 0 0);
+  --destructive: oklch(0.65 0.2 27); /* #d93025 lifted for dark */
+  --destructive-foreground: oklch(1 0 0);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --input: oklch(1 0 0 / 18%);
+
+  --success: oklch(0.76 0.18 135); /* #68b631 lifted */
+  --warning: oklch(0.86 0.17 85);
+  --info: oklch(0.609 0.189 256.4);
+
+  --chart-1: oklch(0.609 0.189 256.4); /* #2480f1 */
+  --chart-2: oklch(0.45 0.16 262); /* Ford Blue lifted for contrast */
+  --chart-3: oklch(0.65 0.2 27);
+  --chart-4: oklch(0.76 0.18 135);
+  --chart-5: oklch(0.86 0.17 85);
+
+  --sidebar: var(--ford-heritage);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: var(--ford-action);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: var(--ford-deep);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.609 0.189 256.4);
 }
 
 @theme inline {
+  /* ford.com uses FordFont, Arial, sans-serif; Inter/Arial stand in here */
+  --font-sans:
+    'Inter', Arial, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -101,10 +154,22 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Ford + status tokens: bg-ford-blue, text-ford-heritage, text-success, ... */
+  --color-ford-blue: var(--ford-blue);
+  --color-ford-action: var(--ford-action);
+  --color-ford-action-hover: var(--ford-action-hover);
+  --color-ford-heritage: var(--ford-heritage);
+  --color-ford-deep: var(--ford-deep);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -119,8 +184,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    color-scheme: light dark;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
   }
 
   input[type='number']::-webkit-inner-spin-button,
@@ -131,7 +200,7 @@
 
   input[type='number'] {
     -moz-appearance: textfield;
-    appearance: textfield; /* Added for general compatibility */
+    appearance: textfield;
   }
 }
 

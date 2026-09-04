@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web-static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve-static", "web", "--port", "4300", "--skip-nx-cache"],
+      "port": 4300
+    }
+  ]
+}

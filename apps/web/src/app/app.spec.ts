@@ -54,11 +54,24 @@ describe('App', () => {
     request.flush({ message: 'Hello, Tuba, from api', hash: 'a1b2c3d4e5f6' });
     fixture.detectChanges();
 
-    expect(element.querySelector('.response-body p')?.textContent).toContain(
-      'Hello, Tuba, from api',
-    );
+    expect(
+      element.querySelector('[data-slot="card-content"] p')?.textContent,
+    ).toContain('Hello, Tuba, from api');
     expect(element.querySelector('code')?.textContent).toContain(
       'a1b2c3d4e5f6',
+    );
+  });
+
+  it('should show a validation alert when the name is empty', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    element.querySelector('form')?.dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Enter your name',
     );
   });
 });

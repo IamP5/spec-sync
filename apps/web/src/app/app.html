@@ -1,76 +1,170 @@
-<main class="page-shell">
-  <div class="ambient-glow" aria-hidden="true"></div>
+<main
+  class="relative grid min-h-svh grid-rows-[auto_1fr_auto] overflow-hidden bg-background bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:48px_48px]"
+>
+  <div
+    class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0,var(--background)_72%)]"
+    aria-hidden="true"
+  ></div>
+  <div
+    class="pointer-events-none absolute top-[16%] left-1/2 h-80 w-[36rem] -translate-x-1/2 rounded-full bg-ford-blue/15 blur-[100px]"
+    aria-hidden="true"
+  ></div>
 
-  <nav class="nav" aria-label="Primary navigation">
-    <a class="brand" href="/" aria-label="SpecSync home">
-      <span class="brand-mark" aria-hidden="true"></span>
+  <nav
+    class="relative z-10 mx-auto flex w-[min(1120px,calc(100%-48px))] items-center justify-between py-6"
+    aria-label="Primary navigation"
+  >
+    <a
+      class="inline-flex items-center gap-2.5 text-[15px] font-semibold tracking-tight text-foreground"
+      href="/"
+      aria-label="SpecSync home"
+    >
+      <span
+        class="grid size-7 place-items-center rounded-md bg-ford-heritage text-[11px] font-bold text-white"
+        aria-hidden="true"
+        >S</span
+      >
       <span>SpecSync</span>
     </a>
-    <span class="environment"
-      ><span class="status-dot"></span>Systems online</span
-    >
+
+    <div class="flex items-center gap-2">
+      <span
+        class="hidden items-center gap-2 text-xs text-muted-foreground sm:inline-flex"
+      >
+        <span
+          class="size-1.5 rounded-full bg-success shadow-[0_0_10px] shadow-success/70"
+          aria-hidden="true"
+        ></span>
+        Systems online
+      </span>
+      <z-separator zOrientation="vertical" class="hidden h-4 sm:block" />
+      <button
+        z-button
+        zType="ghost"
+        zSize="icon"
+        type="button"
+        (click)="toggleTheme()"
+        [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <ng-icon [name]="isDark() ? 'lucideSun' : 'lucideMoon'" />
+      </button>
+    </div>
   </nav>
 
-  <section class="hero" aria-labelledby="page-title">
-    <div class="eyebrow">
-      <span>Java 25</span><i></i><span>Angular</span><i></i><span>Nx</span>
-    </div>
-    <h1 id="page-title">Your workspace,<br /><span>connected.</span></h1>
-    <p class="lede">
+  <section
+    class="relative z-10 mx-auto my-5 mb-16 w-[min(720px,calc(100%-40px))] self-center text-center"
+    aria-labelledby="page-title"
+  >
+    <z-badge zType="outline" class="mb-6 gap-2 bg-background/80 px-3 py-1.5 font-mono text-[10px] tracking-[0.08em] text-muted-foreground uppercase">
+      <span>Java 25</span>
+      <span class="size-0.75 rounded-full bg-muted-foreground/60" aria-hidden="true"></span>
+      <span>Angular</span>
+      <span class="size-0.75 rounded-full bg-muted-foreground/60" aria-hidden="true"></span>
+      <span>Nx</span>
+    </z-badge>
+
+    <h1
+      id="page-title"
+      class="text-[clamp(3.4rem,9vw,6.5rem)] leading-[0.9] font-semibold tracking-[-0.075em] text-foreground"
+    >
+      Your workspace,<br />
+      <span class="bg-linear-to-b from-ford-action to-ford-heritage bg-clip-text text-transparent dark:from-sky-200 dark:to-ford-action">
+        connected.
+      </span>
+    </h1>
+
+    <p class="mx-auto mt-7 mb-9 max-w-[540px] text-base leading-relaxed text-muted-foreground max-sm:text-sm">
       Send a name from the web application and receive a live response from the
       Spring Boot API.
     </p>
 
-    <form class="greeting-form" (submit)="submit($event)" novalidate>
-      <label for="name">What should we call you?</label>
-      <div class="input-row">
+    <form class="mx-auto w-[min(600px,100%)] text-left" (submit)="submit($event)" novalidate>
+      <label for="name" class="mb-2 block text-xs font-medium text-muted-foreground">
+        What should we call you?
+      </label>
+      <div
+        class="grid grid-cols-[1fr_auto] gap-2 rounded-xl border bg-card p-1.5 shadow-lg shadow-black/5 transition-colors focus-within:border-ring max-sm:grid-cols-1 dark:shadow-black/40"
+      >
         <input
+          z-input
           id="name"
           name="name"
           type="text"
           autocomplete="name"
           maxlength="60"
           placeholder="Enter your name"
+          class="h-11 border-0 bg-transparent px-3 focus-visible:ring-0 dark:bg-transparent"
           [value]="name()"
-          (input)="updateName($event)"
+          (valueChange)="updateName($event)"
         />
-        <button type="submit" [disabled]="loading()">
+        <button
+          z-button
+          type="submit"
+          class="h-11 min-w-31 px-4 text-[13px] font-semibold"
+          [zLoading]="loading()"
+        >
           @if (loading()) {
-          <span class="spinner" aria-hidden="true"></span>
-          Connecting } @else { Say hello
-          <span aria-hidden="true">→</span>
+            Connecting
+          } @else {
+            Say hello
+            <ng-icon name="lucideArrowRight" aria-hidden="true" />
           }
         </button>
       </div>
     </form>
 
-    <div class="response-region" aria-live="polite">
+    <div class="mx-auto mt-6 min-h-41 w-[min(600px,100%)]" aria-live="polite">
       @if (greeting(); as response) {
-      <article class="response-card">
-        <div class="response-header">
-          <div class="window-controls" aria-hidden="true">
-            <i></i><i></i><i></i>
-          </div>
-          <span>api.response</span>
-          <span class="success-badge">200 OK</span>
-        </div>
-        <div class="response-body">
-          <p>{{ response.message }}</p>
-          <div class="hash-row">
-            <span>request hash</span>
-            <code>{{ response.hash }}</code>
-          </div>
-        </div>
-      </article>
-      } @if (error()) {
-      <p class="error-message" role="alert">{{ error() }}</p>
+        <z-card class="animate-in fade-in slide-in-from-bottom-2 gap-0 py-0 text-left duration-300">
+          <z-card-header
+            class="grid-cols-[1fr_auto_1fr] items-center border-b px-3.5 py-2.5 font-mono text-[10px] text-muted-foreground"
+          >
+            <div class="flex gap-1.5" aria-hidden="true">
+              <i class="size-1.5 rounded-full bg-muted-foreground/40"></i>
+              <i class="size-1.5 rounded-full bg-muted-foreground/40"></i>
+              <i class="size-1.5 rounded-full bg-muted-foreground/40"></i>
+            </div>
+            <span>api.response</span>
+            <z-badge zType="outline" class="justify-self-end gap-1 border-success/30 text-success">
+              <ng-icon name="lucideCircleCheck" aria-hidden="true" />
+              200 OK
+            </z-badge>
+          </z-card-header>
+          <z-card-content class="p-6">
+            <p class="mb-5 text-xl font-medium tracking-tight text-foreground">
+              {{ response.message }}
+            </p>
+            <div
+              class="flex items-center justify-between gap-4 border-t pt-4 text-[11px] text-muted-foreground uppercase"
+            >
+              <span>request hash</span>
+              <code class="font-mono text-[11px] tracking-[0.08em] text-foreground/70">
+                {{ response.hash }}
+              </code>
+            </div>
+          </z-card-content>
+        </z-card>
+      }
+      @if (error()) {
+        <z-alert
+          zType="destructive"
+          zRole="alert"
+          [zDescription]="error()"
+          class="animate-in fade-in slide-in-from-bottom-1 duration-200"
+        />
       }
     </div>
   </section>
 
-  <footer>
+  <footer
+    class="relative z-10 flex items-center justify-center gap-3 p-6 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase"
+  >
     <span>Web</span>
-    <span class="connection-line" aria-hidden="true"></span>
+    <span class="relative h-px w-13 bg-border" aria-hidden="true">
+      <span
+        class="absolute top-1/2 right-0 size-1.5 -translate-y-1/2 rounded-full bg-success shadow-[0_0_8px] shadow-success/70"
+      ></span>
+    </span>
     <span>API</span>
   </footer>
 </main>
