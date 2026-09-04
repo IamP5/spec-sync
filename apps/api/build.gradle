@@ -3,6 +3,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.0.8'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.diffplug.spotless' version '8.10.1'
 }
 
 group = 'com.fiap'
@@ -49,6 +50,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
+	testImplementation 'com.tngtech.archunit:archunit-junit5:1.5.0'
 	testRuntimeOnly 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
@@ -63,6 +65,40 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+// Architecture rules only (src/test/java/.../architecture, tagged with ArchUnit's
+// @ArchTag("architecture")). Fast enough to run after every agent coding round and
+// before every commit; `test` still runs them together with everything else.
+tasks.register('archTest', Test) {
+	description = 'Runs the ArchUnit architecture rules only.'
+	group = 'verification'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform {
+		includeTags 'architecture'
+	}
+	// A tag mismatch would make the hooks pass on an empty run; fail loudly instead.
+	afterSuite { descriptor, result ->
+		if (descriptor.parent == null) {
+			println "archTest: ${result.testCount} rules checked, ${result.failedTestCount} failed"
+			if (result.testCount == 0) {
+				throw new GradleException('archTest executed no tests: check the @ArchTag("architecture") filter')
+			}
+		}
+	}
+}
+
+// Formatting is a check, not a style debate: `spotlessCheck` fails the hooks,
+// `spotlessApply` fixes the files.
+spotless {
+	java {
+		target 'src/**/*.java'
+		palantirJavaFormat('2.97.0')
+		removeUnusedImports()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
 }
 
 // Only the boot jar is needed; skipping the plain jar keeps build/libs unambiguous for the Dockerfile.

@@ -1,9 +1,9 @@
+import { apiChecks } from '../../apps/api/checks.mjs';
 import { webChecks } from '../../apps/web/checks.mjs';
 
 // Registry of per-project checks. Each app owns its definition next to its
-// code (e.g. `apps/web/checks.mjs`); register it here so the hooks and
-// `npm run verify` pick it up. Add `apps/api/checks.mjs` here when the Spring
-// Boot hooks arrive.
+// code (`apps/web/checks.mjs`, `apps/api/checks.mjs`); register it here so the
+// hooks and `npm run verify` pick it up.
 //
 // Shape of an entry:
 //   { name, paths: ['apps/x/'], fastSteps: [...], fullOnlySteps: [...] }
@@ -11,6 +11,7 @@ import { webChecks } from '../../apps/web/checks.mjs';
 // least one changed file starts with one of them.
 export const projects = [
   webChecks,
+  apiChecks,
   {
     name: 'scripts',
     paths: ['scripts/'],

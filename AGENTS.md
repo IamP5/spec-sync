@@ -29,7 +29,7 @@ Nx monorepo:
 | Project   | Path       | Stack                                | Agent guide          |
 | --------- | ---------- | ------------------------------------ | -------------------- |
 | `web`     | `apps/web` | Angular 22, NgRx Signal Store        | `apps/web/AGENTS.md` |
-| `api`     | `apps/api` | Spring Boot (Java 25, Gradle)        | _(planned)_          |
+| `api`     | `apps/api` | Spring Boot (Java 25, Gradle)        | `apps/api/AGENTS.md` |
 | `ui`      | `libs/ui`  | Zard/shadcn design system (Tailwind) | `apps/web/AGENTS.md` |
 | `infra`   | `infra`    | Terraform (Google Cloud)             | –                    |
 | `scripts` | `scripts`  | Node tooling for hooks and checks    | this file            |
@@ -46,11 +46,19 @@ in this file are workspace-wide only.
   `sheriff.config.ts` because Sheriff only reads the workspace root) and
   tsarch (`apps/web/arch/`) enforce those rules on every lint / test-arch run.
 
+## Working in `apps/api`
+
+- Read `apps/api/AGENTS.md` first. It names the clean-architecture red lines
+  and points to the binding docs under `apps/api/docs/`.
+- ArchUnit (`apps/api/src/test/java/.../architecture/ArchitectureTest.java`,
+  `nx run api:archTest`) and Spotless (`nx run api:spotlessCheck`) enforce
+  those rules on every hook run.
+
 ## Checks and hooks
 
-- Every app declares its checks next to its code (`apps/web/checks.mjs`) and
-  registers them in `scripts/checks/projects.mjs` with the path prefixes it
-  owns.
+- Every app declares its checks next to its code (`apps/web/checks.mjs`,
+  `apps/api/checks.mjs`) and registers them in `scripts/checks/projects.mjs`
+  with the path prefixes it owns.
 - The agent Stop hooks (`.claude/settings.json` for Claude Code,
   `.cursor/hooks.json` for Cursor) and the husky pre-commit hook run only the
   fast checks of the projects whose files changed (uncommitted files for the
@@ -74,13 +82,15 @@ in this file are workspace-wide only.
 - `.agents/` directories are the single source of truth for agent config:
   the workspace root owns the Nx skills and the `nx-mcp` server
   (`.agents/skills/`, `.agents/mcp.json`); each app owns its own
-  (`apps/web/.agents/skills/`, `apps/web/.agents/mcp.json`).
+  (`apps/web/.agents/skills/` and `apps/web/.agents/mcp.json`,
+  `apps/api/.agents/skills/`).
 - `npm run sync:agent-config` generates, next to each `.agents/` (root and
   `apps/*`), the `.claude/skills/`, `.mcp.json` and `.cursor/mcp.json`
   copies. Never edit the generated copies; they carry DO_NOT_EDIT markers.
 - Per-app skills follow the Claude Code monorepo guide
   (https://code.claude.com/docs/en/large-codebases): an app's skills and
   `CLAUDE.md` load when Claude works on files of that app, or at launch when
-  Claude is started from the app directory (`cd apps/web && claude`).
+  Claude is started from the app directory (`cd apps/web && claude`,
+  `cd apps/api && claude`).
 - Cursor rules live in `.cursor/rules/` (workspace) and `apps/*/.cursor/rules/`
   (per app, attached when files of that app are referenced).

@@ -26,6 +26,34 @@
       "options": {
         "command": "bash tools/deploy/api.sh"
       }
+    },
+    "archTest": {
+      "cache": true,
+      "dependsOn": [],
+      "options": {
+        "excludeDependsOn": false
+      }
+    },
+    "test": {
+      "cache": true,
+      "dependsOn": [],
+      "options": {
+        "excludeDependsOn": false
+      }
+    },
+    "bootJar": {
+      "cache": true,
+      "dependsOn": [],
+      "options": {
+        "excludeDependsOn": false
+      }
+    },
+    "spotlessCheck": {
+      "cache": true,
+      "dependsOn": [],
+      "options": {
+        "excludeDependsOn": false
+      }
     }
   }
 }

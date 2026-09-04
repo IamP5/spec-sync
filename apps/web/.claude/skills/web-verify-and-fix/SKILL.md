@@ -39,5 +39,6 @@ It stops at the first failing step. The steps are defined in
 
 - Do not edit the generated `.claude/skills/` copy; this skill lives in
   `apps/web/.agents/skills/`.
-- The Spring Boot API (`apps/api`) is verified separately by
-  `npx nx run api:test`; it is not part of `npm run verify`.
+- `npm run verify` also runs the Spring Boot API checks (`apps/api/checks.mjs`).
+  Use `npm run verify:changed` to restrict the run to the apps with
+  uncommitted changes, or the `api-verify-and-fix` skill for API failures.

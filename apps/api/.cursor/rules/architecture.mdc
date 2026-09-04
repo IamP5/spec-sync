@@ -1,0 +1,15 @@
+---
+description: Apply the clean architecture rules of apps/api
+globs:
+  - "**/*.java"
+  - "**/build.gradle"
+alwaysApply: false
+---
+
+Follow `apps/api/AGENTS.md`. Before changing application code, read `apps/api/docs/architecture-boundaries.md` and apply the architecture rules.
+
+Dependencies point inwards only (`web` / `infrastructure` → `application` → `domain`). The domain is framework-free; JPA entities and Spring Data repositories never leave `infrastructure`; controllers depend on use-case abstractions only.
+
+Class-name suffixes carry architectural meaning (`*Gateway`, `Default*`, `*Api`, `*Controller`, `*Request`, `*Response`, `*JpaEntity`, `*JpaRepository`) and are checked by ArchUnit. Renaming a class across suffixes is a re-classification, not a cosmetic change.
+
+Do not edit `ArchitectureTest.java` to make a rule pass. Prefer small, focused changes modelled after the greeting slice.

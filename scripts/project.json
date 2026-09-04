@@ -10,7 +10,7 @@
       "cache": true,
       "inputs": ["default"],
       "options": {
-        "command": "vitest run --config vitest.config.ts",
+        "command": "vitest run --config vitest.config.mts",
         "cwd": "scripts"
       }
     }
