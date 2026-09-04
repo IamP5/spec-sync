@@ -79,14 +79,20 @@ tasks.register('archTest', Test) {
 		includeTags 'architecture'
 	}
 	// A tag mismatch would make the hooks pass on an empty run; fail loudly instead.
-	afterSuite { descriptor, result ->
-		if (descriptor.parent == null) {
-			println "archTest: ${result.testCount} rules checked, ${result.failedTestCount} failed"
-			if (result.testCount == 0) {
-				throw new GradleException('archTest executed no tests: check the @ArchTag("architecture") filter')
+	// addTestListener replaces afterSuite(Closure), which Gradle 10 removes.
+	addTestListener([
+		beforeSuite: { descriptor -> },
+		beforeTest: { descriptor -> },
+		afterTest: { descriptor, result -> },
+		afterSuite: { descriptor, result ->
+			if (descriptor.parent == null) {
+				println "archTest: ${result.testCount} rules checked, ${result.failedTestCount} failed"
+				if (result.testCount == 0) {
+					throw new GradleException('archTest executed no tests: check the @ArchTag("architecture") filter')
+				}
 			}
 		}
-	}
+	] as TestListener)
 }
 
 // Formatting is a check, not a style debate: `spotlessCheck` fails the hooks,
