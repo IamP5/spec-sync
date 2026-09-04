@@ -16,9 +16,9 @@ resource "google_project_iam_member" "roles" {
 
 # Lets `gcloud run deploy` attach the runtime service accounts to new revisions.
 resource "google_service_account_iam_member" "acts_as" {
-  for_each = toset(var.impersonable_service_accounts)
+  for_each = var.impersonable_service_accounts
 
-  service_account_id = each.key
+  service_account_id = each.value
   role               = "roles/iam.serviceAccountUser"
   member             = google_service_account.this.member
 }

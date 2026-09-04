@@ -30,7 +30,7 @@ variable "project_roles" {
 }
 
 variable "impersonable_service_accounts" {
-  description = "Service account resource names the deployer may act as (Cloud Run runtime SAs)."
-  type        = list(string)
-  default     = []
+  description = "Cloud Run runtime service accounts the deployer may act as, keyed by a static label (keys must be known at plan time)."
+  type        = map(string)
+  default     = {}
 }

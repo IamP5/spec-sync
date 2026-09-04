@@ -152,10 +152,10 @@ module "deployer" {
   github_repository = var.github_repository
   pool_id           = "github-${local.env}"
 
-  impersonable_service_accounts = [
-    google_service_account.api.name,
-    google_service_account.web.name,
-  ]
+  impersonable_service_accounts = {
+    api = google_service_account.api.name
+    web = google_service_account.web.name
+  }
 
   depends_on = [module.services]
 }
