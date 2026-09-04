@@ -39,3 +39,8 @@ variable "labels" {
   type    = map(string)
   default = {}
 }
+
+variable "private_network" {
+  description = "Self link / id of the VPC the instance gets its private IP from."
+  type        = string
+}

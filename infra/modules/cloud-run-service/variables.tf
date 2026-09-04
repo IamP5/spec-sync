@@ -106,3 +106,13 @@ variable "http2" {
   type        = bool
   default     = false
 }
+
+variable "vpc_access" {
+  description = "Direct VPC egress: network + subnetwork names. Null keeps the service off the VPC."
+  type = object({
+    network    = string
+    subnetwork = string
+    egress     = optional(string, "PRIVATE_RANGES_ONLY")
+  })
+  default = null
+}

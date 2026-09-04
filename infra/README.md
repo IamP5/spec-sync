@@ -11,6 +11,7 @@ infra/
 ├── modules/              # reusable building blocks, no environment knowledge
 │   ├── project-services/ # enable APIs
 │   ├── artifact-registry/
+│   ├── network/          # VPC, Direct VPC egress subnet, private services access peering
 │   ├── database/         # Cloud SQL Postgres + app user + password in Secret Manager
 │   ├── pubsub/           # topic + subscriptions
 │   ├── storage-bucket/
@@ -31,7 +32,7 @@ environment".
   users ──► Cloud Run "web" (nginx: Angular SPA, proxies /api, /v3/api-docs, /swagger-ui)
                  │
                  └──► Cloud Run "api" (Spring Boot)
-                          ├──► Cloud SQL Postgres 17 (Cloud SQL Auth connector, no VPC)
+                          ├──► Cloud SQL Postgres 17 (private IP on the env VPC, reached via Direct VPC egress + Auth connector)
                           ├──► Pub/Sub topic + subscription
                           ├──► GCS files bucket
                           └──► Vertex AI (Gemini, via service account)

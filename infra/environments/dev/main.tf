@@ -8,11 +8,13 @@ module "services" {
     "aiplatform.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "compute.googleapis.com",
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "pubsub.googleapis.com",
     "run.googleapis.com",
     "secretmanager.googleapis.com",
+    "servicenetworking.googleapis.com",
     "serviceusage.googleapis.com",
     "sqladmin.googleapis.com",
     "storage.googleapis.com",
@@ -31,6 +33,15 @@ module "registry" {
   depends_on = [module.services]
 }
 
+module "network" {
+  source = "../../modules/network"
+
+  name   = local.name
+  region = var.region
+
+  depends_on = [module.services]
+}
+
 module "database" {
   source = "../../modules/database"
 
@@ -42,8 +53,10 @@ module "database" {
   backups_enabled     = false
   deletion_protection = false
   labels              = local.labels
+  private_network     = module.network.network_id
 
-  depends_on = [module.services]
+  # The peering must be established before Cloud SQL can allocate a private IP.
+  depends_on = [module.services, module.network.private_services_connection]
 }
 
 module "events" {
@@ -91,12 +104,19 @@ module "api" {
 
   cloud_sql_instances = [module.database.connection_name]
 
+  # Direct VPC egress so the Auth connector can reach the database's private IP.
+  vpc_access = {
+    network    = module.network.network_name
+    subnetwork = module.network.run_subnetwork_name
+  }
+
   # Spring Boot relaxed binding: these map to application-cloud.properties / spring-cloud-gcp.
   env = {
     SPRING_PROFILES_ACTIVE                        = "cloud"
     SPRING_CLOUD_GCP_PROJECT_ID                   = var.project_id
     SPRING_CLOUD_GCP_SQL_INSTANCE_CONNECTION_NAME = module.database.connection_name
     SPRING_CLOUD_GCP_SQL_DATABASE_NAME            = module.database.database_name
+    SPRING_CLOUD_GCP_SQL_IP_TYPES                 = "PRIVATE"
     SPRING_DATASOURCE_USERNAME                    = module.database.user_name
     APP_STORAGE_BUCKET                            = module.files.name
     APP_PUBSUB_TOPIC                              = module.events.topic_name

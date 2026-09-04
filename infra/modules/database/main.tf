@@ -19,11 +19,13 @@ resource "google_sql_database_instance" "this" {
     disk_autoresize   = true
     user_labels       = var.labels
 
-    # Public IP with no authorized networks: reachable only through the Cloud SQL Auth
-    # connector (Cloud Run's /cloudsql volume). Avoids paying for a VPC connector.
+    # Private IP only, on the environment VPC (private services access peering must exist
+    # first). Clients still go through the Cloud SQL Auth connector, which handles TLS and
+    # IAM; no public IP means nothing to reach from the internet and no idle-IP charge.
     ip_configuration {
-      ipv4_enabled = true
-      ssl_mode     = "ENCRYPTED_ONLY"
+      ipv4_enabled    = false
+      private_network = var.private_network
+      ssl_mode        = "ENCRYPTED_ONLY"
     }
 
     backup_configuration {
