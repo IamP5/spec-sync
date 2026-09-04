@@ -1,5 +1,13 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { HttpErrorResponse, httpResource } from '@angular/common/http';
+import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
+import {
+  FormField,
+  form,
+  maxLength,
+  required,
+  submit,
+  validate,
+} from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowRight,
@@ -21,9 +29,16 @@ interface GreetingResponse {
   hash: string;
 }
 
+const NAME_REQUIRED_MESSAGE = 'Enter your name to continue.';
+const OFFLINE_MESSAGE =
+  'The API is unavailable. Make sure the development stack is running.';
+const FAILURE_MESSAGE =
+  'The API could not create a greeting. Please try again.';
+
 @Component({
   selector: 'app-root',
   imports: [
+    FormField,
     NgIcon,
     ZardAlertComponent,
     ZardBadgeComponent,
@@ -39,55 +54,91 @@ interface GreetingResponse {
   host: { class: 'block min-h-svh' },
 })
 export class App {
-  private readonly http = inject(HttpClient);
   private readonly darkMode = inject(ZardDarkMode);
 
-  protected readonly name = signal('');
-  protected readonly greeting = signal<GreetingResponse | null>(null);
-  protected readonly error = signal('');
-  protected readonly loading = signal(false);
+  private readonly model = signal({ name: '' });
 
-  protected readonly isDark = () =>
-    this.darkMode.themeMode() === EDarkModes.DARK;
+  protected readonly greetingForm = form(this.model, (path) => {
+    required(path.name, { message: NAME_REQUIRED_MESSAGE });
+    maxLength(path.name, 60);
+    validate(path.name, ({ value }) =>
+      value().trim()
+        ? undefined
+        : { kind: 'blank', message: NAME_REQUIRED_MESSAGE },
+    );
+  });
+
+  /** The name that was actually submitted; drives the request. */
+  private readonly submittedName = signal('');
+
+  private readonly greetingResource = httpResource<GreetingResponse>(() => {
+    const name = this.submittedName();
+    // Returning undefined skips the request until a name has been submitted.
+    return name ? { url: '/api/greeting', params: { name } } : undefined;
+  });
+
+  /**
+   * A request error stays visible until the user edits the name or a newer
+   * error replaces it.
+   */
+  private readonly requestErrorVisible = linkedSignal<
+    { error: unknown; name: string },
+    boolean
+  >({
+    source: () => ({
+      error: this.greetingResource.error(),
+      name: this.greetingForm.name().value(),
+    }),
+    computation: (source, previous) =>
+      source.error !== undefined && source.error !== previous?.source.error,
+  });
+
+  protected readonly loading = this.greetingResource.isLoading;
+
+  protected readonly greeting = computed(() =>
+    this.greetingResource.hasValue() ? this.greetingResource.value() : undefined,
+  );
+
+  protected readonly error = computed(() => {
+    const nameState = this.greetingForm.name();
+    if (nameState.touched()) {
+      const [validationError] = nameState.errors();
+      if (validationError) {
+        return validationError.message ?? NAME_REQUIRED_MESSAGE;
+      }
+    }
+
+    const requestError = this.greetingResource.error();
+    if (!requestError || !this.requestErrorVisible()) {
+      return '';
+    }
+
+    return requestError instanceof HttpErrorResponse && requestError.status === 0
+      ? OFFLINE_MESSAGE
+      : FAILURE_MESSAGE;
+  });
+
+  protected readonly isDark = computed(
+    () => this.darkMode.themeMode() === EDarkModes.DARK,
+  );
 
   protected toggleTheme(): void {
     this.darkMode.toggleTheme();
   }
 
-  protected updateName(value: string | number | null | undefined): void {
-    this.name.set(String(value ?? ''));
-    this.error.set('');
-  }
-
-  protected submit(event: Event): void {
+  protected onSubmit(event: Event): void {
     event.preventDefault();
 
-    const name = this.name().trim();
-    if (!name) {
-      this.greeting.set(null);
-      this.error.set('Enter your name to continue.');
-      return;
-    }
+    // `submit` marks every field as touched, then runs the action only if valid.
+    submit(this.greetingForm, async () => {
+      const name = this.model().name.trim();
 
-    this.loading.set(true);
-    this.error.set('');
-
-    this.http
-      .get<GreetingResponse>('/api/greeting', { params: { name } })
-      .subscribe({
-        next: (greeting) => {
-          this.greeting.set(greeting);
-          this.loading.set(false);
-        },
-        error: (error: HttpErrorResponse) => {
-          this.greeting.set(null);
-          this.loading.set(false);
-          this.error.set(
-            error.status === 0
-              ? 'The API is unavailable. Make sure the development stack is running.'
-              : 'The API could not create a greeting. Please try again.',
-          );
-        },
-      });
+      if (this.submittedName() === name) {
+        // Same params: the resource would not re-run on its own.
+        this.greetingResource.reload();
+      } else {
+        this.submittedName.set(name);
+      }
+    });
   }
 }

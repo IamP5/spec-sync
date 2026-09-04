@@ -78,7 +78,7 @@
       Spring Boot API.
     </p>
 
-    <form class="mx-auto w-[min(600px,100%)] text-left" (submit)="submit($event)" novalidate>
+    <form class="mx-auto w-[min(600px,100%)] text-left" (submit)="onSubmit($event)" novalidate>
       <label for="name" class="mb-2 block text-xs font-medium text-muted-foreground">
         What should we call you?
       </label>
@@ -88,14 +88,11 @@
         <input
           z-input
           id="name"
-          name="name"
           type="text"
           autocomplete="name"
-          maxlength="60"
           placeholder="Enter your name"
           class="h-11 border-0 bg-transparent px-3 focus-visible:ring-0 dark:bg-transparent"
-          [value]="name()"
-          (valueChange)="updateName($event)"
+          [formField]="greetingForm.name"
         />
         <button
           z-button
