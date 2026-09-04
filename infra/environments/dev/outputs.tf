@@ -35,3 +35,8 @@ output "github_actions" {
     APP_DOMAIN                     = var.domain
   }
 }
+
+output "database_schedule_jobs" {
+  description = "Cloud Scheduler jobs that start/stop the dev database."
+  value       = module.database_schedule.job_names
+}

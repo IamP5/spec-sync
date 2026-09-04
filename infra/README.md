@@ -13,6 +13,7 @@ infra/
 │   ├── artifact-registry/
 │   ├── network/          # VPC, Direct VPC egress subnet, private services access peering
 │   ├── database/         # Cloud SQL Postgres + app user + password in Secret Manager
+│   ├── cloud-sql-schedule/ # Cloud Scheduler jobs that start/stop the instance (dev cost control)
 │   ├── pubsub/           # topic + subscriptions
 │   ├── storage-bucket/
 │   ├── cloud-run-service/# generic Cloud Run v2 service (used for api and web)
@@ -55,6 +56,8 @@ same in the cloud and there is no CORS configuration. No load balancer; idle cos
 | `nx run infra:destroy -c dev`    | tear an environment down (interactive)                                   |
 | `nx run infra:validate`          | offline `terraform validate` of `bootstrap` and every environment        |
 | `nx run infra:fmt` / `fmt-check` | format / check formatting of the whole folder (`fmt-check` in CI)        |
+| `nx run infra:db-start -c dev`   | start the Cloud SQL instance now (manual override of the schedule)       |
+| `nx run infra:db-stop -c dev`    | stop it now; `db-status` shows state and activation policy               |
 | `nx run api:deploy`              | multi-stage Docker build (Gradle + AOT cache), push, `gcloud run deploy` |
 | `nx run web:deploy`              | multi-stage Docker build (Angular + nginx), push, `gcloud run deploy`    |
 
@@ -132,6 +135,14 @@ Terraform owns both Cloud Run services but ignores their `image`, so app deploys
 changes never fight each other.
 
 ## Notes and caveats
+
+- **Dev database schedule**: Cloud Scheduler starts `specsync-dev-pg` at 08:00 and stops it at
+  23:00 (America/Sao_Paulo) by patching its activation policy, so the instance is billed only
+  ~15 h/day. Override manually with `nx run infra:db-start -c dev` / `db-stop` (needs
+  `GCP_PROJECT_ID` and a gcloud login), or run a job on demand:
+  `gcloud scheduler jobs run specsync-dev-pg-start --location southamerica-east1`. Starting
+  takes 1-2 minutes; the API cannot boot while the database is stopped, so Cloud Run will
+  report startup failures in that window.
 
 - **HTTP/2 to the web container**: the `web` service port is named `h2c`, so Cloud Run
   talks cleartext HTTP/2 to nginx (which still accepts HTTP/1.1 too). The placeholder image

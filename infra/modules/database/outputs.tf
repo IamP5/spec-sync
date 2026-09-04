@@ -19,3 +19,7 @@ output "password_secret_name" {
   description = "Fully qualified secret resource name (for IAM bindings)."
   value       = google_secret_manager_secret.password.id
 }
+
+output "instance_name" {
+  value = google_sql_database_instance.this.name
+}

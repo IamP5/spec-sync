@@ -8,6 +8,7 @@ module "services" {
     "aiplatform.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "cloudscheduler.googleapis.com",
     "compute.googleapis.com",
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
@@ -57,6 +58,22 @@ module "database" {
 
   # The peering must be established before Cloud SQL can allocate a private IP.
   depends_on = [module.services, module.network.private_services_connection]
+}
+
+# Dev database only needs to be up during working hours (see cost notes in the README).
+# Manual override: `nx run infra:db-start -c dev` / `db-stop` / `db-status`.
+module "database_schedule" {
+  source = "../../modules/cloud-sql-schedule"
+
+  name           = local.name
+  project_id     = var.project_id
+  region         = var.region
+  instance_name  = module.database.instance_name
+  start_schedule = "0 8 * * *"
+  stop_schedule  = "0 23 * * *"
+  time_zone      = "America/Sao_Paulo"
+
+  depends_on = [module.services]
 }
 
 module "events" {

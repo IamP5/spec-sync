@@ -7,54 +7,85 @@
   "targets": {
     "bootstrap-init": {
       "executor": "@nx-extend/terraform:init",
-      "options": { "ciMode": true, "root": "infra/bootstrap" }
+      "options": {
+        "ciMode": true,
+        "root": "infra/bootstrap"
+      }
     },
     "bootstrap-apply": {
       "executor": "@nx-extend/terraform:apply",
       "dependsOn": ["bootstrap-init"],
-      "options": { "ciMode": true, "root": "infra/bootstrap" }
+      "options": {
+        "ciMode": true,
+        "root": "infra/bootstrap"
+      }
     },
     "initialize": {
       "executor": "@nx-extend/terraform:init",
-      "options": { "ciMode": true, "upgrade": false, "migrateState": false },
+      "options": {
+        "ciMode": true,
+        "upgrade": false,
+        "migrateState": false
+      },
       "defaultConfiguration": "dev",
       "configurations": {
-        "dev": { "root": "infra/environments/dev" }
+        "dev": {
+          "root": "infra/environments/dev"
+        }
       }
     },
     "plan": {
       "executor": "@nx-extend/terraform:plan",
       "dependsOn": ["initialize"],
-      "options": { "ciMode": true },
+      "options": {
+        "ciMode": true
+      },
       "defaultConfiguration": "dev",
       "configurations": {
-        "dev": { "root": "infra/environments/dev" }
+        "dev": {
+          "root": "infra/environments/dev"
+        }
       }
     },
     "apply": {
       "executor": "@nx-extend/terraform:apply",
       "dependsOn": ["initialize"],
-      "options": { "ciMode": true, "autoApproval": false },
+      "options": {
+        "ciMode": true,
+        "autoApproval": false
+      },
       "defaultConfiguration": "dev",
       "configurations": {
-        "dev": { "root": "infra/environments/dev", "autoApproval": true }
+        "dev": {
+          "root": "infra/environments/dev",
+          "autoApproval": true
+        }
       }
     },
     "destroy": {
       "executor": "@nx-extend/terraform:destroy",
       "dependsOn": ["initialize"],
-      "options": { "ciMode": true, "autoApproval": false },
+      "options": {
+        "ciMode": true,
+        "autoApproval": false
+      },
       "defaultConfiguration": "dev",
       "configurations": {
-        "dev": { "root": "infra/environments/dev" }
+        "dev": {
+          "root": "infra/environments/dev"
+        }
       }
     },
     "output": {
       "executor": "nx:run-commands",
-      "options": { "command": "terraform output -json" },
+      "options": {
+        "command": "terraform output -json"
+      },
       "defaultConfiguration": "dev",
       "configurations": {
-        "dev": { "cwd": "infra/environments/dev" }
+        "dev": {
+          "cwd": "infra/environments/dev"
+        }
       }
     },
     "validate": {
@@ -68,13 +99,68 @@
     },
     "fmt": {
       "executor": "@nx-extend/terraform:fmt",
-      "options": { "ciMode": true, "formatWrite": true, "root": "infra" }
+      "options": {
+        "ciMode": true,
+        "formatWrite": true,
+        "root": "infra"
+      }
     },
     "fmt-check": {
       "executor": "nx:run-commands",
       "options": {
         "cwd": "infra",
         "command": "terraform fmt -check -recursive -diff"
+      }
+    },
+    "db-start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tools/gcp/cloudsql.sh start \"$INSTANCE\""
+      },
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": {
+          "env": {
+            "INSTANCE": "specsync-dev-pg"
+          }
+        }
+      },
+      "metadata": {
+        "description": "Cloud SQL start (needs GCP_PROJECT_ID; manual override of the scheduler)"
+      }
+    },
+    "db-stop": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tools/gcp/cloudsql.sh stop \"$INSTANCE\""
+      },
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": {
+          "env": {
+            "INSTANCE": "specsync-dev-pg"
+          }
+        }
+      },
+      "metadata": {
+        "description": "Cloud SQL stop (needs GCP_PROJECT_ID; manual override of the scheduler)"
+      }
+    },
+    "db-status": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tools/gcp/cloudsql.sh status \"$INSTANCE\""
+      },
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": {
+          "env": {
+            "INSTANCE": "specsync-dev-pg"
+          }
+        }
+      },
+      "metadata": {
+        "description": "Cloud SQL status (needs GCP_PROJECT_ID; manual override of the scheduler)"
       }
     }
   }
