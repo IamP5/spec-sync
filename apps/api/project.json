@@ -1,0 +1,25 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "api",
+  "projectType": "application",
+  "sourceRoot": "apps/api/src",
+  "tags": ["type:app", "scope:api"],
+  "targets": {
+    "classes": {
+      "cache": false,
+      "continuous": true,
+      "options": {
+        "args": ["--continuous"],
+        "excludeDependsOn": false
+      }
+    },
+    "bootRun": {
+      "cache": false,
+      "continuous": true,
+      "options": {
+        "continuous": false,
+        "excludeDependsOn": false
+      }
+    }
+  }
+}

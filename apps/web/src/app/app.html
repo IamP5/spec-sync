@@ -1,0 +1,76 @@
+<main class="page-shell">
+  <div class="ambient-glow" aria-hidden="true"></div>
+
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href="/" aria-label="SpecSync home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>SpecSync</span>
+    </a>
+    <span class="environment"
+      ><span class="status-dot"></span>Systems online</span
+    >
+  </nav>
+
+  <section class="hero" aria-labelledby="page-title">
+    <div class="eyebrow">
+      <span>Java 25</span><i></i><span>Angular</span><i></i><span>Nx</span>
+    </div>
+    <h1 id="page-title">Your workspace,<br /><span>connected.</span></h1>
+    <p class="lede">
+      Send a name from the web application and receive a live response from the
+      Spring Boot API.
+    </p>
+
+    <form class="greeting-form" (submit)="submit($event)" novalidate>
+      <label for="name">What should we call you?</label>
+      <div class="input-row">
+        <input
+          id="name"
+          name="name"
+          type="text"
+          autocomplete="name"
+          maxlength="60"
+          placeholder="Enter your name"
+          [value]="name()"
+          (input)="updateName($event)"
+        />
+        <button type="submit" [disabled]="loading()">
+          @if (loading()) {
+          <span class="spinner" aria-hidden="true"></span>
+          Connecting } @else { Say hello
+          <span aria-hidden="true">→</span>
+          }
+        </button>
+      </div>
+    </form>
+
+    <div class="response-region" aria-live="polite">
+      @if (greeting(); as response) {
+      <article class="response-card">
+        <div class="response-header">
+          <div class="window-controls" aria-hidden="true">
+            <i></i><i></i><i></i>
+          </div>
+          <span>api.response</span>
+          <span class="success-badge">200 OK</span>
+        </div>
+        <div class="response-body">
+          <p>{{ response.message }}</p>
+          <div class="hash-row">
+            <span>request hash</span>
+            <code>{{ response.hash }}</code>
+          </div>
+        </div>
+      </article>
+      } @if (error()) {
+      <p class="error-message" role="alert">{{ error() }}</p>
+      }
+    </div>
+  </section>
+
+  <footer>
+    <span>Web</span>
+    <span class="connection-line" aria-hidden="true"></span>
+    <span>API</span>
+  </footer>
+</main>
