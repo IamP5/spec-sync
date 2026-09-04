@@ -1,0 +1,15 @@
+---
+description: Apply the Angular architecture rules of apps/web
+globs:
+  - "**/*.ts"
+  - "**/*.html"
+alwaysApply: false
+---
+
+Follow `apps/web/AGENTS.md`. Before changing application code, read `apps/web/docs/architecture-boundaries.md` and apply the architecture rules.
+
+If the change touches state management, also read `apps/web/docs/architecture-state-management.md`.
+
+File-name suffixes carry architectural meaning (see `apps/web/docs/architecture-boundaries.md`, "File-Name Suffixes"). Renaming or moving a file across suffixes is a re-classification, not a cosmetic change — verify it against those rules first.
+
+Do not bypass documented domain boundaries. Prefer small, focused changes.

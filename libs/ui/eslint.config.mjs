@@ -11,6 +11,10 @@ export default [
       // Zard components intentionally use the configured @/ui/* aliases
       // for imports within this source-owned UI library.
       '@nx/enforce-module-boundaries': 'off',
+      // Zard components import each other through deep `@/ui/...` paths by
+      // design; the barrel-file encapsulation rule is therefore not applied
+      // inside the design-system library. Sheriff's dependency rule still is.
+      '@softarc/sheriff/encapsulation': 'off',
       '@angular-eslint/directive-selector': [
         'error',
         {

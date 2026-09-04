@@ -1,0 +1,5 @@
+DO NOT EDIT `apps/web/.mcp.json`.
+
+It is a generated copy produced by `npm run sync:agent-config`
+from `apps/web/.agents/mcp.json`. Any change here is overwritten on the next sync.
+Edit `apps/web/.agents/mcp.json` instead.

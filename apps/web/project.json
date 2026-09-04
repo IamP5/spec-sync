@@ -100,6 +100,15 @@
       "options": {
         "command": "bash tools/deploy/web.sh"
       }
+    },
+    "test-arch": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^default", "{workspaceRoot}/libs/ui/**/*.ts"],
+      "options": {
+        "command": "vitest run --config vitest.arch.config.ts",
+        "cwd": "apps/web"
+      }
     }
   }
 }

@@ -5,3 +5,11 @@
 /.nx/workspace-data
 package-lock.json
 .angular
+
+# Vendored and generated agent skills (see scripts/sync-agent-config.mjs)
+apps/web/.agents/skills/angular-developer
+**/.claude/skills
+
+# Generated MCP config (merged by scripts/sync-agent-config.mjs)
+**/.mcp.json
+**/.cursor/mcp.json

@@ -59,7 +59,7 @@ jobs:
 
       - name: Build, lint, and test affected projects
         if: needs.affected.outputs.any == 'true'
-        run: npm exec -- nx affected --targets=build,lint,test,fmt-check,validate
+        run: npm exec -- nx affected --targets=build,lint,test,test-arch,fmt-check,validate
 
   # Read-only Terraform plan for the dev environment so infra changes are reviewable in the PR.
   # Runs only when `infra` changed and the GitHub variables from `nx run infra:output` exist.

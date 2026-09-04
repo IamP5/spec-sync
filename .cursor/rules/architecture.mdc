@@ -1,0 +1,10 @@
+---
+description: Design-system library rules (libs/ui is consumed by apps/web)
+globs:
+  - "libs/ui/**/*.ts"
+alwaysApply: false
+---
+
+`libs/ui` is the Zard/shadcn design-system library used by `apps/web`. Add components with the Zard CLI; never add application or domain logic here.
+
+The boundary rules that apply to it live in `apps/web/docs/architecture-boundaries.md` ("Nx Project Boundaries" and the `type:ui-kit` tag).

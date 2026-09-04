@@ -1,0 +1,11 @@
+# Format staged files (see lint-staged in package.json)
+npx lint-staged
+
+# Run the fast checks of the projects touched by the staged files only
+# (registry: scripts/checks/projects.mjs). Other apps are not checked.
+node scripts/hooks/pre-commit.mjs
+
+# Update the generated tool copies when an agent-config source changed
+if git diff --cached --name-only | grep -qE '(^|/)\.agents/|(^|/)AGENTS\.md$'; then
+  node scripts/sync-agent-config.mjs --targets | xargs git add
+fi

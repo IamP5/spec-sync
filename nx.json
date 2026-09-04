@@ -44,7 +44,9 @@
         "{workspaceRoot}/.eslintrc.json",
         "{workspaceRoot}/.eslintignore",
         "{workspaceRoot}/eslint.config.mjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*"
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        "{workspaceRoot}/sheriff.config.ts",
+        "{workspaceRoot}/apps/web/sheriff.config.ts"
       ]
     },
     "@angular/build:unit-test": {

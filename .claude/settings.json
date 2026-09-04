@@ -18,5 +18,27 @@
     "network": {
       "allowUnixSockets": ["/tmp/.nx", "~/.nx"]
     }
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/hooks/claude-stop-hook.mjs",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Read(./**/dist/**)",
+      "Read(./**/build/**)",
+      "Read(./**/.angular/**)",
+      "Read(./**/coverage/**)"
+    ]
   }
 }

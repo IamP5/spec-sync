@@ -1,0 +1,19 @@
+/* Dedicated TypeScript project used by the tsarch architecture tests.
+   It is read directly by tsarch (no `extends` resolution), so the relevant
+   options as well as `include`/`exclude` must be specified literally here.
+   `paths` mirrors tsconfig.base.json so imports of the design system resolve. */
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "ui": ["../../libs/ui/index.ts"],
+      "@/*": ["../../libs/*"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.spec.ts", "src/app/testing/**", "node_modules"]
+}
