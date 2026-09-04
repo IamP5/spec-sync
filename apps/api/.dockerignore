@@ -1,0 +1,7 @@
+# Only what the Gradle build needs; outputs and IDE/agent files stay out of the context.
+*
+!gradlew
+!build.gradle
+!settings.gradle
+!gradle/wrapper/
+!src/main/

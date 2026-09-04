@@ -4,16 +4,11 @@
   "projectType": "application",
   "prefix": "app",
   "sourceRoot": "apps/web/src",
-  "tags": [
-    "type:app",
-    "scope:web"
-  ],
+  "tags": ["type:app", "scope:web"],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/web",
@@ -25,9 +20,7 @@
             "input": "apps/web/public"
           }
         ],
-        "styles": [
-          "apps/web/src/styles.css"
-        ]
+        "styles": ["apps/web/src/styles.css"]
       },
       "configurations": {
         "production": {
@@ -60,9 +53,7 @@
       },
       "dependsOn": [
         {
-          "projects": [
-            "api"
-          ],
+          "projects": ["api"],
           "target": "bootRun"
         }
       ],
@@ -85,9 +76,7 @@
         "{workspaceRoot}/eslint.config.mjs",
         "{workspaceRoot}/tools/eslint-rules/**/*",
         {
-          "externalDependencies": [
-            "eslint"
-          ]
+          "externalDependencies": ["eslint"]
         }
       ]
     },
@@ -104,6 +93,12 @@
         "buildTarget": "web:build",
         "staticFilePath": "dist/apps/web/browser",
         "spa": true
+      }
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tools/deploy/web.sh"
       }
     }
   }

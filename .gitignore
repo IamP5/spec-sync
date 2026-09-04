@@ -52,3 +52,13 @@ dist/
 coverage/
 
 __screenshots__/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars.local
+crash.log
+*.tfvars
+!*.tfvars.example

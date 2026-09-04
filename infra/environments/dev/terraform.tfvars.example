@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (git-ignored) for local runs; CI passes these as TF_VAR_* instead.
+project_id        = "my-gcp-project"
+github_repository = "my-org/fiap-ford-spec-sync"
+# domain          = "app.example.com"

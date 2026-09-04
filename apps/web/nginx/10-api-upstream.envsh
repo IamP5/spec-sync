@@ -1,0 +1,22 @@
+#!/bin/sh
+# Sourced by the nginx image entrypoint before the templates are rendered. Splits API_URL
+# (set by Terraform, e.g. https://specsync-dev-api-xyz.a.run.app) into the pieces an nginx
+# `upstream` block needs, so proxied requests can reuse keep-alive/TLS sessions to the API.
+set -eu
+
+: "${API_URL:?API_URL must be set (URL of the API Cloud Run service)}"
+
+scheme="${API_URL%%://*}"
+rest="${API_URL#*://}"
+hostport="${rest%%/*}"
+host="${hostport%%:*}"
+port="${hostport##*:}"
+if [ "$port" = "$hostport" ]; then
+  case "$scheme" in
+    https) port=443 ;;
+    *) port=80 ;;
+  esac
+fi
+
+export API_SCHEME="$scheme" API_HOST="$host" API_PORT="$port"
+echo "api upstream: ${API_SCHEME}://${API_HOST}:${API_PORT}"

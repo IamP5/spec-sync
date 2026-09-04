@@ -36,6 +36,7 @@ dependencies {
 	implementation 'com.google.cloud:spring-cloud-gcp-starter'
 	implementation 'com.google.cloud:spring-cloud-gcp-starter-pubsub'
 	implementation 'com.google.cloud:spring-cloud-gcp-starter-storage'
+	implementation 'com.google.cloud:spring-cloud-gcp-starter-sql-postgresql'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0'
 	implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
 	implementation 'org.springframework.cloud:spring-cloud-stream'
@@ -62,6 +63,11 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+// Only the boot jar is needed; skipping the plain jar keeps build/libs unambiguous for the Dockerfile.
+tasks.named('jar') {
+	enabled = false
 }
 
 allprojects {

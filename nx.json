@@ -18,7 +18,8 @@
         "targetName": "lint"
       },
       "include": ["apps/web/**/*"]
-    }
+    },
+    "@nx-extend/terraform"
   ],
   "namedInputs": {
     "default": ["{projectRoot}/**/*"],
@@ -49,6 +50,14 @@
     "@angular/build:unit-test": {
       "cache": true,
       "inputs": ["default", "^production"]
+    },
+    "deploy": {
+      "cache": false,
+      "inputs": [
+        "production",
+        "^production",
+        "{workspaceRoot}/tools/deploy/**/*"
+      ]
     }
   },
   "generators": {

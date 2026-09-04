@@ -20,6 +20,12 @@
         "continuous": false,
         "excludeDependsOn": false
       }
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tools/deploy/api.sh"
+      }
     }
   }
 }

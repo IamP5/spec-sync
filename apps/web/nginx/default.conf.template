@@ -1,0 +1,95 @@
+# Rendered into /etc/nginx/conf.d/default.conf by the image entrypoint (envsubst replaces
+# only defined env vars, so nginx's own $uri / $host variables stay intact).
+#   PORT                          injected by Cloud Run
+#   API_URL                       set by Terraform (infra/environments/dev/main.tf)
+#   API_SCHEME/API_HOST/API_PORT  derived from API_URL by 10-api-upstream.envsh
+#
+# Cloud Run terminates TLS and speaks HTTP/2 + HTTP/3 to browsers on its own. `http2 on`
+# below lets this container accept cleartext HTTP/2 (h2c) as well, which is what Cloud Run
+# uses for the front-end -> container hop when the service port is named "h2c". HTTP/1.1 is
+# still accepted on the same port, so the image works either way.
+
+# Cache policy by URL. Angular fingerprints bundles and media (`-XXXXXXXX.ext`, outputHashing
+# "all"), so those are immutable; unhashed files from apps/web/public get a short TTL with
+# ETag revalidation; index.html (and every SPA route that falls back to it) is never cached.
+map $uri $cache_control {
+    default                                                              "no-cache";
+    "~-[A-Z0-9]{8}\.[a-z0-9]+$"                                          "public, max-age=31536000, immutable";
+    "~\.(?:svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|json|txt|webmanifest|xml)$" "public, max-age=3600, must-revalidate";
+}
+
+upstream api {
+    server ${API_HOST}:${API_PORT};
+    keepalive 16;
+    keepalive_timeout 60s;
+}
+
+server {
+    listen       ${PORT};
+    http2        on;
+    server_name  _;
+    root         /usr/share/nginx/html;
+    index        index.html;
+
+    server_tokens off;
+    # Cloud Run's front end keeps idle connections open; outlive its timeout to avoid races.
+    keepalive_timeout 650s;
+
+    # Cloud Run already logs every request (with latency, status and trace), so nginx's
+    # access log would only duplicate it. Errors still go to stderr.
+    access_log off;
+
+    # Small, immutable file set: keep descriptors and metadata cached.
+    open_file_cache          max=1000 inactive=60s;
+    open_file_cache_valid    300s;
+    open_file_cache_min_uses 1;
+    sendfile                 on;
+    tcp_nopush               on;
+
+    # Serve the .gz files produced at build time; fall back to on-the-fly gzip for the rest.
+    gzip_static on;
+    gzip on;
+    gzip_vary on;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_types
+        text/plain text/css text/xml text/javascript
+        application/javascript application/json application/manifest+json
+        application/xml image/svg+xml font/ttf;
+
+    # Startup/liveness probe target for Cloud Run: no disk access, no proxying.
+    location = /healthz {
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    # API + OpenAPI paths go to the Spring Boot service over a keep-alive upstream.
+    location ~ ^/(api|v3/api-docs|swagger-ui)(/|$) {
+        proxy_pass ${API_SCHEME}://api;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host ${API_HOST};
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_ssl_server_name on;
+        proxy_ssl_name ${API_HOST};
+        proxy_ssl_session_reuse on;
+        proxy_ssl_protocols TLSv1.2 TLSv1.3;
+        proxy_connect_timeout 10s;
+        proxy_read_timeout 60s;
+    }
+
+    # Static files: a missing asset is a 404, never index.html, so a browser holding an old
+    # index.html after a deploy fails fast and reloads instead of parsing HTML as JS.
+    location ~* \.(?:js|mjs|css|map|json|svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|txt|webmanifest|xml)$ {
+        try_files $uri =404;
+        include /etc/nginx/snippets/headers.conf;
+    }
+
+    # SPA fallback: deep links render index.html with a real 200.
+    location / {
+        try_files $uri /index.html;
+        include /etc/nginx/snippets/headers.conf;
+    }
+}

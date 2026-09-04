@@ -1,0 +1,81 @@
+{
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "name": "infra",
+  "projectType": "application",
+  "sourceRoot": "infra/environments/dev",
+  "tags": ["type:infra", "scope:infra"],
+  "targets": {
+    "bootstrap-init": {
+      "executor": "@nx-extend/terraform:init",
+      "options": { "ciMode": true, "root": "infra/bootstrap" }
+    },
+    "bootstrap-apply": {
+      "executor": "@nx-extend/terraform:apply",
+      "dependsOn": ["bootstrap-init"],
+      "options": { "ciMode": true, "root": "infra/bootstrap" }
+    },
+    "initialize": {
+      "executor": "@nx-extend/terraform:init",
+      "options": { "ciMode": true, "upgrade": false, "migrateState": false },
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": { "root": "infra/environments/dev" }
+      }
+    },
+    "plan": {
+      "executor": "@nx-extend/terraform:plan",
+      "dependsOn": ["initialize"],
+      "options": { "ciMode": true },
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": { "root": "infra/environments/dev" }
+      }
+    },
+    "apply": {
+      "executor": "@nx-extend/terraform:apply",
+      "dependsOn": ["initialize"],
+      "options": { "ciMode": true, "autoApproval": false },
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": { "root": "infra/environments/dev", "autoApproval": true }
+      }
+    },
+    "destroy": {
+      "executor": "@nx-extend/terraform:destroy",
+      "dependsOn": ["initialize"],
+      "options": { "ciMode": true, "autoApproval": false },
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": { "root": "infra/environments/dev" }
+      }
+    },
+    "output": {
+      "executor": "nx:run-commands",
+      "options": { "command": "terraform output -json" },
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": { "cwd": "infra/environments/dev" }
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "infra",
+        "commands": [
+          "for d in bootstrap environments/*; do echo \"== $d\"; terraform -chdir=\"$d\" init -backend=false -input=false >/dev/null && terraform -chdir=\"$d\" validate || exit 1; done"
+        ]
+      }
+    },
+    "fmt": {
+      "executor": "@nx-extend/terraform:fmt",
+      "options": { "ciMode": true, "formatWrite": true, "root": "infra" }
+    },
+    "fmt-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "infra",
+        "command": "terraform fmt -check -recursive -diff"
+      }
+    }
+  }
+}

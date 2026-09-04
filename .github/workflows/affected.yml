@@ -1,0 +1,81 @@
+name: Affected
+
+# Reusable job: works out which Nx projects changed since the last successful run of the
+# calling workflow and exposes them as outputs, so callers can skip whole jobs and setup steps.
+
+on:
+  workflow_call:
+    inputs:
+      all:
+        description: Treat every project as affected
+        type: boolean
+        default: false
+    outputs:
+      projects:
+        description: JSON array of affected project names
+        value: ${{ jobs.affected.outputs.projects }}
+      any:
+        value: ${{ jobs.affected.outputs.any }}
+      api:
+        value: ${{ jobs.affected.outputs.api }}
+      web:
+        value: ${{ jobs.affected.outputs.web }}
+      infra:
+        value: ${{ jobs.affected.outputs.infra }}
+      base:
+        description: Base SHA to pass to nx as NX_BASE
+        value: ${{ jobs.affected.outputs.base }}
+      head:
+        description: Head SHA to pass to nx as NX_HEAD
+        value: ${{ jobs.affected.outputs.head }}
+
+jobs:
+  affected:
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.projects.outputs.projects }}
+      any: ${{ steps.projects.outputs.any }}
+      api: ${{ steps.projects.outputs.api }}
+      web: ${{ steps.projects.outputs.web }}
+      infra: ${{ steps.projects.outputs.infra }}
+      base: ${{ steps.shas.outputs.base }}
+      head: ${{ steps.shas.outputs.head }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      # On main: compares against the last successful run of the *calling* workflow
+      # (falls back to HEAD~1 when there is none). On PRs: against the target branch.
+      - name: Determine affected commits
+        id: shas
+        uses: nrwl/nx-set-shas@v5
+
+      - name: List affected projects
+        id: projects
+        env:
+          ALL: ${{ inputs.all }}
+          NX_DAEMON: 'false'
+        run: |
+          if [ "$ALL" = "true" ]; then
+            list=$(npm exec --silent -- nx show projects --json | grep -m1 '^\[')
+          else
+            list=$(npm exec --silent -- nx show projects --affected --json | grep -m1 '^\[' || echo '[]')
+          fi
+          echo "Affected projects: $list"
+          echo "projects=$list" >> "$GITHUB_OUTPUT"
+          echo "any=$(echo "$list" | jq 'length > 0')" >> "$GITHUB_OUTPUT"
+          for p in api web infra; do
+            echo "$p=$(echo "$list" | jq --arg p "$p" 'index($p) != null')" >> "$GITHUB_OUTPUT"
+          done
