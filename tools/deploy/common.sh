@@ -32,7 +32,7 @@ build_and_push() {
     --provenance=false --sbom=false \
     --tag "${image}" \
     --push \
-    "${cache_args[@]}" \
+    ${cache_args[@]+"${cache_args[@]}"} \
     "$@" \
     "${context}"
 }
