@@ -1,0 +1,20 @@
+{
+  "$schema": "https://zardui.com/schema.json",
+  "style": "css",
+  "icons": "lucide",
+  "rtl": false,
+  "projectType": "nx-library",
+  "appConfigFile": "",
+  "packageManager": "npm",
+  "tailwind": {
+    "css": "libs/ui/styles.css",
+    "baseColor": "neutral"
+  },
+  "baseUrl": ".",
+  "aliases": {
+    "components": "@/ui/components",
+    "utils": "@/ui/utils",
+    "core": "@/ui/core",
+    "services": "@/ui/services"
+  }
+}

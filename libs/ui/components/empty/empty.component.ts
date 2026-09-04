@@ -1,0 +1,96 @@
+import { NgOptimizedImage } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  type TemplateRef,
+  ViewEncapsulation,
+} from '@angular/core';
+
+import { NgIcon } from '@ng-icons/core';
+import type { ClassValue } from 'clsx';
+
+import { ZardStringTemplateOutletDirective } from '@/ui/core/directives/string-template-outlet/string-template-outlet.directive';
+import { mergeClasses } from '@/ui/utils/merge-classes';
+
+import {
+  emptyActionsVariants,
+  emptyDescriptionVariants,
+  emptyHeaderVariants,
+  emptyIconVariants,
+  emptyImageVariants,
+  emptyTitleVariants,
+  emptyVariants,
+} from './empty.variants';
+
+@Component({
+  selector: 'z-empty',
+  imports: [NgOptimizedImage, NgIcon, ZardStringTemplateOutletDirective],
+  template: `
+    @let image = zImage();
+    @let icon = zIcon();
+    @let title = zTitle();
+    @let description = zDescription();
+    @let actions = zActions();
+
+    <div data-slot="empty-header" [class]="headerClasses()">
+      @if (image) {
+        <div data-slot="empty-media" data-variant="default" [class]="imageClasses()">
+          <ng-container *zStringTemplateOutlet="image">
+            <img [ngSrc]="image" width="64" height="64" alt="Empty" class="mx-auto" />
+          </ng-container>
+        </div>
+      } @else if (icon) {
+        <div data-slot="empty-media" data-variant="icon" [class]="iconClasses()" data-testid="icon">
+          <ng-icon [name]="icon" class="size-4!" />
+        </div>
+      }
+
+      @if (title) {
+        <div data-slot="empty-title" [class]="titleClasses()">
+          <ng-container *zStringTemplateOutlet="title">{{ title }}</ng-container>
+        </div>
+      }
+
+      @if (description) {
+        <div data-slot="empty-description" [class]="descriptionClasses()">
+          <ng-container *zStringTemplateOutlet="description">{{ description }}</ng-container>
+        </div>
+      }
+    </div>
+
+    @if (actions.length) {
+      <div data-slot="empty-content" [class]="actionsClasses()">
+        @for (action of actions; track $index) {
+          <ng-container *zStringTemplateOutlet="action" />
+        }
+      </div>
+    }
+
+    <ng-content />
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    'data-slot': 'empty',
+    '[class]': 'classes()',
+  },
+  exportAs: 'zEmpty',
+})
+export class ZardEmptyComponent {
+  readonly zActions = input<TemplateRef<void>[]>([]);
+  readonly zIcon = input<string>();
+  readonly zImage = input<string | TemplateRef<void>>();
+  readonly zTitle = input<string | TemplateRef<void>>();
+  readonly zDescription = input<string | TemplateRef<void>>();
+  readonly class = input<ClassValue>('');
+
+  protected readonly classes = computed(() => mergeClasses(emptyVariants(), this.class()));
+  protected readonly headerClasses = computed(() => emptyHeaderVariants());
+  protected readonly imageClasses = computed(() => emptyImageVariants());
+  protected readonly iconClasses = computed(() => emptyIconVariants());
+  protected readonly titleClasses = computed(() => emptyTitleVariants());
+  protected readonly descriptionClasses = computed(() => emptyDescriptionVariants());
+  protected readonly actionsClasses = computed(() => emptyActionsVariants());
+}

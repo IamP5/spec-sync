@@ -10,6 +10,24 @@
       content="A connected Angular and Spring Boot workspace orchestrated by Nx."
     />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+    <script>
+      (function () {
+        const html = document.documentElement;
+
+        try {
+          const theme = localStorage.theme;
+          const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+
+          const isSystem = theme === 'system' || !('theme' in localStorage);
+          const isDark = theme === 'dark' || (isSystem && prefersDark);
+          html.classList.add('scheme-light-dark');
+          html.classList.toggle('dark', isDark);
+          html.setAttribute('data-theme', theme ?? 'system');
+        } catch (_) {}
+      })();
+    </script>
+
   </head>
   <body>
     <app-root></app-root>

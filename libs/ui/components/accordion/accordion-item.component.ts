@@ -1,0 +1,93 @@
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
+
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideChevronDown } from '@ng-icons/lucide';
+import type { ClassValue } from 'clsx';
+
+import type { ZardAccordionComponent } from '@/ui/components/accordion/accordion.component';
+import {
+  accordionContentVariants,
+  accordionItemVariants,
+  accordionTriggerVariants,
+} from '@/ui/components/accordion/accordion.variants';
+import { mergeClasses } from '@/ui/utils/merge-classes';
+
+@Component({
+  selector: 'z-accordion-item',
+  imports: [NgIcon],
+  template: `
+    <button
+      type="button"
+      [attr.aria-controls]="'content-' + zValue()"
+      [attr.aria-expanded]="isOpen()"
+      [id]="'accordion-' + zValue()"
+      [disabled]="zDisabled()"
+      [class]="triggerClasses()"
+      (click)="toggle()"
+    >
+      {{ zTitle() }}
+      <ng-icon
+        name="lucideChevronDown"
+        class="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200"
+        [class]="isOpen() ? 'rotate-180' : ''"
+      />
+    </button>
+
+    @if (!zDisabled()) {
+      <div
+        role="region"
+        [attr.aria-labelledby]="'accordion-' + zValue()"
+        [attr.data-state]="isOpen() ? 'open' : 'closed'"
+        [id]="'content-' + zValue()"
+        [class]="contentClasses()"
+      >
+        <div class="overflow-hidden">
+          <div class="pt-0 pb-4">
+            <ng-content />
+          </div>
+        </div>
+      </div>
+    }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  viewProviders: [provideIcons({ lucideChevronDown })],
+  host: {
+    'data-slot': 'accordion-item',
+    '[class]': 'itemClasses()',
+    '[attr.data-state]': "isOpen() ? 'open' : 'closed'",
+    '[attr.data-disabled]': 'zDisabled()',
+    '[attr.aria-disabled]': 'zDisabled()',
+    '[attr.disabled]': 'zDisabled()',
+  },
+  exportAs: 'zAccordionItem',
+})
+export class ZardAccordionItemComponent {
+  readonly zTitle = input<string>('');
+  readonly zValue = input<string>('');
+  readonly class = input<ClassValue>('');
+  readonly zDisabled = input(false, { transform: booleanAttribute });
+
+  accordion!: ZardAccordionComponent;
+  readonly isOpen = signal(false);
+
+  protected readonly itemClasses = computed(() => mergeClasses(accordionItemVariants(), this.class()));
+  protected readonly triggerClasses = computed(() => mergeClasses(accordionTriggerVariants()));
+  protected readonly contentClasses = computed(() => mergeClasses(accordionContentVariants({ isOpen: this.isOpen() })));
+
+  toggle(): void {
+    if (this.accordion) {
+      this.accordion.toggleItem(this);
+    } else {
+      this.isOpen.update(v => !v);
+    }
+  }
+}
