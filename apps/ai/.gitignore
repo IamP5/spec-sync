@@ -1,0 +1,4 @@
+.mastra/
+.env
+*.db
+*.db-journal

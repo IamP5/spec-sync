@@ -1,7 +1,7 @@
 name: Deploy
 
 # Provisions infrastructure (Terraform, `infra` project) and deploys the apps
-# (api and web -> Cloud Run) for every push to main. Only projects that changed since the
+# (api, web and ai -> Cloud Run) for every push to main. Only projects that changed since the
 # last successful Deploy run are touched; use "Run workflow" with all=true to force everything.
 #
 # Required GitHub repository *variables* (Settings > Secrets and variables > Actions > Variables).
@@ -82,7 +82,7 @@ jobs:
   apps:
     needs: [affected, infra]
     # `always()` keeps this job eligible when `infra` was skipped; it still bails if infra failed.
-    if: always() && needs.affected.result == 'success' && needs.infra.result != 'failure' && needs.infra.result != 'cancelled' && (needs.affected.outputs.api == 'true' || needs.affected.outputs.web == 'true')
+    if: always() && needs.affected.result == 'success' && needs.infra.result != 'failure' && needs.infra.result != 'cancelled' && (needs.affected.outputs.api == 'true' || needs.affected.outputs.web == 'true' || needs.affected.outputs.ai == 'true')
     runs-on: ubuntu-latest
     environment: dev
     env:

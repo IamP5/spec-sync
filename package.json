@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "apps/web"
+    "apps/web",
+    "apps/ai"
   ],
   "engines": {
     "node": "^22.22.3 || ^24.15.0 || >=26.0.0"

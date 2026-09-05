@@ -1,3 +1,4 @@
+import { aiChecks } from '../../apps/ai/checks.mjs';
 import { apiChecks } from '../../apps/api/checks.mjs';
 import { webChecks } from '../../apps/web/checks.mjs';
 
@@ -12,6 +13,7 @@ import { webChecks } from '../../apps/web/checks.mjs';
 export const projects = [
   webChecks,
   apiChecks,
+  aiChecks,
   {
     name: 'scripts',
     paths: ['scripts/'],

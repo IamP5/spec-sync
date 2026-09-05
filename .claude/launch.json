@@ -4,8 +4,21 @@
     {
       "name": "web-static",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve-static", "web", "--port", "4300", "--skip-nx-cache"],
+      "runtimeArgs": [
+        "nx",
+        "serve-static",
+        "web",
+        "--port",
+        "4300",
+        "--skip-nx-cache"
+      ],
       "port": 4300
+    },
+    {
+      "name": "ai-studio",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["exec", "--", "nx", "dev", "ai"],
+      "port": 4111
     }
   ]
 }

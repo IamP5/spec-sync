@@ -25,6 +25,25 @@ resource "google_secret_manager_secret_iam_member" "api_db_password" {
   member    = google_service_account.api.member
 }
 
+# The Mastra AI service only talks to Vertex AI (Application Default Credentials of
+# this account, no keys) and writes logs/metrics.
+resource "google_service_account" "ai" {
+  account_id   = "${local.name}-ai"
+  display_name = "${local.name} AI (Cloud Run)"
+}
+
+resource "google_project_iam_member" "ai" {
+  for_each = toset([
+    "roles/aiplatform.user",
+    "roles/logging.logWriter",
+    "roles/monitoring.metricWriter",
+  ])
+
+  project = var.project_id
+  role    = each.key
+  member  = google_service_account.ai.member
+}
+
 resource "google_service_account" "web" {
   account_id   = "${local.name}-web"
   display_name = "${local.name} web (Cloud Run)"

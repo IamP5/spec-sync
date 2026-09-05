@@ -30,6 +30,7 @@ Nx monorepo:
 | --------- | ---------- | ------------------------------------ | -------------------- |
 | `web`     | `apps/web` | Angular 22, NgRx Signal Store        | `apps/web/AGENTS.md` |
 | `api`     | `apps/api` | Spring Boot (Java 25, Gradle)        | `apps/api/AGENTS.md` |
+| `ai`      | `apps/ai`  | Mastra (Node), Gemini on Vertex AI   | `apps/ai/AGENTS.md`  |
 | `ui`      | `libs/ui`  | Zard/shadcn design system (Tailwind) | `apps/web/AGENTS.md` |
 | `infra`   | `infra`    | Terraform (Google Cloud)             | –                    |
 | `scripts` | `scripts`  | Node tooling for hooks and checks    | this file            |
@@ -54,10 +55,18 @@ in this file are workspace-wide only.
   `nx run api:archTest`) and Spotless (`nx run api:spotlessCheck`) enforce
   those rules on every hook run.
 
+## Working in `apps/ai`
+
+- Read `apps/ai/AGENTS.md` first. It names the red lines (Application Default
+  Credentials only, stateless service, Mastra's own HTTP surface behind the
+  web `/ai` proxy) and how to run Studio locally.
+- Lint and a strict type check run on every hook run; the Mastra bundle
+  (`nx run ai:build`) only in `npm run verify` and CI.
+
 ## Checks and hooks
 
 - Every app declares its checks next to its code (`apps/web/checks.mjs`,
-  `apps/api/checks.mjs`) and registers them in `scripts/checks/projects.mjs`
+  `apps/api/checks.mjs`, `apps/ai/checks.mjs`) and registers them in `scripts/checks/projects.mjs`
   with the path prefixes it owns.
 - The agent Stop hooks (`.claude/settings.json` for Claude Code,
   `.cursor/hooks.json` for Cursor) and the husky pre-commit hook run only the
@@ -83,7 +92,7 @@ in this file are workspace-wide only.
   the workspace root owns the Nx skills and the `nx-mcp` server
   (`.agents/skills/`, `.agents/mcp.json`); each app owns its own
   (`apps/web/.agents/skills/` and `apps/web/.agents/mcp.json`,
-  `apps/api/.agents/skills/`).
+  `apps/api/.agents/skills/`; `apps/ai` has none yet).
 - `npm run sync:agent-config` generates, next to each `.agents/` (root and
   `apps/*`), the `.claude/skills/`, `.mcp.json` and `.cursor/mcp.json`
   copies. Never edit the generated copies; they carry DO_NOT_EDIT markers.

@@ -1,0 +1,123 @@
+<section
+  class="relative z-10 mx-auto my-5 mb-16 flex w-[min(760px,calc(100%-40px))] flex-col self-center"
+  aria-labelledby="chat-title"
+>
+  <div class="mb-5 flex items-end justify-between gap-4">
+    <div>
+      <z-badge
+        zType="outline"
+        class="mb-3 gap-2 bg-background/80 px-3 py-1.5 font-mono text-[10px] tracking-[0.08em] text-muted-foreground uppercase"
+      >
+        <ng-icon name="lucideSparkles" aria-hidden="true" />
+        Gemini on Vertex AI
+      </z-badge>
+      <h1
+        id="chat-title"
+        class="text-3xl font-semibold tracking-tight text-foreground"
+      >
+        SpecSync assistant
+      </h1>
+    </div>
+    <button
+      z-button
+      zType="ghost"
+      zSize="sm"
+      type="button"
+      (click)="onReset()"
+      [disabled]="empty()"
+    >
+      <ng-icon name="lucideRotateCcw" aria-hidden="true" />
+      New chat
+    </button>
+  </div>
+
+  <z-card class="gap-0 py-0">
+    <z-card-header
+      class="border-b px-4 py-2.5 font-mono text-[10px] text-muted-foreground"
+    >
+      <span>ai.chat</span>
+    </z-card-header>
+    <z-card-content class="p-0">
+      <div
+        #transcript
+        class="max-h-[55svh] min-h-64 overflow-y-auto p-4"
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation"
+      >
+        @if (empty()) {
+        <p class="my-16 text-center text-sm text-muted-foreground">
+          Ask about SpecSync, or paste a requirement to have it reviewed.
+        </p>
+        } @else {
+        <z-message-group>
+          @for (message of messages(); track $index) {
+          <z-message
+            [zAlign]="message.role === 'user' ? 'end' : 'start'"
+            [zVariant]="message.role === 'user' ? 'default' : 'muted'"
+            [zFallback]="message.role === 'user' ? '' : 'AI'"
+            [zAlt]="message.role === 'user' ? 'You' : 'Assistant'"
+            [attr.data-role]="message.role"
+          >
+            @if (message.content) {
+            <span class="whitespace-pre-wrap">{{ message.content }}</span>
+            } @else {
+            <z-spinner class="size-4" zAriaLabel="The assistant is thinking" />
+            }
+          </z-message>
+          }
+        </z-message-group>
+        }
+      </div>
+    </z-card-content>
+  </z-card>
+
+  <form class="mt-4" (submit)="onSubmit($event)" novalidate>
+    <label for="prompt" class="sr-only">Message</label>
+    <div
+      class="grid grid-cols-[1fr_auto] items-end gap-2 rounded-xl border bg-card p-1.5 shadow-lg shadow-black/5 transition-colors focus-within:border-ring dark:shadow-black/40"
+    >
+      <textarea
+        z-textarea
+        id="prompt"
+        rows="2"
+        placeholder="Send a message (Enter to send, Shift+Enter for a new line)"
+        class="min-h-11 resize-none border-0 bg-transparent px-3 focus-visible:ring-0 dark:bg-transparent"
+        [formField]="promptForm.prompt"
+        (keydown)="onPromptKeydown($event)"
+      ></textarea>
+      @if (streaming()) {
+      <button
+        z-button
+        zType="outline"
+        type="button"
+        class="h-11 px-4 text-[13px] font-semibold"
+        (click)="onStop()"
+      >
+        <ng-icon name="lucideSquare" aria-hidden="true" />
+        Stop
+      </button>
+      } @else {
+      <button
+        z-button
+        type="submit"
+        class="h-11 px-4 text-[13px] font-semibold"
+      >
+        Send
+        <ng-icon name="lucideSend" aria-hidden="true" />
+      </button>
+      }
+    </div>
+  </form>
+
+  <div class="mt-4 min-h-12" aria-live="polite">
+    @if (error()) {
+    <z-alert
+      zType="destructive"
+      zRole="alert"
+      [zDescription]="error()"
+      class="animate-in fade-in slide-in-from-bottom-1 duration-200"
+    />
+    }
+  </div>
+</section>

@@ -4,7 +4,7 @@ import {
   computed,
   inject,
 } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideMoon, lucideSun } from '@ng-icons/lucide';
 
@@ -15,7 +15,14 @@ import { EDarkModes, ZardDarkMode } from '@/ui/services';
 /** Application shell: navigation, theme toggle and the routed feature. */
 @Component({
   selector: 'app-root',
-  imports: [NgIcon, RouterOutlet, ZardButtonComponent, ZardSeparatorComponent],
+  imports: [
+    NgIcon,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    ZardButtonComponent,
+    ZardSeparatorComponent,
+  ],
   viewProviders: [provideIcons({ lucideMoon, lucideSun })],
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

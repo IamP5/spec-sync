@@ -13,6 +13,12 @@ variable "region" {
   default = "southamerica-east1"
 }
 
+variable "vertex_location" {
+  description = "Vertex AI location used by the ai service, independent of `region`. Gemini 3.x is only served from `global`; regional endpoints such as us-central1 stop at the 2.5 family."
+  type        = string
+  default     = "global"
+}
+
 variable "domain" {
   description = "Optional custom domain for the web service (region support is limited, see modules/cloud-run-service)."
   type        = string

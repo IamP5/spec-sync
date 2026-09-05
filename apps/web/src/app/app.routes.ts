@@ -10,6 +10,13 @@ export const appRoutes: Route[] = [
       ).then((m) => m.GreetingPage),
   },
   {
+    path: 'chat',
+    loadComponent: () =>
+      import('./domains/chat/feature-chat/chat-page/chat-page').then(
+        (m) => m.ChatPage,
+      ),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

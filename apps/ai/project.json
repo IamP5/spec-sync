@@ -1,0 +1,54 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "ai",
+  "projectType": "application",
+  "sourceRoot": "apps/ai/src",
+  "tags": ["type:app", "scope:ai"],
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "mastra dev",
+        "cwd": "apps/ai"
+      },
+      "metadata": {
+        "description": "Mastra Studio + API on http://localhost:4111 (needs gcloud ADC, see apps/ai/AGENTS.md)"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/.mastra/output"],
+      "options": {
+        "command": "mastra build",
+        "cwd": "apps/ai"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "tsc -p tsconfig.json --noEmit",
+        "cwd": "apps/ai"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "vitest run --config vitest.config.mts",
+        "cwd": "apps/ai"
+      }
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tools/deploy/ai.sh"
+      }
+    }
+  }
+}

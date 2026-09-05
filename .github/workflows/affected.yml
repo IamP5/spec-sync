@@ -20,6 +20,8 @@ on:
         value: ${{ jobs.affected.outputs.api }}
       web:
         value: ${{ jobs.affected.outputs.web }}
+      ai:
+        value: ${{ jobs.affected.outputs.ai }}
       infra:
         value: ${{ jobs.affected.outputs.infra }}
       base:
@@ -37,6 +39,7 @@ jobs:
       any: ${{ steps.projects.outputs.any }}
       api: ${{ steps.projects.outputs.api }}
       web: ${{ steps.projects.outputs.web }}
+      ai: ${{ steps.projects.outputs.ai }}
       infra: ${{ steps.projects.outputs.infra }}
       base: ${{ steps.shas.outputs.base }}
       head: ${{ steps.shas.outputs.head }}
@@ -76,6 +79,6 @@ jobs:
           echo "Affected projects: $list"
           echo "projects=$list" >> "$GITHUB_OUTPUT"
           echo "any=$(echo "$list" | jq 'length > 0')" >> "$GITHUB_OUTPUT"
-          for p in api web infra; do
+          for p in api web ai infra; do
             echo "$p=$(echo "$list" | jq --arg p "$p" 'index($p) != null')" >> "$GITHUB_OUTPUT"
           done

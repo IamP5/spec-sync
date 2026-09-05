@@ -14,14 +14,16 @@ FROM ${NODE_IMAGE} AS build
 WORKDIR /workspace
 ENV CI=true NX_DAEMON=false NX_NO_CLOUD=true
 
-# Dependency layer: reused until a manifest or the lockfile changes. apps/web is an npm
-# workspace, so its package.json must be present for `npm ci` to install its packages.
+# Dependency layer: reused until a manifest or the lockfile changes. apps/web and apps/ai
+# are npm workspaces, so both package.json files must be present for `npm ci` to resolve
+# the lockfile (the ai packages are installed but unused here).
 # --ignore-scripts skips the root `prepare` script (husky + agent-config sync), which is
 # developer tooling that has no place in the image and needs files not copied yet. The
 # dependencies that matter at build time (esbuild, lmdb, ...) ship their native binaries
 # as optional packages, so they do not rely on postinstall scripts.
 COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
+COPY apps/ai/package.json ./apps/ai/
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --no-audit --no-fund --ignore-scripts
 
@@ -36,10 +38,12 @@ RUN npx nx build web --configuration=production \
 FROM ${NGINX_IMAGE} AS runtime
 
 # Rendered into /etc/nginx/conf.d/default.conf by the image entrypoint (envsubst) after
-# 10-api-upstream.envsh derives the upstream host/port from API_URL.
-# PORT is injected by Cloud Run, API_URL by Terraform (infra/environments/dev/main.tf).
+# 10-api-upstream.envsh derives the upstream host/port from API_URL and AI_URL.
+# PORT is injected by Cloud Run, API_URL and AI_URL by Terraform
+# (infra/environments/dev/main.tf).
 ENV PORT=8080
 ENV API_URL=http://localhost:8080
+ENV AI_URL=http://localhost:4111
 
 COPY apps/web/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY apps/web/nginx/headers.conf /etc/nginx/snippets/headers.conf

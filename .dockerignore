@@ -1,16 +1,25 @@
-# Root context is only used by apps/web/Dockerfile: allow-list what `nx build web` needs.
+# Root context is used by apps/web/Dockerfile and apps/ai/Dockerfile: allow-list what
+# `nx build web` / `nx build ai` need.
 *
 !package.json
 !package-lock.json
 !nx.json
 !tsconfig.base.json
 !apps/web/
+!apps/ai/
 !libs/
 apps/web/.agents
 apps/web/.claude
 apps/web/AGENTS.md
 apps/web/CLAUDE.md
 apps/web/skills-lock.json
+apps/ai/.agents
+apps/ai/.claude
+apps/ai/AGENTS.md
+apps/ai/CLAUDE.md
+apps/ai/.env*
+apps/ai/.mastra
+**/*.db
 **/node_modules
 **/.angular
 **/dist

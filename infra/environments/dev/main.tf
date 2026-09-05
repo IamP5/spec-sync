@@ -152,7 +152,36 @@ module "api" {
   ]
 }
 
-# --- Web (nginx serving the Angular build, proxying /api to the API) ----------
+# --- AI (Mastra server: Gemini on Vertex AI, streamed to the browser via web /ai) -------
+module "ai" {
+  source = "../../modules/cloud-run-service"
+
+  name                  = "${local.name}-ai"
+  project_id            = var.project_id
+  region                = var.region
+  image                 = var.placeholder_image
+  service_account_email = google_service_account.ai.email
+  labels                = local.labels
+
+  cpu                   = "1"
+  memory                = "512Mi"
+  min_instances         = 0
+  max_instances         = 2
+  allow_unauthenticated = true # the web proxy calls it anonymously, like the API
+  deletion_protection   = false
+
+  # Read by @ai-sdk/google-vertex; credentials are the service account above.
+  # MASTRA_HOST/PORT are set by the image (apps/ai/Dockerfile) and Cloud Run.
+  env = {
+    NODE_ENV               = "production"
+    GOOGLE_VERTEX_PROJECT  = var.project_id
+    GOOGLE_VERTEX_LOCATION = var.vertex_location
+  }
+
+  depends_on = [module.services]
+}
+
+# --- Web (nginx serving the Angular build, proxying /api to the API and /ai to the AI) ---
 module "web" {
   source = "../../modules/cloud-run-service"
 
@@ -174,7 +203,8 @@ module "web" {
   http2 = true
 
   env = {
-    API_URL = module.api.uri # split into an upstream by apps/web/nginx/10-api-upstream.envsh
+    API_URL = module.api.uri # split into upstreams by apps/web/nginx/10-api-upstream.envsh
+    AI_URL  = module.ai.uri
   }
 
   depends_on = [module.services]
@@ -192,6 +222,7 @@ module "deployer" {
   impersonable_service_accounts = {
     api = google_service_account.api.name
     web = google_service_account.web.name
+    ai  = google_service_account.ai.name
   }
 
   depends_on = [module.services]

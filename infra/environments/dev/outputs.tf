@@ -8,12 +8,17 @@ output "api_url" {
   value       = module.api.uri
 }
 
+output "ai_url" {
+  description = "Direct URL of the Mastra AI service. Browsers reach it through the web service's /ai proxy."
+  value       = module.ai.uri
+}
+
 output "domain_dns_records" {
   value = module.web.domain_dns_records
 }
 
 output "artifact_registry" {
-  description = "Docker registry path. Images: <this>/api:<tag> and <this>/web:<tag>"
+  description = "Docker registry path. Images: <this>/api:<tag>, <this>/web:<tag> and <this>/ai:<tag>"
   value       = module.registry.registry_url
 }
 
