@@ -1,3 +1,6 @@
+import org.gradle.api.GradleException
+import org.gradle.api.tasks.testing.TestListener
+
 plugins {
     id "dev.nx.gradle.project-graph" version "0.1.25"
 	id 'java'
