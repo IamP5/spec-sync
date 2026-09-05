@@ -433,7 +433,7 @@ describe('ChatPage', () => {
     ).toContain('Reply stopped');
   });
 
-  it('keeps a long answer readable and scrolls to a subsequent user prompt', async () => {
+  it('follows answers beyond the viewport, pauses for reading and resumes at the latest message', async () => {
     agent.replyWith((input) => textReply(input, 'Initial answer'));
     const fixture = TestBed.createComponent(ChatPage);
     await fixture.whenStable();
@@ -447,7 +447,7 @@ describe('ChatPage', () => {
     )!;
     Object.defineProperties(log, {
       clientHeight: { value: 300 },
-      scrollHeight: { value: 1200 },
+      scrollHeight: { value: 1200, configurable: true },
     });
     Object.defineProperty(answer, 'offsetHeight', { value: 700 });
     agent.setMessages(
@@ -458,12 +458,107 @@ describe('ChatPage', () => {
       ),
     );
     await fixture.whenStable();
-    expect(log.scrollTop).not.toBe(1200);
+    expect(log.scrollTop).toBe(1200);
+    expect(
+      element.querySelector('[aria-label="Scroll to the latest message"]'),
+    ).toBeNull();
 
+    // A delayed scroll event after content growth is not an upward user scroll.
+    Object.defineProperty(log, 'scrollHeight', {
+      value: 1800,
+      configurable: true,
+    });
+    log.dispatchEvent(new Event('scroll'));
+    agent.setMessages(
+      agent.messages.map((message) =>
+        message.role === 'assistant'
+          ? { ...message, content: 'An even longer answer' }
+          : message,
+      ),
+    );
+    await fixture.whenStable();
+    expect(log.scrollTop).toBe(1800);
+
+    log.scrollTop = 400;
+    log.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    agent.setMessages(
+      agent.messages.map((message) =>
+        message.role === 'assistant'
+          ? { ...message, content: 'More text while reading earlier messages' }
+          : message,
+      ),
+    );
+    await fixture.whenStable();
+    expect(log.scrollTop).toBe(400);
+    element
+      .querySelector<HTMLButtonElement>(
+        '[aria-label="Scroll to the latest message"]',
+      )!
+      .click();
+    await fixture.whenStable();
+    expect(log.scrollTop).toBe(1800);
+    expect(
+      element.querySelector('[aria-label="Scroll to the latest message"]'),
+    ).toBeNull();
+
+    // Sending a prompt also restores following after scrolling away.
+    log.scrollTop = 400;
+    log.dispatchEvent(new Event('scroll'));
+    Object.defineProperty(log, 'scrollHeight', { value: 1200 });
     await sendPrompt(element, 'second');
     await settled(TestBed.inject(ConversationDetailStore));
     await fixture.whenStable();
     expect(log.scrollTop).toBe(1200);
+  });
+
+  it('follows layout resizing only while pinned and disconnects its observer', async () => {
+    let resize: ResizeObserverCallback | undefined;
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          resize = callback;
+        }
+        observe = vi.fn();
+        disconnect = disconnect;
+      },
+    );
+    try {
+      agent.replyWith((input) => textReply(input, 'Initial answer'));
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await sendPrompt(fixture.nativeElement, 'first');
+      await settled(TestBed.inject(ConversationDetailStore));
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      const log = element.querySelector<HTMLElement>('[role="log"]')!;
+      Object.defineProperties(log, {
+        clientHeight: { value: 300 },
+        scrollHeight: { value: 1200, configurable: true },
+      });
+      const notifyResize = () => resize!([], {} as ResizeObserver);
+      notifyResize();
+      expect(log.scrollTop).toBe(1200);
+
+      log.scrollTop = 400;
+      log.dispatchEvent(new Event('scroll'));
+      Object.defineProperty(log, 'scrollHeight', { value: 1800 });
+      notifyResize();
+      expect(log.scrollTop).toBe(400);
+
+      // Manually returning to the bottom resumes following.
+      log.scrollTop = 1500;
+      log.dispatchEvent(new Event('scroll'));
+      notifyResize();
+      expect(log.scrollTop).toBe(1800);
+
+      fixture.destroy();
+      expect(disconnect).toHaveBeenCalledOnce();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('prevents sending an empty prompt', async () => {

@@ -169,6 +169,7 @@ export class ChatPage {
   private readonly router = inject(Router);
   private readonly transcript =
     viewChild<ElementRef<HTMLElement>>('transcript');
+  private lastScrollTop = 0;
   private readonly prompt = viewChild('promptInput', {
     read: ElementRef<HTMLTextAreaElement>,
   });
@@ -239,6 +240,20 @@ export class ChatPage {
     effect(() => {
       const id = this.threadId();
       untracked(() => this.syncWithRoute(id));
+    });
+
+    // Tool cards, fonts and viewport changes can resize the transcript without
+    // changing any of the signals used by the render effect below.
+    afterRenderEffect((onCleanup) => {
+      const element = this.transcript()?.nativeElement;
+      if (!element || typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(() => {
+        if (untracked(this.atBottom)) this.followReply();
+      });
+      observer.observe(element);
+      if (element.firstElementChild)
+        observer.observe(element.firstElementChild);
+      onCleanup(() => observer.disconnect());
     });
 
     // Keep the newest content in view while the reply streams in, unless the
@@ -353,16 +368,19 @@ export class ChatPage {
     if (element) {
       const remaining =
         element.scrollHeight - element.scrollTop - element.clientHeight;
-      this.atBottom.set(remaining <= AT_BOTTOM_THRESHOLD_PX);
+      // Content growth and our own scroll writes must not disable following.
+      if (element.scrollTop < this.lastScrollTop) {
+        this.atBottom.set(false);
+      } else if (remaining <= AT_BOTTOM_THRESHOLD_PX) {
+        this.atBottom.set(true);
+      }
+      this.lastScrollTop = element.scrollTop;
     }
   }
 
   protected scrollToBottom(): void {
     this.atBottom.set(true);
-    const element = this.transcript()?.nativeElement;
-    if (element) {
-      element.scrollTop = element.scrollHeight;
-    }
+    this.followReply();
   }
 
   /** Opens the thread named by the URL, or starts a new one on the root route. */
@@ -387,24 +405,10 @@ export class ChatPage {
   private followReply(): void {
     const element = this.transcript()?.nativeElement;
     if (!element) return;
-    const replies = element.querySelectorAll<HTMLElement>(
-      '[data-role="assistant"]',
-    );
-    const last = replies[replies.length - 1];
-    // Keep the beginning readable once a response outgrows the viewport.
-    if (
-      lastOf(this.turns())?.role === 'assistant' &&
-      last &&
-      last.offsetHeight > element.clientHeight - 48
-    ) {
-      element.scrollTop +=
-        last.getBoundingClientRect().top -
-        element.getBoundingClientRect().top -
-        24;
-      this.atBottom.set(false);
-      return;
-    }
+    // Text is already revealed per animation frame. Follow that render directly;
+    // restarting a smooth-scroll animation on every token would lag behind it.
     element.scrollTop = element.scrollHeight;
+    this.lastScrollTop = element.scrollTop;
   }
 
   private async send(prompt: string): Promise<void> {
