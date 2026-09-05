@@ -35,11 +35,13 @@ WORKDIR /app
 
 # PORT is injected by Cloud Run. Mastra binds to localhost unless MASTRA_HOST says
 # otherwise, so the container would not be reachable without it. Vertex project and
-# location are set by Terraform (infra/environments/dev/main.tf).
+# location are set by Terraform (infra/environments/dev/main.tf). The CopilotKit
+# runtime phones home unless told not to.
 ENV NODE_ENV=production \
     PORT=8080 \
     MASTRA_HOST=0.0.0.0 \
-    MASTRA_SKIP_DOTENV=true
+    MASTRA_SKIP_DOTENV=true \
+    COPILOTKIT_TELEMETRY_DISABLED=true
 
 COPY --from=build --chown=node:node /workspace/apps/ai/.mastra/output/ ./
 

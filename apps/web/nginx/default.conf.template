@@ -87,10 +87,10 @@ server {
         proxy_read_timeout 60s;
     }
 
-    # Mastra AI service under /ai: the prefix is stripped, so /ai/api/agents/chat/stream
-    # reaches the service as /api/agents/chat/stream (its own /api would otherwise collide
-    # with the Spring API above). Replies are Server-Sent Events, so buffering is off and
-    # the read timeout covers a long generation.
+    # Mastra AI service under /ai: the prefix is stripped, so the CopilotKit runtime route
+    # /ai/copilotkit reaches the service as /copilotkit and Mastra's own API as /api/...
+    # (which would otherwise collide with the Spring API above). Chat replies are
+    # Server-Sent Events, so buffering is off and the read timeout covers a long generation.
     location /ai/ {
         rewrite ^/ai/(.*)$ /$1 break;
         proxy_pass ${AI_SCHEME}://ai;

@@ -51,19 +51,52 @@
         </p>
         } @else {
         <z-message-group>
-          @for (message of messages(); track $index) {
+          @for (turn of turns(); track turn.id) {
+          <!-- prettier-ignore -->
+          @if (turn.role === 'user') {
           <z-message
-            [zAlign]="message.role === 'user' ? 'end' : 'start'"
-            [zVariant]="message.role === 'user' ? 'default' : 'muted'"
-            [zFallback]="message.role === 'user' ? '' : 'AI'"
-            [zAlt]="message.role === 'user' ? 'You' : 'Assistant'"
-            [attr.data-role]="message.role"
+            zAlign="end"
+            zVariant="default"
+            zAlt="You"
+            data-role="user"
           >
-            @if (message.content) {
-            <span class="whitespace-pre-wrap">{{ message.content }}</span>
-            } @else {
+            <span class="whitespace-pre-wrap">{{ textOf(turn) }}</span>
+          </z-message>
+          } @else if (textOf(turn) || turn.toolCalls?.length) {
+          <z-message
+            zAlign="start"
+            zFallback="AI"
+            zAlt="Assistant"
+            data-role="assistant"
+          >
+            <z-message-content class="gap-2">
+              @if (textOf(turn)) {
+              <z-bubble zVariant="muted">
+                <div
+                  class="chat-markdown"
+                  [innerHTML]="textOf(turn) | markdown : isStreamingTurn(turn)"
+                ></div>
+              </z-bubble>
+              } @if (turn.toolCalls?.length) {
+              <copilot-render-tool-calls
+                class="flex flex-col gap-2"
+                [message]="turn"
+                [messages]="messages()"
+                [isLoading]="streaming()"
+                [agentId]="agentId"
+              />
+              }
+            </z-message-content>
+          </z-message>
+          } } @if (awaitingReply()) {
+          <z-message
+            zAlign="start"
+            zVariant="muted"
+            zFallback="AI"
+            zAlt="Assistant"
+            data-role="assistant"
+          >
             <z-spinner class="size-4" zAriaLabel="The assistant is thinking" />
-            }
           </z-message>
           }
         </z-message-group>

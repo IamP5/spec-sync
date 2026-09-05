@@ -38,6 +38,28 @@ The binding rules live in the docs; this section only names the red lines.
 - Add design-system components with the Zard CLI; never hand-edit
   `libs/ui` to add application logic.
 
+## AI chat (AG-UI with CopilotKit)
+
+- The chat domain (`apps/web/src/app/domains/chat`) talks to the Mastra
+  service of `apps/ai` over AG-UI with `@copilotkit/angular`, headless:
+  Zard components render the transcript, `copilot-render-tool-calls`
+  renders tool calls through the cards registered in
+  `feature-chat/chat-page/chat-tools.ts` (generative UI), assistant text is
+  Markdown (`util/markdown-pipe.ts`).
+- `provideCopilotKit` stays in `app.config.ts`: the library's services are
+  root-scoped and read their configuration from the root injector, so it
+  cannot be provided on the lazy chat route. It is not tree-shakeable
+  either, which is why the initial bundle budget in `project.json` is
+  1.7 MB (warning) / 2 MB (error).
+- The contract with `apps/ai` lives in `domains/chat/data/chat-agent.ts`
+  (agent id, runtime URL) and `data/requirement-*.ts` (tool names and
+  schemas). Change them only together with the service.
+- `ChatAgentClient` (`data/chat-agent-client.ts`) is the data access: it
+  connects the runtime URL lazily and wraps the AG-UI agent; the
+  conversation lives in that agent, `ConversationDetailStore` mirrors it.
+- Tests never contact a runtime: `testing/fake-chat-agent.ts` registers an
+  in-browser AG-UI agent under the chat agent id and replays scripted events.
+
 ## Checks
 
 - Lint (Sheriff + Nx boundaries): `npm exec -- nx run-many -t lint -p web,ui`

@@ -26,14 +26,14 @@
 
 Nx monorepo:
 
-| Project   | Path       | Stack                                | Agent guide          |
-| --------- | ---------- | ------------------------------------ | -------------------- |
-| `web`     | `apps/web` | Angular 22, NgRx Signal Store        | `apps/web/AGENTS.md` |
-| `api`     | `apps/api` | Spring Boot (Java 25, Gradle)        | `apps/api/AGENTS.md` |
-| `ai`      | `apps/ai`  | Mastra (Node), Gemini on Vertex AI   | `apps/ai/AGENTS.md`  |
-| `ui`      | `libs/ui`  | Zard/shadcn design system (Tailwind) | `apps/web/AGENTS.md` |
-| `infra`   | `infra`    | Terraform (Google Cloud)             | –                    |
-| `scripts` | `scripts`  | Node tooling for hooks and checks    | this file            |
+| Project   | Path       | Stack                                                        | Agent guide          |
+| --------- | ---------- | ------------------------------------------------------------ | -------------------- |
+| `web`     | `apps/web` | Angular 22, NgRx Signal Store                                | `apps/web/AGENTS.md` |
+| `api`     | `apps/api` | Spring Boot (Java 25, Gradle)                                | `apps/api/AGENTS.md` |
+| `ai`      | `apps/ai`  | Mastra (Node), Gemini on Vertex AI, AG-UI/CopilotKit runtime | `apps/ai/AGENTS.md`  |
+| `ui`      | `libs/ui`  | Zard/shadcn design system (Tailwind)                         | `apps/web/AGENTS.md` |
+| `infra`   | `infra`    | Terraform (Google Cloud)                                     | –                    |
+| `scripts` | `scripts`  | Node tooling for hooks and checks                            | this file            |
 
 Each app owns its own rules, docs, skills and checks. Before changing code
 under an app, read that app's `AGENTS.md` and the docs it points to. Rules

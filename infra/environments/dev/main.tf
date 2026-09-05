@@ -152,6 +152,13 @@ module "api" {
   ]
 }
 
+# Sizing note for the ai and web services: every chat turn is a Server-Sent Events
+# response that stays open for the whole generation, so instances must serve many
+# requests at once. Cloud Run only allows less than 1 vCPU with max concurrency 1, which
+# would cap the chat at two users per service (max_instances = 2). CPU therefore stays
+# at 1 for both; with `cpu_idle = true` and min_instances = 0 it is only billed while a
+# request is in flight. Memory is the cheaper knob and is set to what each runtime needs.
+
 # --- AI (Mastra server: Gemini on Vertex AI, streamed to the browser via web /ai) -------
 module "ai" {
   source = "../../modules/cloud-run-service"
@@ -164,7 +171,7 @@ module "ai" {
   labels                = local.labels
 
   cpu                   = "1"
-  memory                = "512Mi"
+  memory                = "512Mi" # Node + Mastra bundle + CopilotKit runtime, several open streams
   min_instances         = 0
   max_instances         = 2
   allow_unauthenticated = true # the web proxy calls it anonymously, like the API
@@ -193,7 +200,7 @@ module "web" {
   labels                = local.labels
 
   cpu                   = "1"
-  memory                = "256Mi"
+  memory                = "128Mi" # nginx with a static bundle: first-generation minimum
   min_instances         = 0
   max_instances         = 2
   allow_unauthenticated = true

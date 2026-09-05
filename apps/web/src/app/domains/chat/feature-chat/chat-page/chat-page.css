@@ -1,0 +1,111 @@
+/*
+ * Typography for the Markdown the assistant streams. Tailwind's preflight
+ * strips list and heading styles; the transcript needs them back, scoped to
+ * the bubble so the rest of the page keeps its utility-only styling. The
+ * selectors are global (the HTML comes from [innerHTML]) but nested under the
+ * host, which is why the component keeps the default emulated encapsulation
+ * off for this rule set via :host ::ng-deep.
+ */
+:host ::ng-deep .chat-markdown {
+  overflow-wrap: anywhere;
+}
+
+:host ::ng-deep .chat-markdown > :first-child {
+  margin-top: 0;
+}
+
+:host ::ng-deep .chat-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+:host ::ng-deep .chat-markdown p,
+:host ::ng-deep .chat-markdown ul,
+:host ::ng-deep .chat-markdown ol,
+:host ::ng-deep .chat-markdown blockquote,
+:host ::ng-deep .chat-markdown pre,
+:host ::ng-deep .chat-markdown table {
+  margin-block: 0.5rem;
+}
+
+:host ::ng-deep .chat-markdown h1,
+:host ::ng-deep .chat-markdown h2,
+:host ::ng-deep .chat-markdown h3,
+:host ::ng-deep .chat-markdown h4 {
+  margin-block: 0.75rem 0.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+:host ::ng-deep .chat-markdown h1 {
+  font-size: 1.125rem;
+}
+
+:host ::ng-deep .chat-markdown h2 {
+  font-size: 1.0625rem;
+}
+
+:host ::ng-deep .chat-markdown h3,
+:host ::ng-deep .chat-markdown h4 {
+  font-size: 1rem;
+}
+
+:host ::ng-deep .chat-markdown ul {
+  list-style: disc;
+  padding-inline-start: 1.25rem;
+}
+
+:host ::ng-deep .chat-markdown ol {
+  list-style: decimal;
+  padding-inline-start: 1.25rem;
+}
+
+:host ::ng-deep .chat-markdown li + li {
+  margin-top: 0.25rem;
+}
+
+:host ::ng-deep .chat-markdown blockquote {
+  border-inline-start: 2px solid var(--border);
+  padding-inline-start: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+:host ::ng-deep .chat-markdown code {
+  border-radius: 0.25rem;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  padding: 0.1rem 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+:host ::ng-deep .chat-markdown pre {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--foreground) 6%, transparent);
+  padding: 0.75rem;
+}
+
+:host ::ng-deep .chat-markdown pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8rem;
+}
+
+:host ::ng-deep .chat-markdown a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+:host ::ng-deep .chat-markdown table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.85em;
+}
+
+:host ::ng-deep .chat-markdown th,
+:host ::ng-deep .chat-markdown td {
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.5rem;
+  text-align: start;
+}

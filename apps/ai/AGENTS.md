@@ -1,8 +1,9 @@
 # SpecSync AI service (Mastra)
 
 Node/TypeScript service built with [Mastra](https://mastra.ai) inside the Nx
-workspace. It serves one chat agent backed by Gemini on Vertex AI and streams
-replies to the Angular app. Paths below are relative to the workspace root.
+workspace. It serves one chat agent backed by Gemini on Vertex AI and exposes
+it to the Angular app over AG-UI through a CopilotKit runtime route. Paths
+below are relative to the workspace root.
 
 ## Layout
 
@@ -12,7 +13,7 @@ apps/ai/
     index.ts          # Mastra registry: agents, storage (dev only), logger
     models.ts         # Vertex AI provider (AI SDK) + the Gemini model
     agents/           # one file per agent (<name>-agent.ts)
-    tools/            # tools shared by agents (<name>-tool.ts), empty for now
+    tools/            # server tools (<name>-tool.ts), e.g. the requirement quality check
   .env.example        # GOOGLE_VERTEX_PROJECT / GOOGLE_VERTEX_LOCATION
   Dockerfile          # build with `nx build ai`, run .mastra/output on Cloud Run
   checks.mjs          # lint + typecheck (fast), test + build (full)
@@ -28,12 +29,27 @@ apps/ai/
   development (guarded by `NODE_ENV !== 'production'` in `src/mastra/index.ts`)
   unless the user asks for persistent memory, which then goes to Cloud SQL via
   `@mastra/pg`.
-- The HTTP surface is Mastra's own (`/api/agents/<id>/stream`, Server-Sent
-  Events). The web app reaches it under the `/ai` prefix, which nginx and
-  `apps/web/proxy.conf.json` strip. Register custom routes only through the
-  Mastra `server` option, never a second HTTP server.
-- Agent ids are part of the contract with `apps/web` (the chat page streams
-  from the agent with id `chat`). Rename only together with the web client.
+- The HTTP surface is Mastra's own API plus one CopilotKit runtime route,
+  `/copilotkit` (`registerCopilotKit` from `@ag-ui/mastra/copilotkit`,
+  registered through the Mastra `server.apiRoutes` option). It speaks AG-UI:
+  every Mastra agent is wrapped by `@ag-ui/mastra`, which streams text, tool
+  calls and tool results as AG-UI events and hands the frontend tools the
+  browser advertises to the agent as client tools. The web app reaches it as
+  `/ai/copilotkit`; nginx and `apps/web/proxy.conf.json` strip the `/ai`
+  prefix. Register custom routes only through the Mastra `server` option,
+  never a second HTTP server.
+- Names are part of the contract with `apps/web`: the agent id `chat`, the
+  route path `/copilotkit`, the server tool `checkRequirementQuality` (the
+  browser renders its call as a card) and the frontend tool
+  `presentRequirementDraft` (executed and rendered in the browser; the agent
+  only sees it when the client advertises it, so instructions treat it as
+  optional). Rename only together with the web client.
+- Keep `zod` on the same line as the workspace root (currently 3.25.x, the
+  line `@ag-ui/mastra` and `@copilotkit/runtime` use). Two zod copies in one
+  process break Mastra's OpenAPI generation at startup
+  (`Non-representable type encountered: optional`).
+- `@copilotkit/runtime` is listed in `bundler.externals`: `mastra build`
+  installs it into the output's node_modules instead of bundling it.
 - Secrets and configuration come from the environment. Locally they live in
   `apps/ai/.env` (git-ignored); in the cloud Terraform sets them on the
   Cloud Run service (`infra/environments/dev/main.tf`).
@@ -52,7 +68,15 @@ The user account needs `roles/aiplatform.user` on the project. Keep
 such as `us-central1` only serves the 2.5 family and answers 404 otherwise. `nx serve web`
 proxies `/ai` to the same server, so the chat page and Studio share one
 process. A stale ADC token shows up as `invalid_grant` in the stream; run the
-login command again.
+login command again. Mastra allows one dev server per directory (lock in
+`.mastra/dev.lock`); a stale one has to be stopped before `mastra dev` or
+`mastra build` run again.
+
+To probe the runtime route without the browser:
+
+```bash
+curl -s -X POST localhost:4111/copilotkit -H 'content-type: application/json' -d '{"method":"info"}'
+```
 
 ## Checks
 
