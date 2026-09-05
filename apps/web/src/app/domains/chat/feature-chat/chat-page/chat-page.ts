@@ -1,4 +1,4 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { NgOptimizedImage, NgTemplateOutlet } from '@angular/common';
 import {
   afterRenderEffect,
   ChangeDetectionStrategy,
@@ -125,6 +125,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     MarkdownPipe,
     NgIcon,
     NgTemplateOutlet,
+    NgOptimizedImage,
     RenderToolCalls,
     ZardAlertComponent,
     ZardButtonComponent,
