@@ -16,10 +16,14 @@ ENV CI=true NX_DAEMON=false NX_NO_CLOUD=true
 
 # Dependency layer: reused until a manifest or the lockfile changes. apps/web is an npm
 # workspace, so its package.json must be present for `npm ci` to install its packages.
+# --ignore-scripts skips the root `prepare` script (husky + agent-config sync), which is
+# developer tooling that has no place in the image and needs files not copied yet. The
+# dependencies that matter at build time (esbuild, lmdb, ...) ship their native binaries
+# as optional packages, so they do not rely on postinstall scripts.
 COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --no-audit --no-fund
+    npm ci --no-audit --no-fund --ignore-scripts
 
 COPY . .
 # Pre-compressed copies let nginx serve gzip without spending CPU per request.
