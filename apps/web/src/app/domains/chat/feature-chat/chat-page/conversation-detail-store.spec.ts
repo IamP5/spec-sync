@@ -171,6 +171,61 @@ describe('ConversationDetailStore', () => {
     expect(store.turns().filter((m) => m.role === 'user')).toHaveLength(1);
   });
 
+  it('stop marks the reply as cut short until the next run', async () => {
+    agent.replyWith((input) => textReply(input, 'x'));
+    const store = TestBed.inject(ConversationDetailStore);
+
+    const sending = store.send('hi');
+    store.stop();
+    expect(store.status()).toBe('idle');
+    expect(store.stopped()).toBe(true);
+    await sending;
+
+    await store.send('again');
+    expect(store.stopped()).toBe(false);
+  });
+
+  it('regenerate replaces the last reply', async () => {
+    agent.replyWith((input) => textReply(input, 'first'));
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('hi');
+
+    agent.replyWith((input) => textReply(input, 'second'));
+    await store.regenerate();
+
+    expect(store.turns().map((turn) => [turn.role, turn.content])).toEqual([
+      ['user', 'hi'],
+      ['assistant', 'second'],
+    ]);
+    expect(agent.runs).toHaveLength(2);
+    // The second run sent the thread without the first reply.
+    expect(agent.runs[1].messages.map((m) => m.role)).toEqual(['user']);
+  });
+
+  it('regenerate retries the last turn after a failed run', async () => {
+    agent.replyWith((input) => failedRun(input, 'boom'));
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('hi');
+    await settled(store);
+    expect(store.status()).toBe('error');
+
+    agent.replyWith((input) => textReply(input, 'recovered'));
+    await store.regenerate();
+
+    expect(store.status()).toBe('idle');
+    expect(store.error()).toBeUndefined();
+    expect(store.turns().map((turn) => turn.role)).toEqual([
+      'user',
+      'assistant',
+    ]);
+  });
+
+  it('regenerate does nothing on an empty conversation', async () => {
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.regenerate();
+    expect(agent.runs).toHaveLength(0);
+  });
+
   it('reset clears the conversation and starts a new thread', async () => {
     agent.replyWith((input) => textReply(input, 'x'));
     const store = TestBed.inject(ConversationDetailStore);

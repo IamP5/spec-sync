@@ -15,9 +15,9 @@ import {
 /**
  * Data access for the chat agent. It is a thin adapter over the AG-UI client
  * (CopilotKit): it connects the runtime, hands the agent store to the
- * conversation store and translates send / stop / reset into agent runs.
- * It holds no conversation state of its own; the AG-UI agent does, and the
- * store mirrors it as signals.
+ * conversation store and translates send / regenerate / stop / reset into
+ * agent runs. It holds no conversation state of its own; the AG-UI agent
+ * does, and the store mirrors it as signals.
  *
  * The agent is normally a proxy to the CopilotKit runtime of `apps/ai`.
  * Tests register a local agent under the same id instead, in which case the
@@ -52,19 +52,28 @@ export class ChatAgentClient {
   /**
    * Appends the user's turn and runs the agent. Resolves when the run ends,
    * also after a failure: errors are reported through {@link onError}.
-   *
-   * The thread is normalised afterwards (see `normalizeThread`) so the next
-   * run sends the model the sequence in which things happened.
    */
   async send(content: string): Promise<void> {
     const agent = this.agentStore().agent;
-    this.track(agent);
     agent.addMessage({ id: createId(), role: 'user', content });
-    await this.copilotKit.core.runAgent({ agent });
-    const normalized = normalizeThread(agent.messages, this._placements());
-    if (normalized !== agent.messages) {
-      agent.setMessages(normalized);
+    await this.run(agent);
+  }
+
+  /**
+   * Drops everything the agent produced after the last user turn and runs
+   * it again for that turn. Does nothing while the thread has no user turn.
+   * A failed run leaves no assistant turn, so this also retries it.
+   */
+  async regenerate(): Promise<void> {
+    const agent = this.agentStore().agent;
+    const lastUser = lastIndexOfRole(agent.messages, 'user');
+    if (lastUser < 0) {
+      return;
     }
+    if (lastUser < agent.messages.length - 1) {
+      agent.setMessages(agent.messages.slice(0, lastUser + 1));
+    }
+    await this.run(agent);
   }
 
   /** Aborts the run in flight and keeps whatever arrived so far. */
@@ -89,6 +98,20 @@ export class ChatAgentClient {
       },
     });
     return () => subscription.unsubscribe();
+  }
+
+  /**
+   * Runs the agent on its current thread. The thread is normalised afterwards
+   * (see `normalizeThread`) so the next run sends the model the sequence in
+   * which things happened.
+   */
+  private async run(agent: AbstractAgent): Promise<void> {
+    this.track(agent);
+    await this.copilotKit.core.runAgent({ agent });
+    const normalized = normalizeThread(agent.messages, this._placements());
+    if (normalized !== agent.messages) {
+      agent.setMessages(normalized);
+    }
   }
 
   private track(agent: AbstractAgent): void {
@@ -135,6 +158,15 @@ export class ChatAgentClient {
       },
     };
   }
+}
+
+function lastIndexOfRole(messages: Message[], role: Message['role']): number {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === role) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 /**

@@ -9,6 +9,7 @@ import {
 } from '../../../../testing/fake-chat-agent';
 import { PRESENT_REQUIREMENT_DRAFT_TOOL } from '../../data/requirement-draft';
 import { REQUIREMENT_QUALITY_TOOL } from '../../data/requirement-quality';
+import { TEXT_REVEAL_ENABLED } from '../../util/text-reveal';
 import { ChatPage } from './chat-page';
 import { ConversationDetailStore } from './conversation-detail-store';
 
@@ -19,7 +20,11 @@ describe('ChatPage', () => {
     agent = new FakeChatAgent();
     await TestBed.configureTestingModule({
       imports: [ChatPage],
-      providers: provideFakeChatAgent(agent),
+      providers: [
+        ...provideFakeChatAgent(agent),
+        // The DOM is asserted right after the store settles.
+        { provide: TEXT_REVEAL_ENABLED, useValue: false },
+      ],
     }).compileComponents();
   });
 
@@ -112,6 +117,71 @@ describe('ChatPage', () => {
     expect(card?.textContent).toContain('90/100');
     expect(card?.textContent).toContain('"fast" is not measurable.');
     expect(element.textContent).toContain('Replace "fast" with a number.');
+  });
+
+  it('sends a suggestion as the prompt', async () => {
+    agent.replyWith((input) => textReply(input, 'sure'));
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const suggestion = element.querySelector<HTMLButtonElement>(
+      '[aria-label="Suggestions"] button',
+    );
+    expect(suggestion).not.toBeNull();
+    suggestion?.click();
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const turns = element.querySelectorAll('[data-slot="message"]');
+    expect(turns[0].textContent).toContain(suggestion?.textContent?.trim());
+    expect(element.querySelector('[aria-label="Suggestions"]')).toBeNull();
+  });
+
+  it('offers copy and regenerate on the finished reply', async () => {
+    agent.replyWith((input) => textReply(input, 'first'));
+    const fixture = TestBed.createComponent(ChatPage);
+    fixture.detectChanges();
+
+    await sendPrompt(fixture.nativeElement, 'hello');
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('[data-action="copy"]')).not.toBeNull();
+
+    agent.replyWith((input) => textReply(input, 'second'));
+    element
+      .querySelector<HTMLButtonElement>('[data-action="regenerate"]')
+      ?.click();
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const replies = element.querySelectorAll('[data-role="assistant"]');
+    expect(replies).toHaveLength(1);
+    expect(replies[0].textContent).toContain('second');
+  });
+
+  it('marks a stopped reply', async () => {
+    agent.replyWith((input) => textReply(input, 'partial'));
+    const fixture = TestBed.createComponent(ChatPage);
+    fixture.detectChanges();
+
+    // Stop before the fake agent gets to answer on the next tick.
+    const store = TestBed.inject(ConversationDetailStore);
+    const sending = store.send('hello');
+    store.stop();
+    await sending;
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(
+      element.querySelector('[data-role="stopped"]')?.textContent,
+    ).toContain('Reply stopped');
   });
 
   it('shows a validation alert when the prompt is empty', () => {

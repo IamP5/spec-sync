@@ -37,18 +37,40 @@
     >
       <span>ai.chat</span>
     </z-card-header>
-    <z-card-content class="p-0">
+    <z-card-content class="relative p-0">
       <div
         #transcript
         class="max-h-[55svh] min-h-64 overflow-y-auto p-4"
         role="log"
         aria-live="polite"
         aria-label="Conversation"
+        (scroll)="onTranscriptScroll()"
       >
         @if (empty()) {
-        <p class="my-16 text-center text-sm text-muted-foreground">
-          Ask about SpecSync, or paste a requirement to have it reviewed.
-        </p>
+        <div class="my-12 flex flex-col items-center gap-5">
+          <p class="text-center text-sm text-muted-foreground">
+            Ask about SpecSync, or paste a requirement to have it reviewed.
+          </p>
+          <ul
+            class="flex flex-wrap justify-center gap-2"
+            aria-label="Suggestions"
+          >
+            @for (suggestion of suggestions; track suggestion) {
+            <li>
+              <button
+                z-button
+                zType="outline"
+                zSize="sm"
+                type="button"
+                class="rounded-full font-normal"
+                (click)="onSuggestion(suggestion)"
+              >
+                {{ suggestion }}
+              </button>
+            </li>
+            }
+          </ul>
+        </div>
         } @else {
         <z-message-group>
           @for (turn of turns(); track turn.id) {
@@ -74,7 +96,7 @@
               <z-bubble zVariant="muted">
                 <div
                   class="chat-markdown"
-                  [innerHTML]="textOf(turn) | markdown : isStreamingTurn(turn)"
+                  [innerHTML]="visibleText(turn) | markdown : isRevealing(turn)"
                 ></div>
               </z-bubble>
               } @if (turn.toolCalls?.length) {
@@ -85,23 +107,84 @@
                 [isLoading]="streaming()"
                 [agentId]="agentId"
               />
+              } @if (textOf(turn) && !isRevealing(turn)) {
+              <z-message-footer class="gap-1">
+                <button
+                  z-button
+                  zType="ghost"
+                  zSize="icon-xs"
+                  type="button"
+                  data-action="copy"
+                  [attr.aria-label]="copiedId() === turn.id ? 'Copied' : 'Copy reply'"
+                  (click)="onCopy(turn)"
+                >
+                  <ng-icon
+                    [name]="copiedId() === turn.id ? 'lucideCheck' : 'lucideCopy'"
+                    aria-hidden="true"
+                  />
+                </button>
+                @if (isLast(turn) && !streaming()) {
+                <button
+                  z-button
+                  zType="ghost"
+                  zSize="icon-xs"
+                  type="button"
+                  data-action="regenerate"
+                  aria-label="Regenerate reply"
+                  (click)="onRegenerate()"
+                >
+                  <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+                </button>
+                }
+              </z-message-footer>
               }
             </z-message-content>
           </z-message>
           } } @if (awaitingReply()) {
           <z-message
             zAlign="start"
-            zVariant="muted"
             zFallback="AI"
             zAlt="Assistant"
             data-role="assistant"
           >
-            <z-spinner class="size-4" zAriaLabel="The assistant is thinking" />
+            <z-message-content class="min-h-8 justify-center">
+              <z-marker role="status">
+                <z-marker-icon>
+                  <z-spinner
+                    class="size-4"
+                    zAriaLabel="The assistant is thinking"
+                  />
+                </z-marker-icon>
+                <z-marker-content class="shimmer">Thinking</z-marker-content>
+              </z-marker>
+            </z-message-content>
           </z-message>
+          } @if (stopped() && !streaming()) {
+          <z-marker
+            zVariant="separator"
+            zIcon="lucideSquare"
+            class="mt-2 text-xs"
+            data-role="stopped"
+          >
+            Reply stopped
+          </z-marker>
           }
         </z-message-group>
         }
       </div>
+      @if (!atBottom()) {
+      <button
+        z-button
+        zType="outline"
+        zSize="icon-sm"
+        type="button"
+        class="absolute right-3 bottom-3 rounded-full shadow-md animate-in fade-in duration-200"
+        aria-label="Scroll to the latest message"
+        (click)="scrollToBottom()"
+      >
+        <ng-icon name="lucideArrowDown" aria-hidden="true" />
+      </button>
+      }
     </z-card-content>
   </z-card>
 
@@ -149,8 +232,22 @@
       zType="destructive"
       zRole="alert"
       [zDescription]="error()"
+      [zAction]="retry"
       class="animate-in fade-in slide-in-from-bottom-1 duration-200"
     />
+    <ng-template #retry>
+      <button
+        z-button
+        zType="outline"
+        zSize="sm"
+        type="button"
+        data-action="retry"
+        (click)="onRegenerate()"
+      >
+        <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+        Try again
+      </button>
+    </ng-template>
     }
   </div>
 </section>

@@ -19,6 +19,19 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["exec", "--", "nx", "dev", "ai"],
       "port": 4111
+    },
+    {
+      "name": "web-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "nx",
+        "serve",
+        "web",
+        "--port",
+        "4200",
+        "--excludeTaskDependencies"
+      ],
+      "port": 4200
     }
   ]
 }

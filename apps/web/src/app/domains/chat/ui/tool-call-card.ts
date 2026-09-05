@@ -3,30 +3,47 @@ import { AngularToolCall, ToolRenderer } from '@copilotkit/angular';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck, lucideWrench } from '@ng-icons/lucide';
 
+import {
+  ZardMarkerComponent,
+  ZardMarkerContentComponent,
+  ZardMarkerIconComponent,
+} from '@/ui/components/marker';
 import { ZardSpinnerComponent } from '@/ui/components/spinner';
 
 /**
- * Fallback rendering for any tool call without a dedicated card: the tool
- * name and whether it is still running. Keeps server-side work visible in
- * the transcript instead of silently dropping it.
+ * Fallback rendering for any tool call without a dedicated card: a marker
+ * row with the tool name and whether it is still running. Keeps server-side
+ * work visible in the transcript instead of silently dropping it.
  */
 @Component({
   selector: 'app-tool-call-card',
-  imports: [NgIcon, ZardSpinnerComponent],
+  imports: [
+    NgIcon,
+    ZardMarkerComponent,
+    ZardMarkerContentComponent,
+    ZardMarkerIconComponent,
+    ZardSpinnerComponent,
+  ],
   viewProviders: [provideIcons({ lucideCheck, lucideWrench })],
   template: `
-    <div
-      class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-1.5 font-mono text-[11px] text-muted-foreground"
+    @let done = toolCall().status === 'complete';
+    <z-marker
+      class="font-mono text-[11px]"
+      [attr.role]="done ? null : 'status'"
       [attr.data-status]="toolCall().status"
     >
-      <ng-icon name="lucideWrench" aria-hidden="true" />
-      <span>{{ toolCall().name }}</span>
-      @if (toolCall().status === 'complete') {
-        <ng-icon name="lucideCheck" class="text-success" aria-label="Done" />
-      } @else {
-        <z-spinner class="size-3" zAriaLabel="Running" />
-      }
-    </div>
+      <z-marker-icon>
+        @if (done) {
+          <ng-icon name="lucideCheck" class="text-success" />
+        } @else {
+          <z-spinner class="size-4" zAriaLabel="Running" />
+        }
+      </z-marker-icon>
+      <z-marker-content [class]="done ? '' : 'shimmer'">
+        <ng-icon name="lucideWrench" class="mr-1 inline size-3" />
+        {{ toolCall().name }}
+      </z-marker-content>
+    </z-marker>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },

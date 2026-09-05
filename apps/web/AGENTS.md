@@ -45,7 +45,15 @@ The binding rules live in the docs; this section only names the red lines.
   Zard components render the transcript, `copilot-render-tool-calls`
   renders tool calls through the cards registered in
   `feature-chat/chat-page/chat-tools.ts` (generative UI), assistant text is
-  Markdown (`util/markdown-pipe.ts`).
+  Markdown (`util/markdown-pipe.ts`). Do not switch to CopilotKit's own chat
+  components (`copilot-chat`, `copilot-sidebar`, ...): they bring a second
+  design system and would bypass the message-order fix of `normalizeThread`.
+- The reply of the last assistant turn is revealed a few characters per
+  animation frame (`util/text-reveal.ts`): the model answers in a handful of
+  large chunks, and the reveal turns them into a visible stream. Tests
+  provide `TEXT_REVEAL_ENABLED: false` to read the DOM synchronously.
+- Status rows (thinking, fallback tool call, reply stopped) are Zard
+  `z-marker`s; reply actions (copy, regenerate) sit in a `z-message-footer`.
 - `provideCopilotKit` stays in `app.config.ts`: the library's services are
   root-scoped and read their configuration from the root injector, so it
   cannot be provided on the lazy chat route. It is not tree-shakeable
