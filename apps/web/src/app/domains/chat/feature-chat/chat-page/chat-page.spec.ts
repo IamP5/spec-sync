@@ -46,9 +46,7 @@ describe('ChatPage', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('h1')?.textContent).toContain('New chat');
     expect(element.querySelector('textarea#prompt')).not.toBeNull();
-    expect(element.querySelector('[role="log"]')?.textContent).toContain(
-      'Ask about SpecSync',
-    );
+    expect(element.querySelector('[aria-label="Suggestions"]')).not.toBeNull();
   });
 
   it('keeps an empty composer neutral after focus, blur, or Enter', async () => {
@@ -176,9 +174,10 @@ describe('ChatPage', () => {
 
     expect(TestBed.inject(ConversationDetailStore).isEmpty()).toBe(true);
     expect(
-      (fixture.nativeElement as HTMLElement).querySelector('[role="log"]')
-        ?.textContent,
-    ).toContain('Ask about SpecSync');
+      (fixture.nativeElement as HTMLElement).querySelector(
+        '[aria-label="Suggestions"]',
+      ),
+    ).not.toBeNull();
   });
 
   it('sends the prompt and renders the streamed reply as Markdown', async () => {
