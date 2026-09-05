@@ -1,7 +1,7 @@
 /*
  * Typography for the Markdown the assistant streams. Tailwind's preflight
  * strips list and heading styles; the transcript needs them back, scoped to
- * the bubble so the rest of the page keeps its utility-only styling. The
+ * the response so the rest of the page keeps its utility-only styling. The
  * selectors are global (the HTML comes from [innerHTML]) but nested under the
  * host, which is why the component keeps the default emulated encapsulation
  * off for this rule set via :host ::ng-deep.
@@ -24,7 +24,7 @@
 :host ::ng-deep .chat-markdown blockquote,
 :host ::ng-deep .chat-markdown pre,
 :host ::ng-deep .chat-markdown table {
-  margin-block: 0.5rem;
+  margin-block: 0.85rem;
 }
 
 :host ::ng-deep .chat-markdown h1,
@@ -91,7 +91,7 @@
 }
 
 :host ::ng-deep .chat-markdown a {
-  color: var(--primary);
+  color: var(--info);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -108,4 +108,29 @@
   border: 1px solid var(--border);
   padding: 0.25rem 0.5rem;
   text-align: start;
+}
+
+/* User prompts have a compact surface; assistant output uses the full column. */
+:host ::ng-deep [data-role='user'] [data-slot='bubble'] {
+  max-width: min(85%, 38rem);
+  border-radius: 1.25rem;
+  padding: 0.75rem 1rem;
+}
+
+:host ::ng-deep .chat-markdown {
+  min-width: 0;
+}
+
+/* Keep error copy readable in both themes while retaining the error icon. */
+:host ::ng-deep .chat-error [data-slot='alert-description'],
+:host ::ng-deep .chat-error [data-slot='button'] {
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host ::ng-deep * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

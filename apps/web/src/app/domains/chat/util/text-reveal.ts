@@ -45,7 +45,10 @@ const DEFAULT_FRAME_MS = 16;
  * injector is destroyed.
  */
 export function revealText(source: Signal<string>): Signal<string> {
-  if (!inject(TEXT_REVEAL_ENABLED)) {
+  if (
+    !inject(TEXT_REVEAL_ENABLED) ||
+    globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  ) {
     return source;
   }
 

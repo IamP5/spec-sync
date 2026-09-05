@@ -10,14 +10,66 @@ import {
   toolCallReply,
 } from '../../../../testing/fake-chat-agent';
 import { PRESENT_REQUIREMENT_DRAFT_TOOL } from '../../data/requirement-draft';
+import { ThreadClient } from '../../data/thread-client';
 import { ConversationDetailStore } from './conversation-detail-store';
 
 describe('ConversationDetailStore', () => {
   let agent: FakeChatAgent;
 
   beforeEach(() => {
+    localStorage.clear();
     agent = new FakeChatAgent();
     TestBed.configureTestingModule({ providers: provideFakeChatAgent(agent) });
+  });
+
+  it('stores the thread with the first message and again after the reply', async () => {
+    agent.replyWith((input) => textReply(input, 'Hello'));
+    const store = TestBed.inject(ConversationDetailStore);
+    const threads = TestBed.inject(ThreadClient);
+
+    const sending = store.send('# Reset password\nby email');
+    expect(threads.list().map((t) => t.title)).toEqual(['Reset password']);
+    expect(threads.find(store.threadId())?.messages.map((m) => m.role)).toEqual(
+      ['user'],
+    );
+    await sending;
+
+    expect(threads.find(store.threadId())?.messages.map((m) => m.role)).toEqual(
+      ['user', 'assistant'],
+    );
+  });
+
+  it('open replaces the conversation with a stored thread', async () => {
+    agent.replyWith((input) => textReply(input, 'first reply'));
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('first');
+    const first = store.threadId();
+    store.reset();
+    await store.send('second');
+
+    expect(store.open(first)).toBe(true);
+
+    expect(store.threadId()).toBe(first);
+    expect(store.title()).toBe('first');
+    expect(store.turns().map((turn) => turn.content)).toEqual([
+      'first',
+      'first reply',
+    ]);
+    expect(store.open('missing')).toBe(false);
+    expect(store.threadId()).toBe(first);
+  });
+
+  it('rename changes the stored title', async () => {
+    agent.replyWith((input) => textReply(input, 'x'));
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('hi');
+
+    store.rename('Greeting');
+
+    expect(store.title()).toBe('Greeting');
+    expect(TestBed.inject(ThreadClient).find(store.threadId())?.title).toBe(
+      'Greeting',
+    );
   });
 
   it('starts empty and idle', () => {

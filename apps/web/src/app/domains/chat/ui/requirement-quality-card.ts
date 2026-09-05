@@ -84,7 +84,11 @@ const VERDICT_LABELS: Record<RequirementQualityResult['verdict'], string> = {
             {{ checked.requirement }}
           </blockquote>
           <div class="flex items-center gap-3">
-            <z-progress class="h-1.5 flex-1" [value]="checked.score" />
+            <z-progress
+              class="h-1.5 flex-1"
+              [value]="checked.score"
+              aria-label="Requirement quality score"
+            />
             <span class="font-mono text-xs tabular-nums"
               >{{ checked.score }}/100</span
             >

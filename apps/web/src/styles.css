@@ -23,3 +23,33 @@
     }
   }
 }
+
+/* App-specific composition of the Zard sidebar; previews never reflow the chat. */
+@media (min-width: 768px) {
+  .chat-shell.sidebar-preview [data-slot='sidebar-gap'] {
+    width: var(--sidebar-width-icon);
+    transition: none;
+  }
+
+  .chat-shell.sidebar-preview [data-slot='sidebar-container'] {
+    box-shadow: 12px 0 32px -16px rgb(0 0 0 / 20%);
+  }
+
+  .chat-shell [data-collapsible='icon'] .sidebar-expanded {
+    display: none;
+  }
+
+  .chat-shell [data-collapsible='icon'] [data-slot='sidebar-header'] {
+    padding-inline: 0.75rem;
+  }
+
+  .chat-shell [data-collapsible='icon'] [data-slot='sidebar-footer'] {
+    padding-inline: 0.75rem;
+  }
+}
+
+@media (hover: none) {
+  .chat-shell [data-slot='sidebar-menu-action'] {
+    opacity: 1;
+  }
+}

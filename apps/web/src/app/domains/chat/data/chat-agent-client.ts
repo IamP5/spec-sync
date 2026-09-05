@@ -28,6 +28,10 @@ export class ChatAgentClient {
   private readonly copilotKit = inject(CopilotKit);
   private readonly agentStore = connectChatAgent(this.copilotKit);
   private readonly _placements = signal<Map<string, string>>(new Map());
+  private readonly _threadId = signal(this.agentStore().agent.threadId);
+
+  /** Id of the thread the agent currently holds; changes on `reset` and `load`. */
+  readonly threadId: Signal<string> = this._threadId;
 
   /** Every message of the thread, tool results included, as the agent holds them. */
   readonly messages: Signal<Message[]> = computed(() =>
@@ -49,14 +53,29 @@ export class ChatAgentClient {
   /** Agents whose event stream is already watched (the proxy may be replaced). */
   private readonly tracked = new WeakSet<AbstractAgent>();
 
+  /** Appends the user's turn to the thread without running the agent. */
+  append(content: string): void {
+    this.agentStore().agent.addMessage({
+      id: createId(),
+      role: 'user',
+      content,
+    });
+  }
+
   /**
-   * Appends the user's turn and runs the agent. Resolves when the run ends,
-   * also after a failure: errors are reported through {@link onError}.
+   * The thread as the agent holds it right now. The `messages` signal
+   * follows on the next tick; use this to persist right after a change.
    */
-  async send(content: string): Promise<void> {
-    const agent = this.agentStore().agent;
-    agent.addMessage({ id: createId(), role: 'user', content });
-    await this.run(agent);
+  snapshot(): Message[] {
+    return this.agentStore().agent.messages;
+  }
+
+  /**
+   * Runs the agent on the current thread. Resolves when the run ends, also
+   * after a failure: errors are reported through {@link onError}.
+   */
+  send(): Promise<void> {
+    return this.run(this.agentStore().agent);
   }
 
   /**
@@ -83,11 +102,17 @@ export class ChatAgentClient {
 
   /** Clears the thread and starts a new one. */
   reset(): void {
+    this.load(createId(), []);
+  }
+
+  /** Replaces the thread with a stored one, e.g. when the user reopens it. */
+  load(threadId: string, messages: Message[]): void {
     const agent = this.agentStore().agent;
-    agent.threadId = createId();
-    agent.setMessages([]);
+    agent.threadId = threadId;
+    agent.setMessages(messages);
     agent.setState({});
     this._placements.set(new Map());
+    this._threadId.set(threadId);
   }
 
   /** Subscribes to client failures. Returns the function that unsubscribes. */

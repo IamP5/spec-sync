@@ -20,6 +20,13 @@ describe('chatAgent', () => {
     expect(instructions).toContain(PRESENT_REQUIREMENT_DRAFT_TOOL);
   });
 
+  it('requests provider thinking summaries for the AG-UI stream', async () => {
+    const options = await chatAgent.getDefaultOptions();
+    expect(options.providerOptions).toEqual({
+      google: { thinkingConfig: { includeThoughts: true } },
+    });
+  });
+
   it('owns the requirement quality tool', async () => {
     const tools = await chatAgent.listTools();
     expect(Object.keys(tools)).toContain(REQUIREMENT_QUALITY_TOOL_ID);

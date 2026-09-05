@@ -6,6 +6,8 @@ import {
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideCopilotKit } from '@copilotkit/angular';
 
+import { provideZard } from '@/ui/core';
+
 import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -13,6 +15,9 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
     provideRouter(appRoutes, withComponentInputBinding()),
+    // Zard's event-manager plugins (`(click.prevent-with-stop)`,
+    // `(keydown.{enter,space})`, debounced events) and the theme bootstrap.
+    provideZard(),
     // AG-UI client (CopilotKit). Its services are root-scoped, so the
     // configuration has to live here; the chat feature connects the runtime
     // URL lazily when the page is opened. The development inspector overlay

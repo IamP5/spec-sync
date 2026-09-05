@@ -33,13 +33,21 @@ The binding rules live in the docs; this section only names the red lines.
 - Do not create a new domain, move code to `shared`, or change
   `apps/web/sheriff.config.ts`, `apps/web/arch/`, or the Nx `depConstraints`
   without an explicit request in the current conversation.
-- Model new features after `GreetingPage`, `GreetingDetailStore` and
-  `GreetingClient` under `apps/web/src/app/domains/greeting`.
+- Model new features after `ChatPage`, `ConversationDetailStore`,
+  `ThreadSearchStore`, `ChatCoordinator` and `ThreadClient` under
+  `apps/web/src/app/domains/chat`.
 - Add design-system components with the Zard CLI; never hand-edit
   `libs/ui` to add application logic.
 
 ## AI chat (AG-UI with CopilotKit)
 
+- The application is the chat: the shell (`app.html`) is a Zard sidebar
+  layout with the conversation history (`feature-chat/thread-search`) on the
+  left and the routed `ChatPage` on the right. `/` is a new conversation,
+  `/c/<id>` a stored one. Threads and preferences live in local storage
+  (`data/thread-client.ts`, `data/preferences-client.ts`); the AI service
+  stays stateless. `ChatCoordinator` keeps the open conversation and the
+  history in step; the settings dialog is `feature-chat/settings-edit`.
 - The chat domain (`apps/web/src/app/domains/chat`) talks to the Mastra
   service of `apps/ai` over AG-UI with `@copilotkit/angular`, headless:
   Zard components render the transcript, `copilot-render-tool-calls`

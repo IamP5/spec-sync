@@ -14,10 +14,20 @@
  *   Text          #000 primary · #333 secondary · #666 subtle
  *   Borders       #e5e5e5 light · #b2b2b2 moderate
  *   Button        #066fef bg · #044ea7 hover · #fff text
- *   Accent/links  #0562d2 (active carousel crumb, links, headings)
- *   Ford Blue     #00095b (navbar/brand base) · #00142e brand dark surface
- *   Status        #d93025 error · #68b631 success · #ffc107 warning
+ *   Accent        #0562d2 (active carousel crumb, headings)
+ *   Ford Blue     #00095b (navbar/brand base) · #00142e "Twilight" dark surface
  *   Font          FordFont, Arial, sans-serif (Inter/Arial stand in here)
+ *
+ * Text-level status and link colours come from the Ford Pro design tokens
+ * instead, because ford.com's own values fail WCAG AA as text on white:
+ *   Links (--info) on-light-accent-1 #0068d0 (5.4:1) · on-dark-accent-1
+ *                  #0093f0 (5.9:1 on #0f0f0f)
+ *   Success        success1 #097a3a (5.45:1 on white)
+ *   Warning        caution2 #ba4e00 (5.03:1 on white)
+ *   Error          #d93025 (ford.com)
+ *
+ * Sidebar surfaces and interaction states are neutral in both themes.
+ * Brand colors remain available for charts and domain-specific accents.
  *
  * Dark mode is derived from those values: ford.com's own dark surfaces
  * (#0f0f0f, #1a1a1a) with neutral grays lifted for contrast, while the brand
@@ -36,10 +46,10 @@
   --ford-heritage: oklch(0.225 0.139 264.2); /* #00095b Ford Blue */
   --ford-deep: oklch(0.192 0.06 253.4); /* #00142e */
 
-  /* Status — light */
-  --success: oklch(0.7 0.181 135.3); /* #68b631 */
-  --warning: oklch(0.844 0.172 84.9); /* #ffc107 */
-  --info: var(--ford-blue);
+  /* Status — light (Ford Pro tokens, AA as text on white) */
+  --success: oklch(0.508 0.134 150.8); /* #097a3a success1, 5.45:1 */
+  --warning: oklch(0.557 0.157 46); /* #ba4e00 caution2, 5.03:1 */
+  --info: oklch(0.529 0.18 255.9); /* #0068d0 on-light-accent-1, 5.4:1 */
 
   /* Semantic tokens — light (ford.com) */
   --background: oklch(1 0 0); /* #ffffff */
@@ -49,6 +59,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0 0 0);
   --primary: var(--ford-action); /* #066fef */
+  --primary-hover: var(--ford-action-hover);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.955 0 0); /* #f0f0f0 */
   --secondary-foreground: oklch(0.321 0 0); /* #333333 */
@@ -69,15 +80,15 @@
   --chart-4: oklch(0.7 0.181 135.3);
   --chart-5: oklch(0.844 0.172 84.9);
 
-  /* Sidebar — Ford Blue surface in both modes */
-  --sidebar: var(--ford-heritage);
-  --sidebar-foreground: oklch(1 0 0);
-  --sidebar-primary: var(--ford-action);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: var(--ford-deep);
-  --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: var(--ford-blue);
+  /* Neutral navigation keeps attention on the conversation. */
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.205 0 0);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(0.955 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
 .dark {
@@ -106,7 +117,7 @@
 
   --success: oklch(0.76 0.18 135); /* #68b631 lifted */
   --warning: oklch(0.86 0.17 85);
-  --info: oklch(0.609 0.189 256.4);
+  --info: oklch(0.646 0.172 247.5); /* #0093f0 on-dark-accent-1, 5.9:1 */
 
   --chart-1: oklch(0.609 0.189 256.4); /* #2480f1 */
   --chart-2: oklch(0.45 0.16 262); /* Ford Blue lifted for contrast */
@@ -114,21 +125,23 @@
   --chart-4: oklch(0.76 0.18 135);
   --chart-5: oklch(0.86 0.17 85);
 
-  --sidebar: var(--ford-heritage);
-  --sidebar-foreground: oklch(1 0 0);
-  --sidebar-primary: var(--ford-action);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: var(--ford-deep);
-  --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.609 0.189 256.4);
+  --sidebar: oklch(0.195 0 0);
+  --sidebar-foreground: oklch(0.955 0 0);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.955 0 0);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
 @theme inline {
   /* ford.com uses FordFont, Arial, sans-serif; Inter/Arial stand in here */
   --font-sans:
-    'Inter', Arial, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+    'Inter', Arial, ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    'Helvetica Neue', sans-serif;
+  --font-mono:
+    ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -137,6 +150,7 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);

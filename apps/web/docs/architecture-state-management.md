@@ -32,7 +32,7 @@ the tsarch tests in `apps/web/arch/`.
   - Search/list store: `<Entity>SearchStore` in `<entity>-search-store.ts`
     (e.g. `SpecSearchStore`).
   - Detail/edit store: `<Entity>DetailStore` in `<entity>-detail-store.ts`
-    (e.g. `GreetingDetailStore`).
+    (e.g. `ConversationDetailStore`).
   - These map 1:1 to the smart-component suffixes `Search` and
     `Detail`/`Edit`.
 
@@ -71,6 +71,8 @@ the tsarch tests in `apps/web/arch/`.
   `-coordinator.ts` (e.g. `SummaryCoordinator` in `summary-coordinator.ts`).
 - A coordinator MAY inject several stores; it typically exposes `computed`
   views derived from them and forwards write actions to the underlying stores.
+  Reference: `ChatCoordinator` (`apps/web/src/app/domains/chat/feature-chat/chat-coordinator.ts`)
+  combines the open conversation with the thread history.
 
 ## Structure of Stores
 
@@ -80,7 +82,7 @@ the tsarch tests in `apps/web/arch/`.
   - `withDevtools` (always, named after the store)
 - Inject the client via `withProps` under a `_`-prefixed name so it stays
   private to the store.
-- Follow `GreetingDetailStore` as the reference implementation:
+- For HTTP-backed state, follow this shape (a resource wrapped by the store):
 
 ```ts
 export const GreetingDetailStore = signalStore(
@@ -98,11 +100,16 @@ export const GreetingDetailStore = signalStore(
 );
 ```
 
+- State that is driven by an event stream or by local storage (the chat
+  conversation, the thread history) uses `withMethods` instead; see
+  `ConversationDetailStore` and `ThreadSearchStore` in
+  `apps/web/src/app/domains/chat/feature-chat`.
+
 ## Smart and Dumb Components and Stores
 
 - Only smart components and coordinators are permitted to use stores.
 - Smart components use the following suffixes: `Page`, `Search`, `Detail`,
-  `Edit`, `Overview` (e.g. `GreetingPage`, `SpecSearch`).
+  `Edit`, `Overview` (e.g. `ChatPage`, `ThreadSearch`).
 - Dumb components live in `ui/` or `ui-<name>/` folders or use the suffixes
   `Card` / `Pane`. They receive data via `input()` and report via `output()`.
 - Components obtain data only from a store or from a coordinator that

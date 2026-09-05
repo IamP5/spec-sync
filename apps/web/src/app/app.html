@@ -1,73 +1,19 @@
-<main
-  class="relative grid min-h-svh grid-rows-[auto_1fr_auto] overflow-hidden bg-background bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:48px_48px]"
+<z-sidebar-provider
+  class="chat-shell h-svh min-h-0"
+  style="--sidebar-width: 17rem; --sidebar-width-icon: 3.5rem"
+  [zOpen]="open()"
+  [class.sidebar-preview]="preview() && !pinned()"
+  (zOpenChange)="togglePinned()"
 >
-  <div
-    class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0,var(--background)_72%)]"
-    aria-hidden="true"
-  ></div>
-  <div
-    class="pointer-events-none absolute top-[16%] left-1/2 h-80 w-[36rem] -translate-x-1/2 rounded-full bg-ford-blue/15 blur-[100px]"
-    aria-hidden="true"
-  ></div>
-
-  <nav
-    class="relative z-10 mx-auto flex w-[min(1120px,calc(100%-48px))] items-center justify-between py-6"
-    aria-label="Primary navigation"
+  <z-sidebar
+    #sidebar
+    zCollapsible="icon"
+    aria-label="Conversations"
+    (pointerenter)="onPreview($event)"
   >
-    <a
-      class="inline-flex items-center gap-2.5 text-[15px] font-semibold tracking-tight text-foreground"
-      href="/"
-      aria-label="SpecSync home"
-    >
-      <span
-        class="grid size-7 place-items-center rounded-md bg-ford-heritage text-[11px] font-bold text-white"
-        aria-hidden="true"
-        >S</span
-      >
-      <span>SpecSync</span>
-    </a>
-
-    <div class="flex items-center gap-2">
-      <a
-        routerLink="/chat"
-        routerLinkActive="text-foreground"
-        class="mr-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >Assistant</a
-      >
-      <span
-        class="hidden items-center gap-2 text-xs text-muted-foreground sm:inline-flex"
-      >
-        <span
-          class="size-1.5 rounded-full bg-success shadow-[0_0_10px] shadow-success/70"
-          aria-hidden="true"
-        ></span>
-        Systems online
-      </span>
-      <z-separator zOrientation="vertical" class="hidden h-4 sm:block" />
-      <button
-        z-button
-        zType="ghost"
-        zSize="icon"
-        type="button"
-        (click)="toggleTheme()"
-        [attr.aria-label]="isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
-      >
-        <ng-icon [name]="isDark() ? 'lucideSun' : 'lucideMoon'" />
-      </button>
-    </div>
-  </nav>
-
-  <router-outlet />
-
-  <footer
-    class="relative z-10 flex items-center justify-center gap-3 p-6 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase"
-  >
-    <span>Web</span>
-    <span class="relative h-px w-13 bg-border" aria-hidden="true">
-      <span
-        class="absolute top-1/2 right-0 size-1.5 -translate-y-1/2 rounded-full bg-success shadow-[0_0_8px] shadow-success/70"
-      ></span>
-    </span>
-    <span>API</span>
-  </footer>
-</main>
+    <app-thread-search (navigated)="preview.set(false)" />
+  </z-sidebar>
+  <main z-sidebar-inset class="h-svh min-h-0 min-w-0 overflow-hidden">
+    <router-outlet />
+  </main>
+</z-sidebar-provider>

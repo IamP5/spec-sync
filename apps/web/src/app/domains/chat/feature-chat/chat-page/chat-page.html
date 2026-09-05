@@ -1,242 +1,58 @@
-<section
-  class="relative z-10 mx-auto my-5 mb-16 flex w-[min(760px,calc(100%-40px))] flex-col self-center"
-  aria-labelledby="chat-title"
+<header
+  class="flex h-14 shrink-0 items-center gap-2 border-b border-transparent px-3 sm:px-4"
 >
-  <div class="mb-5 flex items-end justify-between gap-4">
-    <div>
-      <z-badge
-        zType="outline"
-        class="mb-3 gap-2 bg-background/80 px-3 py-1.5 font-mono text-[10px] tracking-[0.08em] text-muted-foreground uppercase"
-      >
-        <ng-icon name="lucideSparkles" aria-hidden="true" />
-        Gemini on Vertex AI
-      </z-badge>
-      <h1
-        id="chat-title"
-        class="text-3xl font-semibold tracking-tight text-foreground"
-      >
-        SpecSync assistant
-      </h1>
-    </div>
+  <button
+    z-sidebar-trigger
+    aria-label="Toggle sidebar"
+    class="text-muted-foreground md:hidden"
+  ></button>
+  <z-separator zOrientation="vertical" class="h-4 md:hidden" />
+  <h1 id="chat-title" class="min-w-0 truncate text-sm font-medium">
+    {{ title() || 'New chat' }}
+  </h1>
+  <div class="ml-auto flex items-center gap-1">
+    <button
+      z-button
+      [zType]="showActivity() ? 'secondary' : 'ghost'"
+      zSize="icon-sm"
+      type="button"
+      [attr.aria-pressed]="showActivity()"
+      (click)="onActivityToggle()"
+      aria-label="Show thinking and tool activity"
+      zTooltip="Thinking and tool activity"
+      zPosition="bottom"
+    >
+      <ng-icon name="lucideBrain" aria-hidden="true" />
+    </button>
     <button
       z-button
       zType="ghost"
-      zSize="sm"
+      zSize="icon-sm"
       type="button"
-      (click)="onReset()"
-      [disabled]="empty()"
+      data-action="new-chat"
+      (click)="onNewChat()"
+      [zDisabled]="empty() || streaming()"
+      aria-label="New chat"
+      zTooltip="New chat"
+      zPosition="bottom"
     >
-      <ng-icon name="lucideRotateCcw" aria-hidden="true" />
-      New chat
+      <ng-icon name="lucideSquarePen" aria-hidden="true" />
     </button>
   </div>
+</header>
 
-  <z-card class="gap-0 py-0">
-    <z-card-header
-      class="border-b px-4 py-2.5 font-mono text-[10px] text-muted-foreground"
-    >
-      <span>ai.chat</span>
-    </z-card-header>
-    <z-card-content class="relative p-0">
-      <div
-        #transcript
-        class="max-h-[55svh] min-h-64 overflow-y-auto p-4"
-        role="log"
-        aria-live="polite"
-        aria-label="Conversation"
-        (scroll)="onTranscriptScroll()"
-      >
-        @if (empty()) {
-        <div class="my-12 flex flex-col items-center gap-5">
-          <p class="text-center text-sm text-muted-foreground">
-            Ask about SpecSync, or paste a requirement to have it reviewed.
-          </p>
-          <ul
-            class="flex flex-wrap justify-center gap-2"
-            aria-label="Suggestions"
-          >
-            @for (suggestion of suggestions; track suggestion) {
-            <li>
-              <button
-                z-button
-                zType="outline"
-                zSize="sm"
-                type="button"
-                class="rounded-full font-normal"
-                (click)="onSuggestion(suggestion)"
-              >
-                {{ suggestion }}
-              </button>
-            </li>
-            }
-          </ul>
-        </div>
-        } @else {
-        <z-message-group>
-          @for (turn of turns(); track turn.id) {
-          <!-- prettier-ignore -->
-          @if (turn.role === 'user') {
-          <z-message
-            zAlign="end"
-            zVariant="default"
-            zAlt="You"
-            data-role="user"
-          >
-            <span class="whitespace-pre-wrap">{{ textOf(turn) }}</span>
-          </z-message>
-          } @else if (textOf(turn) || turn.toolCalls?.length) {
-          <z-message
-            zAlign="start"
-            zFallback="AI"
-            zAlt="Assistant"
-            data-role="assistant"
-          >
-            <z-message-content class="gap-2">
-              @if (textOf(turn)) {
-              <z-bubble zVariant="muted">
-                <div
-                  class="chat-markdown"
-                  [innerHTML]="visibleText(turn) | markdown : isRevealing(turn)"
-                ></div>
-              </z-bubble>
-              } @if (turn.toolCalls?.length) {
-              <copilot-render-tool-calls
-                class="flex flex-col gap-2"
-                [message]="turn"
-                [messages]="messages()"
-                [isLoading]="streaming()"
-                [agentId]="agentId"
-              />
-              } @if (textOf(turn) && !isRevealing(turn)) {
-              <z-message-footer class="gap-1">
-                <button
-                  z-button
-                  zType="ghost"
-                  zSize="icon-xs"
-                  type="button"
-                  data-action="copy"
-                  [attr.aria-label]="copiedId() === turn.id ? 'Copied' : 'Copy reply'"
-                  (click)="onCopy(turn)"
-                >
-                  <ng-icon
-                    [name]="copiedId() === turn.id ? 'lucideCheck' : 'lucideCopy'"
-                    aria-hidden="true"
-                  />
-                </button>
-                @if (isLast(turn) && !streaming()) {
-                <button
-                  z-button
-                  zType="ghost"
-                  zSize="icon-xs"
-                  type="button"
-                  data-action="regenerate"
-                  aria-label="Regenerate reply"
-                  (click)="onRegenerate()"
-                >
-                  <ng-icon name="lucideRefreshCw" aria-hidden="true" />
-                </button>
-                }
-              </z-message-footer>
-              }
-            </z-message-content>
-          </z-message>
-          } } @if (awaitingReply()) {
-          <z-message
-            zAlign="start"
-            zFallback="AI"
-            zAlt="Assistant"
-            data-role="assistant"
-          >
-            <z-message-content class="min-h-8 justify-center">
-              <z-marker role="status">
-                <z-marker-icon>
-                  <z-spinner
-                    class="size-4"
-                    zAriaLabel="The assistant is thinking"
-                  />
-                </z-marker-icon>
-                <z-marker-content class="shimmer">Thinking</z-marker-content>
-              </z-marker>
-            </z-message-content>
-          </z-message>
-          } @if (stopped() && !streaming()) {
-          <z-marker
-            zVariant="separator"
-            zIcon="lucideSquare"
-            class="mt-2 text-xs"
-            data-role="stopped"
-          >
-            Reply stopped
-          </z-marker>
-          }
-        </z-message-group>
-        }
-      </div>
-      @if (!atBottom()) {
-      <button
-        z-button
-        zType="outline"
-        zSize="icon-sm"
-        type="button"
-        class="absolute right-3 bottom-3 rounded-full shadow-md animate-in fade-in duration-200"
-        aria-label="Scroll to the latest message"
-        (click)="scrollToBottom()"
-      >
-        <ng-icon name="lucideArrowDown" aria-hidden="true" />
-      </button>
-      }
-    </z-card-content>
-  </z-card>
-
-  <form class="mt-4" (submit)="onSubmit($event)" novalidate>
-    <label for="prompt" class="sr-only">Message</label>
-    <div
-      class="grid grid-cols-[1fr_auto] items-end gap-2 rounded-xl border bg-card p-1.5 shadow-lg shadow-black/5 transition-colors focus-within:border-ring dark:shadow-black/40"
-    >
-      <textarea
-        z-textarea
-        id="prompt"
-        rows="2"
-        placeholder="Send a message (Enter to send, Shift+Enter for a new line)"
-        class="min-h-11 resize-none border-0 bg-transparent px-3 focus-visible:ring-0 dark:bg-transparent"
-        [formField]="promptForm.prompt"
-        (keydown)="onPromptKeydown($event)"
-      ></textarea>
-      @if (streaming()) {
-      <button
-        z-button
-        zType="outline"
-        type="button"
-        class="h-11 px-4 text-[13px] font-semibold"
-        (click)="onStop()"
-      >
-        <ng-icon name="lucideSquare" aria-hidden="true" />
-        Stop
-      </button>
-      } @else {
-      <button
-        z-button
-        type="submit"
-        class="h-11 px-4 text-[13px] font-semibold"
-      >
-        Send
-        <ng-icon name="lucideSend" aria-hidden="true" />
-      </button>
-      }
-    </div>
-  </form>
-
-  <div class="mt-4 min-h-12" aria-live="polite">
+<ng-template #composer>
+  <div class="w-full">
     @if (error()) {
     <z-alert
       zType="destructive"
       zRole="alert"
       [zDescription]="error()"
       [zAction]="retry"
-      class="animate-in fade-in slide-in-from-bottom-1 duration-200"
+      class="chat-error mb-3"
     />
-    <ng-template #retry>
-      <button
+    <ng-template #retry
+      ><button
         z-button
         zType="outline"
         zSize="sm"
@@ -244,10 +60,341 @@
         data-action="retry"
         (click)="onRegenerate()"
       >
-        <ng-icon name="lucideRefreshCw" aria-hidden="true" />
-        Try again
-      </button>
-    </ng-template>
+        <ng-icon name="lucideRefreshCw" aria-hidden="true" />Try again
+      </button></ng-template
+    >
     }
+    <form (submit)="onSubmit($event)" novalidate>
+      <label for="prompt" class="sr-only">Message</label>
+      <div
+        class="flex flex-col rounded-2xl border border-border bg-card p-2 shadow-[0_2px_12px_-4px_rgb(0_0_0/10%)] transition-[border-color,box-shadow] focus-within:border-ring focus-within:shadow-sm"
+      >
+        <textarea
+          #promptInput
+          z-textarea
+          id="prompt"
+          rows="1"
+          placeholder="Ask anything about your specifications…"
+          class="max-h-52 min-h-16 resize-none border-0 bg-transparent px-3 py-2.5 text-base shadow-none focus-visible:ring-0 md:text-sm dark:bg-transparent"
+          style="field-sizing: content"
+          [formField]="promptForm.prompt"
+          [attr.aria-invalid]="promptError() ? true : null"
+          aria-describedby="prompt-help prompt-validation"
+          (keydown)="onPromptKeydown($event)"
+        ></textarea>
+        <div class="flex items-center justify-between gap-2 pr-0.5 pl-3">
+          <span
+            id="prompt-help"
+            class="hidden items-center gap-1 text-[11px] text-muted-foreground sm:flex"
+          >
+            <z-kbd class="h-4 min-w-4 px-1 text-[10px]">⇧</z-kbd>
+            <z-kbd class="h-4 min-w-4 px-1 text-[10px]">↵</z-kbd>
+            for a new line
+          </span>
+          <span id="prompt-help-mobile" class="sr-only"
+            >Shift + Enter for a new line</span
+          >
+          @if (promptLength() > maxPromptLength * 0.9) {
+          <span
+            class="text-xs tabular-nums"
+            [class.text-destructive]="promptLength() > maxPromptLength"
+            [class.text-muted-foreground]="promptLength() <= maxPromptLength"
+            aria-live="polite"
+          >
+            {{ promptLength() }} / {{ maxPromptLength }}
+          </span>
+          } @if (streaming()) {
+          <button
+            z-button
+            zType="default"
+            zSize="icon"
+            type="button"
+            class="ml-auto rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover"
+            data-action="stop"
+            (click)="onStop()"
+            aria-label="Stop generating"
+          >
+            <ng-icon name="lucideSquare" aria-hidden="true" />
+          </button>
+          } @else {
+          <button
+            z-button
+            zSize="icon"
+            type="submit"
+            class="ml-auto rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover"
+            [zDisabled]="promptInvalid()"
+            aria-label="Send message"
+          >
+            <ng-icon name="lucideArrowUp" aria-hidden="true" />
+          </button>
+          }
+        </div>
+      </div>
+      <div
+        id="prompt-validation"
+        class="min-h-5 px-3 pt-1 text-xs text-foreground"
+        aria-live="polite"
+      >
+        {{ promptError() }}
+      </div>
+    </form>
+    <p class="px-3 text-center text-[11px] text-muted-foreground">
+      AI can make mistakes. Review requirements before using them.
+    </p>
+    <p role="status" class="text-center text-xs text-foreground">
+      {{ copyError() }}
+    </p>
   </div>
-</section>
+</ng-template>
+
+@if (empty()) {
+<div
+  class="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 pb-8 sm:px-6"
+  role="log"
+  aria-label="Conversation"
+>
+  <div class="flex w-full max-w-3xl flex-col items-center gap-8">
+    <div class="flex flex-col items-center gap-3 text-center">
+      <span
+        class="grid size-12 place-items-center rounded-2xl bg-primary text-lg font-semibold text-primary-foreground shadow-sm"
+        aria-hidden="true"
+        >S</span
+      >
+      <h2 class="text-2xl font-medium tracking-tight sm:text-3xl">
+        @if (hasName()) { Hi {{ displayName() }}, what are we specifying today?
+        } @else { What are we specifying today? }
+      </h2>
+      <p class="max-w-md text-sm leading-relaxed text-muted-foreground">
+        Ask about SpecSync, or paste a requirement to have it reviewed. Turn an
+        idea into a clear, testable specification.
+      </p>
+    </div>
+
+    <ng-container *ngTemplateOutlet="composer" />
+
+    <ul class="flex flex-wrap justify-center gap-2" aria-label="Suggestions">
+      @for (suggestion of suggestions; track suggestion.prompt) {
+      <li>
+        <button
+          z-button
+          zType="outline"
+          zSize="sm"
+          type="button"
+          class="h-9 rounded-lg border-border/70 font-normal text-muted-foreground shadow-none hover:text-foreground"
+          [title]="suggestion.prompt"
+          (click)="onSuggestion(suggestion.prompt)"
+        >
+          <ng-icon
+            [name]="suggestion.icon"
+            class="text-info"
+            aria-hidden="true"
+          />
+          {{ suggestion.label }}
+        </button>
+      </li>
+      }
+    </ul>
+  </div>
+</div>
+} @else {
+<div class="relative flex min-h-0 flex-1 flex-col">
+  <div
+    #transcript
+    class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-6"
+    role="log"
+    aria-live="off"
+    aria-label="Conversation"
+    tabindex="0"
+    (scroll)="onTranscriptScroll()"
+  >
+    <div class="mx-auto w-full max-w-3xl">
+      <z-message-group class="gap-7">
+        @for (turn of turns(); track turn.id) { @if (turn.role === 'user') {
+        <z-message
+          zAlign="end"
+          zVariant="muted"
+          zAlt="You"
+          data-role="user"
+          role="group"
+          aria-label="You"
+        >
+          <span class="whitespace-pre-wrap">{{ textOf(turn) }}</span>
+        </z-message>
+        } @else if (turn.role === 'reasoning') { @if (showActivity() &&
+        turn.content) {
+        <details
+          class="activity-disclosure text-sm"
+          data-role="reasoning"
+          (toggle)="onDisclosureToggle($event)"
+        >
+          <summary
+            class="w-fit cursor-pointer rounded-md py-2 text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            Thinking summary
+          </summary>
+          <div class="mt-2 border-l-2 border-border pl-4">
+            <p class="mb-3 text-xs text-muted-foreground">
+              A summary provided by the model. It may be incomplete.
+            </p>
+            <div
+              class="chat-markdown text-sm leading-relaxed text-muted-foreground"
+              [innerHTML]="turn.content | markdown"
+            ></div>
+          </div>
+        </details>
+        } } @else if (textOf(turn) || turn.toolCalls?.length) {
+        <z-message
+          zAlign="start"
+          zAlt="Assistant"
+          data-role="assistant"
+          role="article"
+          aria-label="Assistant"
+        >
+          <z-message-content class="gap-4">
+            @if (textOf(turn)) {
+            <div
+              class="chat-markdown text-base leading-7"
+              [innerHTML]="visibleText(turn) | markdown: isRevealing(turn)"
+            ></div>
+            } @if (turn.toolCalls?.length) { @if (showActivity()) {
+            <div class="flex flex-col gap-2" aria-label="Tool activity">
+              @for (call of activityFor(turn); track call.id) {
+              <details
+                class="activity-disclosure rounded-lg border border-border px-3 text-sm"
+                data-role="tool-activity"
+                (toggle)="onDisclosureToggle($event)"
+                [attr.data-status]="call.status"
+              >
+                <summary
+                  class="cursor-pointer rounded py-3 focus-visible:outline-2 focus-visible:outline-ring"
+                >
+                  <span class="ml-1 font-medium">{{ call.label }}</span>
+                  <span class="ml-2 text-xs text-muted-foreground"
+                    >{{ call.status }}</span
+                  >
+                </summary>
+                <div class="flex flex-col gap-3 border-t py-3">
+                  <p class="font-mono text-xs text-muted-foreground">
+                    {{ call.name }}
+                  </p>
+                  <div>
+                    <h3 class="mb-1 text-xs font-semibold">Input</h3>
+                    <pre
+                      tabindex="0"
+                      class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs break-words whitespace-pre-wrap"
+                    >
+{{ call.input || 'Receiving input…' }}</pre
+                    >
+                  </div>
+                  <div>
+                    <h3 class="mb-1 text-xs font-semibold">Result</h3>
+                    <pre
+                      tabindex="0"
+                      class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs break-words whitespace-pre-wrap"
+                    >
+{{ call.result || (call.status === 'Running' ? 'Waiting for the tool…' : 'No result received.') }}</pre
+                    >
+                  </div>
+                </div>
+              </details>
+              }
+            </div>
+            }
+            <copilot-render-tool-calls
+              class="flex flex-col gap-3"
+              [message]="turn"
+              [messages]="messages()"
+              [isLoading]="streaming()"
+              [agentId]="agentId"
+            />
+            } @if (textOf(turn) && !isRevealing(turn)) {
+            <z-message-footer class="gap-1 px-0">
+              <button
+                z-button
+                zType="ghost"
+                zSize="icon-sm"
+                type="button"
+                data-action="copy"
+                [attr.aria-label]="copiedId() === turn.id ? 'Copied' : 'Copy reply'"
+                [zTooltip]="copiedId() === turn.id ? 'Copied' : 'Copy'"
+                (click)="onCopy(turn)"
+              >
+                <ng-icon
+                  [name]="copiedId() === turn.id ? 'lucideCheck' : 'lucideCopy'"
+                  aria-hidden="true"
+                />
+              </button>
+              @if (isLast(turn) && !streaming()) {
+              <button
+                z-button
+                zType="ghost"
+                zSize="icon-sm"
+                type="button"
+                data-action="regenerate"
+                aria-label="Regenerate reply"
+                zTooltip="Regenerate"
+                (click)="onRegenerate()"
+              >
+                <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+              </button>
+              }
+            </z-message-footer>
+            }
+          </z-message-content>
+        </z-message>
+        } } @if (streaming()) {
+        <z-marker>
+          <z-marker-icon
+            ><z-spinner class="size-4" zAriaLabel="Assistant working"
+          /></z-marker-icon>
+          <z-marker-content class="shimmer"
+            >{{ activityStatus() }}</z-marker-content
+          >
+        </z-marker>
+        } @if (stopped() && !streaming()) {
+        <z-marker
+          zVariant="separator"
+          zIcon="lucideSquare"
+          class="mt-2 text-xs"
+          data-role="stopped"
+          >Reply stopped</z-marker
+        >
+        <button
+          z-button
+          zType="ghost"
+          zSize="sm"
+          type="button"
+          class="self-start"
+          data-action="retry-stopped"
+          (click)="onRegenerate()"
+        >
+          Try again
+        </button>
+        }
+      </z-message-group>
+    </div>
+  </div>
+  @if (!atBottom()) {
+  <button
+    z-button
+    zType="outline"
+    zSize="icon-sm"
+    type="button"
+    class="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-background shadow-md"
+    aria-label="Scroll to the latest message"
+    (click)="scrollToBottom()"
+  >
+    <ng-icon name="lucideArrowDown" aria-hidden="true" />
+  </button>
+  }
+</div>
+
+<div class="mx-auto w-full max-w-3xl shrink-0 px-4 pt-2 pb-3 sm:px-6">
+  <ng-container *ngTemplateOutlet="composer" />
+</div>
+}
+
+<span class="sr-only" role="status" aria-live="polite" aria-atomic="true"
+  >{{ streaming() ? activityStatus() : stopped() ? 'Reply stopped' : !empty() &&
+  !error() ? 'Response ready' : '' }}</span
+>

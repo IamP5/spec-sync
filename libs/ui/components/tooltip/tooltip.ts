@@ -1,7 +1,12 @@
-import { Overlay, OverlayPositionBuilder, type OverlayRef } from '@angular/cdk/overlay';
+import {
+  Overlay,
+  OverlayPositionBuilder,
+  type OverlayRef,
+} from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { isPlatformBrowser } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   type ComponentRef,
@@ -107,16 +112,24 @@ export class ZardTooltipDirective implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      const position = TOOLTIP_POSITIONS_MAP[this.zPosition()];
+      const position = { ...TOOLTIP_POSITIONS_MAP[this.zPosition()] };
       const positionOffset = this.zPositionOffset();
       if (this.zPosition() === 'top' || this.zPosition() === 'bottom') {
-        position.offsetY = this.zPosition() === 'top' ? -positionOffset : positionOffset;
+        position.offsetY =
+          this.zPosition() === 'top' ? -positionOffset : positionOffset;
       } else {
-        position.offsetX = this.zPosition() === 'left' ? -positionOffset : positionOffset;
+        position.offsetX =
+          this.zPosition() === 'left' ? -positionOffset : positionOffset;
       }
       const positionStrategy = this.overlayPositionBuilder
         .flexibleConnectedTo(this.elementRef)
-        .withPositions([position]);
+        .withPositions([position])
+        .withFlexibleDimensions(false)
+        .withViewportMargin(8)
+        .withPush(true);
+      positionStrategy.positionChanges
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.alignArrow());
       this.overlayRef = this.overlay.create({ positionStrategy });
 
       runInInjectionContext(this.injector, () => {
@@ -128,8 +141,12 @@ export class ZardTooltipDirective implements OnInit, OnDestroy {
               this.initTriggers();
             }),
             filter(() => !!this.overlayRef),
-            switchMap(() => (this.overlayRef as OverlayRef).outsidePointerEvents()),
-            filter(event => !this.elementRef.nativeElement.contains(event.target)),
+            switchMap(() =>
+              (this.overlayRef as OverlayRef).outsidePointerEvents(),
+            ),
+            filter(
+              (event) => !this.elementRef.nativeElement.contains(event.target),
+            ),
             takeUntilDestroyed(this.destroyRef),
           )
           .subscribe(() => this.delay(false, 0));
@@ -182,10 +199,18 @@ export class ZardTooltipDirective implements OnInit, OnDestroy {
 
     this.listenersRefs = [
       ...this.listenersRefs,
-      this.renderer.listen(this.elementRef.nativeElement, 'mouseenter', () => this.delay(true, this.zShowDelay())),
-      this.renderer.listen(this.elementRef.nativeElement, 'mouseleave', () => this.delay(false, this.zHideDelay())),
-      this.renderer.listen(this.elementRef.nativeElement, 'focus', () => this.delay(true, this.zShowDelay())),
-      this.renderer.listen(this.elementRef.nativeElement, 'blur', () => this.delay(false, this.zHideDelay())),
+      this.renderer.listen(this.elementRef.nativeElement, 'mouseenter', () =>
+        this.delay(true, this.zShowDelay()),
+      ),
+      this.renderer.listen(this.elementRef.nativeElement, 'mouseleave', () =>
+        this.delay(false, this.zHideDelay()),
+      ),
+      this.renderer.listen(this.elementRef.nativeElement, 'focus', () =>
+        this.delay(true, this.zShowDelay()),
+      ),
+      this.renderer.listen(this.elementRef.nativeElement, 'blur', () =>
+        this.delay(false, this.zHideDelay()),
+      ),
     ];
   }
 
@@ -217,10 +242,14 @@ export class ZardTooltipDirective implements OnInit, OnDestroy {
 
     this.delaySubject
       .pipe(
-        switchMap(config => (config.delay < 0 ? of(config) : timer(config.delay).pipe(map(() => config)))),
+        switchMap((config) =>
+          config.delay < 0
+            ? of(config)
+            : timer(config.delay).pipe(map(() => config)),
+        ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(config => {
+      .subscribe((config) => {
         if (config.isShow) {
           this.show();
         } else {
@@ -252,17 +281,50 @@ export class ZardTooltipDirective implements OnInit, OnDestroy {
     });
     this.componentRef?.instance.state.set('open');
     this.componentRef?.instance.setProps(this.tooltipText(), this.zPosition());
+    afterNextRender(
+      () => {
+        this.overlayRef?.updatePosition();
+        this.alignArrow();
+      },
+      { injector: this.injector },
+    );
     runInInjectionContext(this.injector, () => {
       this.ariaEffectRef = effect(() => {
         const tooltipId = this.componentRef?.instance.uniqueId()?.id();
         if (tooltipId) {
-          this.renderer.setAttribute(this.elementRef.nativeElement, 'aria-describedby', tooltipId);
+          this.renderer.setAttribute(
+            this.elementRef.nativeElement,
+            'aria-describedby',
+            tooltipId,
+          );
           this.ariaEffectRef?.destroy();
           this.ariaEffectRef = undefined;
         }
       });
     });
     this.zShow.emit();
+  }
+
+  /** Keep the arrow attached to its trigger when the viewport pushes the popup inward. */
+  private alignArrow(): void {
+    if (
+      !this.componentRef ||
+      (this.zPosition() !== 'top' && this.zPosition() !== 'bottom')
+    )
+      return;
+    const tooltip = this.componentRef.location.nativeElement as HTMLElement;
+    // Measure the overlay pane so the entry animation does not skew the arrow offset.
+    const bounds = this.overlayRef?.overlayElement.getBoundingClientRect();
+    if (!bounds) return;
+    const trigger = this.elementRef.nativeElement.getBoundingClientRect();
+    const offset = Math.max(
+      12,
+      Math.min(
+        bounds.width - 12,
+        trigger.left + trigger.width / 2 - bounds.left,
+      ),
+    );
+    this.renderer.setStyle(tooltip, '--tooltip-arrow-x', `${offset}px`);
   }
 
   private hide() {
@@ -276,7 +338,10 @@ export class ZardTooltipDirective implements OnInit, OnDestroy {
       this.ariaEffectRef = undefined;
     }
 
-    this.renderer.removeAttribute(this.elementRef.nativeElement, 'aria-describedby');
+    this.renderer.removeAttribute(
+      this.elementRef.nativeElement,
+      'aria-describedby',
+    );
     this.componentRef.instance.state.set('closed');
     this.zHide.emit();
 
@@ -292,7 +357,12 @@ export class ZardTooltipDirective implements OnInit, OnDestroy {
   selector: 'z-tooltip',
   imports: [ZardStringTemplateOutletDirective, ZardIdDirective],
   template: `
-    <ng-container *zStringTemplateOutlet="tooltipText()" zardId="tooltip" #z="zardId">{{ tooltipText() }}</ng-container>
+    <ng-container
+      *zStringTemplateOutlet="tooltipText()"
+      zardId="tooltip"
+      #z="zardId"
+      >{{ tooltipText() }}</ng-container
+    >
 
     <span [class]="arrowClasses()">
       <svg
@@ -328,9 +398,14 @@ export class ZardTooltipComponent {
   readonly state = signal<'closed' | 'open'>('closed');
   readonly uniqueId = viewChild<ZardIdDirective>('z');
   protected readonly tooltipText = signal<ZardTooltipType>(null);
-  protected readonly tooltipId = computed(() => this.uniqueId()?.id() ?? 'tooltip');
+  protected readonly tooltipId = computed(
+    () => this.uniqueId()?.id() ?? 'tooltip',
+  );
 
-  setProps(tooltipText: ZardTooltipType, position: ZardTooltipPositionVariants) {
+  setProps(
+    tooltipText: ZardTooltipType,
+    position: ZardTooltipPositionVariants,
+  ) {
     if (tooltipText) {
       this.tooltipText.set(tooltipText);
     }

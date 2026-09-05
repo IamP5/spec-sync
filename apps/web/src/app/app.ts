@@ -1,41 +1,122 @@
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
   inject,
+  linkedSignal,
+  viewChild,
 } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideMoon, lucideSun } from '@ng-icons/lucide';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterOutlet } from '@angular/router';
+import { map } from 'rxjs';
 
-import { ZardButtonComponent } from '@/ui/components/button';
-import { ZardSeparatorComponent } from '@/ui/components/separator';
-import { EDarkModes, ZardDarkMode } from '@/ui/services';
+import {
+  ZardSidebarComponent,
+  ZardSidebarInsetComponent,
+  ZardSidebarProviderComponent,
+} from '@/ui/components/sidebar';
 
-/** Application shell: navigation, theme toggle and the routed feature. */
+import { ThreadSearch } from './domains/chat/feature-chat/thread-search/thread-search';
+
+const WIDE_SCREEN = '(min-width: 1200px)';
+const MOBILE_SCREEN = '(max-width: 767px)';
+
+/** Responsive shell with an optional desktop hover preview and a mobile drawer. */
 @Component({
   selector: 'app-root',
   imports: [
-    NgIcon,
-    RouterLink,
-    RouterLinkActive,
     RouterOutlet,
-    ZardButtonComponent,
-    ZardSeparatorComponent,
+    ThreadSearch,
+    ZardSidebarComponent,
+    ZardSidebarInsetComponent,
+    ZardSidebarProviderComponent,
   ],
-  viewProviders: [provideIcons({ lucideMoon, lucideSun })],
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block min-h-svh' },
+  host: {
+    class: 'block h-svh overflow-hidden',
+    '(document:pointerover)': 'onOutsideInteraction($event)',
+    '(document:pointerup)': 'onOutsideInteraction($event)',
+    '(document:focusin)': 'onOutsideInteraction($event)',
+    '(document:keydown.escape)': 'dismissPreview()',
+  },
 })
 export class App {
-  private readonly darkMode = inject(ZardDarkMode);
-
-  protected readonly isDark = computed(
-    () => this.darkMode.themeMode() === EDarkModes.DARK,
+  private readonly breakpoints = inject(BreakpointObserver);
+  private readonly document = inject(DOCUMENT);
+  private readonly sidebarElement = viewChild<
+    ZardSidebarComponent,
+    ElementRef<HTMLElement>
+  >('sidebar', {
+    read: ElementRef,
+  });
+  private readonly screen = toSignal(
+    this.breakpoints
+      .observe([WIDE_SCREEN, MOBILE_SCREEN])
+      .pipe(
+        map(({ breakpoints }) =>
+          breakpoints[MOBILE_SCREEN]
+            ? 'mobile'
+            : breakpoints[WIDE_SCREEN]
+              ? 'wide'
+              : 'compact',
+        ),
+      ),
+    { initialValue: 'wide' },
   );
 
-  protected toggleTheme(): void {
-    this.darkMode.toggleTheme();
+  protected readonly pinned = linkedSignal(() => this.screen() === 'wide');
+  protected readonly preview = linkedSignal({
+    source: this.screen,
+    computation: () => false,
+  });
+  protected readonly open = computed(() => this.pinned() || this.preview());
+
+  protected togglePinned(): void {
+    this.pinned.update((open) => !open);
+    this.preview.set(false);
+  }
+
+  protected onPreview(event: PointerEvent): void {
+    if (
+      event.pointerType === 'mouse' &&
+      this.screen() !== 'mobile' &&
+      !this.pinned()
+    ) {
+      this.preview.set(true);
+    }
+  }
+
+  protected onOutsideInteraction(event: Event): void {
+    if (!this.preview() || !(event.target instanceof Element)) return;
+    const sidebar = this.sidebarElement()?.nativeElement;
+    if (
+      sidebar?.contains(event.target) ||
+      event.target.closest('.cdk-overlay-container')
+    )
+      return;
+    // Keep a preview stable while editing a title, searching, or using an action menu.
+    if (
+      sidebar?.querySelector(
+        '[aria-haspopup][aria-expanded="true"], input:focus',
+      )
+    )
+      return;
+    this.preview.set(false);
+  }
+
+  protected dismissPreview(): void {
+    if (!this.preview()) return;
+    const sidebar = this.sidebarElement()?.nativeElement;
+    if (sidebar?.querySelector('[aria-haspopup][aria-expanded="true"]')) return;
+    if (sidebar?.contains(this.document.activeElement)) {
+      sidebar
+        .querySelector<HTMLButtonElement>('[data-slot="sidebar-trigger"]')
+        ?.focus();
+    }
+    this.preview.set(false);
   }
 }

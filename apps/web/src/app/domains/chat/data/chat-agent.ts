@@ -1,4 +1,9 @@
-import type { AssistantMessage, Message, UserMessage } from '@ag-ui/client';
+import type {
+  AssistantMessage,
+  Message,
+  ReasoningMessage,
+  UserMessage,
+} from '@ag-ui/client';
 import type { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
 /** A failure reported by the AG-UI client while connecting or running. */
@@ -27,11 +32,15 @@ export const CHAT_RUNTIME_URL = '/ai/copilotkit';
  */
 export const CONTINUATION_SUFFIX = '-agui-text';
 
-/** The turns the transcript shows; tool and system messages stay hidden. */
-export type ChatTurn = UserMessage | AssistantMessage;
+/** Transcript entries, including provider thinking summaries; tool results render in cards. */
+export type ChatTurn = UserMessage | AssistantMessage | ReasoningMessage;
 
 export function isChatTurn(message: Message): message is ChatTurn {
-  return message.role === 'user' || message.role === 'assistant';
+  return (
+    message.role === 'user' ||
+    message.role === 'assistant' ||
+    message.role === 'reasoning'
+  );
 }
 
 /** Plain text of a turn. Multimodal user content keeps only its text parts. */
@@ -133,4 +142,65 @@ export function normalizeThread(
     }
     return [message, ...(movedResults.get(message) ?? [])];
   });
+}
+
+/** Inspectable tool activity, separate from the useful output cards. */
+export function toolActivities(messages: Message[], running: boolean) {
+  const results = new Map(
+    messages
+      .filter((message) => message.role === 'tool')
+      .map((message) => [message.toolCallId, message]),
+  );
+  const lastUserIndex = messages.reduce(
+    (last, message, index) => (message.role === 'user' ? index : last),
+    -1,
+  );
+  return new Map(
+    messages.flatMap((message, index) =>
+      message.role === 'assistant'
+        ? [
+            [
+              message.id,
+              (message.toolCalls ?? []).map((call) => {
+                const result = results.get(call.id);
+                return {
+                  id: call.id,
+                  name: call.function.name,
+                  label: toolLabel(call.function.name),
+                  status: result
+                    ? result.error
+                      ? 'Failed'
+                      : 'Completed'
+                    : running && index > lastUserIndex
+                      ? 'Running'
+                      : 'Incomplete',
+                  input: formatToolData(call.function.arguments),
+                  result: result ? formatToolData(result.content) : '',
+                };
+              }),
+            ] as const,
+          ]
+        : [],
+    ),
+  );
+}
+
+function toolLabel(name: string): string {
+  switch (name) {
+    case 'checkRequirementQuality':
+      return 'Check requirement quality';
+    case 'presentRequirementDraft':
+      return 'Present requirement draft';
+    default:
+      return name;
+  }
+}
+
+function formatToolData(value: string): string {
+  try {
+    return JSON.stringify(JSON.parse(value), null, 2);
+  } catch {
+    // Arguments arrive incrementally and may not yet be valid JSON.
+    return value;
+  }
 }

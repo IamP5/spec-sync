@@ -1,0 +1,320 @@
+<z-sidebar-header class="gap-3 p-3">
+  <div class="flex h-8 items-center justify-between">
+    <a
+      class="sidebar-expanded flex items-center gap-2.5 rounded-md text-sm font-semibold tracking-tight text-sidebar-foreground outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+      routerLink="/"
+      aria-label="SpecSync home"
+      (click)="onOpen()"
+    >
+      <span
+        class="grid size-7 place-items-center rounded-lg bg-primary text-[11px] font-semibold text-primary-foreground"
+        aria-hidden="true"
+        >S</span
+      >
+      <span>SpecSync</span>
+    </a>
+    <button
+      z-sidebar-trigger
+      aria-label="Toggle sidebar"
+      [attr.aria-expanded]="sidebarOpen()"
+      title="Toggle sidebar (⌘/Ctrl B)"
+      class="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+    ></button>
+  </div>
+
+  <ul z-sidebar-menu>
+    <li z-sidebar-menu-item>
+      <button
+        z-sidebar-menu-button
+        type="button"
+        class="h-9 min-h-9 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent"
+        aria-label="New chat"
+        zTooltip="New chat"
+        data-action="new-chat"
+        (click)="onNewChat()"
+      >
+        <ng-icon name="lucideSquarePen" aria-hidden="true" />
+        <span
+          class="sidebar-expanded flex-1 shrink-0 font-medium whitespace-nowrap"
+          >New chat</span
+        >
+        <span
+          class="sidebar-expanded hidden shrink-0 gap-0.5 opacity-0 transition-opacity group-hover/menu-item:opacity-100 group-focus-within/menu-item:opacity-100 md:flex"
+          aria-hidden="true"
+        >
+          <z-kbd
+            class="h-5 min-w-5 border-sidebar-border bg-transparent px-1 text-[10px] text-muted-foreground"
+            >⇧</z-kbd
+          >
+          <z-kbd
+            class="h-5 min-w-5 border-sidebar-border bg-transparent px-1 text-[10px] text-muted-foreground"
+            >⌘</z-kbd
+          >
+          <z-kbd
+            class="h-5 min-w-5 border-sidebar-border bg-transparent px-1 text-[10px] text-muted-foreground"
+            >O</z-kbd
+          >
+        </span>
+      </button>
+    </li>
+  </ul>
+
+  @if (!sidebarOpen()) {
+  <button
+    z-sidebar-menu-button
+    type="button"
+    aria-label="Search conversations"
+    class="min-h-9"
+    zTooltip="Search conversations"
+    (click)="onSearch()"
+  >
+    <ng-icon name="lucideSearch" aria-hidden="true" />
+  </button>
+  }
+  <label class="sidebar-expanded relative block">
+    <span class="sr-only">Search conversations</span>
+    <ng-icon
+      name="lucideSearch"
+      class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+      aria-hidden="true"
+    />
+    <input
+      z-input
+      z-sidebar-input
+      #searchInput
+      type="search"
+      placeholder="Search conversations"
+      class="h-9 rounded-lg border-transparent bg-sidebar-accent/50! pl-8 text-sidebar-foreground placeholder:text-muted-foreground focus-visible:border-sidebar-ring focus-visible:ring-sidebar-ring dark:bg-sidebar-accent/50!"
+      [value]="query()"
+      (input)="onQuery($event)"
+    />
+  </label>
+</z-sidebar-header>
+
+<z-sidebar-content class="sidebar-expanded gap-0 px-1">
+  @if (noThreads()) {
+  <p
+    class="px-4 py-8 text-center text-xs leading-relaxed text-muted-foreground"
+    data-role="history-empty"
+  >
+    Your conversations will appear here.
+  </p>
+  } @else if (noMatches()) {
+  <p class="px-4 py-8 text-center text-xs text-muted-foreground" role="status">
+    No conversations match “{{ query() }}”.
+  </p>
+  } @for (group of groups(); track group.label) {
+  <z-sidebar-group class="py-1">
+    <z-sidebar-group-label class="text-muted-foreground"
+      >{{ group.label }}</z-sidebar-group-label
+    >
+    <z-sidebar-group-content>
+      <ul z-sidebar-menu [attr.aria-label]="group.label">
+        @for (thread of group.threads; track thread.id) {
+        <li z-sidebar-menu-item data-role="thread">
+          @if (renamingId() === thread.id) {
+          <input
+            #renameInput
+            z-input
+            type="text"
+            class="h-8 border-sidebar-ring bg-sidebar-accent text-sidebar-foreground"
+            aria-label="Conversation title"
+            [value]="thread.title"
+            [maxLength]="maxTitleLength"
+            (keydown)="onRenameKeydown($event, thread)"
+            (blur)="onRenameBlur($event, thread)"
+          />
+          } @else {
+          <a
+            z-sidebar-menu-button
+            class="h-9 rounded-lg"
+            [routerLink]="['/c', thread.id]"
+            [zActive]="activeId() === thread.id"
+            [attr.aria-current]="activeId() === thread.id ? 'page' : null"
+            [title]="thread.title"
+            (click)="onOpen()"
+          >
+            <span>{{ thread.title }}</span>
+          </a>
+          <button
+            z-sidebar-menu-action
+            zShowOnHover
+            z-dropdown
+            [zDropdownMenu]="threadMenu"
+            class="size-6 text-muted-foreground hover:bg-sidebar-border hover:text-sidebar-foreground data-[state=open]:opacity-100 data-[state=open]:bg-sidebar-accent"
+            [attr.aria-label]="'Options for ' + thread.title"
+          >
+            <ng-icon name="lucideEllipsisVertical" aria-hidden="true" />
+          </button>
+          <z-dropdown-menu-content
+            #threadMenu
+            zSide="bottom"
+            zAlign="end"
+            [zSideOffset]="4"
+            class="flex w-52 flex-col rounded-xl p-1.5"
+          >
+            <button
+              z-dropdown-menu-item
+              class="min-h-9 w-full rounded-lg px-3"
+              type="button"
+              data-action="rename"
+              (click)="onRename(thread)"
+            >
+              <ng-icon name="lucidePencil" aria-hidden="true" />
+              Rename
+            </button>
+            <z-dropdown-menu-separator />
+            <button
+              z-dropdown-menu-item
+              class="min-h-9 w-full rounded-lg px-3"
+              type="button"
+              zType="destructive"
+              data-action="delete"
+              (click)="onDelete(thread)"
+            >
+              <ng-icon name="lucideTrash2" aria-hidden="true" />
+              Delete
+            </button>
+          </z-dropdown-menu-content>
+          }
+        </li>
+        }
+      </ul>
+    </z-sidebar-group-content>
+  </z-sidebar-group>
+  }
+</z-sidebar-content>
+
+<z-sidebar-footer class="mt-auto border-t border-sidebar-border p-2">
+  <ul z-sidebar-menu>
+    <li z-sidebar-menu-item>
+      <button
+        z-sidebar-menu-button
+        type="button"
+        zSize="lg"
+        z-dropdown
+        [zDropdownMenu]="userMenu"
+        class="min-h-12 data-[state=open]:bg-sidebar-accent"
+        data-action="user-menu"
+        aria-label="Account menu"
+        zTooltip="Settings and appearance"
+      >
+        <z-avatar
+          class="shrink-0 rounded-full text-xs font-semibold text-sidebar-foreground"
+          [zFallback]="initials()"
+          [zAlt]="displayName() || 'User'"
+        />
+        <span
+          class="sidebar-expanded grid min-w-0 flex-1 text-left leading-tight whitespace-nowrap"
+        >
+          <span class="truncate text-sm font-medium"
+            >{{ hasName() ? displayName() : 'Guest' }}</span
+          >
+          <span class="truncate text-xs text-muted-foreground"
+            >Local workspace</span
+          >
+        </span>
+        <ng-icon
+          name="lucideChevronsUpDown"
+          class="sidebar-expanded ml-auto text-muted-foreground"
+          aria-hidden="true"
+        />
+      </button>
+      <z-dropdown-menu-content
+        #userMenu
+        zSide="top"
+        zAlign="start"
+        [zSideOffset]="8"
+        class="flex w-64 max-w-[calc(100vw-1rem)] flex-col rounded-xl"
+      >
+        <z-dropdown-menu-label class="flex items-center gap-2 font-normal">
+          <z-avatar
+            zSize="sm"
+            class="rounded-full"
+            [zFallback]="initials()"
+            [zAlt]="displayName() || 'User'"
+          />
+          <span class="grid min-w-0 leading-tight">
+            <span class="truncate text-sm font-medium"
+              >{{ hasName() ? displayName() : 'Guest' }}</span
+            >
+            <span class="truncate text-xs text-muted-foreground"
+              >Conversations stay in this browser</span
+            >
+          </span>
+        </z-dropdown-menu-label>
+        <z-dropdown-menu-separator />
+        <button
+          z-dropdown-menu-sub-trigger
+          type="button"
+          class="min-h-9 w-full rounded-lg px-3"
+          [zSubMenu]="appearanceMenu"
+        >
+          <ng-icon name="lucideMonitor" aria-hidden="true" />
+          Appearance
+        </button>
+        <z-dropdown-menu-sub-content
+          #appearanceMenu
+          class="flex w-48 flex-col rounded-xl p-1.5"
+        >
+          <button
+            z-dropdown-menu-item
+            class="min-h-9 w-full rounded-lg px-3"
+            type="button"
+            role="menuitemradio"
+            [attr.aria-checked]="theme() === themes.LIGHT"
+            (click)="onTheme(themes.LIGHT)"
+          >
+            <ng-icon name="lucideSun" aria-hidden="true" />
+            Light @if (theme() === themes.LIGHT) {
+            <z-dropdown-menu-shortcut aria-hidden="true"
+              >✓</z-dropdown-menu-shortcut
+            >
+            }
+          </button>
+          <button
+            z-dropdown-menu-item
+            class="min-h-9 w-full rounded-lg px-3"
+            type="button"
+            role="menuitemradio"
+            [attr.aria-checked]="theme() === themes.DARK"
+            (click)="onTheme(themes.DARK)"
+          >
+            <ng-icon name="lucideMoon" aria-hidden="true" />
+            Dark @if (theme() === themes.DARK) {
+            <z-dropdown-menu-shortcut aria-hidden="true"
+              >✓</z-dropdown-menu-shortcut
+            >
+            }
+          </button>
+          <button
+            z-dropdown-menu-item
+            class="min-h-9 w-full rounded-lg px-3"
+            type="button"
+            role="menuitemradio"
+            [attr.aria-checked]="theme() === themes.SYSTEM"
+            (click)="onTheme(themes.SYSTEM)"
+          >
+            <ng-icon name="lucideMonitor" aria-hidden="true" />
+            System @if (theme() === themes.SYSTEM) {
+            <z-dropdown-menu-shortcut aria-hidden="true"
+              >✓</z-dropdown-menu-shortcut
+            >
+            }
+          </button>
+        </z-dropdown-menu-sub-content>
+        <z-dropdown-menu-separator />
+        <button
+          z-dropdown-menu-item
+          class="min-h-9 w-full rounded-lg px-3"
+          type="button"
+          data-action="settings"
+          (click)="onSettings()"
+        >
+          <ng-icon name="lucideSettings" aria-hidden="true" />
+          Settings
+        </button>
+      </z-dropdown-menu-content>
+    </li>
+  </ul>
+</z-sidebar-footer>

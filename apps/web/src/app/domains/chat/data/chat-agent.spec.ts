@@ -1,6 +1,6 @@
 import type { Message } from '@ag-ui/client';
 
-import { normalizeThread, textOf } from './chat-agent';
+import { normalizeThread, textOf, toolActivities } from './chat-agent';
 
 function call(id: string, name: string) {
   return { id, type: 'function' as const, function: { name, arguments: '{}' } };
@@ -104,5 +104,58 @@ describe('textOf', () => {
         ],
       }),
     ).toBe('a\nb');
+  });
+});
+
+describe('toolActivities', () => {
+  const thread: Message[] = [
+    { id: 'u1', role: 'user', content: 'first' },
+    { id: 'a1', role: 'assistant', toolCalls: [call('old', 'check')] },
+    { id: 'u2', role: 'user', content: 'second' },
+    { id: 'a2', role: 'assistant', toolCalls: [call('new', 'check')] },
+  ];
+
+  it('distinguishes current activity from an older interrupted tool', () => {
+    expect(toolActivities(thread, true).get('a1')?.[0].status).toBe(
+      'Incomplete',
+    );
+    expect(toolActivities(thread, true).get('a2')?.[0].status).toBe('Running');
+    expect(toolActivities(thread, false).get('a2')?.[0].status).toBe(
+      'Incomplete',
+    );
+  });
+
+  it('reports a failed tool result without claiming success', () => {
+    const messages: Message[] = [
+      ...thread,
+      {
+        id: 'result',
+        role: 'tool',
+        toolCallId: 'new',
+        content: 'Unavailable',
+        error: 'Failed',
+      },
+    ];
+    const activity = toolActivities(messages, false).get('a2')?.[0];
+    expect(activity?.status).toBe('Failed');
+    expect(activity?.result).toBe('Unavailable');
+  });
+
+  it('keeps partially streamed arguments readable', () => {
+    const messages: Message[] = [
+      {
+        id: 'a',
+        role: 'assistant',
+        toolCalls: [
+          {
+            ...call('c', 'check'),
+            function: { name: 'check', arguments: '{"requirement":' },
+          },
+        ],
+      },
+    ];
+    expect(toolActivities(messages, true).get('a')?.[0].input).toBe(
+      '{"requirement":',
+    );
   });
 });

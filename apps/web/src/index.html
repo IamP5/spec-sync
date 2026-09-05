@@ -2,12 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>SpecSync — Connected workspace</title>
+    <title>SpecSync Assistant</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="A connected Angular and Spring Boot workspace orchestrated by Nx."
+      content="The SpecSync assistant: write and review software specifications in a conversation."
     />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -23,7 +23,9 @@
 
         try {
           const theme = localStorage.theme;
-          const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+          const prefersDark =
+            window.matchMedia?.('(prefers-color-scheme: dark)').matches ??
+            false;
 
           const isSystem = theme === 'system' || !('theme' in localStorage);
           const isDark = theme === 'dark' || (isSystem && prefersDark);
@@ -33,7 +35,6 @@
         } catch (_) {}
       })();
     </script>
-
   </head>
   <body>
     <app-root></app-root>

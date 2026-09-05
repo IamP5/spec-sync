@@ -20,10 +20,14 @@ under `apps/web/docs/adr/`.
 
 ## Reference Implementations
 
-- Model new features after `GreetingPage` in terms of structure and style:
-  - smart component: `apps/web/src/app/domains/greeting/feature-greeting/greeting-page/greeting-page.ts`
-  - store: `apps/web/src/app/domains/greeting/feature-greeting/greeting-page/greeting-detail-store.ts`
-  - data access client: `apps/web/src/app/domains/greeting/data/greeting-client.ts`
+- Model new features after the chat domain in terms of structure and style:
+  - smart components: `apps/web/src/app/domains/chat/feature-chat/chat-page/chat-page.ts`
+    (`ChatPage`) and `.../feature-chat/thread-search/thread-search.ts` (`ThreadSearch`)
+  - detail store: `.../feature-chat/chat-page/conversation-detail-store.ts`
+  - search store: `.../feature-chat/thread-search/thread-search-store.ts`
+  - coordinator: `.../feature-chat/chat-coordinator.ts`
+  - data access clients: `apps/web/src/app/domains/chat/data/chat-agent-client.ts`
+    (AG-UI agent) and `.../data/thread-client.ts` (local storage)
 
 ## Folder Structure
 
@@ -121,10 +125,12 @@ _(derived from [ADR-0003](adr/0003-feature-slicing-and-shared-code.md))_
 _(derived from [ADR-0004](adr/0004-suffix-conventions-enforced-with-tsarch.md))_
 
 - Use the suffix `Client` and the file suffix `-client.ts`
-  (e.g. `GreetingClient` in `greeting-client.ts`).
-- Follow `GreetingClient` as the reference implementation.
+  (e.g. `ThreadClient` in `thread-client.ts`).
+- Follow `ThreadClient` (storage) and `ChatAgentClient` (AG-UI) as the
+  reference implementations.
 - Data access services must be stateless. They expose `httpResource`
-  factories and plain `HttpClient` calls; they do not cache.
+  factories, plain `HttpClient` calls or storage reads and writes; they do
+  not cache.
 - Components must never call a data access service directly. They obtain data
   through a store or through a coordinator that combines several stores (see
   `apps/web/docs/architecture-state-management.md`).
