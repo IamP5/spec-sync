@@ -1,9 +1,55 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:18'
     environment:
       - 'POSTGRES_DB=mydatabase'
       - 'POSTGRES_PASSWORD=secret'
       - 'POSTGRES_USER=myuser'
     ports:
-      - '5432'
+      - '127.0.0.1::5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U myuser -d mydatabase']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  neo4j:
+    image: 'neo4j:5.26-community'
+    environment:
+      NEO4J_AUTH: 'neo4j/specsync-local'
+      NEO4J_server_memory_heap_initial__size: '256m'
+      NEO4J_server_memory_heap_max__size: '512m'
+      NEO4J_server_memory_pagecache_size: '256m'
+    labels:
+      org.springframework.boot.ignore: 'true'
+    ports:
+      - '127.0.0.1::7474'
+      - '127.0.0.1::7687'
+    volumes:
+      - neo4j-data:/data
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:7474']
+      interval: 5s
+      timeout: 5s
+      retries: 40
+
+  migrate:
+    image: 'flyway/flyway:11.14.1'
+    profiles: ['data-tools']
+    labels:
+      org.springframework.boot.ignore: 'true'
+    environment:
+      FLYWAY_URL: 'jdbc:postgresql://postgres:5432/mydatabase'
+      FLYWAY_USER: 'myuser'
+      FLYWAY_PASSWORD: 'secret'
+      FLYWAY_CONNECT_RETRIES: '30'
+      FLYWAY_CLEAN_DISABLED: 'true'
+    volumes:
+      - ./apps/api/src/main/resources/db/migration:/flyway/sql:ro
+    command: migrate
+
+volumes:
+  postgres-data:
+  neo4j-data:

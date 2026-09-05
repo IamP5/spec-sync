@@ -13,3 +13,7 @@ apps/web/.agents/skills/angular-developer
 # Generated MCP config (merged by scripts/sync-agent-config.mjs)
 **/.mcp.json
 **/.cursor/mcp.json
+
+# Evidence snapshots and versioned seed bytes are checksum-verified.
+apps/api/data/sources/
+apps/api/data/curated-pickups.json

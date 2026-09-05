@@ -1,0 +1,2996 @@
+{
+  "version": "curated-pickups-br-2026-v1",
+  "description": "Five configurations curated from supplied POC notes. This is a sourced demo dataset, not manufacturer-verified or a current price feed. Raptor is not covered by these documents.",
+  "tables": {
+    "brand": [
+      {
+        "id": "fa82a13c-a999-55a2-b43c-0290977535e0",
+        "name": "Ford"
+      },
+      {
+        "id": "3995bd89-8e3c-5616-a3da-025c4f6c891b",
+        "name": "Toyota"
+      },
+      {
+        "id": "bb3700e9-a322-567a-bd79-8dda6571133e",
+        "name": "Nissan"
+      }
+    ],
+    "vehicle_model": [
+      {
+        "id": "71c3a208-45f2-57bc-9db0-7cca0d38c685",
+        "brand_id": "fa82a13c-a999-55a2-b43c-0290977535e0",
+        "name": "Ranger"
+      },
+      {
+        "id": "a5e52650-3ff1-5013-ad2d-eb2353a5273d",
+        "brand_id": "3995bd89-8e3c-5616-a3da-025c4f6c891b",
+        "name": "Hilux"
+      },
+      {
+        "id": "734ba7cc-2e4f-51d7-a5c8-242cd132918e",
+        "brand_id": "bb3700e9-a322-567a-bd79-8dda6571133e",
+        "name": "Frontier"
+      }
+    ],
+    "source_revision": [
+      {
+        "id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "path": "sources/ranger-specs.md",
+        "sha256": "a7604a3a019e0d93da206b3a54ba639ee26e69e928e3ffb294e7936e6179a2bf",
+        "title": "Nova Geração Ford Ranger — Specs & Features",
+        "provenance": "CURATED_NOTES",
+        "upstream_urls": [
+          "https://www.ford.com.br/picapes/ranger/"
+        ],
+        "captured_on": "2026-09-05",
+        "published_on": null
+      },
+      {
+        "id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "path": "sources/hilux-specs.md",
+        "sha256": "f53f298e84fd38a3dc6656a57dea0a88657b08888904b87f81f94319a3bb856a",
+        "title": "Toyota Hilux MY'26 — Specs & Features",
+        "provenance": "CURATED_NOTES",
+        "upstream_urls": [
+          "https://www.toyota.com.br/modelos/hilux-cabine-dupla"
+        ],
+        "captured_on": "2026-09-05",
+        "published_on": null
+      },
+      {
+        "id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "path": "sources/frontier-specs.md",
+        "sha256": "db94b638dd3cc867a8a2f4005d58dfcf50ad198d5fcd69c205d4d6abb94ec39e",
+        "title": "Nissan Frontier 2026 — Specs & Features",
+        "provenance": "CURATED_NOTES",
+        "upstream_urls": [
+          "https://www.nissan.com.br/veiculos/modelos/frontier.html"
+        ],
+        "captured_on": "2026-09-05",
+        "published_on": null
+      }
+    ],
+    "evidence": [
+      {
+        "id": "17332ad3-15b3-5187-a8d1-9c47e057716a",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 235,
+        "line_end": 235,
+        "excerpt": "| Black 2.0L 4x2 AT Diesel 2026 | 2.0 Turbo Diesel | Automático 6 vel. | R$ 242.600 |",
+        "locator": "Versões adicionais (linha XL — comerciais/entrada)"
+      },
+      {
+        "id": "c4af58fe-2828-5b7c-99cf-c080cbe0742b",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 239,
+        "line_end": 239,
+        "excerpt": "| Limited 3.0 V6 Diesel 4WD AT 2026 | 3.0 V6 Diesel (250 cv) | Automático 10 vel. | R$ 346.900 |",
+        "locator": "Versões adicionais (linha XL — comerciais/entrada)"
+      },
+      {
+        "id": "f4bf9f4a-135d-589c-80b6-b69039176275",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 1,
+        "line_end": 1,
+        "excerpt": "# Toyota Hilux MY'26 — Specs & Features",
+        "locator": "Toyota Hilux MY'26 — Specs & Features"
+      },
+      {
+        "id": "cbd282b3-1f78-5343-8c3a-ee34301fded6",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 1,
+        "line_end": 1,
+        "excerpt": "# Nissan Frontier 2026 — Specs & Features",
+        "locator": "Nissan Frontier 2026 — Specs & Features"
+      },
+      {
+        "id": "89e0d4ed-27de-596a-b87e-bedb650b505e",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 144,
+        "line_end": 144,
+        "excerpt": "| Motor 2.0 turbo Diesel | ✓ | ✓ | — | — | — |",
+        "locator": "Especificações Técnicas — Performance / column: 2"
+      },
+      {
+        "id": "bf64d77e-1939-5d5d-bb17-1f7f42cc4350",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 146,
+        "line_end": 146,
+        "excerpt": "| Potência | 170 cv @ 3.500 rpm | 170 cv @ 3.500 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm |",
+        "locator": "Especificações Técnicas — Performance / column: 2"
+      },
+      {
+        "id": "e2827bb5-756a-5e80-a224-a6bafac0e1d2",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 147,
+        "line_end": 147,
+        "excerpt": "| Torque | 405 Nm @ 2.000 rpm | 405 Nm @ 2.000 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm |",
+        "locator": "Especificações Técnicas — Performance / column: 2"
+      },
+      {
+        "id": "8b4e1c35-75fa-5628-97c1-2444c2814d47",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 148,
+        "line_end": 148,
+        "excerpt": "| Tração | 4x4 | 4x4 | 4WD | 4WD | 4WD |",
+        "locator": "Especificações Técnicas — Performance / column: 2"
+      },
+      {
+        "id": "26cd0a92-fd55-5c50-8aa1-072cf2792a48",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 149,
+        "line_end": 149,
+        "excerpt": "| Transmissão | AT 6 vel. | AT 6 vel. | AT 10 vel. | AT 10 vel. | AT 10 vel. |",
+        "locator": "Especificações Técnicas — Performance / column: 2"
+      },
+      {
+        "id": "7eae01c8-c069-5438-9a54-260f06116a02",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 165,
+        "line_end": 165,
+        "excerpt": "| Comprimento do veículo (mm) | 5.370 |",
+        "locator": "Dimensões e Capacidades / column: 1"
+      },
+      {
+        "id": "f91809aa-8dbc-51d8-be08-4f17fa39b210",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 164,
+        "line_end": 164,
+        "excerpt": "| Largura com espelhos (mm) | 2.208 |",
+        "locator": "Dimensões e Capacidades / column: 1"
+      },
+      {
+        "id": "c182893d-b36b-57b8-b42a-618e3c97b109",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 163,
+        "line_end": 163,
+        "excerpt": "| Altura do veículo (mm) | 1.884 |",
+        "locator": "Dimensões e Capacidades / column: 1"
+      },
+      {
+        "id": "ca8de22f-15e6-5f40-b6c0-991943102b6a",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 166,
+        "line_end": 166,
+        "excerpt": "| Distância entre eixos (mm) | 3.270 |",
+        "locator": "Dimensões e Capacidades / column: 1"
+      },
+      {
+        "id": "871f0703-92b0-5ff9-aab6-dd9a0d21ce64",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 162,
+        "line_end": 162,
+        "excerpt": "| Tanque de combustível (L) | 80 |",
+        "locator": "Dimensões e Capacidades / column: 1"
+      },
+      {
+        "id": "09c6a61b-a4ab-561c-932e-b23f5c81e89d",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 108,
+        "line_end": 108,
+        "excerpt": "| Controle eletrônico de estabilidade | ✓ | ✓ | ✓ | ✓ | ✓ |",
+        "locator": "Segurança / column: 2"
+      },
+      {
+        "id": "daabb53a-98a0-5f1a-a5ec-7540201ef7da",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 125,
+        "line_end": 125,
+        "excerpt": "| 4 modos de condução (Normal, Eco, Rebocar/Transp, Escorregadio) | ✓ | ✓ | ✓ | ✓ | — |",
+        "locator": "Tecnologia / column: 2"
+      },
+      {
+        "id": "469b4b40-79c8-5a36-ba5a-b228052e0b54",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 235,
+        "line_end": 235,
+        "excerpt": "| Black 2.0L 4x2 AT Diesel 2026 | 2.0 Turbo Diesel | Automático 6 vel. | R$ 242.600 |",
+        "locator": "Versões adicionais (linha XL — comerciais/entrada) / column: 3"
+      },
+      {
+        "id": "f409db46-f3e5-5bbe-87c6-e184deedc024",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 145,
+        "line_end": 145,
+        "excerpt": "| Motor 3.0 V6 turbo Diesel | — | — | ✓ | ✓ | ✓ |",
+        "locator": "Especificações Técnicas — Performance / column: 5"
+      },
+      {
+        "id": "3f567277-5a47-586d-8858-0530e2f03240",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 146,
+        "line_end": 146,
+        "excerpt": "| Potência | 170 cv @ 3.500 rpm | 170 cv @ 3.500 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm |",
+        "locator": "Especificações Técnicas — Performance / column: 5"
+      },
+      {
+        "id": "898d83be-19d2-53c6-afc7-eb2657432ce4",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 147,
+        "line_end": 147,
+        "excerpt": "| Torque | 405 Nm @ 2.000 rpm | 405 Nm @ 2.000 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm |",
+        "locator": "Especificações Técnicas — Performance / column: 5"
+      },
+      {
+        "id": "a8bba613-4663-57ae-99a2-4dd0fbcde723",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 148,
+        "line_end": 148,
+        "excerpt": "| Tração | 4x4 | 4x4 | 4WD | 4WD | 4WD |",
+        "locator": "Especificações Técnicas — Performance / column: 5"
+      },
+      {
+        "id": "93099dc0-f77f-555e-9714-0725f6b32131",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 149,
+        "line_end": 149,
+        "excerpt": "| Transmissão | AT 6 vel. | AT 6 vel. | AT 10 vel. | AT 10 vel. | AT 10 vel. |",
+        "locator": "Especificações Técnicas — Performance / column: 5"
+      },
+      {
+        "id": "d1a1dae3-1ac6-57cb-af9c-78e38b3c7c77",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 108,
+        "line_end": 108,
+        "excerpt": "| Controle eletrônico de estabilidade | ✓ | ✓ | ✓ | ✓ | ✓ |",
+        "locator": "Segurança / column: 5"
+      },
+      {
+        "id": "0eca833b-e2cc-5c21-b1ed-9dc74bd55453",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 126,
+        "line_end": 126,
+        "excerpt": "| 6 modos de condução (Normal, Eco, Rebocar/Transp, Escorregadio, Lama/Terra, Areia) | — | — | — | — | ✓ |",
+        "locator": "Tecnologia / column: 5"
+      },
+      {
+        "id": "2d9a66a5-3f39-5084-aea5-54ab75dcd76b",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 239,
+        "line_end": 239,
+        "excerpt": "| Limited 3.0 V6 Diesel 4WD AT 2026 | 3.0 V6 Diesel (250 cv) | Automático 10 vel. | R$ 346.900 |",
+        "locator": "Versões adicionais (linha XL — comerciais/entrada) / column: 3"
+      },
+      {
+        "id": "c3228b4b-3871-520f-ba60-5344ef178314",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 235,
+        "line_end": 235,
+        "excerpt": "| Black 2.0L 4x2 AT Diesel 2026 | 2.0 Turbo Diesel | Automático 6 vel. | R$ 242.600 |",
+        "locator": "Versões adicionais (linha XL — comerciais/entrada) / column: 1"
+      },
+      {
+        "id": "cfdd16d3-5e1a-5e79-b8ee-7d7fcfb7ecc6",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 170,
+        "line_end": 170,
+        "excerpt": "## Kit Opcional — versão Limited",
+        "locator": "Kit Opcional — versão Limited"
+      },
+      {
+        "id": "bbbe001b-14e7-5dd6-8769-3570e3c045fb",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 182,
+        "line_end": 182,
+        "excerpt": "- Piloto automático adaptativo (ACC) com Stop and Go",
+        "locator": "Kit Opcional — versão Limited"
+      },
+      {
+        "id": "c50caca9-a9aa-5e79-ae8c-2d053d4785df",
+        "source_revision_id": "092d8e16-3fa7-5d8a-a417-5cc9c5304d0d",
+        "line_start": 181,
+        "line_end": 181,
+        "excerpt": "- Câmera 360°",
+        "locator": "Kit Opcional — versão Limited"
+      },
+      {
+        "id": "55d90465-7330-5fb0-a5c8-bc08cb5d6b4c",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 14,
+        "line_end": 14,
+        "excerpt": "| Motor | 2.8L 16V Turbo Intercooler (geometria variável) | 2.8L 16V Turbo Intercooler | 2.8L 16V Turbo Intercooler | 2.8L 16V Turbo Intercooler | 2.8L 16V Turbo Intercooler | 2.8L 16V Turbo Intercooler |",
+        "locator": "Motor e Transmissão / column: 6"
+      },
+      {
+        "id": "57b8f586-fa09-5b82-b256-8e3a77092ec9",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 15,
+        "line_end": 15,
+        "excerpt": "| Potência (cv/rpm) | 204 / 3.400 | 204 / 3.400 | 204 / 3.400 | 204 / 3.400 | 204 / 3.400 | 204 / 3.400 |",
+        "locator": "Motor e Transmissão / column: 6"
+      },
+      {
+        "id": "a03611ce-dd78-59e3-9464-cbe8eb1ac6d5",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 16,
+        "line_end": 16,
+        "excerpt": "| Torque (kgf.m/rpm) | 42,8 / 3.400 | 50,9 / 2.800 | 50,9 / 2.800 | 50,9 / 2.800 | 50,9 / 2.800 | 50,9 / 2.800 |",
+        "locator": "Motor e Transmissão / column: 6"
+      },
+      {
+        "id": "30bd1c6d-f5f7-56cb-923b-7f529276f4dc",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 17,
+        "line_end": 17,
+        "excerpt": "| Cilindrada (cm³) | 2.755 | 2.755 | 2.755 | 2.755 | 2.755 | 2.755 |",
+        "locator": "Motor e Transmissão / column: 6"
+      },
+      {
+        "id": "c9f8a12c-aa3a-5c22-a43e-ad4289cd565a",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 19,
+        "line_end": 19,
+        "excerpt": "| Transmissão | Manual 6 vel. | Automática 6 vel. sequencial | Automática 6 vel. seq. | Automática 6 vel. seq. | Automática 6 vel. seq. | Automática 6 vel. seq. |",
+        "locator": "Motor e Transmissão / column: 6"
+      },
+      {
+        "id": "555a565f-897e-5dc4-9336-19c521abff63",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 48,
+        "line_end": 48,
+        "excerpt": "| Comprimento (mm) | 5.325 | 5.325 | 5.325 | 5.325 | 5.325 | 5.325 |",
+        "locator": "Dimensões e Capacidades / column: 6"
+      },
+      {
+        "id": "3ed02b16-4e46-5cea-bfcc-aed28d79df95",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 49,
+        "line_end": 49,
+        "excerpt": "| Largura sem espelho (mm) | 1.855 | 1.855 | 1.855 | 1.855 | 1.855 | 2.020 |",
+        "locator": "Dimensões e Capacidades / column: 6"
+      },
+      {
+        "id": "ca265a4e-8769-5a42-8b59-3c271e1b8314",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 50,
+        "line_end": 50,
+        "excerpt": "| Altura (mm) | 1.815 | 1.815 | 1.815 | 1.815 | 1.815 | 1.830 |",
+        "locator": "Dimensões e Capacidades / column: 6"
+      },
+      {
+        "id": "9d8ec29a-3650-5b82-a72f-bad4fe7e0d99",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 51,
+        "line_end": 51,
+        "excerpt": "| Entre eixos (mm) | 3.085 | 3.085 | 3.085 | 3.085 | 3.085 | 3.085 |",
+        "locator": "Dimensões e Capacidades / column: 6"
+      },
+      {
+        "id": "8f7ec573-2b5d-5075-8979-0a53b0333626",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 54,
+        "line_end": 54,
+        "excerpt": "| Capacidade de carga (kg) | 1.005 | 1.000 | 1.015 | 1.005 | 1.005 | 1.005 |",
+        "locator": "Dimensões e Capacidades / column: 6"
+      },
+      {
+        "id": "344059b1-eddb-5bf2-b1a0-d2755b660fa0",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 56,
+        "line_end": 56,
+        "excerpt": "| Capacidade do tanque (L) | 80 | 80 | 80 | 80 | 80 | 80 |",
+        "locator": "Dimensões e Capacidades / column: 6"
+      },
+      {
+        "id": "71e04add-173e-5734-84f7-91744806a615",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 28,
+        "line_end": 28,
+        "excerpt": "| Suspensão traseira | Eixo rígido, molas semielípticas duplo estágio | mesma | mesma | Eixo rígido, molas semielípticas ajustado (Light Duty Suspension) | Eixo rígido, molas semielípticas duplo estágio + barra estabilizadora |",
+        "locator": "Suspensão, Direção e Freios / column: 5"
+      },
+      {
+        "id": "e9dd945f-2a36-5957-a3b2-d4067794af7c",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 185,
+        "line_end": 185,
+        "excerpt": "| VSC (controle eletrônico de estabilidade) | ✓ | ✓ | ✓ | ✓ | ✓ |",
+        "locator": "Segurança / column: 5"
+      },
+      {
+        "id": "5b779b8d-b37d-58c1-a6fd-41da6d4d8471",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 161,
+        "line_end": 161,
+        "excerpt": "| Controle de cruzeiro adaptativo (ACC) | — | — | — | ✓ | ✓ |",
+        "locator": "Segurança / column: 5"
+      },
+      {
+        "id": "f9179fc5-ccb0-5728-8b2c-b505f7598c37",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 112,
+        "line_end": 112,
+        "excerpt": "| Câmera 360° (PVM) | — | — | — | ✓ | — |",
+        "locator": "Conforto / Conveniência / column: 5"
+      },
+      {
+        "id": "ebfd6811-038c-5426-ae5f-4649aa648f05",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 127,
+        "line_end": 127,
+        "excerpt": "| Modos de condução Eco e Power | — | ✓ | ✓ | ✓ | ✓ |",
+        "locator": "Conforto / Conveniência / column: 5"
+      },
+      {
+        "id": "104cdbe9-4732-5f83-9275-e42b902a8118",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 204,
+        "line_end": 204,
+        "excerpt": "- **SRX Plus AT** — topo de linha. Mantém todos os itens da SRX e adiciona Santantônio, molduras exclusivas nas caixas de roda, suspensão traseira com barra estabilizadora, **freios a disco ventilado nas 4 rodas**, maior vão livre do solo (323 mm), ângulo de ataque de 30°, largura ampliada (2.020 mm) e altura ampliada (1.830 mm).",
+        "locator": "Resumo das Diferenças entre Versões"
+      },
+      {
+        "id": "6691572f-5b90-53ba-a178-9b669871fe5d",
+        "source_revision_id": "16ad4cfa-f57c-5d44-947b-a4c33a4f088d",
+        "line_start": 203,
+        "line_end": 203,
+        "excerpt": "- **SRX AT** — adiciona o pacote completo **Toyota Safety Sense (TSS)**: pré-colisão frontal (PCS), ACC adaptativo e Alerta de Mudança de Faixa (LDA). Também ganha bancos dianteiros ventilados, banco do motorista totalmente elétrico, câmera 360° (PVM), som JBL® com 6 alto-falantes + 2 tweeters + subwoofer, freios traseiros em tambor com BAS.",
+        "locator": "Resumo das Diferenças entre Versões"
+      },
+      {
+        "id": "68e84e17-0af3-5461-a5f3-8307e5acec8d",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 15,
+        "line_end": 15,
+        "excerpt": "| Motor | 2.3L 16V Bi-Turbo Diesel c/ Intercooler e Injeção Direta | mesmo | mesmo |",
+        "locator": "Motor e Transmissão / column: 2"
+      },
+      {
+        "id": "6acaada6-5df8-556e-b423-2cd950b147d3",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 17,
+        "line_end": 17,
+        "excerpt": "| Potência máxima | 190 cv @ 3.750 rpm | 190 cv @ 3.750 rpm | 190 cv @ 3.750 rpm |",
+        "locator": "Motor e Transmissão / column: 2"
+      },
+      {
+        "id": "625a372b-7593-5ebe-9198-10aa7dc91430",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 18,
+        "line_end": 18,
+        "excerpt": "| Torque máximo | 45,9 kgf.m @ 1.500–2.500 rpm | mesmo | mesmo |",
+        "locator": "Motor e Transmissão / column: 2"
+      },
+      {
+        "id": "ebf231c4-e5d0-5e86-8fff-05b6e8b87ddc",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 19,
+        "line_end": 19,
+        "excerpt": "| Transmissão | Automática 7 marchas com modo sequencial | mesma | mesma |",
+        "locator": "Motor e Transmissão / column: 2"
+      },
+      {
+        "id": "da14a8ea-ee78-594b-8fd7-0785bb3b059c",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 22,
+        "line_end": 22,
+        "excerpt": "| Suspensão traseira | Multilink c/ molas helicoidais e eixo rígido c/ barra estabilizadora | mesma | mesma |",
+        "locator": "Motor e Transmissão / column: 2"
+      },
+      {
+        "id": "65181de2-bf83-5bd1-909b-d56c34d29791",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 16,
+        "line_end": 16,
+        "excerpt": "| Cilindrada | 2.298 cm³ | 2.298 cm³ | 2.298 cm³ |",
+        "locator": "Motor e Transmissão / column: 2"
+      },
+      {
+        "id": "1793741e-eb47-5216-99bc-a913a1726b52",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 24,
+        "line_end": 24,
+        "excerpt": "| Capacidade de carga | 1.027 kg | 1.010 kg | 1.010 kg |",
+        "locator": "Motor e Transmissão / column: 2"
+      },
+      {
+        "id": "d09c2b2a-079e-53d0-82b6-0dab535e12d0",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 32,
+        "line_end": 32,
+        "excerpt": "| Comprimento | 5,262 m |",
+        "locator": "Dimensões / column: 1"
+      },
+      {
+        "id": "0f69cc03-6d70-570a-9ff4-918d5a006f66",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 35,
+        "line_end": 35,
+        "excerpt": "| Entre eixos | 3,150 m |",
+        "locator": "Dimensões / column: 1"
+      },
+      {
+        "id": "02f36ad0-11e0-54f4-94ae-34534e606586",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 145,
+        "line_end": 145,
+        "excerpt": "| Controle de tração e estabilidade (VDC) | ✓ | ✓ | ✓ |",
+        "locator": "Segurança / column: 2"
+      },
+      {
+        "id": "e37df915-c1d3-5915-9232-3bcfc612eda6",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 161,
+        "line_end": 161,
+        "excerpt": "| Visão 360° inteligente (off-road) + detecção de objetos em movimento (AVM + MOD) | — | ✓ | ✓ |",
+        "locator": "Segurança / column: 2"
+      },
+      {
+        "id": "b729f85c-6832-533e-81f3-065af14c92f0",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 90,
+        "line_end": 90,
+        "excerpt": "| Teto solar | — | ✓ | — |",
+        "locator": "Conforto e Conveniência / column: 2"
+      },
+      {
+        "id": "179defac-7ffc-5dfd-bc6d-3f9443b38749",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 224,
+        "line_end": 224,
+        "excerpt": "| Platinum AT 4x4 | R$ 317.990 |",
+        "locator": "Preços públicos sugeridos (referência) / column: 1"
+      },
+      {
+        "id": "168beb21-b16c-58f9-8649-54e7dec321ad",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 224,
+        "line_end": 224,
+        "excerpt": "| Platinum AT 4x4 | R$ 317.990 |",
+        "locator": "Preços públicos sugeridos (referência)"
+      },
+      {
+        "id": "b0c13437-0b39-5f25-87cc-50d193840e9c",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 15,
+        "line_end": 15,
+        "excerpt": "| Motor | 2.3L 16V Bi-Turbo Diesel c/ Intercooler e Injeção Direta | mesmo | mesmo |",
+        "locator": "Motor e Transmissão / column: 3"
+      },
+      {
+        "id": "b0c68568-edcd-5b39-ad0b-8cc6cd7aff54",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 17,
+        "line_end": 17,
+        "excerpt": "| Potência máxima | 190 cv @ 3.750 rpm | 190 cv @ 3.750 rpm | 190 cv @ 3.750 rpm |",
+        "locator": "Motor e Transmissão / column: 3"
+      },
+      {
+        "id": "0bbd35cb-57bc-5c9f-a691-5ecdf6575863",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 18,
+        "line_end": 18,
+        "excerpt": "| Torque máximo | 45,9 kgf.m @ 1.500–2.500 rpm | mesmo | mesmo |",
+        "locator": "Motor e Transmissão / column: 3"
+      },
+      {
+        "id": "2d255cf1-38b5-5406-aa46-bc8773cced90",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 19,
+        "line_end": 19,
+        "excerpt": "| Transmissão | Automática 7 marchas com modo sequencial | mesma | mesma |",
+        "locator": "Motor e Transmissão / column: 3"
+      },
+      {
+        "id": "ec6b18ad-ff72-5efd-9181-fe1681240225",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 22,
+        "line_end": 22,
+        "excerpt": "| Suspensão traseira | Multilink c/ molas helicoidais e eixo rígido c/ barra estabilizadora | mesma | mesma |",
+        "locator": "Motor e Transmissão / column: 3"
+      },
+      {
+        "id": "5668eaff-f818-52df-b8ca-a4ec2d6516b2",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 16,
+        "line_end": 16,
+        "excerpt": "| Cilindrada | 2.298 cm³ | 2.298 cm³ | 2.298 cm³ |",
+        "locator": "Motor e Transmissão / column: 3"
+      },
+      {
+        "id": "c2ad2f3d-f95d-53a1-b991-f4d9f758706c",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 24,
+        "line_end": 24,
+        "excerpt": "| Capacidade de carga | 1.027 kg | 1.010 kg | 1.010 kg |",
+        "locator": "Motor e Transmissão / column: 3"
+      },
+      {
+        "id": "e07a049e-255d-5561-ab74-fe4733bc094e",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 33,
+        "line_end": 33,
+        "excerpt": "| Largura* | 1,875 m |",
+        "locator": "Dimensões / column: 1"
+      },
+      {
+        "id": "1de43921-b588-558d-a7d8-754abb7736cd",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 37,
+        "line_end": 37,
+        "excerpt": "*Largura e altura referem-se à versão PRO-4X.*",
+        "locator": "Dimensões"
+      },
+      {
+        "id": "b71bd6b6-2187-5ac8-82ad-8535dcf7d7c3",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 34,
+        "line_end": 34,
+        "excerpt": "| Altura* | 1,857 m |",
+        "locator": "Dimensões / column: 1"
+      },
+      {
+        "id": "57540195-ff2a-5bb4-9b7c-bfe9dc50fb68",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 145,
+        "line_end": 145,
+        "excerpt": "| Controle de tração e estabilidade (VDC) | ✓ | ✓ | ✓ |",
+        "locator": "Segurança / column: 3"
+      },
+      {
+        "id": "8bb6a126-40fa-5d93-8336-457d5dc6066d",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 161,
+        "line_end": 161,
+        "excerpt": "| Visão 360° inteligente (off-road) + detecção de objetos em movimento (AVM + MOD) | — | ✓ | ✓ |",
+        "locator": "Segurança / column: 3"
+      },
+      {
+        "id": "8ab57b7d-9766-538a-8d61-280e8ba14ed2",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 90,
+        "line_end": 90,
+        "excerpt": "| Teto solar | — | ✓ | — |",
+        "locator": "Conforto e Conveniência / column: 3"
+      },
+      {
+        "id": "8a1117e7-ee7a-5054-8d8f-be5125d240dc",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 225,
+        "line_end": 225,
+        "excerpt": "| PRO-4X AT 4x4 | R$ 317.990 |",
+        "locator": "Preços públicos sugeridos (referência) / column: 1"
+      },
+      {
+        "id": "7b66aa4b-4dd2-5a10-addb-be774a0a6cfb",
+        "source_revision_id": "d1e50504-7866-53b5-9902-177d0e8373f7",
+        "line_start": 225,
+        "line_end": 225,
+        "excerpt": "| PRO-4X AT 4x4 | R$ 317.990 |",
+        "locator": "Preços públicos sugeridos (referência)"
+      }
+    ],
+    "vehicle_configuration": [
+      {
+        "id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "model_id": "71c3a208-45f2-57bc-9db0-7cca0d38c685",
+        "name": "Black 2.0 AT Diesel",
+        "market": "BR",
+        "model_year": 2026,
+        "identity_status": "PROVISIONAL",
+        "identity_evidence_id": "17332ad3-15b3-5187-a8d1-9c47e057716a",
+        "identity_note": "Identity resolved within the supplied compiled notes; upstream manufacturer documents have not been independently verified. Catalog and website sections disagree on drivetrain (4x4 versus 4x2); identity remains provisional and the drivetrain cell is conflicting."
+      },
+      {
+        "id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "model_id": "71c3a208-45f2-57bc-9db0-7cca0d38c685",
+        "name": "Limited 3.0 V6 AT Diesel",
+        "market": "BR",
+        "model_year": 2026,
+        "identity_status": "RESOLVED_FROM_NOTES",
+        "identity_evidence_id": "c4af58fe-2828-5b7c-99cf-c080cbe0742b",
+        "identity_note": "Identity resolved within the supplied compiled notes; upstream manufacturer documents have not been independently verified."
+      },
+      {
+        "id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "model_id": "a5e52650-3ff1-5013-ad2d-eb2353a5273d",
+        "name": "SRX Plus 2.8 AT Diesel",
+        "market": "BR",
+        "model_year": 2026,
+        "identity_status": "RESOLVED_FROM_NOTES",
+        "identity_evidence_id": "f4bf9f4a-135d-589c-80b6-b69039176275",
+        "identity_note": "Identity resolved within the supplied compiled notes; upstream manufacturer documents have not been independently verified."
+      },
+      {
+        "id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "model_id": "734ba7cc-2e4f-51d7-a5c8-242cd132918e",
+        "name": "Platinum 2.3 AT Diesel",
+        "market": "BR",
+        "model_year": 2026,
+        "identity_status": "RESOLVED_FROM_NOTES",
+        "identity_evidence_id": "cbd282b3-1f78-5343-8c3a-ee34301fded6",
+        "identity_note": "Identity resolved within the supplied compiled notes; upstream manufacturer documents have not been independently verified."
+      },
+      {
+        "id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "model_id": "734ba7cc-2e4f-51d7-a5c8-242cd132918e",
+        "name": "PRO-4X 2.3 AT Diesel",
+        "market": "BR",
+        "model_year": 2026,
+        "identity_status": "RESOLVED_FROM_NOTES",
+        "identity_evidence_id": "cbd282b3-1f78-5343-8c3a-ee34301fded6",
+        "identity_note": "Identity resolved within the supplied compiled notes; upstream manufacturer documents have not been independently verified."
+      }
+    ],
+    "attribute_definition": [
+      {
+        "id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "code": "engine",
+        "label": "Motor",
+        "description": "Engine description; original terminology retained.",
+        "value_type": "TEXT",
+        "unit": null
+      },
+      {
+        "id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "code": "power_max",
+        "label": "Potência máxima",
+        "description": "Maximum metric horsepower, with engine speed qualifiers.",
+        "value_type": "NUMBER",
+        "unit": "cv"
+      },
+      {
+        "id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "code": "torque_max",
+        "label": "Torque máximo",
+        "description": "Maximum torque normalized to newton metres; source units and speed retained.",
+        "value_type": "NUMBER",
+        "unit": "Nm"
+      },
+      {
+        "id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "code": "displacement",
+        "label": "Cilindrada",
+        "description": "Engine displacement.",
+        "value_type": "NUMBER",
+        "unit": "cm3"
+      },
+      {
+        "id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "code": "drivetrain",
+        "label": "Tração",
+        "description": "Reported drivetrain terminology; 4WD is not assumed identical to 4x4.",
+        "value_type": "TEXT",
+        "unit": null
+      },
+      {
+        "id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "code": "transmission",
+        "label": "Transmissão",
+        "description": "Transmission description, including gear count.",
+        "value_type": "TEXT",
+        "unit": null
+      },
+      {
+        "id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "code": "length",
+        "label": "Comprimento",
+        "description": "Overall vehicle length.",
+        "value_type": "NUMBER",
+        "unit": "mm"
+      },
+      {
+        "id": "f6134e17-739e-506c-95a1-2d63d3727ce8",
+        "code": "width_without_mirrors",
+        "label": "Largura sem espelhos",
+        "description": "Only values explicitly excluding mirrors.",
+        "value_type": "NUMBER",
+        "unit": "mm"
+      },
+      {
+        "id": "558f51f7-9f01-5039-b93d-744d1508f3e8",
+        "code": "width_with_mirrors",
+        "label": "Largura com espelhos",
+        "description": "Only values explicitly including mirrors.",
+        "value_type": "NUMBER",
+        "unit": "mm"
+      },
+      {
+        "id": "84ad4f7d-b31e-5a1c-9a86-3dce10a5c795",
+        "code": "width_unspecified",
+        "label": "Largura (escopo não informado)",
+        "description": "Source does not specify mirror scope; never equate to either scoped width.",
+        "value_type": "NUMBER",
+        "unit": "mm"
+      },
+      {
+        "id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "code": "height",
+        "label": "Altura",
+        "description": "Overall height; preserve configuration-specific footnotes.",
+        "value_type": "NUMBER",
+        "unit": "mm"
+      },
+      {
+        "id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "code": "wheelbase",
+        "label": "Entre eixos",
+        "description": "Wheelbase length.",
+        "value_type": "NUMBER",
+        "unit": "mm"
+      },
+      {
+        "id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "code": "payload",
+        "label": "Capacidade de carga",
+        "description": "Configuration-specific payload; model-level ranges do not supply a scalar.",
+        "value_type": "NUMBER",
+        "unit": "kg"
+      },
+      {
+        "id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "code": "fuel_tank",
+        "label": "Tanque de combustível",
+        "description": "Fuel tank capacity.",
+        "value_type": "NUMBER",
+        "unit": "L"
+      },
+      {
+        "id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "code": "rear_suspension",
+        "label": "Suspensão traseira",
+        "description": "Rear suspension construction, without inferred functional equivalence.",
+        "value_type": "TEXT",
+        "unit": null
+      },
+      {
+        "id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "code": "driving_modes",
+        "label": "Modos de condução",
+        "description": "Modes explicitly mentioned; completeness is recorded in qualifiers.",
+        "value_type": "LIST",
+        "unit": null
+      },
+      {
+        "id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "code": "stability_control",
+        "label": "Controle de estabilidade",
+        "description": "Presence of stability control; brand-specific implementation retained in qualifiers.",
+        "value_type": "AVAILABILITY",
+        "unit": null
+      },
+      {
+        "id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "code": "adaptive_cruise",
+        "label": "Piloto automático adaptativo",
+        "description": "Adaptive cruise availability. Stop-and-go support is a separate qualifier.",
+        "value_type": "AVAILABILITY",
+        "unit": null
+      },
+      {
+        "id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "code": "camera_360",
+        "label": "Câmera 360°",
+        "description": "Surround-view camera availability; off-road and object detection remain qualifiers.",
+        "value_type": "AVAILABILITY",
+        "unit": null
+      },
+      {
+        "id": "df472cec-080f-5d59-bf26-b859101f1f24",
+        "code": "sunroof",
+        "label": "Teto solar",
+        "description": "Sunroof availability; lack of a source entry is not absence.",
+        "value_type": "AVAILABILITY",
+        "unit": null
+      },
+      {
+        "id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "code": "reference_price",
+        "label": "Preço de referência (sem data de vigência)",
+        "description": "Undated price reported in supplied notes; not a current market price.",
+        "value_type": "NUMBER",
+        "unit": "BRL"
+      }
+    ],
+    "spec_assertion": [
+      {
+        "id": "ebf27dcd-630f-5f42-a01b-1e5ffbf4cdcc",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "value_type": "TEXT",
+        "value": "2.0 turbo Diesel",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "ea5cbea8-1619-593f-bcff-dab499fa223a",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "value_type": "NUMBER",
+        "value": 170,
+        "availability": null,
+        "qualifiers": {
+          "engine_speed_rpm": 3500
+        },
+        "raw_value": "170 cv @ 3.500 rpm",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "fa0e7673-366f-5ff9-95c4-9965ecaab303",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "value_type": "NUMBER",
+        "value": 405,
+        "availability": null,
+        "qualifiers": {
+          "engine_speed_rpm": 2000,
+          "source_unit": "Nm"
+        },
+        "raw_value": "405 Nm @ 2.000 rpm",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "1bb5ce45-6218-50e8-9ff9-eb43913debc4",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "value_type": "TEXT",
+        "value": "4x4",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "4x4",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "35a73fd6-4689-5b4a-8283-9f5f510f2c98",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "value_type": "TEXT",
+        "value": "AT 6 vel.",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "AT 6 vel.",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "7f071344-9e9a-5ce8-8552-0899f50235bf",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "value_type": "NUMBER",
+        "value": 5370,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "5.370",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "bea96f25-96ff-5442-8c39-c55cfb8c1b6b",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "558f51f7-9f01-5039-b93d-744d1508f3e8",
+        "value_type": "NUMBER",
+        "value": 2208,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "2.208",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "edbce57d-8185-5101-a469-d661654160bb",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "value_type": "NUMBER",
+        "value": 1884,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "1.884",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "79e0f422-9b21-5263-9db0-83cf164134fb",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "value_type": "NUMBER",
+        "value": 3270,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "3.270",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "02dd8294-18eb-57fe-9fe7-0b819ecc5f48",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "value_type": "NUMBER",
+        "value": 80,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "80",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "30aed131-e0bb-5b32-9f69-998b17dfcc60",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {},
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "d7990e1f-6f36-5138-a05c-3edd2dd6f942",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "value_type": "LIST",
+        "value": [
+          "Normal",
+          "Eco",
+          "Rebocar/Transp",
+          "Escorregadio"
+        ],
+        "availability": null,
+        "qualifiers": {
+          "completeness": "AS_LISTED"
+        },
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "30ee8f1c-0e12-5423-930e-25465e2c33f0",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "value_type": "NUMBER",
+        "value": 242600,
+        "availability": null,
+        "qualifiers": {
+          "price_kind": "STARTING_PRICE",
+          "effective_on": null,
+          "current_price_verified": false
+        },
+        "raw_value": "R$ 242.600",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "23e225db-5526-51b8-a067-69f70feeccf2",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "value_type": "TEXT",
+        "value": "3.0 V6 turbo Diesel",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "388ecd68-417c-5405-91d4-a62e53863a13",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "value_type": "NUMBER",
+        "value": 250,
+        "availability": null,
+        "qualifiers": {
+          "engine_speed_rpm": 3250
+        },
+        "raw_value": "250 cv @ 3.250 rpm",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "2994c36f-e381-5ba4-94f7-47b7ba1f568e",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "value_type": "NUMBER",
+        "value": 600,
+        "availability": null,
+        "qualifiers": {
+          "engine_speed_rpm": 1750,
+          "source_unit": "Nm"
+        },
+        "raw_value": "600 Nm @ 1.750 rpm",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "0511c460-b2ce-5cab-8f22-c19a631b19f4",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "value_type": "TEXT",
+        "value": "4WD",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "4WD",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "3d5e2aee-cd68-5345-80f7-239fbe478f32",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "value_type": "TEXT",
+        "value": "AT 10 vel.",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "AT 10 vel.",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "9f7e22df-0149-56e1-a745-af924ef09d8a",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "value_type": "NUMBER",
+        "value": 5370,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "5.370",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "ba90543c-43be-50b6-bb73-3fadc2168bdf",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "558f51f7-9f01-5039-b93d-744d1508f3e8",
+        "value_type": "NUMBER",
+        "value": 2208,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "2.208",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "a519ae2b-876b-5831-b667-c01547a3baf5",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "value_type": "NUMBER",
+        "value": 1884,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "1.884",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "3032e23b-623b-5bc5-8e05-e2dbd9084893",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "value_type": "NUMBER",
+        "value": 3270,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "3.270",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "798a7bb8-8f67-520b-8f93-c95ff8815e00",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "value_type": "NUMBER",
+        "value": 80,
+        "availability": null,
+        "qualifiers": {
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "80",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "c8beed5a-da1d-50e6-8fc8-f2a64cbebf20",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {},
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "4bdeb4dd-bb3b-50b2-8fee-5f9819ae00e2",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "value_type": "LIST",
+        "value": [
+          "Normal",
+          "Eco",
+          "Rebocar/Transp",
+          "Escorregadio",
+          "Lama/Terra",
+          "Areia"
+        ],
+        "availability": null,
+        "qualifiers": {
+          "completeness": "AS_LISTED"
+        },
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "2caade08-3cb7-5f5a-baa1-e422a482362c",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "value_type": "NUMBER",
+        "value": 346900,
+        "availability": null,
+        "qualifiers": {
+          "price_kind": "STARTING_PRICE",
+          "effective_on": null,
+          "current_price_verified": false
+        },
+        "raw_value": "R$ 346.900",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "e95388a8-1ffe-5599-819b-2956ad79c054",
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "value_type": "TEXT",
+        "value": "4x2",
+        "availability": null,
+        "qualifiers": {
+          "source_section": "website update"
+        },
+        "raw_value": "2.0 Turbo Diesel",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "aa19b038-b509-5d4f-bf2f-d2732df20bb5",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "OPTIONAL",
+        "qualifiers": {
+          "stop_and_go": true,
+          "package_id": "64bf779e-dd5c-5c3b-a29e-d9ae61d169cd"
+        },
+        "raw_value": "- Piloto automático adaptativo (ACC) com Stop and Go",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "3c11dfd0-5235-580d-8870-17ec5642bf22",
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "OPTIONAL",
+        "qualifiers": {
+          "package_id": "64bf779e-dd5c-5c3b-a29e-d9ae61d169cd"
+        },
+        "raw_value": "- Câmera 360°",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "81c4cfce-58ec-5304-a1f1-835691fa9232",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "value_type": "TEXT",
+        "value": "2.8L 16V Turbo Intercooler",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "2.8L 16V Turbo Intercooler",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "420d7c29-4b09-5efe-91da-f24deb2c52d6",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "value_type": "NUMBER",
+        "value": 204,
+        "availability": null,
+        "qualifiers": {
+          "engine_speed_rpm": 3400
+        },
+        "raw_value": "204 / 3.400",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "85b1eb66-639e-58c0-af79-270d8963198c",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "value_type": "NUMBER",
+        "value": 499.158485,
+        "availability": null,
+        "qualifiers": {
+          "source_value": 50.9,
+          "source_unit": "kgf.m",
+          "conversion_factor": 9.80665,
+          "engine_speed_rpm": 2800
+        },
+        "raw_value": "50,9 / 2.800",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "753dc863-6c9b-5beb-877e-69eb198c6004",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "value_type": "NUMBER",
+        "value": 2755,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "2.755",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "cf05b30d-e7e5-58ff-b3ca-520313189de6",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "value_type": "TEXT",
+        "value": "Automática 6 vel. seq.",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "Automática 6 vel. seq.",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "b48cef44-fbbe-57b9-a737-b4e295de501e",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "value_type": "NUMBER",
+        "value": 5325,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "5.325",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "fee4128d-88c1-5f44-95c0-46a218370697",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "f6134e17-739e-506c-95a1-2d63d3727ce8",
+        "value_type": "NUMBER",
+        "value": 2020,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "2.020",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "00661613-798f-5cf3-95ce-e01650880735",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "value_type": "NUMBER",
+        "value": 1830,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "1.830",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "d3fef77d-4a7e-5c1a-b73e-b436fa9355cc",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "value_type": "NUMBER",
+        "value": 3085,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "3.085",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "d41ee7ee-071d-52ff-9f2c-ade8a430cb1a",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "value_type": "NUMBER",
+        "value": 1005,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "1.005",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "9be584c1-7ad2-542e-9e0a-677524ec3ac3",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "value_type": "NUMBER",
+        "value": 80,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "80",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "107c231c-3712-5407-83b3-5d08c12a394d",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "value_type": "TEXT",
+        "value": "Eixo rígido, molas semielípticas duplo estágio + barra estabilizadora",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "Eixo rígido, molas semielípticas duplo estágio + barra estabilizadora",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "69bbb769-0f19-5688-8eaf-459b9ce3f2de",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {
+          "manufacturer_term": "VSC"
+        },
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "f7b23bde-8c31-5ee0-b93e-00c107c70e60",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {},
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "10520f96-b3f3-5775-b0e0-1711c1afc36e",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "ABSENT",
+        "qualifiers": {
+          "manufacturer_term": "PVM"
+        },
+        "raw_value": "—",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "b0d8b97e-3c98-5b8d-a97c-8cb00a10d4a1",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "value_type": "LIST",
+        "value": [
+          "Eco",
+          "Power"
+        ],
+        "availability": null,
+        "qualifiers": {
+          "completeness": "MENTIONED_MODES_ONLY"
+        },
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "c9f2ca11-f01a-506c-a46d-b02d5a2a2825",
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {
+          "interpretation": "The summary says SRX Plus retains all SRX equipment, including the SRX surround-view camera. This conflicts with the explicit table."
+        },
+        "raw_value": "- **SRX Plus AT** — topo de linha. Mantém todos os itens da SRX e adiciona Santantônio, molduras exclusivas nas caixas de roda, suspensão traseira com barra estabilizadora, **freios a disco ventilado nas 4 rodas**, maior vão livre do solo (323 mm), ângulo de ataque de 30°, largura ampliada (2.020 mm) e altura ampliada (1.830 mm).",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "51d8927e-dcc4-5213-8ac3-994d152d094a",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "value_type": "TEXT",
+        "value": "2.3L 16V Bi-Turbo Diesel c/ Intercooler e Injeção Direta",
+        "availability": null,
+        "qualifiers": {
+          "same_as_first_column": true
+        },
+        "raw_value": "mesmo",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "94472240-4f73-5ad3-a8d6-5f300fcb2f0d",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "value_type": "NUMBER",
+        "value": 190,
+        "availability": null,
+        "qualifiers": {
+          "engine_speed_rpm": 3750,
+          "same_as_first_column": false
+        },
+        "raw_value": "190 cv @ 3.750 rpm",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "a471ef6d-dfda-5259-99f0-6cc610154fe7",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "value_type": "NUMBER",
+        "value": 450.125235,
+        "availability": null,
+        "qualifiers": {
+          "engine_speed_rpm_min": 1500,
+          "engine_speed_rpm_max": 2500,
+          "source_value": 45.9,
+          "source_unit": "kgf.m",
+          "conversion_factor": 9.80665,
+          "same_as_first_column": true
+        },
+        "raw_value": "mesmo",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "0866f2d4-25d3-5393-8aa0-e8c456df3200",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "value_type": "TEXT",
+        "value": "Automática 7 marchas com modo sequencial",
+        "availability": null,
+        "qualifiers": {
+          "same_as_first_column": true
+        },
+        "raw_value": "mesma",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "144133e2-3562-5fc1-8a9b-32bc9cbaa42c",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "value_type": "TEXT",
+        "value": "Multilink c/ molas helicoidais e eixo rígido c/ barra estabilizadora",
+        "availability": null,
+        "qualifiers": {
+          "same_as_first_column": true
+        },
+        "raw_value": "mesma",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "9c57f468-f1dc-5141-85f5-50e76674c453",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "value_type": "NUMBER",
+        "value": 2298,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "2.298 cm³",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "0d22ffd8-c9b7-5d6d-acb2-bc73da292674",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "value_type": "NUMBER",
+        "value": 1010,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "1.010 kg",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "c98aaf4c-181c-5837-a6da-84c4146d3f23",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "value_type": "NUMBER",
+        "value": 5262,
+        "availability": null,
+        "qualifiers": {
+          "source_unit": "m",
+          "source_value": 5.262,
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "5,262 m",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "1826a2c6-ca13-5018-9ead-1932e75845ca",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "value_type": "NUMBER",
+        "value": 3150,
+        "availability": null,
+        "qualifiers": {
+          "source_unit": "m",
+          "source_value": 3.15,
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "3,150 m",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "f31f9f7f-6ee9-5034-b1c2-0249b3bbf391",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {
+          "manufacturer_term": "VDC",
+          "source_also_mentions": "traction control"
+        },
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "0c656203-f90f-5560-8336-c8aa18c8db03",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {
+          "manufacturer_term": "AVM + MOD",
+          "off_road": true,
+          "moving_object_detection": true
+        },
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "3ebe67e4-fd0b-5bac-aba9-4176734a3c1e",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "df472cec-080f-5d59-bf26-b859101f1f24",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {},
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "50106918-ef15-553d-ae9a-49217d86bd7a",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "value_type": "NUMBER",
+        "value": 317990,
+        "availability": null,
+        "qualifiers": {
+          "price_kind": "SUGGESTED_STARTING_PRICE",
+          "effective_on": null,
+          "current_price_verified": false
+        },
+        "raw_value": "R$ 317.990",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "1dc33307-e492-5994-977e-069bc3710b85",
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "value_type": "TEXT",
+        "value": "4x4",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "| Platinum AT 4x4 | R$ 317.990 |",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "e42b0e9a-92fe-5b3c-9b08-6eedde21c235",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "value_type": "TEXT",
+        "value": "2.3L 16V Bi-Turbo Diesel c/ Intercooler e Injeção Direta",
+        "availability": null,
+        "qualifiers": {
+          "same_as_first_column": true
+        },
+        "raw_value": "mesmo",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "a0bf659c-c746-5a72-8034-63ca45bc87f9",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "value_type": "NUMBER",
+        "value": 190,
+        "availability": null,
+        "qualifiers": {
+          "engine_speed_rpm": 3750,
+          "same_as_first_column": false
+        },
+        "raw_value": "190 cv @ 3.750 rpm",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "67c6e77a-be17-552a-ba6d-cfb297098388",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "value_type": "NUMBER",
+        "value": 450.125235,
+        "availability": null,
+        "qualifiers": {
+          "engine_speed_rpm_min": 1500,
+          "engine_speed_rpm_max": 2500,
+          "source_value": 45.9,
+          "source_unit": "kgf.m",
+          "conversion_factor": 9.80665,
+          "same_as_first_column": true
+        },
+        "raw_value": "mesmo",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "676f25b6-e713-56be-9e4e-5a6b6e35b625",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "value_type": "TEXT",
+        "value": "Automática 7 marchas com modo sequencial",
+        "availability": null,
+        "qualifiers": {
+          "same_as_first_column": true
+        },
+        "raw_value": "mesma",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "f7681004-29ec-59ea-8263-49b95213b438",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "value_type": "TEXT",
+        "value": "Multilink c/ molas helicoidais e eixo rígido c/ barra estabilizadora",
+        "availability": null,
+        "qualifiers": {
+          "same_as_first_column": true
+        },
+        "raw_value": "mesma",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "a63fedf6-f122-5281-8f2b-47fe564921a2",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "value_type": "NUMBER",
+        "value": 2298,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "2.298 cm³",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "3de9c5be-5737-550d-98f1-40e7a721595e",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "value_type": "NUMBER",
+        "value": 1010,
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "1.010 kg",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "9907070c-3b08-518c-a520-96509f7d1ca3",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "value_type": "NUMBER",
+        "value": 5262,
+        "availability": null,
+        "qualifiers": {
+          "source_unit": "m",
+          "source_value": 5.262,
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "5,262 m",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "8fb7e7a2-cf15-5728-9485-88929a2b4c2b",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "value_type": "NUMBER",
+        "value": 3150,
+        "availability": null,
+        "qualifiers": {
+          "source_unit": "m",
+          "source_value": 3.15,
+          "source_scope": "model-wide table"
+        },
+        "raw_value": "3,150 m",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "a8f7ea43-0625-58bd-80e8-1a86202a92bc",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "84ad4f7d-b31e-5a1c-9a86-3dce10a5c795",
+        "value_type": "NUMBER",
+        "value": 1875,
+        "availability": null,
+        "qualifiers": {
+          "source_unit": "m",
+          "source_value": 1.875
+        },
+        "raw_value": "1,875 m",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "a549bf55-9c77-5d62-8a87-73acbb0c3428",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "value_type": "NUMBER",
+        "value": 1857,
+        "availability": null,
+        "qualifiers": {
+          "source_unit": "m",
+          "source_value": 1.857
+        },
+        "raw_value": "1,857 m",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "8f265f61-a04e-5e55-9005-2224cf27fe68",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {
+          "manufacturer_term": "VDC",
+          "source_also_mentions": "traction control"
+        },
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "5741fddc-d392-5eec-bfee-c169aca9f303",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "STANDARD",
+        "qualifiers": {
+          "manufacturer_term": "AVM + MOD",
+          "off_road": true,
+          "moving_object_detection": true
+        },
+        "raw_value": "✓",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "f72b22e9-38cf-526e-bce9-97a71c257492",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "df472cec-080f-5d59-bf26-b859101f1f24",
+        "value_type": "AVAILABILITY",
+        "value": null,
+        "availability": "ABSENT",
+        "qualifiers": {},
+        "raw_value": "—",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "dd728467-b24f-5a7e-9667-590219c770d8",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "value_type": "NUMBER",
+        "value": 317990,
+        "availability": null,
+        "qualifiers": {
+          "price_kind": "SUGGESTED_STARTING_PRICE",
+          "effective_on": null,
+          "current_price_verified": false
+        },
+        "raw_value": "R$ 317.990",
+        "review_status": "CURATED_FROM_NOTES"
+      },
+      {
+        "id": "76551a63-00e1-5c47-9f80-4823474e2c90",
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "value_type": "TEXT",
+        "value": "4x4",
+        "availability": null,
+        "qualifiers": {},
+        "raw_value": "| PRO-4X AT 4x4 | R$ 317.990 |",
+        "review_status": "CURATED_FROM_NOTES"
+      }
+    ],
+    "assertion_evidence": [
+      {
+        "assertion_id": "ebf27dcd-630f-5f42-a01b-1e5ffbf4cdcc",
+        "evidence_id": "89e0d4ed-27de-596a-b87e-bedb650b505e"
+      },
+      {
+        "assertion_id": "ea5cbea8-1619-593f-bcff-dab499fa223a",
+        "evidence_id": "bf64d77e-1939-5d5d-bb17-1f7f42cc4350"
+      },
+      {
+        "assertion_id": "fa0e7673-366f-5ff9-95c4-9965ecaab303",
+        "evidence_id": "e2827bb5-756a-5e80-a224-a6bafac0e1d2"
+      },
+      {
+        "assertion_id": "1bb5ce45-6218-50e8-9ff9-eb43913debc4",
+        "evidence_id": "8b4e1c35-75fa-5628-97c1-2444c2814d47"
+      },
+      {
+        "assertion_id": "35a73fd6-4689-5b4a-8283-9f5f510f2c98",
+        "evidence_id": "26cd0a92-fd55-5c50-8aa1-072cf2792a48"
+      },
+      {
+        "assertion_id": "7f071344-9e9a-5ce8-8552-0899f50235bf",
+        "evidence_id": "7eae01c8-c069-5438-9a54-260f06116a02"
+      },
+      {
+        "assertion_id": "bea96f25-96ff-5442-8c39-c55cfb8c1b6b",
+        "evidence_id": "f91809aa-8dbc-51d8-be08-4f17fa39b210"
+      },
+      {
+        "assertion_id": "edbce57d-8185-5101-a469-d661654160bb",
+        "evidence_id": "c182893d-b36b-57b8-b42a-618e3c97b109"
+      },
+      {
+        "assertion_id": "79e0f422-9b21-5263-9db0-83cf164134fb",
+        "evidence_id": "ca8de22f-15e6-5f40-b6c0-991943102b6a"
+      },
+      {
+        "assertion_id": "02dd8294-18eb-57fe-9fe7-0b819ecc5f48",
+        "evidence_id": "871f0703-92b0-5ff9-aab6-dd9a0d21ce64"
+      },
+      {
+        "assertion_id": "30aed131-e0bb-5b32-9f69-998b17dfcc60",
+        "evidence_id": "09c6a61b-a4ab-561c-932e-b23f5c81e89d"
+      },
+      {
+        "assertion_id": "d7990e1f-6f36-5138-a05c-3edd2dd6f942",
+        "evidence_id": "daabb53a-98a0-5f1a-a5ec-7540201ef7da"
+      },
+      {
+        "assertion_id": "30ee8f1c-0e12-5423-930e-25465e2c33f0",
+        "evidence_id": "469b4b40-79c8-5a36-ba5a-b228052e0b54"
+      },
+      {
+        "assertion_id": "23e225db-5526-51b8-a067-69f70feeccf2",
+        "evidence_id": "f409db46-f3e5-5bbe-87c6-e184deedc024"
+      },
+      {
+        "assertion_id": "388ecd68-417c-5405-91d4-a62e53863a13",
+        "evidence_id": "3f567277-5a47-586d-8858-0530e2f03240"
+      },
+      {
+        "assertion_id": "2994c36f-e381-5ba4-94f7-47b7ba1f568e",
+        "evidence_id": "898d83be-19d2-53c6-afc7-eb2657432ce4"
+      },
+      {
+        "assertion_id": "0511c460-b2ce-5cab-8f22-c19a631b19f4",
+        "evidence_id": "a8bba613-4663-57ae-99a2-4dd0fbcde723"
+      },
+      {
+        "assertion_id": "3d5e2aee-cd68-5345-80f7-239fbe478f32",
+        "evidence_id": "93099dc0-f77f-555e-9714-0725f6b32131"
+      },
+      {
+        "assertion_id": "9f7e22df-0149-56e1-a745-af924ef09d8a",
+        "evidence_id": "7eae01c8-c069-5438-9a54-260f06116a02"
+      },
+      {
+        "assertion_id": "ba90543c-43be-50b6-bb73-3fadc2168bdf",
+        "evidence_id": "f91809aa-8dbc-51d8-be08-4f17fa39b210"
+      },
+      {
+        "assertion_id": "a519ae2b-876b-5831-b667-c01547a3baf5",
+        "evidence_id": "c182893d-b36b-57b8-b42a-618e3c97b109"
+      },
+      {
+        "assertion_id": "3032e23b-623b-5bc5-8e05-e2dbd9084893",
+        "evidence_id": "ca8de22f-15e6-5f40-b6c0-991943102b6a"
+      },
+      {
+        "assertion_id": "798a7bb8-8f67-520b-8f93-c95ff8815e00",
+        "evidence_id": "871f0703-92b0-5ff9-aab6-dd9a0d21ce64"
+      },
+      {
+        "assertion_id": "c8beed5a-da1d-50e6-8fc8-f2a64cbebf20",
+        "evidence_id": "d1a1dae3-1ac6-57cb-af9c-78e38b3c7c77"
+      },
+      {
+        "assertion_id": "4bdeb4dd-bb3b-50b2-8fee-5f9819ae00e2",
+        "evidence_id": "0eca833b-e2cc-5c21-b1ed-9dc74bd55453"
+      },
+      {
+        "assertion_id": "2caade08-3cb7-5f5a-baa1-e422a482362c",
+        "evidence_id": "2d9a66a5-3f39-5084-aea5-54ab75dcd76b"
+      },
+      {
+        "assertion_id": "e95388a8-1ffe-5599-819b-2956ad79c054",
+        "evidence_id": "c3228b4b-3871-520f-ba60-5344ef178314"
+      },
+      {
+        "assertion_id": "aa19b038-b509-5d4f-bf2f-d2732df20bb5",
+        "evidence_id": "bbbe001b-14e7-5dd6-8769-3570e3c045fb"
+      },
+      {
+        "assertion_id": "aa19b038-b509-5d4f-bf2f-d2732df20bb5",
+        "evidence_id": "cfdd16d3-5e1a-5e79-b8ee-7d7fcfb7ecc6"
+      },
+      {
+        "assertion_id": "3c11dfd0-5235-580d-8870-17ec5642bf22",
+        "evidence_id": "c50caca9-a9aa-5e79-ae8c-2d053d4785df"
+      },
+      {
+        "assertion_id": "3c11dfd0-5235-580d-8870-17ec5642bf22",
+        "evidence_id": "cfdd16d3-5e1a-5e79-b8ee-7d7fcfb7ecc6"
+      },
+      {
+        "assertion_id": "81c4cfce-58ec-5304-a1f1-835691fa9232",
+        "evidence_id": "55d90465-7330-5fb0-a5c8-bc08cb5d6b4c"
+      },
+      {
+        "assertion_id": "420d7c29-4b09-5efe-91da-f24deb2c52d6",
+        "evidence_id": "57b8f586-fa09-5b82-b256-8e3a77092ec9"
+      },
+      {
+        "assertion_id": "85b1eb66-639e-58c0-af79-270d8963198c",
+        "evidence_id": "a03611ce-dd78-59e3-9464-cbe8eb1ac6d5"
+      },
+      {
+        "assertion_id": "753dc863-6c9b-5beb-877e-69eb198c6004",
+        "evidence_id": "30bd1c6d-f5f7-56cb-923b-7f529276f4dc"
+      },
+      {
+        "assertion_id": "cf05b30d-e7e5-58ff-b3ca-520313189de6",
+        "evidence_id": "c9f8a12c-aa3a-5c22-a43e-ad4289cd565a"
+      },
+      {
+        "assertion_id": "b48cef44-fbbe-57b9-a737-b4e295de501e",
+        "evidence_id": "555a565f-897e-5dc4-9336-19c521abff63"
+      },
+      {
+        "assertion_id": "fee4128d-88c1-5f44-95c0-46a218370697",
+        "evidence_id": "3ed02b16-4e46-5cea-bfcc-aed28d79df95"
+      },
+      {
+        "assertion_id": "00661613-798f-5cf3-95ce-e01650880735",
+        "evidence_id": "ca265a4e-8769-5a42-8b59-3c271e1b8314"
+      },
+      {
+        "assertion_id": "d3fef77d-4a7e-5c1a-b73e-b436fa9355cc",
+        "evidence_id": "9d8ec29a-3650-5b82-a72f-bad4fe7e0d99"
+      },
+      {
+        "assertion_id": "d41ee7ee-071d-52ff-9f2c-ade8a430cb1a",
+        "evidence_id": "8f7ec573-2b5d-5075-8979-0a53b0333626"
+      },
+      {
+        "assertion_id": "9be584c1-7ad2-542e-9e0a-677524ec3ac3",
+        "evidence_id": "344059b1-eddb-5bf2-b1a0-d2755b660fa0"
+      },
+      {
+        "assertion_id": "107c231c-3712-5407-83b3-5d08c12a394d",
+        "evidence_id": "71e04add-173e-5734-84f7-91744806a615"
+      },
+      {
+        "assertion_id": "69bbb769-0f19-5688-8eaf-459b9ce3f2de",
+        "evidence_id": "e9dd945f-2a36-5957-a3b2-d4067794af7c"
+      },
+      {
+        "assertion_id": "f7b23bde-8c31-5ee0-b93e-00c107c70e60",
+        "evidence_id": "5b779b8d-b37d-58c1-a6fd-41da6d4d8471"
+      },
+      {
+        "assertion_id": "10520f96-b3f3-5775-b0e0-1711c1afc36e",
+        "evidence_id": "f9179fc5-ccb0-5728-8b2c-b505f7598c37"
+      },
+      {
+        "assertion_id": "b0d8b97e-3c98-5b8d-a97c-8cb00a10d4a1",
+        "evidence_id": "ebfd6811-038c-5426-ae5f-4649aa648f05"
+      },
+      {
+        "assertion_id": "c9f2ca11-f01a-506c-a46d-b02d5a2a2825",
+        "evidence_id": "104cdbe9-4732-5f83-9275-e42b902a8118"
+      },
+      {
+        "assertion_id": "c9f2ca11-f01a-506c-a46d-b02d5a2a2825",
+        "evidence_id": "6691572f-5b90-53ba-a178-9b669871fe5d"
+      },
+      {
+        "assertion_id": "51d8927e-dcc4-5213-8ac3-994d152d094a",
+        "evidence_id": "68e84e17-0af3-5461-a5f3-8307e5acec8d"
+      },
+      {
+        "assertion_id": "94472240-4f73-5ad3-a8d6-5f300fcb2f0d",
+        "evidence_id": "6acaada6-5df8-556e-b423-2cd950b147d3"
+      },
+      {
+        "assertion_id": "a471ef6d-dfda-5259-99f0-6cc610154fe7",
+        "evidence_id": "625a372b-7593-5ebe-9198-10aa7dc91430"
+      },
+      {
+        "assertion_id": "0866f2d4-25d3-5393-8aa0-e8c456df3200",
+        "evidence_id": "ebf231c4-e5d0-5e86-8fff-05b6e8b87ddc"
+      },
+      {
+        "assertion_id": "144133e2-3562-5fc1-8a9b-32bc9cbaa42c",
+        "evidence_id": "da14a8ea-ee78-594b-8fd7-0785bb3b059c"
+      },
+      {
+        "assertion_id": "9c57f468-f1dc-5141-85f5-50e76674c453",
+        "evidence_id": "65181de2-bf83-5bd1-909b-d56c34d29791"
+      },
+      {
+        "assertion_id": "0d22ffd8-c9b7-5d6d-acb2-bc73da292674",
+        "evidence_id": "1793741e-eb47-5216-99bc-a913a1726b52"
+      },
+      {
+        "assertion_id": "c98aaf4c-181c-5837-a6da-84c4146d3f23",
+        "evidence_id": "d09c2b2a-079e-53d0-82b6-0dab535e12d0"
+      },
+      {
+        "assertion_id": "1826a2c6-ca13-5018-9ead-1932e75845ca",
+        "evidence_id": "0f69cc03-6d70-570a-9ff4-918d5a006f66"
+      },
+      {
+        "assertion_id": "f31f9f7f-6ee9-5034-b1c2-0249b3bbf391",
+        "evidence_id": "02f36ad0-11e0-54f4-94ae-34534e606586"
+      },
+      {
+        "assertion_id": "0c656203-f90f-5560-8336-c8aa18c8db03",
+        "evidence_id": "e37df915-c1d3-5915-9232-3bcfc612eda6"
+      },
+      {
+        "assertion_id": "3ebe67e4-fd0b-5bac-aba9-4176734a3c1e",
+        "evidence_id": "b729f85c-6832-533e-81f3-065af14c92f0"
+      },
+      {
+        "assertion_id": "50106918-ef15-553d-ae9a-49217d86bd7a",
+        "evidence_id": "179defac-7ffc-5dfd-bc6d-3f9443b38749"
+      },
+      {
+        "assertion_id": "1dc33307-e492-5994-977e-069bc3710b85",
+        "evidence_id": "168beb21-b16c-58f9-8649-54e7dec321ad"
+      },
+      {
+        "assertion_id": "e42b0e9a-92fe-5b3c-9b08-6eedde21c235",
+        "evidence_id": "b0c13437-0b39-5f25-87cc-50d193840e9c"
+      },
+      {
+        "assertion_id": "a0bf659c-c746-5a72-8034-63ca45bc87f9",
+        "evidence_id": "b0c68568-edcd-5b39-ad0b-8cc6cd7aff54"
+      },
+      {
+        "assertion_id": "67c6e77a-be17-552a-ba6d-cfb297098388",
+        "evidence_id": "0bbd35cb-57bc-5c9f-a691-5ecdf6575863"
+      },
+      {
+        "assertion_id": "676f25b6-e713-56be-9e4e-5a6b6e35b625",
+        "evidence_id": "2d255cf1-38b5-5406-aa46-bc8773cced90"
+      },
+      {
+        "assertion_id": "f7681004-29ec-59ea-8263-49b95213b438",
+        "evidence_id": "ec6b18ad-ff72-5efd-9181-fe1681240225"
+      },
+      {
+        "assertion_id": "a63fedf6-f122-5281-8f2b-47fe564921a2",
+        "evidence_id": "5668eaff-f818-52df-b8ca-a4ec2d6516b2"
+      },
+      {
+        "assertion_id": "3de9c5be-5737-550d-98f1-40e7a721595e",
+        "evidence_id": "c2ad2f3d-f95d-53a1-b991-f4d9f758706c"
+      },
+      {
+        "assertion_id": "9907070c-3b08-518c-a520-96509f7d1ca3",
+        "evidence_id": "d09c2b2a-079e-53d0-82b6-0dab535e12d0"
+      },
+      {
+        "assertion_id": "8fb7e7a2-cf15-5728-9485-88929a2b4c2b",
+        "evidence_id": "0f69cc03-6d70-570a-9ff4-918d5a006f66"
+      },
+      {
+        "assertion_id": "a8f7ea43-0625-58bd-80e8-1a86202a92bc",
+        "evidence_id": "e07a049e-255d-5561-ab74-fe4733bc094e"
+      },
+      {
+        "assertion_id": "a8f7ea43-0625-58bd-80e8-1a86202a92bc",
+        "evidence_id": "1de43921-b588-558d-a7d8-754abb7736cd"
+      },
+      {
+        "assertion_id": "a549bf55-9c77-5d62-8a87-73acbb0c3428",
+        "evidence_id": "b71bd6b6-2187-5ac8-82ad-8535dcf7d7c3"
+      },
+      {
+        "assertion_id": "a549bf55-9c77-5d62-8a87-73acbb0c3428",
+        "evidence_id": "1de43921-b588-558d-a7d8-754abb7736cd"
+      },
+      {
+        "assertion_id": "8f265f61-a04e-5e55-9005-2224cf27fe68",
+        "evidence_id": "57540195-ff2a-5bb4-9b7c-bfe9dc50fb68"
+      },
+      {
+        "assertion_id": "5741fddc-d392-5eec-bfee-c169aca9f303",
+        "evidence_id": "8bb6a126-40fa-5d93-8336-457d5dc6066d"
+      },
+      {
+        "assertion_id": "f72b22e9-38cf-526e-bce9-97a71c257492",
+        "evidence_id": "8ab57b7d-9766-538a-8d61-280e8ba14ed2"
+      },
+      {
+        "assertion_id": "dd728467-b24f-5a7e-9667-590219c770d8",
+        "evidence_id": "8a1117e7-ee7a-5054-8d8f-be5125d240dc"
+      },
+      {
+        "assertion_id": "76551a63-00e1-5c47-9f80-4823474e2c90",
+        "evidence_id": "7b66aa4b-4dd2-5a10-addb-be774a0a6cfb"
+      }
+    ],
+    "accepted_specification": [
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "ebf27dcd-630f-5f42-a01b-1e5ffbf4cdcc",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "ea5cbea8-1619-593f-bcff-dab499fa223a",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "fa0e7673-366f-5ff9-95c4-9965ecaab303",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "knowledge_status": "CONFLICTING",
+        "assertion_id": null,
+        "reason": "The catalog and website sections disagree (4x4 versus 4x2). No assertion selected; resolve the configuration before publication as verified."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "35a73fd6-4689-5b4a-8283-9f5f510f2c98",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "7f071344-9e9a-5ce8-8552-0899f50235bf",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "f6134e17-739e-506c-95a1-2d63d3727ce8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "558f51f7-9f01-5039-b93d-744d1508f3e8",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "bea96f25-96ff-5442-8c39-c55cfb8c1b6b",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "84ad4f7d-b31e-5a1c-9a86-3dce10a5c795",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "edbce57d-8185-5101-a469-d661654160bb",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "79e0f422-9b21-5263-9db0-83cf164134fb",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "Source gives a model-level range, not a value for this configuration."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "02dd8294-18eb-57fe-9fe7-0b819ecc5f48",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "d7990e1f-6f36-5138-a05c-3edd2dd6f942",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "30aed131-e0bb-5b32-9f69-998b17dfcc60",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "df472cec-080f-5d59-bf26-b859101f1f24",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "08e08761-a2e7-5ae5-b2ad-387e93829fb7",
+        "attribute_id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "30ee8f1c-0e12-5423-930e-25465e2c33f0",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "23e225db-5526-51b8-a067-69f70feeccf2",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "388ecd68-417c-5405-91d4-a62e53863a13",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "2994c36f-e381-5ba4-94f7-47b7ba1f568e",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "0511c460-b2ce-5cab-8f22-c19a631b19f4",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "3d5e2aee-cd68-5345-80f7-239fbe478f32",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "9f7e22df-0149-56e1-a745-af924ef09d8a",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "f6134e17-739e-506c-95a1-2d63d3727ce8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "558f51f7-9f01-5039-b93d-744d1508f3e8",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "ba90543c-43be-50b6-bb73-3fadc2168bdf",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "84ad4f7d-b31e-5a1c-9a86-3dce10a5c795",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "a519ae2b-876b-5831-b667-c01547a3baf5",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "3032e23b-623b-5bc5-8e05-e2dbd9084893",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "Source gives a model-level range, not a value for this configuration."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "798a7bb8-8f67-520b-8f93-c95ff8815e00",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "4bdeb4dd-bb3b-50b2-8fee-5f9819ae00e2",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "c8beed5a-da1d-50e6-8fc8-f2a64cbebf20",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "aa19b038-b509-5d4f-bf2f-d2732df20bb5",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "3c11dfd0-5235-580d-8870-17ec5642bf22",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "df472cec-080f-5d59-bf26-b859101f1f24",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "attribute_id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "2caade08-3cb7-5f5a-baa1-e422a482362c",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "81c4cfce-58ec-5304-a1f1-835691fa9232",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "420d7c29-4b09-5efe-91da-f24deb2c52d6",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "85b1eb66-639e-58c0-af79-270d8963198c",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "753dc863-6c9b-5beb-877e-69eb198c6004",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "Source table uses a dash for this version. It is ambiguous for a technical drivetrain value; do not interpret it as no drivetrain or propagate the first column."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "cf05b30d-e7e5-58ff-b3ca-520313189de6",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "b48cef44-fbbe-57b9-a737-b4e295de501e",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "f6134e17-739e-506c-95a1-2d63d3727ce8",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "fee4128d-88c1-5f44-95c0-46a218370697",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "558f51f7-9f01-5039-b93d-744d1508f3e8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "84ad4f7d-b31e-5a1c-9a86-3dce10a5c795",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "00661613-798f-5cf3-95ce-e01650880735",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "d3fef77d-4a7e-5c1a-b73e-b436fa9355cc",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "d41ee7ee-071d-52ff-9f2c-ade8a430cb1a",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "9be584c1-7ad2-542e-9e0a-677524ec3ac3",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "107c231c-3712-5407-83b3-5d08c12a394d",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "b0d8b97e-3c98-5b8d-a97c-8cb00a10d4a1",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "69bbb769-0f19-5688-8eaf-459b9ce3f2de",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "f7b23bde-8c31-5ee0-b93e-00c107c70e60",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "knowledge_status": "CONFLICTING",
+        "assertion_id": null,
+        "reason": "Explicit SRX Plus camera table says absent, but the trim summary says it retains all SRX equipment, including the camera. Neither interpretation is selected."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "df472cec-080f-5d59-bf26-b859101f1f24",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "c28c64e4-801a-5d29-b4c2-083a888a79f3",
+        "attribute_id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "51d8927e-dcc4-5213-8ac3-994d152d094a",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "94472240-4f73-5ad3-a8d6-5f300fcb2f0d",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "a471ef6d-dfda-5259-99f0-6cc610154fe7",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "9c57f468-f1dc-5141-85f5-50e76674c453",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "1dc33307-e492-5994-977e-069bc3710b85",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "0866f2d4-25d3-5393-8aa0-e8c456df3200",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "c98aaf4c-181c-5837-a6da-84c4146d3f23",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "f6134e17-739e-506c-95a1-2d63d3727ce8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "558f51f7-9f01-5039-b93d-744d1508f3e8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "84ad4f7d-b31e-5a1c-9a86-3dce10a5c795",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "1826a2c6-ca13-5018-9ead-1932e75845ca",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "0d22ffd8-c9b7-5d6d-acb2-bc73da292674",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "144133e2-3562-5fc1-8a9b-32bc9cbaa42c",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "f31f9f7f-6ee9-5034-b1c2-0249b3bbf391",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "0c656203-f90f-5560-8336-c8aa18c8db03",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "df472cec-080f-5d59-bf26-b859101f1f24",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "3ebe67e4-fd0b-5bac-aba9-4176734a3c1e",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "014f2d31-f3ec-583a-996d-5696020d0c14",
+        "attribute_id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "50106918-ef15-553d-ae9a-49217d86bd7a",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "e42b0e9a-92fe-5b3c-9b08-6eedde21c235",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "a0bf659c-c746-5a72-8034-63ca45bc87f9",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "67c6e77a-be17-552a-ba6d-cfb297098388",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "a63fedf6-f122-5281-8f2b-47fe564921a2",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "76551a63-00e1-5c47-9f80-4823474e2c90",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "676f25b6-e713-56be-9e4e-5a6b6e35b625",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "9907070c-3b08-518c-a520-96509f7d1ca3",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "f6134e17-739e-506c-95a1-2d63d3727ce8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "558f51f7-9f01-5039-b93d-744d1508f3e8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "84ad4f7d-b31e-5a1c-9a86-3dce10a5c795",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "a8f7ea43-0625-58bd-80e8-1a86202a92bc",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "a549bf55-9c77-5d62-8a87-73acbb0c3428",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "8fb7e7a2-cf15-5728-9485-88929a2b4c2b",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "3de9c5be-5737-550d-98f1-40e7a721595e",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "f7681004-29ec-59ea-8263-49b95213b438",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "8f265f61-a04e-5e55-9005-2224cf27fe68",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "knowledge_status": "NOT_REPORTED",
+        "assertion_id": null,
+        "reason": "No unambiguous configuration-specific value was curated from the supplied notes."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "5741fddc-d392-5eec-bfee-c169aca9f303",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "df472cec-080f-5d59-bf26-b859101f1f24",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "f72b22e9-38cf-526e-bce9-97a71c257492",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      },
+      {
+        "configuration_id": "284db245-6895-50c6-a15e-aee0dacaa108",
+        "attribute_id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "knowledge_status": "KNOWN",
+        "assertion_id": "dd728467-b24f-5a7e-9667-590219c770d8",
+        "reason": "Accepted for the curated demo from supplied notes; not independently verified against the manufacturer."
+      }
+    ],
+    "feature_package": [
+      {
+        "id": "64bf779e-dd5c-5c3b-a29e-d9ae61d169cd",
+        "model_id": "71c3a208-45f2-57bc-9db0-7cca0d38c685",
+        "name": "Kit Opcional — Limited",
+        "scope_note": "Curated subset: only ACC and surround-view camera are mapped; do not infer completeness.",
+        "evidence_id": "cfdd16d3-5e1a-5e79-b8ee-7d7fcfb7ecc6"
+      }
+    ],
+    "package_item": [
+      {
+        "package_id": "64bf779e-dd5c-5c3b-a29e-d9ae61d169cd",
+        "attribute_id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "qualifiers": {
+          "stop_and_go": true
+        },
+        "evidence_id": "bbbe001b-14e7-5dd6-8769-3570e3c045fb"
+      },
+      {
+        "package_id": "64bf779e-dd5c-5c3b-a29e-d9ae61d169cd",
+        "attribute_id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "qualifiers": {},
+        "evidence_id": "c50caca9-a9aa-5e79-ae8c-2d053d4785df"
+      }
+    ],
+    "configuration_package": [
+      {
+        "configuration_id": "f94a2350-0a1a-5ad3-aef8-3c0c472c72a1",
+        "package_id": "64bf779e-dd5c-5c3b-a29e-d9ae61d169cd",
+        "availability": "OPTIONAL",
+        "evidence_id": "cfdd16d3-5e1a-5e79-b8ee-7d7fcfb7ecc6"
+      }
+    ]
+  }
+}
