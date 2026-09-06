@@ -1,0 +1,15 @@
+:host {
+  container-type: inline-size;
+}
+
+.prototype-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 45%, transparent)
+    transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-slot='card'] img {
+    transition: transform 220ms ease;
+  }
+}
