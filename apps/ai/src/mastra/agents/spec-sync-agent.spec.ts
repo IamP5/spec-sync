@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CHAT_AGENT_ID, specSyncAgent } from './spec-sync-agent';
 
 describe('SpecSync agent contract', () => {
-  it('keeps the CopilotKit identity and registers retrieval-only tools', async () => {
+  it('keeps the CopilotKit identity and keeps catalog writes outside agent tools', async () => {
     expect(CHAT_AGENT_ID).toBe('chat');
     expect(specSyncAgent.id).toBe('chat');
     expect(Object.keys(await specSyncAgent.listTools()).sort()).toEqual(
@@ -18,6 +18,8 @@ describe('SpecSync agent contract', () => {
         'getRelatedReviews',
         'getEvidenceExcerpt',
         'discoverVehicleContent',
+        'discoverVehicleSpecificationSources',
+        'prepareVehicleIngestion',
       ].sort(),
     );
   });

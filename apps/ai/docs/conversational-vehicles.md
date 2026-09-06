@@ -2,8 +2,9 @@
 
 The `chat` agent is now the SpecSync vehicle assistant. The existing `/copilotkit`
 route, AG-UI streaming, Vertex ADC authentication, Gemini model configuration,
-headless Angular client and production statelessness are retained. No ingestion,
-scraping, publication, or persisted server-side conversation workflow is included.
+headless Angular client and production statelessness are retained. Specification ingestion is available through a separate authenticated curator
+workflow; see [vehicle ingestion](vehicle-ingestion.md). Server-side conversation
+memory remains disabled in production.
 
 ## Retrieval responsibilities
 
@@ -20,7 +21,8 @@ The agent has ten typed tools: `searchVehicleConfigurations`,
 `listComparisonAttributes`, `getVehicleSpecifications`,
 `compareVehicleConfigurations`, `resolveComparisonConcepts`,
 `findConfigurationsByCapabilities`, `searchReviewEvidence`, `getRelatedReviews`,
-`getEvidenceExcerpt`, and `discoverVehicleContent`. All are read-only. Graph tools connect directly from Mastra to Neo4j using the official JavaScript
+`getEvidenceExcerpt`, and `discoverVehicleContent`. These retrieval tools are read-only. Additional specification-source discovery and
+ingestion-form preparation tools never publish data. Graph tools connect directly from Mastra to Neo4j using the official JavaScript
 driver and fixed parameterized Cypher. Spring Boot has no graph endpoints or Neo4j
 connection. Tool names and result schemas remain unchanged.
 

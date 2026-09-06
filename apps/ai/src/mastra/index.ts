@@ -6,6 +6,7 @@ import { LibSQLStore } from '@mastra/libsql';
 import { PinoLogger } from '@mastra/loggers';
 
 import { CHAT_AGENT_ID, specSyncAgent } from './agents/spec-sync-agent';
+import { ingestionRoutes } from './ingestion/routes';
 
 const production = process.env['NODE_ENV'] === 'production';
 
@@ -51,6 +52,7 @@ export const mastra = new Mastra({
   }),
   server: {
     apiRoutes: [
+      ...ingestionRoutes,
       registerCopilotKit({
         path: COPILOTKIT_PATH,
         // Memory scope for agents that have one; the chat agent has none.
@@ -61,6 +63,6 @@ export const mastra = new Mastra({
   bundler: {
     // The CopilotKit runtime is not bundleable; `mastra build` installs it
     // into the output's node_modules instead.
-    externals: ['@copilotkit/runtime'],
+    externals: ['@copilotkit/runtime', 'pdfjs-dist', '@napi-rs/canvas'],
   },
 });

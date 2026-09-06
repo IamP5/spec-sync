@@ -52,6 +52,15 @@
         </span>
       </button>
     </li>
+    <li z-sidebar-menu-item>
+      <a
+        z-sidebar-menu-button
+        routerLink="/ingestion"
+        aria-label="Vehicle ingestion"
+        (click)="onOpen()"
+        ><span class="sidebar-expanded">Vehicle ingestion</span></a
+      >
+    </li>
   </ul>
 
   @if (!sidebarOpen()) {

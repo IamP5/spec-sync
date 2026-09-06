@@ -1,0 +1,272 @@
+<div class="mx-auto max-w-5xl space-y-6 p-4 md:p-8">
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <a routerLink="/" class="text-sm underline">Back to chat</a>
+      <h1 class="mt-3 text-2xl font-semibold">Vehicle ingestion</h1>
+      <p class="mt-2 text-muted-foreground">
+        Extract specifications from an official source, review the evidence, and
+        publish selected claims.
+      </p>
+    </div>
+    @if (runId()) {<a z-button zType="outline" routerLink="/ingestion"
+      >New import</a
+    >}
+  </header>
+  <section class="rounded-xl border p-4" aria-label="Curator access">
+    <label for="curator-key" class="mb-2 block font-medium">Curator key</label>
+    <div class="flex gap-2">
+      <input
+        z-input
+        id="curator-key"
+        type="password"
+        autocomplete="off"
+        [formField]="credentialForm.key"
+        placeholder="Enter your curator key"
+      /><button z-button zType="outline" type="button" (click)="connect()">
+        Connect
+      </button>
+    </div>
+    <p class="mt-2 text-sm text-muted-foreground">
+      The key stays in this page and is cleared when you leave or reload.
+    </p>
+  </section>
+  @if (error()) {
+  <p
+    role="alert"
+    class="rounded-lg border border-destructive p-3 text-destructive"
+  >
+    {{error()}}
+  </p>
+  } @if (!runId()) {
+  <form (submit)="create($event)" class="space-y-4 rounded-xl border p-5">
+    <h2 class="text-lg font-semibold">Import one configuration</h2>
+    <p class="text-sm text-muted-foreground">
+      Brazilian market. Supports Ford, Toyota and Nissan manufacturer HTML pages
+      and PDFs (up to 12 pages). Use the exact configuration name to update an
+      existing vehicle.
+    </p>
+    <label class="block"
+      >Official source URL<input
+        z-input
+        type="url"
+        class="mt-1"
+        [formField]="sourceForm.sourceUrl"
+        placeholder="https://www.ford.com.br/…"
+    /></label>
+    <div class="grid gap-4 md:grid-cols-2">
+      <label
+        >Brand<input
+          z-input
+          class="mt-1"
+          [formField]="sourceForm.brand"
+          placeholder="Ford"
+      /></label>
+      <label
+        >Model<input
+          z-input
+          class="mt-1"
+          [formField]="sourceForm.model"
+          placeholder="Ranger"
+      /></label>
+      <label
+        >Configuration name<input
+          z-input
+          class="mt-1"
+          [formField]="sourceForm.name"
+          placeholder="Limited 3.0 V6 AT Diesel"
+      /></label>
+      <label
+        >Model year<input
+          z-input
+          class="mt-1"
+          type="number"
+          [formField]="sourceForm.modelYear"
+      /></label>
+    </div>
+    <button
+      z-button
+      type="submit"
+      [zDisabled]="sourceForm().invalid() || busy() || !credentials().key"
+    >
+      {{store.createIsPending() ? 'Starting…' : 'Extract draft specifications'}}
+    </button>
+  </form>
+  } @if (store.runValue(); as run) {
+  <section class="space-y-3 rounded-xl border p-5" aria-live="polite">
+    <h2 class="text-lg font-semibold">
+      {{run.request.brand}} {{run.request.model}} · {{run.request.name}}
+    </h2>
+    <p>
+      {{run.request.market}} · {{run.request.modelYear}} ·
+      <strong>{{run.status}}</strong>
+    </p>
+    @if (run.status==='QUEUED' || run.status==='PROCESSING') {
+    <p>
+      Processing your source. Progress is saved; you can return to this URL
+      later.
+    </p>
+    } @if (run.error) {
+    <p class="text-destructive">{{run.error}}</p>
+    } @if (run.status==='PUBLISHED') {
+    <p>
+      Selected specifications are published to the catalog. Graph:
+      {{run.projectionStatus}}.
+    </p>
+    } @if (run.projectionError) {
+    <p>{{run.projectionError}}</p>
+    }
+    <button z-button zType="outline" type="button" (click)="store.reload()">
+      Refresh status
+    </button>
+    @if (run.status!=='PUBLISHED' && run.status!=='REJECTED') {<button
+      z-button
+      zType="outline"
+      class="ml-2"
+      type="button"
+      [zDisabled]="busy()"
+      (click)="store.reject()"
+    >
+      Reject import</button
+    >}
+  </section>
+  @if (run.draft; as draft) {
+  <form (submit)="publish($event)" class="space-y-5">
+    <section class="space-y-3 rounded-xl border p-5">
+      <h2 class="text-lg font-semibold">Vehicle identity evidence</h2>
+      <a
+        [href]="draft.source.url"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="break-all underline"
+        >{{draft.source.title}}</a
+      >
+      <div>
+        <button
+          z-button
+          zType="outline"
+          type="button"
+          [zDisabled]="store.downloadSourceIsPending()"
+          (click)="store.downloadSource()"
+        >
+          Download captured original
+        </button>
+        @if (store.downloadSourceError()) {
+        <p role="alert">
+          Could not download the captured file. Check the curator key and try
+          again.
+        </p>
+        }
+      </div>
+      @if (draft.source.parserVersion.startsWith('specsync-visual-pdf')) {
+      <p class="text-sm text-muted-foreground">
+        Evidence below comes from an AI visual transcript. Check table columns,
+        symbols and footnotes against the captured original before publishing.
+      </p>
+      }
+      <p class="text-sm text-muted-foreground">
+        Source lines {{draft.identityLineStart}}–{{draft.identityLineEnd}}.
+        Verify year, trim, engine, transmission and drivetrain.
+      </p>
+      <blockquote class="whitespace-pre-wrap rounded-lg bg-muted p-3 text-sm">
+        {{draft.identityExcerpt}}
+      </blockquote>
+      @if (run.status==='REVIEW') {<label class="flex items-start gap-3"
+        ><input
+          type="checkbox"
+          class="mt-1"
+          [formField]="reviewForm.identityConfirmed"
+        />I checked that this source applies to this exact vehicle configuration
+        and model year.</label
+      >}
+      <details>
+        <summary class="cursor-pointer text-sm underline">
+          {{draft.source.parserVersion.startsWith('specsync-visual-pdf') ? 'Full
+          visual transcript' : 'Full captured text'}}
+        </summary>
+        <pre class="mt-3 max-h-80 overflow-auto whitespace-pre-wrap text-sm">
+{{draft.source.text}}</pre
+        >
+      </details>
+    </section>
+    @for (claim of draft.claims; track $index; let i=$index) {
+    <section class="space-y-3 rounded-xl border p-5">
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="font-semibold">{{claim.label}}</h3>
+        @if (run.status==='REVIEW' && claim.issues.length===0) {<label
+          class="flex items-center gap-2"
+          ><input type="checkbox" [formField]="reviewForm.selected[i]" />Publish
+          this claim</label
+        >}
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <p class="text-sm text-muted-foreground">Current catalog</p>
+          @if (run.currentValues[claim.attributeCode]; as current) {
+          <p>
+            {{current.knowledge_status}} · {{current.availability ??
+            (current.value | json)}}
+          </p>
+          } @else {
+          <p>Not reported</p>
+          }
+        </div>
+        <div>
+          <p class="text-sm text-muted-foreground">Proposed value</p>
+          <p>{{claim.availability ?? (claim.value | json)}} {{claim.unit}}</p>
+          <p class="text-sm">Source: {{claim.rawValue}} {{claim.rawUnit}}</p>
+        </div>
+      </div>
+      @if (claim.issues.length) {
+      <p class="text-destructive">
+        Needs correction: {{claim.issues.join('; ')}}
+      </p>
+      }
+      <p class="text-sm">
+        {{claim.locator}} · lines {{claim.lineStart}}–{{claim.lineEnd}}
+      </p>
+      <blockquote class="whitespace-pre-wrap rounded-lg bg-muted p-3 text-sm">
+        {{claim.excerpt}}
+      </blockquote>
+      <details>
+        <summary class="cursor-pointer text-sm underline">
+          Qualifiers and conditions
+        </summary>
+        <pre class="whitespace-pre-wrap text-sm">
+{{claim.qualifiers | json}}</pre
+        >
+      </details>
+    </section>
+    } @empty {
+    <p class="rounded-xl border p-5">
+      No supported specifications were extracted for this identity. Nothing can
+      be published. Try a more specific source.
+    </p>
+    } @if (run.status==='REVIEW') {
+    <section class="space-y-4 rounded-xl border p-5">
+      <label class="block"
+        >Review reason<textarea
+          z-textarea
+          rows="3"
+          class="mt-1"
+          [formField]="reviewForm.reason"
+          placeholder="Explain applicability and why these claims should replace or add to the current specifications."
+        ></textarea>
+      </label>
+      <p class="text-sm text-muted-foreground">
+        Choose one claim per attribute. Selected claims replace accepted values;
+        previous evidence is retained. Unselected claims stay outside the
+        catalog.
+      </p>
+      <button
+        z-button
+        type="submit"
+        [zDisabled]="!reviewModel().identityConfirmed || !reviewModel().reason.trim() || selectedCount()===0 || busy()"
+      >
+        {{store.publishIsPending() ? 'Publishing…' : 'Publish selected
+        specifications'}} ({{selectedCount()}})
+      </button>
+    </section>
+    }
+  </form>
+  } }
+</div>

@@ -200,7 +200,9 @@ these projection nodes: their relationships are replaced during a rebuild.
 `CatalogProjection.fingerprint` identifies the exact source snapshot. The
 projector rechecks PostgreSQL after committing; if PostgreSQL changed in the
 meantime, it reports that the graph is an older consistent snapshot. `data-status`
-compares the hashes. There is no automatic synchronization in this milestone.
+compares the hashes. The original maintenance flow has no automatic synchronization. The authenticated
+[ingestion workflow](../../ai/docs/vehicle-ingestion.md) now coordinates automatic
+rebuilds after its publication commands.
 Run a single projection job at a time; add a durable projection coordinator and
 outbox when online writes arrive. Full rebuilds are suitable for this small seed,
 not a planned bulk-ingestion mechanism for a large production catalog.
