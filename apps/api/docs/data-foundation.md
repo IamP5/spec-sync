@@ -12,7 +12,7 @@ with Docker Compose. Java is needed to run the API, but not the data commands.
 From the workspace root:
 
 ```sh
-npm exec -- nx run api:data-up
+npm exec -- nx run ai:data-up
 ```
 
 This validates the fixtures, starts PostgreSQL 18 and Neo4j 5.26 Community,
@@ -25,7 +25,7 @@ other projects. The command prints the PostgreSQL address, Neo4j Browser URL,
 and Bolt URL. Retrieve them again with:
 
 ```sh
-npm exec -- nx run api:data-status
+npm exec -- nx run ai:data-status
 ```
 
 Local development credentials, also declared in `compose.yaml`:
@@ -42,18 +42,19 @@ deployment commands and do not accept a remote database URL.
 Named Docker volumes preserve both databases between restarts. Stop the
 services without deleting their data with `docker compose stop postgres neo4j`.
 The existing Spring Boot Compose integration discovers the PostgreSQL port.
-Neo4j is ignored by Spring Boot service connections; the API does not yet query it.
+Neo4j is ignored by Spring Boot service connections. Mastra owns graph retrieval
+and the offline tooling in `apps/ai/data`; the API owns PostgreSQL schema migrations.
 
 Individual steps:
 
-| Nx target              | Action                                                                                |
-| ---------------------- | ------------------------------------------------------------------------------------- |
-| `api:data-migrate`     | Apply pending migrations to the running PostgreSQL service                            |
-| `api:data-seed`        | Validate and import the immutable fixture revision                                    |
-| `api:data-project`     | Replace the owned graph atomically from a PostgreSQL snapshot                         |
-| `api:data-status`      | Show dataset counts, endpoints, and projection freshness                              |
-| `api:data-test`        | Validate source fidelity, normalization and fixture invariants without Docker         |
-| `api:data-integration` | Test migrations, idempotency, constraints and graph rollback against running services |
+| Nx target             | Action                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `ai:data-migrate`     | Apply pending migrations to the running PostgreSQL service                            |
+| `ai:data-seed`        | Validate and import the immutable fixture revision                                    |
+| `ai:data-project`     | Replace the owned graph atomically from a PostgreSQL snapshot                         |
+| `ai:data-status`      | Show dataset counts, endpoints, and projection freshness                              |
+| `ai:data-test`        | Validate source fidelity, normalization and fixture invariants without Docker         |
+| `ai:data-integration` | Test migrations, idempotency, constraints and graph rollback against running services |
 
 Mutation and integration targets are not cached. Run `data-up` before
 `data-integration`; integration tests do not reset databases. Pure data tests

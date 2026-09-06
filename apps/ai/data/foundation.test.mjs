@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import test from 'node:test';
 
 import {
-  dataRoot,
+  fixtureRoot,
   loadDataset,
   projectionStatements,
   seedSql,
@@ -18,7 +18,7 @@ const documents = Object.fromEntries(
   await Promise.all(
     t.source_revision.map(async (s) => [
       s.path,
-      await readFile(resolve(dataRoot, s.path), 'utf8'),
+      await readFile(resolve(fixtureRoot, s.path), 'utf8'),
     ]),
   ),
 );

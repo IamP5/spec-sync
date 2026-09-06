@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { readdir } from 'node:fs/promises';
 import { after, before, test } from 'node:test';
-import { compose, neo4j } from './database.mjs';
+import { compose } from './database.mjs';
 import { workspaceRoot } from './foundation.mjs';
 
 let app;
@@ -12,9 +12,8 @@ let configurations;
 let logs = '';
 
 before(async () => {
-  const graphAddress = await compose(['port', 'neo4j', '7474']);
   const address = await compose(['port', 'postgres', '5432']);
-  assert.match(address, /^127\.0\.0\.1:\d+$/, 'Run api:data-up first');
+  assert.match(address, /^127\.0\.0\.1:\d+$/, 'Run ai:data-up first');
   const jarDirectory = `${workspaceRoot}/apps/api/build/libs`;
   const jars = (await readdir(jarDirectory)).filter(
     (name) => name.endsWith('.jar') && !name.endsWith('-plain.jar'),
@@ -27,9 +26,6 @@ before(async () => {
       `${jarDirectory}/${jars[0]}`,
       '--server.address=127.0.0.1',
       '--server.port=0',
-      `--specsync.knowledge.url=http://${graphAddress}`,
-      '--specsync.knowledge.username=neo4j',
-      '--specsync.knowledge.password=specsync-local',
       '--spring.profiles.active=default',
       '--spring.docker.compose.enabled=false',
       '--spring.cloud.gcp.core.enabled=false',
@@ -51,7 +47,8 @@ before(async () => {
     );
     const finish = (error) => {
       clearTimeout(timeout);
-      error ? reject(error) : resolve();
+      if (error) reject(error);
+      else resolve();
     };
     app.once('error', finish);
     app.once('exit', (code) =>
@@ -208,86 +205,7 @@ test('single-vehicle specifications retain every attribute and source', async ()
   assert.equal(result.body.configurations.length, 1);
   assert.equal(result.body.rows.length, 21);
 });
-test('graph discovers accepted optional camera with package evidence', async () => {
-  const result = await request(
-    '/api/knowledge/capabilities?attributeCode=camera_360',
-  );
-  assert.equal(result.status, 200);
-  assert.equal(result.body.status, 'OK', JSON.stringify(result.body));
-  const limited = result.body.items.find(
-    (i) => i.configurationId === 'f94a2350-0a1a-5ad3-aef8-3c0c472c72a1',
-  );
-  assert.equal(limited.availability, 'OPTIONAL');
-  assert.ok(limited.packages.length);
-  assert.ok(limited.evidenceIds.length);
-  assert.ok(
-    !result.body.items.some(
-      (i) => i.configurationId === 'c28c64e4-801a-5d29-b4c2-083a888a79f3',
-    ),
-  );
-  const standard = await request(
-    '/api/knowledge/capabilities?attributeCode=camera_360&includeOptional=false',
-  );
-  assert.ok(
-    !standard.body.items.some(
-      (i) => i.configurationId === limited.configurationId,
-    ),
-  );
-});
-test('graph terminology preserves code and rejects malformed filters', async () => {
-  const result = await request('/api/knowledge/concepts?q=torque_max');
-  assert.equal(result.body.status, 'OK');
-  assert.equal(result.body.items[0].code, 'torque_max');
-  assert.equal(
-    (await request('/api/knowledge/capabilities?attributeCode=bad-code'))
-      .status,
-    422,
-  );
-});
-test('review traversal returns exact scoped excerpts without treating related opinion as specification evidence', async () => {
-  const marker = 'specsync-review-http-test';
-  const config = 'f94a2350-0a1a-5ad3-aef8-3c0c472c72a1';
-  try {
-    await neo4j([
-      {
-        statement: `
- MATCH (configuration:SpecSyncCatalog:VehicleConfiguration {id:$config})
- MATCH (attribute:SpecSyncCatalog:AttributeDefinition {code:'rear_suspension'})
- CREATE (source:SpecSyncReview:SourceRevision {test_run:$marker,id:'test-source',title:'Synthetic review test fixture',url:'https://example.com/test-review',media_type:'ARTICLE'})
- CREATE (chunk:SpecSyncReview:ContentChunk {test_run:$marker,id:'11111111-1111-4111-8111-111111111111',text:'Test: firm ride unloaded.',locator:'Test paragraph'})-[:FROM_REVISION]->(source)
- CREATE (aspect:SpecSyncReview:ReviewAspect {test_run:$marker,id:'test-aspect'})-[:RELATES_TO]->(attribute)
- CREATE (observation:SpecSyncReview:ReviewObservation {test_run:$marker,id:'test-observation',configuration_id:$config,model_id:configuration.model_id,review_status:'ACCEPTED',start_offset:6,end_offset:25,kind:'OPINION',conditions:'unloaded'})-[:ABOUT]->(aspect)
- CREATE (observation)-[:SUPPORTED_BY]->(chunk)`,
-        parameters: { marker, config },
-      },
-    ]);
-    const related = await request(
-      `/api/knowledge/related-reviews?configurationId=${config}&attributeCode=rear_suspension`,
-    );
-    assert.equal(related.body.status, 'OK', JSON.stringify(related.body));
-    const item = related.body.items.find((i) => i.id === 'test-observation');
-    assert.equal(item.excerpt, 'firm ride unloaded.');
-    assert.equal(item.scope, 'CONFIGURATION');
-    assert.equal(item.kind, 'OPINION');
-    const other = await request(
-      '/api/knowledge/related-reviews?configurationId=08e08761-a2e7-5ae5-b2ad-387e93829fb7&attributeCode=rear_suspension',
-    );
-    assert.ok(!other.body.items.some((i) => i.id === 'test-observation'));
-    const excerpt = await request(
-      '/api/knowledge/evidence/11111111-1111-4111-8111-111111111111',
-    );
-    assert.equal(excerpt.body.items[0].excerpt, item.excerpt);
-    const lexical = await request(
-      `/api/knowledge/reviews?q=firm&configurationId=${config}`,
-    );
-    assert.equal(lexical.body.status, 'OK', JSON.stringify(lexical.body));
-  } finally {
-    await neo4j([
-      {
-        statement:
-          'MATCH (n:SpecSyncReview {test_run:$marker}) DETACH DELETE n',
-        parameters: { marker },
-      },
-    ]);
-  }
+test('Spring no longer exposes graph retrieval', async () => {
+  const result = await fetch(`${base}/api/knowledge/concepts?q=torque_max`);
+  assert.equal(result.status, 403);
 });

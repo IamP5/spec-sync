@@ -13,6 +13,7 @@ import {
   singleSelectionSchema,
 } from '../catalog/contracts';
 import { retrieveReviews } from '../catalog/review-search';
+import { attributeCodeSchema, retrieveGraph } from '../graph/retrieval';
 
 const pageSchema = z.object({
   items: z.array(configurationSchema),
@@ -99,18 +100,16 @@ export const resolveComparisonConcepts = createTool({
   outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>
     withToolFailure(() =>
-      catalogRequest(
-        '/api/knowledge/concepts',
-        input,
-        knowledgeSchema,
-        context?.abortSignal,
-      ),
+      retrieveGraph('concepts', input, context?.abortSignal),
     ),
 });
 const capabilityInput = z.object({
-  attributeCode: z.string(),
-  market: z.string().optional(),
-  modelYear: z.number().int().optional(),
+  attributeCode: attributeCodeSchema,
+  market: z
+    .string()
+    .regex(/^[A-Z]{2}$/)
+    .optional(),
+  modelYear: z.number().int().min(1900).max(2200).optional(),
   includeOptional: z.boolean().default(true),
   limit: z.number().int().min(1).max(30).default(10),
 });
@@ -122,18 +121,13 @@ export const findConfigurationsByCapabilities = createTool({
   outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>
     withToolFailure(() =>
-      catalogRequest(
-        '/api/knowledge/capabilities',
-        input,
-        knowledgeSchema,
-        context?.abortSignal,
-      ),
+      retrieveGraph('capabilities', input, context?.abortSignal),
     ),
 });
 const reviewInput = z.object({
   q: z.string().max(500).default(''),
   configurationId: z.string().uuid().optional(),
-  attributeCode: z.string().optional(),
+  attributeCode: attributeCodeSchema.optional(),
   limit: z.number().int().min(1).max(30).default(10),
 });
 export const searchReviewEvidence = createTool({
@@ -147,7 +141,7 @@ export const searchReviewEvidence = createTool({
 });
 const relatedInput = z.object({
   configurationId: z.string().uuid(),
-  attributeCode: z.string(),
+  attributeCode: attributeCodeSchema,
   limit: z.number().int().min(1).max(30).default(10),
 });
 export const getRelatedReviews = createTool({
@@ -158,12 +152,7 @@ export const getRelatedReviews = createTool({
   outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>
     withToolFailure(() =>
-      catalogRequest(
-        '/api/knowledge/related-reviews',
-        input,
-        knowledgeSchema,
-        context?.abortSignal,
-      ),
+      retrieveGraph('related-reviews', input, context?.abortSignal),
     ),
 });
 export const getEvidenceExcerpt = createTool({
@@ -174,12 +163,7 @@ export const getEvidenceExcerpt = createTool({
   outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>
     withToolFailure(() =>
-      catalogRequest(
-        `/api/knowledge/evidence/${input.evidenceId}`,
-        {},
-        knowledgeSchema,
-        context?.abortSignal,
-      ),
+      retrieveGraph('evidence', { q: input.evidenceId }, context?.abortSignal),
     ),
 });
 export const vehicleTools = {

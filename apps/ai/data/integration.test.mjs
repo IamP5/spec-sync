@@ -27,7 +27,7 @@ const graphMetadata = async () =>
 
 before(async () => {
   ({ dataset, digest } = await loadDataset());
-  // The services must already be healthy (api:data-up). No destructive reset is performed.
+  // The services must already be healthy (ai:data-up). No destructive reset is performed.
   await migrate();
   await seed();
   await project();

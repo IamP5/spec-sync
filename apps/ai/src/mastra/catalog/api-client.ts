@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-/** User text never controls the API origin or endpoint. Vectors travel in a POST body. */
+/** User text never controls the API origin or endpoint. */
 export async function catalogRequest<T>(
   path: string,
   params: Record<string, unknown>,
@@ -9,22 +9,17 @@ export async function catalogRequest<T>(
 ): Promise<T> {
   const origin = process.env['SPECSYNC_API_URL'] ?? 'http://127.0.0.1:8080';
   const url = new URL(path, origin);
-  const post =
-    path === '/api/knowledge/reviews' && Array.isArray(params['embedding']);
-  if (!post)
-    for (const [key, value] of Object.entries(params))
-      if (value !== undefined && value !== null)
-        url.searchParams.set(
-          key,
-          Array.isArray(value) ? value.join(',') : String(value),
-        );
+  for (const [key, value] of Object.entries(params))
+    if (value !== undefined && value !== null)
+      url.searchParams.set(
+        key,
+        Array.isArray(value) ? value.join(',') : String(value),
+      );
   const timeout = AbortSignal.timeout(15000);
   const response = await fetch(url, {
-    method: post ? 'POST' : 'GET',
-    body: post ? JSON.stringify(params) : undefined,
+    method: 'GET',
     headers: {
       accept: 'application/json',
-      ...(post ? { 'content-type': 'application/json' } : {}),
     },
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });

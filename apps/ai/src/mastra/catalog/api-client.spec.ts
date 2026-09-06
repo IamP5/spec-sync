@@ -43,16 +43,6 @@ describe('catalog HTTP boundary', () => {
       ),
     ).toMatchObject({ status: 'ERROR', retryable: false });
   });
-  it('sends review vectors in a JSON body instead of the URL', async () => {
-    const fetch = vi.fn().mockResolvedValue(new Response('{"items":[]}'));
-    vi.stubGlobal('fetch', fetch);
-    const params = { q: 'ride comfort', embedding: Array(768).fill(0.1) };
-    await catalogRequest('/api/knowledge/reviews', params, z.unknown());
-    const [url, options] = fetch.mock.calls[0] as [URL, RequestInit];
-    expect(url.search).toBe('');
-    expect(options.method).toBe('POST');
-    expect(JSON.parse(options.body as string)).toEqual(params);
-  });
   it('forwards cancellation to fetch', async () => {
     const controller = new AbortController();
     controller.abort();

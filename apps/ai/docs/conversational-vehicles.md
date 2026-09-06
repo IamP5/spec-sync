@@ -20,8 +20,9 @@ The agent has ten typed tools: `searchVehicleConfigurations`,
 `listComparisonAttributes`, `getVehicleSpecifications`,
 `compareVehicleConfigurations`, `resolveComparisonConcepts`,
 `findConfigurationsByCapabilities`, `searchReviewEvidence`, `getRelatedReviews`,
-`getEvidenceExcerpt`, and `discoverVehicleContent`. All are read-only. Graph tools
-use fixed parameterized queries behind Spring Boot; arbitrary Cypher is not exposed.
+`getEvidenceExcerpt`, and `discoverVehicleContent`. All are read-only. Graph tools connect directly from Mastra to Neo4j using the official JavaScript
+driver and fixed parameterized Cypher. Spring Boot has no graph endpoints or Neo4j
+connection. Tool names and result schemas remain unchanged.
 
 Specification responses render directly as a wide Zard comparison matrix. An unscoped catalog request renders a dedicated interactive catalog; configuration searches used only to resolve named vehicles remain background work. The browser supports attribute search and an exact-value difference filter, keeping unknown and conflicting cells visible. Related reviews open in a dialog with vehicle/media/text filters and selectable evidence. A selection prepares an editable composer draft with evidence IDs; it never sends automatically or ingests content. See `apps/web/docs/comparison-experience.md` for the production catalog and version E comparison decisions and retrieval limits.
 Accepted values are selected by `selectedObservationId`, never by observation order.
@@ -39,33 +40,44 @@ from the retained messages. No selection is reconstructed from model prose. Obso
 From the repository root:
 
 ```sh
-npm exec -- nx run api:data-up
+npm exec -- nx run ai:data-up
 ```
 
 This migrates, seeds and projects the catalog and any existing review records.
 Review content is deliberately empty initially. Alias seeding adds linguistic
 synonyms, not unverified manufacturer functional equivalences.
 
-Set API environment variables before `npm exec -- nx run api:bootRun`:
+In `apps/ai/.env`, set `SPECSYNC_API_URL=http://127.0.0.1:8080` for the
+PostgreSQL catalog and configure direct graph access:
 
-- `NEO4J_HTTP_URL`: HTTP origin from `docker compose port neo4j 7474`, for example
-  `http://127.0.0.1:56570` (ports can change).
+- `NEO4J_URI`: `bolt://` plus the port from `docker compose port neo4j 7687`.
 - `NEO4J_USERNAME=neo4j`, `NEO4J_PASSWORD=specsync-local` for local Compose.
+- `NEO4J_DATABASE=neo4j`.
 
-In `apps/ai/.env`, set `SPECSYNC_API_URL=http://127.0.0.1:8080`, retaining the
-existing Vertex project/location and ADC setup. Then:
+For Aura, use its `neo4j+s://` URI and database credentials from Secret Manager.
+Production requires verified TLS. Terraform supplies these secrets to the AI service
+only. Aura management credentials (`AURA_CLIENT_ID`, `AURA_CLIENT_SECRET`) belong
+only to Terraform and never reach either application runtime.
+
+Start Spring Boot, Mastra and the web app:
 
 ```sh
+npm exec -- nx run api:bootRun
 npm exec -- nx dev ai
 npm exec -- nx serve web
 ```
 
-The AI service defaults to localhost:8080 for local catalog access. Terraform now
-supplies the deployed API URL. Cloud graph connectivity still requires a reachable
-Neo4j deployment and corresponding API environment configuration; this change does
-not provision or deploy a cloud graph. Graph errors return UNAVAILABLE and preserve
-catalog-only functionality. Vertex access is required for conversation and external
-search; API and UI fixture tests do not require model credentials.
+The driver pool is created lazily so a graph outage does not prevent catalog tools
+from working. Every graph call uses a read transaction, a 15-second request deadline
+and an 8-second transaction timeout; cancellation rolls back the transaction.
+Sessions close after every call and the pool closes on service shutdown.
+Graph failures return `UNAVAILABLE`, never an absence claim. The agent can execute
+only the fixed retrieval operations; projection writes are not registered as tools.
+
+Offline fixture and projection tooling now lives in `apps/ai/data`, with `ai:data-*`
+Nx targets. PostgreSQL schema migrations remain owned by Spring Boot. These manual
+maintenance targets deliberately use local Compose endpoints, ignoring Aura runtime
+credentials, so tests and rebuilds cannot overwrite the cloud graph.
 
 ## Existing review data contract
 
@@ -76,7 +88,7 @@ zero-based and end-exclusive; database validation rejects spans outside the pass
 Only ACCEPTED observations are retrieved. Model-scoped observations are returned as
 MODEL and must not be asserted for every trim or year.
 
-`api:data-project` projects those existing records under `SpecSyncReview`. It never
+`ai:data-project` projects those existing records under `SpecSyncReview`. It never
 fetches content or creates observations. The catalog rebuild invalidates the review
 projection marker before reconnecting the review graph. Each graph response carries
 its projection fingerprint; this is a snapshot identifier, not a claim of current
@@ -85,8 +97,7 @@ PostgreSQL synchronization. Rebuild after canonical changes.
 Free-text review search uses a full-text index with literal query tokens, candidate
 expansion through accepted observations, and optional vector retrieval. Query vectors
 are generated only when `SPECSYNC_REVIEW_EMBEDDING_MODEL` is set in the AI service.
-Set the same model on the API and set
-`SPECSYNC_REVIEW_EMBEDDING_DIMENSIONS` in the AI service to the indexed dimensions.
+Set `SPECSYNC_REVIEW_EMBEDDING_DIMENSIONS` in the AI service to the indexed dimensions.
 Stored embeddings must use a single model and dimension. The vector index is created
 when embedded chunks exist. A changed embedding model/dimension requires an explicit
 index rebuild; no embeddings are generated during projection.
@@ -102,20 +113,31 @@ Quotes come from stored excerpt spans; translations must be labeled as translati
 ```sh
 npm exec -- nx run ai:typecheck
 npm exec -- nx run ai:test
+npm exec -- nx run ai:graph-integration
 npm exec -- nx run ai:build
 npm exec -- nx run web:test
 npm exec -- nx run web:test-arch
 npm exec -- nx run web:build
 npm exec -- nx run api:test
-npm exec -- nx run api:comparison-integration
-npm exec -- nx run api:data-integration
+npm exec -- nx run ai:comparison-integration
+npm exec -- nx run ai:data-integration
 ```
 
-The HTTP integration suite uses real PostgreSQL and Neo4j. Review traversal tests
+The catalog HTTP suite uses real PostgreSQL; `ai:graph-integration` exercises
+Mastra retrieval against real local Neo4j. Review traversal tests
 create clearly synthetic temporary graph nodes, test excerpts and configuration
-isolation, and delete those nodes in a `finally` block. They are never demo content.
+isolation, and delete those nodes during suite cleanup. They are never demo content.
 
 Suggested live conversation: compare Ranger Black and Limited in BR 2026 on power,
 torque and camera; add transmission; ask for sources; discover configurations with
 an optional camera; ask for related suspension reviews; discover external Ranger
 review videos. An empty indexed review corpus must be reported honestly.
+
+`ai:graph-smoke` is a read-only check of an existing deployed projection. Export
+`NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, and `NEO4J_DATABASE` from Secret
+Manager before running it. It never seeds or rebuilds the target database.
+
+The [Neo4j JavaScript driver connection guide](https://neo4j.com/docs/javascript-manual/current/connect/)
+describes Aura TLS URIs and driver lifecycle. The runtime caps its pool at ten
+connections per Cloud Run instance; revise that cap together with service scaling
+if graph concurrency grows.

@@ -22,7 +22,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 /** Exercises the actual JDBC adapter and production view with the curated fixture.
- * PostgreSQL migration/HTTP coverage also runs in api:comparison-integration. */
+ * PostgreSQL migration/HTTP coverage also runs in ai:comparison-integration. */
 class CatalogJdbcGatewayIT {
     private CatalogJdbcGateway gateway;
     private JdbcTemplate jdbc;

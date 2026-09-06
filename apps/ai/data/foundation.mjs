@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 export const dataRoot = dirname(fileURLToPath(import.meta.url));
 export const workspaceRoot = resolve(dataRoot, '../../..');
+export const fixtureRoot = resolve(workspaceRoot, 'apps/api/data');
 export const tableNames = [
   'brand',
   'vehicle_model',
@@ -28,13 +29,13 @@ export const sqlLiteral = (text) => {
 };
 
 export async function loadDataset() {
-  const bytes = await readFile(resolve(dataRoot, 'curated-pickups.json'));
+  const bytes = await readFile(resolve(fixtureRoot, 'curated-pickups.json'));
   const dataset = JSON.parse(bytes.toString());
   const documents = {};
   for (const source of dataset.tables.source_revision) {
     assert(/^sources\/[a-z-]+\.md$/.test(source.path), 'Invalid source path');
     documents[source.path] = await readFile(
-      resolve(dataRoot, source.path),
+      resolve(fixtureRoot, source.path),
       'utf8',
     );
   }

@@ -29,7 +29,7 @@ export async function project() {
   const snapshot = JSON.parse(await postgres(snapshotSql()));
   if (!snapshot.seed_dataset.length || !snapshot.vehicle_configuration.length) {
     throw new Error(
-      'Catalog is not seeded. Run api:data-seed before projecting.',
+      'Catalog is not seeded. Run ai:data-seed before projecting.',
     );
   }
   const fingerprint = sha256(JSON.stringify(snapshot));
@@ -41,7 +41,7 @@ export async function project() {
   );
   if (after !== fingerprint) {
     throw new Error(
-      'PostgreSQL changed during projection. The graph contains a consistent older snapshot; rerun api:data-project.',
+      'PostgreSQL changed during projection. The graph contains a consistent older snapshot; rerun ai:data-project.',
     );
   }
   await projectReviews();
@@ -120,7 +120,7 @@ async function main(command) {
       break;
     default:
       throw new Error(
-        'Usage: node apps/api/data/cli.mjs <up|migrate|seed|project|status>',
+        'Usage: node apps/ai/data/cli.mjs <up|migrate|seed|project|status>',
       );
   }
 }

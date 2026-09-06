@@ -10,8 +10,6 @@ public class SecurityConfiguration {
 
     @Bean
     SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
-        // This POST only searches an index; it cannot mutate catalog or review content.
-        http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/knowledge/reviews"));
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(
                         org.springframework.http.HttpMethod.GET,
@@ -19,10 +17,7 @@ public class SecurityConfiguration {
                         "/api/vehicle-configurations",
                         "/api/comparison-attributes",
                         "/api/comparisons",
-                        "/api/knowledge/**",
                         "/api/vehicle-specifications")
-                .permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/knowledge/reviews")
                 .permitAll()
                 .anyRequest()
                 .authenticated());

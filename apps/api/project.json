@@ -58,64 +58,6 @@
         "excludeDependsOn": false
       },
       "inputs": ["default"]
-    },
-    "data-up": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "command": "node apps/api/data/cli.mjs up"
-      }
-    },
-    "data-migrate": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "command": "node apps/api/data/cli.mjs migrate"
-      }
-    },
-    "data-seed": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "command": "node apps/api/data/cli.mjs seed"
-      }
-    },
-    "data-project": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "command": "node apps/api/data/cli.mjs project"
-      }
-    },
-    "data-status": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "command": "node apps/api/data/cli.mjs status"
-      }
-    },
-    "data-test": {
-      "executor": "nx:run-commands",
-      "cache": true,
-      "inputs": ["{projectRoot}/data/**/*"],
-      "options": {
-        "command": "node --test apps/api/data/foundation.test.mjs"
-      }
-    },
-    "data-integration": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "options": {
-        "command": "node --test apps/api/data/integration.test.mjs"
-      }
-    },
-    "comparison-integration": {
-      "executor": "nx:run-commands",
-      "cache": false,
-      "dependsOn": ["bootJar"],
-      "options": {
-        "command": "node --test apps/api/data/comparison.integration.test.mjs"
-      }
     }
   }
 }

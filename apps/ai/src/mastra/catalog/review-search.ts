@@ -1,6 +1,5 @@
+import { retrieveGraph } from '../graph/retrieval';
 import { vertex } from '../models';
-import { catalogRequest } from './api-client';
-import { knowledgeSchema } from './contracts';
 
 export async function retrieveReviews(
   input: Record<string, unknown>,
@@ -24,10 +23,5 @@ export async function retrieveReviews(
     });
     embedding = output.embeddings[0];
   }
-  return catalogRequest(
-    '/api/knowledge/reviews',
-    { ...input, embedding },
-    knowledgeSchema,
-    signal,
-  );
+  return retrieveGraph('reviews', { ...input, embedding }, signal);
 }

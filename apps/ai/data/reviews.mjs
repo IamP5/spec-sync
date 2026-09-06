@@ -88,7 +88,7 @@ export async function seedAttributeAliases() {
   await postgres(
     await readFile(
       new URL(
-        '../src/main/resources/db/migration/V4__attribute_terminology.sql',
+        '../../api/src/main/resources/db/migration/V4__attribute_terminology.sql',
         import.meta.url,
       ),
       'utf8',

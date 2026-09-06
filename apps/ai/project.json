@@ -49,6 +49,88 @@
       "options": {
         "command": "bash tools/deploy/ai.sh"
       }
+    },
+    "data-up": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node apps/ai/data/cli.mjs up"
+      }
+    },
+    "data-migrate": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node apps/ai/data/cli.mjs migrate"
+      }
+    },
+    "data-seed": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node apps/ai/data/cli.mjs seed"
+      }
+    },
+    "data-project": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node apps/ai/data/cli.mjs project"
+      }
+    },
+    "data-status": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node apps/ai/data/cli.mjs status"
+      }
+    },
+    "data-test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/data/**/*",
+        "{workspaceRoot}/apps/api/data/**/*"
+      ],
+      "options": {
+        "command": "node --test apps/ai/data/foundation.test.mjs"
+      }
+    },
+    "data-integration": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node --test apps/ai/data/integration.test.mjs"
+      }
+    },
+    "comparison-integration": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": [
+        {
+          "target": "bootJar",
+          "projects": ["api"]
+        }
+      ],
+      "options": {
+        "command": "node --test apps/ai/data/comparison.integration.test.mjs"
+      }
+    },
+    "graph-integration": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest run --config vitest.graph.config.mts",
+        "cwd": "apps/ai"
+      }
+    },
+    "graph-smoke": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "vitest run --config vitest.smoke.config.mts",
+        "cwd": "apps/ai"
+      }
     }
   }
 }

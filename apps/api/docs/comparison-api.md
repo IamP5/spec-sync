@@ -74,7 +74,7 @@ Hilux camera conflict. Sources remain curated notes, not OEM-verified facts.
 Start the seeded databases, then run the API from the repository root:
 
 ```bash
-npm exec -- nx run api:data-up
+npm exec -- nx run ai:data-up
 npm exec -- nx run api:bootRun
 ```
 
@@ -114,13 +114,13 @@ the PostgreSQL migration constraints.
 npm exec -- nx run api:spotlessCheck
 npm exec -- nx run api:archTest
 npm exec -- nx run api:test
-npm exec -- nx run api:comparison-integration
+npm exec -- nx run ai:comparison-integration
 ```
 
 The integration target builds the boot jar and starts a temporary Java 25 API on a
 random loopback port against this repository's already-seeded Compose PostgreSQL.
 It tests actual HTTP serialization and error handling, then stops its API process.
-It does not reset databases or require Neo4j. Use `api:data-integration` separately
+It does not reset databases or require Neo4j. Use `ai:data-integration` separately
 for migration, publication constraints and graph projection checks.
 
 The API's explicit Gradle task overrides hash the project's source and fixture

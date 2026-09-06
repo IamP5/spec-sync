@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import driver from 'neo4j-driver';
 
 import { workspaceRoot } from './foundation.mjs';
 
@@ -62,25 +63,51 @@ export function postgres(sql) {
 }
 
 export async function neo4j(statements) {
-  const address = await compose(['port', 'neo4j', '7474']);
+  const address = await compose(['port', 'neo4j', '7687']);
   if (!/^127\.0\.0\.1:\d+$/.test(address))
     throw new Error('Expected a loopback-only Neo4j Compose port');
-  const response = await fetch(`http://${address}/db/neo4j/tx/commit`, {
-    method: 'POST',
-    redirect: 'error',
-    signal: AbortSignal.timeout(60000),
-    headers: {
-      authorization: `Basic ${Buffer.from('neo4j:specsync-local').toString('base64')}`,
-      'content-type': 'application/json',
+  // Maintenance targets intentionally ignore Aura credentials; they only mutate local fixtures.
+  const connection = driver.driver(
+    `bolt://${address}`,
+    driver.auth.basic('neo4j', 'specsync-local'),
+    {
+      disableLosslessIntegers: true,
+      maxTransactionRetryTime: 0,
     },
-    body: JSON.stringify({ statements }),
-  });
-  if (!response.ok) throw new Error(`Neo4j HTTP ${response.status}`);
-  const result = await response.json();
-  // Neo4j can return HTTP 200 for a transaction that was rolled back.
-  if (result.errors?.length)
-    throw new Error(
-      result.errors.map((e) => `${e.code}: ${e.message}`).join('\n'),
+  );
+  const session = connection.session({ database: 'neo4j' });
+  const parameters = (value) => {
+    if (typeof value === 'number' && Number.isInteger(value))
+      return driver.int(value);
+    if (Array.isArray(value)) return value.map(parameters);
+    if (value && typeof value === 'object')
+      return Object.fromEntries(
+        Object.entries(value).map(([k, v]) => [k, parameters(v)]),
+      );
+    return value;
+  };
+  try {
+    return await session.executeWrite(
+      async (tx) => {
+        const results = [];
+        for (const { statement, parameters: params = {} } of statements) {
+          const result = await tx.run(statement, parameters(params));
+          results.push({
+            data: result.records.map((record) => ({
+              row: record.keys.map((key) => record.get(key)),
+            })),
+          });
+        }
+        return results;
+      },
+      { timeout: 60000 },
     );
-  return result.results;
+  } catch (error) {
+    throw new Error(`${error.code ?? 'Neo4jError'}: ${error.message}`, {
+      cause: error,
+    });
+  } finally {
+    await session.close();
+    await connection.close();
+  }
 }

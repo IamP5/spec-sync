@@ -15,7 +15,6 @@ export const apiChecks = {
   // before every commit: formatting (Spotless) and the ArchUnit rules.
   // `archTest` compiles main and test sources, so a compile error surfaces here too.
   fastSteps: [
-    'npx nx run api:data-test --output-style=static-failures-only',
     'npx nx run api:spotlessCheck --output-style=static-failures-only',
     'npx nx run api:archTest --output-style=static-failures-only',
   ],
