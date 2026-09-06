@@ -41,3 +41,25 @@ provider "registry.terraform.io/hashicorp/random" {
     "zh:c94784f005708890dc6895afd53636ec00ec1e430b15d41e5aebfb1d4b39bd04",
   ]
 }
+
+provider "registry.terraform.io/neo4j-labs/neo4jaura" {
+  version     = "1.1.0"
+  constraints = "1.1.0"
+  hashes = [
+    "h1:M7KIfskDTeyrgf4qsdrBzTU5PQNTnkMrFf5YnPzva2o=",
+    "zh:02dc4317c1e872fc6b34e0ff72cd797b0aa501c4c9a36759c06bc6c6c5f474b9",
+    "zh:0356c78257ac77cdf61a2e381db027b040b5c6796ebe11a6a5713f3e1f2cae61",
+    "zh:12736e2d79396227413ac6dffc6f52ce83054a6c63c62d68042a383f19ca079f",
+    "zh:21606b18ff13f1f64090043e3e1bfd34ff7250e3b7788d2ab63310cda0628ed5",
+    "zh:229f1742a26f8314bd84b3554207b6a0444699e7225a904f7574eeb9633af460",
+    "zh:4155bbca4c889a21f6b942c0670cd7e61270d776952296044cba8ad7b409597b",
+    "zh:6fe2f8120ef5a821ac4e886cf48d1102a9aea15919476399793780900780f9cf",
+    "zh:7c6662b185cc00d51bd90fc6af11aab3d1ef73214be5245878c8cd3b24a85af2",
+    "zh:8169e96851eb4367b15a753124306cebb95f8ba269d819f5499a3ee7b39a7c5e",
+    "zh:9c098e92afedee09efb13931eaec58456b351d2b74fa05d27462e971ae5af489",
+    "zh:a33d53acc640dc93b81352ba633cf392bc8c7614a72d320d59d3dcdb22d73fc4",
+    "zh:a35d79c590bb48ec549ca6d1cbefc7519508ff9a5d9b3cefceabf7f79ecccdfc",
+    "zh:afb6e2f3365ee32af06e65647ad47fee9f1dfbd97faf88ff0cc79d63801d554c",
+    "zh:ec46a5815196214623892e0b3434c57f79aa55733736ddb62237a42bb1ade336",
+  ]
+}

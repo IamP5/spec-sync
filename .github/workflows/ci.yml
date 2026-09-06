@@ -105,5 +105,16 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Load Aura management credentials
+        id: aura
+        uses: google-github-actions/get-secretmanager-secrets@v3
+        with:
+          secrets: |-
+            client_id:${{ vars.GCP_PROJECT_ID }}/AURA_CLIENT_ID
+            client_secret:${{ vars.GCP_PROJECT_ID }}/AURA_CLIENT_SECRET
+
       - name: Terraform plan (dev)
+        env:
+          AURA_CLIENT_ID: ${{ steps.aura.outputs.client_id }}
+          AURA_CLIENT_SECRET: ${{ steps.aura.outputs.client_secret }}
         run: npm exec -- nx run infra:plan --configuration=dev

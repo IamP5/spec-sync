@@ -25,8 +25,8 @@ resource "google_secret_manager_secret_iam_member" "api_db_password" {
   member    = google_service_account.api.member
 }
 
-# The Mastra AI service only talks to Vertex AI (Application Default Credentials of
-# this account, no keys) and writes logs/metrics.
+# Mastra uses ADC for Vertex AI and secret-scoped database credentials for AuraDB.
+# Aura management credentials belong to the Terraform runner, never this account.
 resource "google_service_account" "ai" {
   account_id   = "${local.name}-ai"
   display_name = "${local.name} AI (Cloud Run)"

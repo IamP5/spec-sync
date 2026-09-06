@@ -7,7 +7,7 @@ name: Deploy
 # Required GitHub repository *variables* (Settings > Secrets and variables > Actions > Variables).
 # Their values are printed by `nx run infra:output` under `github_actions` after the first apply:
 #   GCP_PROJECT_ID, GCP_REGION, GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_DEPLOYER_SERVICE_ACCOUNT, APP_DOMAIN (optional)
-# No long-lived keys: auth uses Workload Identity Federation (id-token permission below).
+# GCP auth uses Workload Identity Federation; Aura API credentials come from Secret Manager.
 
 on:
   push:
@@ -75,7 +75,18 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Load Aura management credentials
+        id: aura
+        uses: google-github-actions/get-secretmanager-secrets@v3
+        with:
+          secrets: |-
+            client_id:${{ vars.GCP_PROJECT_ID }}/AURA_CLIENT_ID
+            client_secret:${{ vars.GCP_PROJECT_ID }}/AURA_CLIENT_SECRET
+
       - name: Terraform apply (dev)
+        env:
+          AURA_CLIENT_ID: ${{ steps.aura.outputs.client_id }}
+          AURA_CLIENT_SECRET: ${{ steps.aura.outputs.client_secret }}
         run: npm exec -- nx run infra:apply --configuration=dev
 
   # 2. Then only the apps whose code (or deploy scripts, or dependencies) changed.

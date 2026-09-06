@@ -162,6 +162,33 @@
       "metadata": {
         "description": "Cloud SQL status (needs GCP_PROJECT_ID; manual override of the scheduler)"
       }
+    },
+    "aura-import": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["initialize"],
+      "cache": false,
+      "options": {
+        "command": "node ../../scripts/adopt-aura.mjs"
+      },
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": {
+          "cwd": "infra/environments/dev",
+          "env": {
+            "AURA_INSTANCE_ID": "6b4eeb6d",
+            "AURA_PROJECT_ID": "5fb8597f-1eec-4da7-b44e-88fc721d8736"
+          }
+        }
+      },
+      "metadata": {
+        "description": "Adopt existing Aura instance and repair provider 1.1.0 import metadata; requires Aura API credentials."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --test infra/scripts/*.test.mjs"
+      }
     }
   }
 }

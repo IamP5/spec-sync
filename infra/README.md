@@ -1,6 +1,6 @@
 # infra
 
-Terraform for the Google Cloud environments of SpecSync, managed through Nx with
+Terraform for the Google Cloud and Neo4j AuraDB environments of SpecSync, managed through Nx with
 [`@nx-extend/terraform`](https://github.com/tripss/nx-extend/tree/master/packages/terraform).
 
 ## Layout
@@ -13,10 +13,11 @@ infra/
 │   ├── artifact-registry/
 │   ├── network/          # VPC, Direct VPC egress subnet, private services access peering
 │   ├── database/         # Cloud SQL Postgres + app user + password in Secret Manager
+│   ├── neo4j-aura/       # AuraDB on GCP, protected against destruction
 │   ├── cloud-sql-schedule/ # Cloud Scheduler jobs that start/stop the instance (dev cost control)
 │   ├── pubsub/           # topic + subscriptions
 │   ├── storage-bucket/
-│   ├── cloud-run-service/# generic Cloud Run v2 service (used for api and web)
+│   ├── cloud-run-service/# generic Cloud Run v2 service (used for api, ai and web)
 │   └── github-deployer/  # deployer SA + Workload Identity Federation for GitHub Actions
 └── environments/
     └── dev/              # one root module per environment: backend, sizing, composition
@@ -39,6 +40,7 @@ environment".
                  │        └──► Vertex AI (Gemini, via service account)
                  │
                  └──► Cloud Run "ai" (Mastra, Node)
+                          ├──► Neo4j AuraDB (GCP us-central1; credentials from Secret Manager)
                           └──► Vertex AI (Gemini, via service account; location = var.vertex_location)
   GitHub Actions ──► Workload Identity Federation ──► deployer service account (no keys)
 ```
@@ -47,7 +49,9 @@ The browser only talks to the `web` service, which proxies API paths to the `api
 and `/ai/*` (prefix stripped, Server-Sent Events unbuffered) to the `ai` service. SPA, API
 and AI therefore share one origin: the `/api` and `/ai` proxies used by `nx serve web` behave
 the same in the cloud and there is no CORS configuration. No load balancer; idle cost is
-Cloud SQL only. The `ai` service is stateless (no database); Gemini is not served from every
+Cloud SQL and AuraDB. The `ai` service keeps no local state; AuraDB stores the shared
+vehicle graph. This infrastructure supplies its connection; moving graph tools from the
+Spring API into Mastra is a separate application change. Gemini is not served from every
 region, so its Vertex location is a separate variable (`vertex_location`, default `global`,
 which is the only location serving Gemini 3.x; regional endpoints stop at the 2.5 family).
 
@@ -74,6 +78,8 @@ Variables come from `TF_VAR_*` environment variables or a git-ignored
 `environments/<env>/terraform.tfvars` (see `terraform.tfvars.example`). Deploy scripts read
 `GCP_PROJECT_ID`, `GCP_REGION` and `DEPLOY_ENV`.
 
+`npm exec -- nx run infra:test` verifies the guarded Aura import metadata repair.
+
 ## First-time setup
 
 1. Create a GCP project with billing enabled and `gcloud auth application-default login` as an
@@ -81,7 +87,8 @@ Variables come from `TF_VAR_*` environment variables or a git-ignored
 2. Pick a globally unique state bucket name. Set it in
    [`bootstrap/variables.tf`](bootstrap/variables.tf) and in every
    `environments/<env>/backend.tf` (default `specsync-tfstate`).
-3. Bootstrap the state bucket, then apply the environment:
+3. Configure the Aura instance and secrets described below, then bootstrap the state bucket
+   and apply the environment:
 
    ```bash
    export TF_VAR_project_id=<gcp-project-id>
@@ -92,7 +99,8 @@ Variables come from `TF_VAR_*` environment variables or a git-ignored
 
 4. Copy the `github_actions` output (`nx run infra:output -c dev`) into the repository's
    Actions **variables**: `GCP_PROJECT_ID`, `GCP_REGION`, `GCP_WORKLOAD_IDENTITY_PROVIDER`,
-   `GCP_DEPLOYER_SERVICE_ACCOUNT`, `APP_DOMAIN`. No secrets are needed.
+   `GCP_DEPLOYER_SERVICE_ACCOUNT`, `APP_DOMAIN`. Credentials live in GCP Secret Manager;
+   no GitHub repository secrets or GCP service-account keys are needed.
 5. If you set a domain, create the records listed in the `domain_dns_records` output. Cloud Run
    domain mappings only exist in a few regions (see
    [`modules/cloud-run-service/main.tf`](modules/cloud-run-service/main.tf)); elsewhere put
@@ -100,13 +108,87 @@ Variables come from `TF_VAR_*` environment variables or a git-ignored
 6. Push to `main`. The first `Deploy` run replaces the placeholder images of the three Cloud
    Run services. Use "Run workflow" with `all=true` if the first run picks up nothing.
 
+## Neo4j AuraDB
+
+The dev root adopts existing instance `6b4eeb6d` (`My instance`) using a declarative
+`import` block in [`environments/dev/aura.tf`](environments/dev/aura.tf). It belongs to
+Aura project `5fb8597f-1eec-4da7-b44e-88fc721d8736` and runs on GCP in `us-central1`,
+with the `professional-db` tier, 2 GB memory and 4 GB storage. This region is independent
+of Cloud Run's `southamerica-east1`. The module has `prevent_destroy = true`; a change
+requiring replacement must fail instead of deleting the populated database. Keep the
+resource block in configuration: removing it also removes that lifecycle protection.
+
+Provider 1.1.0's [instance read implementation](https://github.com/neo4j-labs/terraform-provider-neo4jaura/blob/v1.1.0/internal/resource/instance.go)
+does not populate `project_id` or its creation-version selector when importing. A normal
+import therefore incorrectly plans replacement, including when those fields are ignored.
+Before the first plan against an existing instance, run the one-time adoption target:
+
+```bash
+# With the environment variables below already loaded:
+npm exec -- nx run infra:aura-import -c dev
+```
+
+This verifies the instance's Aura project through the management API, backs up Terraform
+state to a private temporary directory, imports the instance, and restores only the two
+missing state fields. It advances the serial once, retains lineage and uses Terraform's
+locked state push with stale-state protection. It never changes database contents. It refuses conflicting
+metadata and is safe to rerun. Backups contain secrets from other Terraform modules;
+keep them private and remove them after verification. Normal plans retain change detection
+for every configured field; destruction protection stays enabled. The helper is restricted
+to provider 1.1.0 and should be revisited when upgrading. The dev state has already been
+adopted; CI only needs normal plan/apply operations. The provider still does not refresh
+those two metadata fields from Aura, so check Aura directly before a project or engine
+version migration.
+
+The pinned [Neo4j Labs provider](https://neo4j.com/labs/neo4j-aura-terraform-provider/)
+uses **Aura API credentials**, which differ from database credentials:
+
+| Secret in `fiap-challenge-ford`                 | Consumer                 | Purpose                                  |
+| ----------------------------------------------- | ------------------------ | ---------------------------------------- |
+| `AURA_CLIENT_ID`, `AURA_CLIENT_SECRET`          | Terraform runner         | Manage the Aura instance through its API |
+| `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` | Mastra Cloud Run service | Connect to the graph database            |
+
+The `specsync-terraform` API credential was created in Aura Account settings → Client
+credentials and stored in Secret Manager. CI uses its existing federated deployer identity
+to fetch the two management secrets, masks them, and passes them only to the Terraform
+step. The deployer already has Secret Manager admin access. For local operations, with
+GCP ADC configured, load the same secrets into the environment without printing them:
+
+```bash
+export TF_VAR_project_id=fiap-challenge-ford
+export TF_VAR_github_repository=IamP5/spec-sync
+export AURA_CLIENT_ID="$(gcloud secrets versions access latest --secret=AURA_CLIENT_ID --project="$TF_VAR_project_id")"
+export AURA_CLIENT_SECRET="$(gcloud secrets versions access latest --secret=AURA_CLIENT_SECRET --project="$TF_VAR_project_id")"
+npm exec -- nx run infra:plan -c dev
+# Review the plan before applying. Keep shell tracing disabled when loading secrets.
+npm exec -- nx run infra:apply -c dev
+unset AURA_CLIENT_ID AURA_CLIENT_SECRET
+```
+
+Terraform reads only database secret metadata, grants the AI service account access to
+those three secrets, and injects their latest versions through Cloud Run secret references.
+`NEO4J_DATABASE` is `neo4j`. The API and web services receive no Neo4j credentials, and
+Mastra receives no Aura management credentials. Existing database secret versions are
+owned outside Terraform; importing an instance cannot recover its database password.
+Secret payloads are never read into this module's state. A newly created Aura instance's
+provider-generated password would enter Terraform state, so protect access to the state
+bucket. Rotate Aura API credentials by updating the two Secret Manager versions together;
+revoke the old credential only after a successful plan with the replacement.
+
+AuraDB billing and availability are managed by Aura. The Cloud SQL start/stop schedule
+does not pause AuraDB, and moving the graph's GCP region requires a separate data migration.
+
 ## Adding an environment
 
 1. Copy `environments/dev` to `environments/prod`; change `prefix` in `backend.tf`, `env` in
    `locals.tf`, and the sizing/protection values in `main.tf` (tier, backups,
-   `deletion_protection`, instance counts).
+   `deletion_protection`, instance counts). Replace the Aura project and instance sizing
+   in `aura.tf`; remove its dev import block when creating a new instance, or set the ID
+   of the existing instance for that environment. Provision that environment's database
+   secrets and management credentials before planning.
 2. Add a `prod` configuration next to `dev` on the `initialize`, `plan`, `apply`, `destroy` and
-   `output` targets in [`project.json`](project.json).
+   `output` targets in [`project.json`](project.json). If adopting an existing Aura instance,
+   also configure `aura-import` with that environment's instance ID and Aura project UUID.
 3. Point the workflows at it (`--configuration=prod`, `DEPLOY_ENV`, the GitHub `environment`),
    or add a second job if both environments should deploy.
 

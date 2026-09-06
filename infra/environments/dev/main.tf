@@ -184,9 +184,15 @@ module "ai" {
     SPECSYNC_API_URL       = module.api.uri
     GOOGLE_VERTEX_PROJECT  = var.project_id
     GOOGLE_VERTEX_LOCATION = var.vertex_location
+    NEO4J_DATABASE         = "neo4j"
   }
 
-  depends_on = [module.services]
+  secret_env = {
+    for name, secret in data.google_secret_manager_secret.neo4j :
+    name => { secret = secret.secret_id }
+  }
+
+  depends_on = [module.services, google_secret_manager_secret_iam_member.ai_neo4j]
 }
 
 # --- Web (nginx serving the Angular build, proxying /api to the API and /ai to the AI) ---

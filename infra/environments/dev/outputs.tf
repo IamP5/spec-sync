@@ -45,3 +45,13 @@ output "database_schedule_jobs" {
   description = "Cloud Scheduler jobs that start/stop the dev database."
   value       = module.database_schedule.job_names
 }
+
+output "neo4j_aura" {
+  description = "Managed AuraDB instance; database credentials remain in Secret Manager."
+  value = {
+    instance_id = module.neo4j_aura.instance_id
+    name        = module.neo4j_aura.name
+    region      = module.neo4j_aura.region
+    database    = "neo4j"
+  }
+}
