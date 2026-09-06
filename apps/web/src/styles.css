@@ -9,7 +9,8 @@
   html,
   body {
     min-width: 320px;
-    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--background);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -54,23 +55,94 @@
   }
 }
 
-/* Keep the evidence dialog's motion subtle, without changing other Zard overlays. */
-z-dialog.specsync-review-dialog {
-  transform: translateY(0) scale(1);
-}
-@starting-style {
-  z-dialog.specsync-review-dialog {
-    opacity: 0;
-    transform: translateY(4px) scale(0.985);
+/* Keep the conversation and composer inside the screen above a mobile keyboard. */
+@media (max-width: 767px) {
+  app-root {
+    position: fixed;
+    inset-inline: 0;
+    top: var(--visual-viewport-top, 0px);
+    height: var(--visual-viewport-height, 100dvh);
+    padding-top: env(safe-area-inset-top);
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
   }
 }
-z-dialog.specsync-review-dialog.dialog-leave {
-  opacity: 0;
-  transform: translateY(4px) scale(0.985);
+
+/* Let the reading area scroll natively; dragging the handle still dismisses the sheet. */
+.specsync-vehicle-drawer {
+  touch-action: pan-y !important;
+  transition:
+    translate 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.specsync-vehicle-drawer[data-swiping] {
+  transition: none;
+}
+.specsync-vehicle-drawer[data-state='closed'][data-placement='bottom'] {
+  translate: 0 calc(100% + 1rem);
+}
+.specsync-vehicle-drawer[data-state='closed'][data-placement='right'] {
+  translate: calc(100% + 1rem) 0;
+}
+@starting-style {
+  .specsync-vehicle-drawer[data-placement='bottom'] {
+    translate: 0 calc(100% + 1rem);
+  }
+  .specsync-vehicle-drawer[data-placement='right'] {
+    translate: calc(100% + 1rem) 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  z-dialog.specsync-review-dialog {
-    transform: none !important;
-    transition: none !important;
+  .specsync-vehicle-drawer {
+    transition: none;
+  }
+}
+.specsync-vehicle-drawer [data-slot='drawer-swipe-handle']::after {
+  content: '';
+  width: 2.5rem;
+  height: 0.25rem;
+  border-radius: 9999px;
+  background: var(--muted-foreground);
+}
+.specsync-vehicle-drawer [data-slot='drawer-swipe-handle'] {
+  touch-action: none;
+}
+
+/* Keep one scrolling region between the reviews header and selection action. */
+.specsync-vehicle-drawer app-vehicle-reviews-search,
+.specsync-vehicle-drawer app-vehicle-reviews-pane {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The bottom sheet follows the keyboard while leaving a small peek at the page. */
+@media (max-width: 767px) {
+  .specsync-vehicle-drawer {
+    top: calc(
+      var(--visual-viewport-top, 0px) + max(0.75rem, env(safe-area-inset-top))
+    );
+    bottom: auto;
+    margin: 0;
+    width: 100%;
+    height: calc(
+      var(--visual-viewport-height, 100dvh) -
+        max(0.75rem, env(safe-area-inset-top))
+    );
+    max-height: calc(
+      var(--visual-viewport-height, 100dvh) -
+        max(0.75rem, env(safe-area-inset-top))
+    );
+    border-radius: 1.5rem 1.5rem 0 0;
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+  }
+
+  .specsync-vehicle-drawer [data-slot='drawer-swipe-handle'] {
+    height: 1.25rem;
+  }
+
+  .specsync-vehicle-drawer .review-footer {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
   }
 }

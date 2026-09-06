@@ -72,6 +72,48 @@ describe('ChatPage', () => {
     expect(element.querySelector('[aria-label="Suggestions"]')).not.toBeNull();
   });
 
+  it.each([false, true])(
+    'handles Return safely with touch keyboard %s',
+    async (touch) => {
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        matches: query === '(hover: none) and (pointer: coarse)' && touch,
+        media: query,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }));
+      try {
+        const fixture = TestBed.createComponent(ChatPage);
+        await fixture.whenStable();
+        const element = fixture.nativeElement as HTMLElement;
+        const prompt = element.querySelector<HTMLTextAreaElement>('#prompt')!;
+        const submit = vi
+          .spyOn(element.querySelector('form')!, 'requestSubmit')
+          .mockImplementation(() => undefined);
+        for (const modifiers of [
+          {},
+          { shiftKey: true },
+          { isComposing: true },
+        ]) {
+          const event = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            bubbles: true,
+            cancelable: true,
+            ...modifiers,
+          });
+          prompt.dispatchEvent(event);
+          expect(event.defaultPrevented).toBe(
+            !touch && Object.keys(modifiers).length === 0,
+          );
+        }
+        expect(submit).toHaveBeenCalledTimes(touch ? 0 : 1);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    },
+  );
+
   it('starts a new catalog chat from the home call to action', async () => {
     vi.stubGlobal(
       'fetch',

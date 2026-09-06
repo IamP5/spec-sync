@@ -1,4 +1,13 @@
-<ng-template #vehicleDetails>
+<z-drawer
+  [(zVisible)]="detailsOpen"
+  [zPlacement]="mobileScreen().matches ? 'bottom' : 'right'"
+  [zHandle]="mobileScreen().matches"
+  (zAfterClose)="afterDetailsClosed()"
+  class="specsync-vehicle-drawer overflow-hidden md:w-[min(44rem,calc(100vw-3rem))]!"
+>
+  <z-drawer-title class="sr-only">
+    {{ focused()?.brand }} {{ focused()?.model }} {{ focused()?.name }}
+  </z-drawer-title>
   @if (focused(); as vehicle) {
   <app-vehicle-detail-pane
     [vehicle]="vehicle"
@@ -10,7 +19,7 @@
     (askRequested)="askAboutFocused()"
   />
   }
-</ng-template>
+</z-drawer>
 
 <app-vehicle-catalog-card
   [page]="page()"

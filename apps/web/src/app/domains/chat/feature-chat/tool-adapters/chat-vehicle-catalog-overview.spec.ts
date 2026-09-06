@@ -151,7 +151,7 @@ describe('ChatVehicleCatalogOverview', () => {
     const drawer = overlay?.querySelector<HTMLElement>('z-drawer-panel');
     expect(drawer?.dataset['placement']).toBe('right');
     expect(drawer?.classList.contains('will-change-transform')).toBe(true);
-    expect(drawer?.style.getPropertyValue('--z-drawer-duration')).toBe('260ms');
+    expect(drawer?.style.getPropertyValue('--z-drawer-duration')).toBe('450ms');
     expect(overlay?.textContent).toContain('Overview');
     expect(overlay?.textContent).toContain('Catalog confidence');
     expect(overlay?.textContent).toContain('Black');
@@ -162,7 +162,8 @@ describe('ChatVehicleCatalogOverview', () => {
     await fixture.whenStable();
     expect(drawer?.dataset['state']).toBe('closed');
 
-    await new Promise((resolve) => setTimeout(resolve, 280));
+    expect(draft).not.toHaveBeenCalled();
+    await new Promise((resolve) => setTimeout(resolve, 500));
     expect(draft).toHaveBeenCalledWith(expect.stringContaining(BLACK_ID));
     expect(overlay?.querySelector('z-drawer-panel')).toBeNull();
   });

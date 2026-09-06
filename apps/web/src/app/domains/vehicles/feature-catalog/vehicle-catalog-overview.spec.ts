@@ -1,4 +1,6 @@
+import { BreakpointObserver, type BreakpointState } from '@angular/cdk/layout';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { BehaviorSubject } from 'rxjs';
 
 import type { Comparison } from '../data/vehicle-contracts';
 import { VehicleCatalogOverview } from './vehicle-catalog-overview';
@@ -7,8 +9,13 @@ describe('VehicleCatalogOverview', () => {
   let fixture: ComponentFixture<VehicleCatalogOverview>;
   const draft = vi.fn();
   const send = vi.fn();
+  let screen: BehaviorSubject<BreakpointState>;
 
   beforeEach(async () => {
+    screen = new BehaviorSubject<BreakpointState>({
+      matches: false,
+      breakpoints: {},
+    });
     vi.stubGlobal(
       'fetch',
       vi.fn().mockImplementation((input: string | URL | Request) =>
@@ -29,6 +36,9 @@ describe('VehicleCatalogOverview', () => {
     );
     await TestBed.configureTestingModule({
       imports: [VehicleCatalogOverview],
+      providers: [
+        { provide: BreakpointObserver, useValue: { observe: () => screen } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(VehicleCatalogOverview);
@@ -47,6 +57,35 @@ describe('VehicleCatalogOverview', () => {
   });
 
   afterEach(() => vi.unstubAllGlobals());
+
+  it('keeps a selected model active when mobile filters are collapsed', async () => {
+    const element = fixture.nativeElement as HTMLElement;
+    const toggle = buttonNamed(element, 'Filters');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    const controlledIds =
+      toggle.getAttribute('aria-controls')?.split(' ') ?? [];
+    expect(controlledIds).toHaveLength(2);
+    for (const id of controlledIds) {
+      expect(element.querySelector(`[id="${id}"]`)).not.toBeNull();
+    }
+
+    toggle.click();
+    await fixture.whenStable();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    buttonNamed(element, 'Hilux').click();
+    await fixture.whenStable();
+    toggle.click();
+    await fixture.whenStable();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(rows(element).map((row) => row.dataset['configurationId'])).toEqual([
+      HILUX_ID,
+    ]);
+    expect(toggle.textContent).toContain('(2)');
+
+    buttonNamed(element, 'Clear filters').click();
+    await fixture.whenStable();
+    expect(rows(element)).toHaveLength(3);
+  });
 
   it('isolates filters and shortlists for multiple rendered catalogs', async () => {
     const second = TestBed.createComponent(VehicleCatalogOverview);
@@ -209,38 +248,52 @@ describe('VehicleCatalogOverview', () => {
     expect(element.textContent).toContain('No segment label is claimed');
   });
 
-  it('opens sourced specifications in a motion drawer and returns an editable draft to the composer', async () => {
-    const element = fixture.nativeElement as HTMLElement;
-    element
-      .querySelector<HTMLButtonElement>(
+  it.each([false, true])(
+    'opens responsive details and hands off after closing (mobile: %s)',
+    async (mobile) => {
+      screen.next({ matches: mobile, breakpoints: {} });
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      const trigger = element.querySelector<HTMLButtonElement>(
         '[aria-label="Open Ford Ranger Black details"]',
-      )
-      ?.click();
-    await fixture.whenStable();
-    const overlay = document.querySelector<HTMLElement>(
-      '.cdk-overlay-container',
-    );
-    const drawer = overlay?.querySelector<HTMLElement>('z-drawer-panel');
-    expect(drawer?.dataset['placement']).toBe('right');
-    expect(drawer?.classList.contains('will-change-transform')).toBe(true);
-    expect(drawer?.style.getPropertyValue('--z-drawer-duration')).toBe('260ms');
-    expect(overlay?.textContent).toContain('Overview');
-    expect(overlay?.textContent).toContain('Catalog confidence');
-    expect(overlay?.textContent).toContain('Black');
+      )!;
+      trigger.focus();
+      trigger.click();
+      await fixture.whenStable();
+      const overlay = document.querySelector<HTMLElement>(
+        '.cdk-overlay-container',
+      );
+      const drawer = overlay?.querySelector<HTMLElement>('z-drawer-panel');
+      expect(drawer?.dataset['placement']).toBe(mobile ? 'bottom' : 'right');
+      expect(!!drawer?.querySelector('[data-slot=drawer-swipe-handle]')).toBe(
+        mobile,
+      );
+      expect(drawer?.getAttribute('aria-labelledby')).toBeTruthy();
+      expect(drawer?.classList.contains('will-change-transform')).toBe(true);
+      expect(drawer?.style.getPropertyValue('--z-drawer-duration')).toBe(
+        '450ms',
+      );
+      expect(overlay?.textContent).toContain('Overview');
+      expect(overlay?.textContent).toContain('Catalog confidence');
+      expect(overlay?.textContent).toContain('Black');
 
-    overlay
-      ?.querySelector<HTMLButtonElement>('[data-action="ask-about-vehicle"]')
-      ?.click();
-    await fixture.whenStable();
-    expect(drawer?.dataset['state']).toBe('closed');
+      overlay
+        ?.querySelector<HTMLButtonElement>('[data-action="ask-about-vehicle"]')
+        ?.click();
+      await fixture.whenStable();
+      expect(drawer?.dataset['state']).toBe('closed');
 
-    await new Promise((resolve) => setTimeout(resolve, 280));
-    expect(draft).toHaveBeenCalledWith({
-      kind: 'vehicle',
-      vehicle: configurations[0],
-    });
-    expect(overlay?.querySelector('z-drawer-panel')).toBeNull();
-  });
+      expect(draft).not.toHaveBeenCalled();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await fixture.whenStable();
+      expect(document.activeElement).toBe(trigger);
+      expect(draft).toHaveBeenCalledWith({
+        kind: 'vehicle',
+        vehicle: configurations[0],
+      });
+      expect(overlay?.querySelector('z-drawer-panel')).toBeNull();
+    },
+  );
 });
 
 const BLACK_ID = '08e08761-a2e7-5ae5-b2ad-387e93829fb7';

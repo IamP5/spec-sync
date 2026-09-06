@@ -1,5 +1,5 @@
 <z-sidebar-provider
-  class="chat-shell h-svh min-h-0"
+  class="chat-shell h-full min-h-0"
   style="--sidebar-width: 17rem; --sidebar-width-icon: 3.5rem"
   [zOpen]="open()"
   [class.sidebar-preview]="preview() && !pinned()"
@@ -8,12 +8,13 @@
   <z-sidebar
     #sidebar
     zCollapsible="icon"
+    role="navigation"
     aria-label="Conversations"
     (pointerenter)="onPreview($event)"
   >
     <app-thread-search (navigated)="preview.set(false)" />
   </z-sidebar>
-  <main z-sidebar-inset class="h-svh min-h-0 min-w-0 overflow-hidden">
+  <main z-sidebar-inset class="h-full min-h-0 min-w-0 overflow-hidden">
     <router-outlet />
   </main>
 </z-sidebar-provider>

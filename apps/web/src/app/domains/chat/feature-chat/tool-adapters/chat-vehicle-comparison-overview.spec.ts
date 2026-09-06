@@ -64,7 +64,7 @@ describe('comparison chat adapter', () => {
       (button) => button.textContent?.includes('Levar ao chat'),
     );
     ask?.click();
-    await new Promise((resolve) => setTimeout(resolve, 210));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     await fixture.whenStable();
     expect(draft).toHaveBeenCalledOnce();
     expect(draft).toHaveBeenCalledWith(

@@ -2,9 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="color-scheme" content="light" />
     <title>SpecSync Assistant</title>
     <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
     <meta
       name="description"
       content="The SpecSync assistant: write and review software specifications in a conversation."
@@ -21,18 +26,22 @@
       (function () {
         const html = document.documentElement;
 
+        let theme = 'system';
         try {
-          const theme = localStorage.theme;
-          const prefersDark =
-            window.matchMedia?.('(prefers-color-scheme: dark)').matches ??
-            false;
-
-          const isSystem = theme === 'system' || !('theme' in localStorage);
-          const isDark = theme === 'dark' || (isSystem && prefersDark);
-          html.classList.add('scheme-light-dark');
-          html.classList.toggle('dark', isDark);
-          html.setAttribute('data-theme', theme ?? 'system');
+          const stored = localStorage.getItem('theme');
+          if (['light', 'dark', 'system'].includes(stored)) theme = stored;
         } catch (_) {}
+        const prefersDark =
+          window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+        const isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+        const scheme = isDark ? 'dark' : 'light';
+        html.classList.toggle('dark', isDark);
+        html.setAttribute('data-theme', theme);
+        html.style.colorScheme = scheme;
+        document.querySelector('meta[name="color-scheme"]').content = scheme;
+        document.querySelector('meta[name="theme-color"]').content = isDark
+          ? '#0f0f0f'
+          : '#ffffff';
       })();
     </script>
   </head>

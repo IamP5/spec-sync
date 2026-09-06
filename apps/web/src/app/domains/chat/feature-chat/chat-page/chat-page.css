@@ -136,14 +136,16 @@
 }
 
 /* Messages scroll behind the floating composer; the last reply can clear the fade. */
+/* Sticky tool-card headers stay inside the transcript, below the composer. */
 .chat-transcript {
-  padding-bottom: calc(var(--composer-height, 180px) + 48px);
-  scroll-padding-bottom: calc(var(--composer-height, 180px) + 48px);
+  isolation: isolate;
+  padding-bottom: calc(var(--composer-height, 180px) + 80px);
+  scroll-padding-bottom: calc(var(--composer-height, 180px) + 80px);
   mask-image: linear-gradient(
     to bottom,
     #000 0,
-    #000 calc(100% - var(--composer-height, 180px) - 32px),
-    transparent calc(100% - var(--composer-height, 180px) + 100px)
+    #000 calc(100% - var(--composer-height, 180px) - 64px),
+    transparent calc(100% - var(--composer-height, 180px) + 16px)
   );
 }
 
@@ -157,5 +159,116 @@
   }
   .chat-floating-composer {
     background: Canvas;
+  }
+}
+
+/* CDK autosizing also supports Safari versions without field-sizing. */
+.chat-prompt {
+  field-sizing: fixed;
+  box-sizing: content-box;
+  width: auto;
+  min-height: 2.75rem;
+  max-height: 11.75rem;
+  padding-inline: 0;
+  margin-inline: 0.75rem;
+}
+
+@media (max-width: 639px) {
+  .chat-header {
+    gap: 0.25rem;
+    padding-inline: 0.5rem;
+  }
+
+  .chat-header button,
+  .chat-scroll-latest,
+  z-message-footer button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .chat-composer {
+    position: relative;
+    border-radius: 1.75rem;
+    padding: 0.25rem;
+    box-shadow:
+      0 8px 28px -8px rgb(0 0 0 / 20%),
+      0 2px 6px rgb(0 0 0 / 5%);
+  }
+
+  .chat-prompt {
+    min-height: 1.5rem;
+    max-height: min(7.75rem, calc(30dvh - 1.25rem));
+    padding: 0.625rem 0;
+    margin-inline: 1rem 3.5rem;
+    line-height: 1.5rem;
+  }
+
+  .chat-composer-actions {
+    position: absolute;
+    right: 0.25rem;
+    bottom: 0.25rem;
+    padding: 0;
+  }
+
+  .chat-composer-actions button {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+  }
+
+  .chat-composer-actions > span:not(.sr-only) {
+    display: none;
+  }
+
+  :host ::ng-deep .chat-error {
+    padding-right: 0.625rem;
+  }
+
+  :host ::ng-deep .chat-error [data-slot='alert-action'] {
+    position: static;
+    margin-top: 0.5rem;
+  }
+
+  .chat-transcript {
+    padding-top: 1rem;
+  }
+
+  .chat-floating-composer {
+    padding-inline: 1rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    background: transparent;
+  }
+
+  :host ::ng-deep [data-role='user'] [data-slot='bubble'] {
+    font-size: 1rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  :host ::ng-deep .chat-markdown li + li {
+    margin-top: 0.625rem;
+  }
+
+  .chat-empty {
+    justify-content: flex-start;
+    padding: 1.5rem 0.75rem max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .chat-empty-content {
+    flex: 1;
+    gap: 1.5rem;
+  }
+
+  .chat-empty-content > :first-child {
+    margin-top: auto;
+  }
+
+  .chat-empty-composer {
+    position: sticky;
+    bottom: 0;
+    order: 1;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    background: transparent;
   }
 }

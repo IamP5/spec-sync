@@ -1,16 +1,16 @@
 <header
-  class="flex h-14 shrink-0 items-center gap-2 border-b border-transparent px-3 sm:px-4"
+  class="chat-header flex h-14 shrink-0 items-center gap-2 border-b border-transparent px-3 sm:px-4"
 >
   <button
     z-sidebar-trigger
     aria-label="Toggle sidebar"
-    class="text-muted-foreground md:hidden"
+    class="size-11 shrink-0 text-muted-foreground md:hidden"
   ></button>
   <z-separator zOrientation="vertical" class="h-4 md:hidden" />
   <h1 id="chat-title" class="min-w-0 truncate text-sm font-medium">
     {{ title() || 'New chat' }}
   </h1>
-  <div class="ml-auto flex items-center gap-1">
+  <div class="ml-auto flex shrink-0 items-center gap-1">
     <button
       z-button
       [zType]="showActivity() ? 'secondary' : 'ghost'"
@@ -67,22 +67,25 @@
     <form (submit)="onSubmit($event)" novalidate>
       <label for="prompt" class="sr-only">Message</label>
       <div
-        class="flex flex-col rounded-2xl border border-border bg-card/95 p-2 backdrop-blur-xl shadow-[0_2px_12px_-4px_rgb(0_0_0/10%)] transition-[border-color,box-shadow] focus-within:border-ring focus-within:shadow-sm"
+        class="chat-composer flex flex-col rounded-2xl border border-border bg-card/95 p-2 backdrop-blur-xl shadow-[0_2px_12px_-4px_rgb(0_0_0/10%)] transition-[border-color,box-shadow] focus-within:border-ring focus-within:shadow-sm"
       >
         <textarea
           #promptInput
           z-textarea
+          cdkTextareaAutosize
           id="prompt"
           rows="1"
-          placeholder="Ask anything about your specifications…"
-          class="max-h-52 min-h-16 resize-none border-0 bg-transparent px-3 py-2.5 text-base shadow-none focus-visible:ring-0 md:text-sm dark:bg-transparent"
-          style="field-sizing: content"
+          placeholder="Message SpecSync…"
+          class="chat-prompt max-h-52 min-h-16 resize-none border-0 bg-transparent px-3 py-2.5 text-base shadow-none focus-visible:ring-0 md:text-sm dark:bg-transparent"
+          enterkeyhint="enter"
           [formField]="promptForm.prompt"
           [attr.aria-invalid]="promptError() ? true : null"
-          aria-describedby="prompt-help prompt-validation"
+          aria-describedby="prompt-help-mobile prompt-validation"
           (keydown)="onPromptKeydown($event)"
         ></textarea>
-        <div class="flex items-center justify-between gap-2 pr-0.5 pl-3">
+        <div
+          class="chat-composer-actions flex items-center justify-between gap-2 pr-0.5 pl-3"
+        >
           <span
             id="prompt-help"
             class="hidden items-center gap-1 text-[11px] text-muted-foreground sm:flex"
@@ -92,7 +95,8 @@
             for a new line
           </span>
           <span id="prompt-help-mobile" class="sr-only"
-            >Shift + Enter for a new line</span
+            >Use the send button to send your message. Shift + Enter adds a new
+            line with a keyboard.</span
           >
           @if (promptLength() > maxPromptLength * 0.9) {
           <span
@@ -132,14 +136,21 @@
       </div>
       <div
         id="prompt-validation"
-        class="min-h-5 px-3 pt-1 text-xs text-foreground"
+        class="px-3 text-xs text-foreground"
+        [class.pt-1]="promptError()"
         aria-live="polite"
       >
         {{ promptError() }}
       </div>
     </form>
-    <p class="px-3 text-center text-[11px] text-muted-foreground">
-      Check sources, vehicle versions and dates before relying on a comparison.
+    <p
+      class="sr-only text-center text-[11px] text-muted-foreground sm:not-sr-only sm:mt-2 sm:px-3"
+    >
+      <span class="sm:hidden">Check sources and vehicle details.</span>
+      <span class="hidden sm:inline"
+        >Check sources, vehicle versions and dates before relying on a
+        comparison.</span
+      >
     </p>
     <p role="status" class="text-center text-xs text-foreground">
       {{ copyError() }}
@@ -149,11 +160,13 @@
 
 @if (empty()) {
 <div
-  class="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 pb-8 sm:px-6"
+  class="chat-empty flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 pb-8 sm:px-6"
   role="log"
   aria-label="Conversation"
 >
-  <div class="flex w-full max-w-3xl flex-col items-center gap-8">
+  <div
+    class="chat-empty-content flex w-full max-w-3xl flex-col items-center gap-8"
+  >
     <div class="flex flex-col items-center gap-3 text-center">
       <div class="flex h-14 items-center gap-3 text-primary">
         <img
@@ -170,7 +183,9 @@
       </div>
     </div>
 
-    <ng-container *ngTemplateOutlet="composer" />
+    <div class="chat-empty-composer w-full">
+      <ng-container *ngTemplateOutlet="composer" />
+    </div>
 
     <button
       z-button
@@ -414,7 +429,7 @@
     zType="outline"
     zSize="icon-sm"
     type="button"
-    class="absolute left-1/2 z-20 -translate-x-1/2 rounded-full bg-background shadow-md"
+    class="chat-scroll-latest absolute left-1/2 z-20 -translate-x-1/2 rounded-full bg-background shadow-md"
     [style.bottom.px]="composerHeight() + 16"
     aria-label="Scroll to the latest message"
     (click)="scrollToBottom()"

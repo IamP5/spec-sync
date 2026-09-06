@@ -4,24 +4,24 @@
 >
   @if (page(); as page) {
   <header
-    class="flex flex-wrap items-end justify-between gap-4 px-4 py-5 sm:px-6"
+    class="flex flex-wrap items-end justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-5"
   >
     <div>
       <p
-        class="flex items-center gap-2 text-xs font-medium tracking-widest text-info uppercase"
+        class="flex items-center gap-2 text-base font-semibold sm:text-xs sm:font-medium sm:tracking-widest sm:text-info sm:uppercase"
       >
         <ng-icon name="lucideCarFront" aria-hidden="true" />
         Vehicle catalog
       </p>
-      <h2 class="mt-1 text-xl font-semibold tracking-tight">
+      <h2 class="mt-1 hidden text-xl font-semibold tracking-tight sm:block">
         Explore available configurations
       </h2>
-      <p class="mt-1 text-sm text-muted-foreground">
+      <p class="mt-1 hidden text-sm text-muted-foreground sm:block">
         Search the loaded page, inspect sourced details, or build a shortlist.
       </p>
     </div>
     <div
-      class="flex rounded-lg border border-border bg-muted/35 p-1"
+      class="flex w-full rounded-xl border border-border bg-muted/35 p-1 sm:w-auto sm:rounded-lg"
       aria-label="Catalog display mode"
     >
       <button
@@ -29,7 +29,7 @@
         [zType]="catalogView() === 'catalog' ? 'default' : 'ghost'"
         zSize="sm"
         type="button"
-        class="h-8 rounded-md"
+        class="h-11 flex-1 rounded-lg sm:h-8 sm:flex-none sm:rounded-md"
         [attr.aria-pressed]="catalogView() === 'catalog'"
         (click)="catalogView.set('catalog')"
       >
@@ -41,19 +41,24 @@
         [zType]="catalogView() === 'competitors' ? 'default' : 'ghost'"
         zSize="sm"
         type="button"
-        class="h-8 rounded-md"
+        class="h-11 flex-1 rounded-lg sm:h-8 sm:flex-none sm:rounded-md"
         [attr.aria-pressed]="catalogView() === 'competitors'"
         (click)="catalogView.set('competitors')"
       >
         <ng-icon name="lucideUsers" aria-hidden="true" />
-        Competitors
+        Competitors @if (shortlistedConfigurations().length) {
+        <span
+          class="rounded-full bg-background/80 px-1.5 text-xs text-foreground"
+          >{{ shortlistedConfigurations().length }}</span
+        >
+        }
       </button>
     </div>
   </header>
 
   @if (catalogView() === 'catalog') {
-  <div class="border-y border-border bg-muted/15 px-4 py-4 sm:px-6">
-    <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+  <div class="border-y border-border bg-muted/15 px-3 py-3 sm:px-6 sm:py-4">
+    <div class="flex flex-wrap items-center gap-2 sm:gap-3">
       <div class="relative min-w-0 flex-1">
         <ng-icon
           name="lucideSearch"
@@ -66,14 +71,14 @@
           data-catalog-search
           z-input
           type="search"
-          placeholder="Search make, model, or configuration…"
-          class="h-10 rounded-lg pr-9 pl-9"
+          placeholder="Search vehicles…"
+          class="h-11 rounded-xl pr-11 pl-9 text-base sm:h-10 sm:rounded-lg sm:text-sm"
           [formField]="searchField()"
         />
         @if (searchQuery()) {
         <button
           type="button"
-          class="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          class="absolute top-1/2 right-0 grid size-11 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground sm:right-2 sm:size-7"
           aria-label="Clear search"
           (click)="searchCleared.emit()"
         >
@@ -81,7 +86,26 @@
         </button>
         }
       </div>
-      <div class="flex min-w-0 items-center gap-2">
+      <button
+        z-button
+        [zType]="filtersExpanded() ? 'secondary' : 'outline'"
+        type="button"
+        class="h-11 shrink-0 rounded-xl px-3 sm:hidden"
+        [attr.aria-expanded]="filtersExpanded()"
+        [attr.aria-controls]="sortPanelId + (modelSummaries().length ? ' ' + modelsPanelId : '')"
+        (click)="filtersExpanded.set(!filtersExpanded())"
+      >
+        <ng-icon name="lucideSlidersHorizontal" aria-hidden="true" />
+        Filters @if (activeFilterCount()) {
+        <span class="text-xs">({{ activeFilterCount() }})</span>
+        }
+      </button>
+      <div
+        [id]="sortPanelId"
+        class="min-w-0 basis-full items-center gap-2 sm:flex lg:basis-auto"
+        [class.hidden]="!filtersExpanded()"
+        [class.flex]="filtersExpanded()"
+      >
         <ng-icon
           name="lucideArrowDownUp"
           class="shrink-0 text-muted-foreground"
@@ -91,7 +115,7 @@
         <select
           [id]="sortId"
           data-catalog-sort
-          class="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 lg:w-52"
+          class="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background px-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:h-10 sm:rounded-lg sm:text-sm lg:w-52"
           [formField]="sortField()"
         >
           <option value="catalog-order">Catalog order</option>
@@ -102,11 +126,13 @@
       </div>
     </div>
 
-    <z-separator class="my-3" />
+    <z-separator class="my-3 hidden sm:block" />
 
-    <div class="flex flex-wrap items-center gap-2">
+    <div
+      class="mt-2 flex items-center gap-1 overflow-x-auto overscroll-x-contain sm:mt-0 sm:flex-wrap sm:gap-2"
+    >
       <span
-        class="mr-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+        class="mr-1 hidden items-center gap-1.5 text-xs font-medium text-muted-foreground sm:flex"
       >
         <ng-icon name="lucideSlidersHorizontal" aria-hidden="true" />
         Make
@@ -116,7 +142,7 @@
         [zType]="brandFilter() === 'all' ? 'secondary' : 'ghost'"
         zSize="sm"
         type="button"
-        class="h-8 rounded-full"
+        class="h-11 shrink-0 rounded-full px-4 sm:h-8"
         [attr.aria-pressed]="brandFilter() === 'all'"
         (click)="brandChanged.emit('all')"
       >
@@ -128,7 +154,7 @@
         [zType]="brandFilter() === brand ? 'secondary' : 'ghost'"
         zSize="sm"
         type="button"
-        class="h-8 rounded-full"
+        class="h-11 shrink-0 rounded-full px-4 sm:h-8"
         [attr.aria-pressed]="brandFilter() === brand"
         (click)="brandChanged.emit(brand)"
       >
@@ -140,7 +166,7 @@
         zType="ghost"
         zSize="sm"
         type="button"
-        class="ml-auto h-8"
+        class="ml-auto h-11 shrink-0 sm:h-8"
         (click)="filtersCleared.emit()"
       >
         Clear filters
@@ -150,7 +176,11 @@
   </div>
 
   @if (modelSummaries().length) {
-  <div class="px-4 pt-4 sm:px-6">
+  <div
+    [id]="modelsPanelId"
+    class="px-3 pt-3 sm:block sm:px-6 sm:pt-4"
+    [class.hidden]="!filtersExpanded()"
+  >
     <div class="mb-2 flex items-center justify-between gap-3">
       <p class="text-xs font-medium text-muted-foreground">Model families</p>
       @if (modelFilter() !== 'all') {
@@ -159,25 +189,27 @@
         zType="ghost"
         zSize="sm"
         type="button"
-        class="h-8"
+        class="h-11 sm:h-8"
         (click)="modelChanged.emit(modelFilter())"
       >
         Show all models
       </button>
       }
     </div>
-    <div class="grid gap-2 sm:grid-cols-3">
+    <div
+      class="flex gap-2 overflow-x-auto overscroll-x-contain pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0"
+    >
       @for (model of modelSummaries(); track model.model) {
       <button
         type="button"
-        class="group flex min-w-0 items-center gap-3 rounded-xl border bg-card p-2 text-left transition-colors hover:border-foreground/25 hover:bg-muted/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        class="group flex min-w-36 shrink-0 items-center gap-3 rounded-xl border bg-card p-3 text-left transition-colors hover:border-foreground/25 hover:bg-muted/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-w-0 sm:p-2"
         [class.border-primary]="modelFilter() === model.model"
         [class.bg-muted]="modelFilter() === model.model"
         [attr.aria-pressed]="modelFilter() === model.model"
         (click)="modelChanged.emit(model.model)"
       >
         <span
-          class="grid size-14 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 text-primary"
+          class="hidden size-14 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 text-primary sm:grid"
           aria-hidden="true"
         >
           <ng-icon name="lucideCarFront" class="text-xl" />
@@ -191,7 +223,7 @@
           >
           <span class="mt-0.5 block text-[11px] text-muted-foreground">
             {{ model.configurationCount }} {{ model.configurationCount === 1 ?
-            'configuration' : 'configurations' }} on this page
+            'configuration' : 'configurations' }}
           </span>
         </span>
       </button>
@@ -201,31 +233,35 @@
   }
 
   <div
-    class="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6"
+    class="flex flex-wrap items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-6 sm:py-4"
   >
     <p class="text-sm text-muted-foreground" role="status">
       <span class="font-medium text-foreground"
         >{{ visibleConfigurations().length }}</span
       >
       {{ visibleConfigurations().length === 1 ? 'configuration' :
-      'configurations' }} shown on this page @if (page.hasMore) { · more are
-      available }
+      'configurations' }}
+      <span class="hidden sm:inline">shown on this page</span> @if
+      (page.hasMore) { · more are available }
     </p>
+    @if (shortlistedConfigurations().length) {
     <button
       z-button
       zType="outline"
       zSize="sm"
       type="button"
+      class="h-11 rounded-xl sm:h-8 sm:rounded-md"
       [zDisabled]="shortlistedConfigurations().length < 2"
       (click)="catalogView.set('competitors')"
     >
       <ng-icon name="lucideGitCompareArrows" aria-hidden="true" />
-      Compare shortlist @if (shortlistedConfigurations().length) {
+      Compare @if (shortlistedConfigurations().length) {
       <z-badge zType="secondary" class="ml-1"
         >{{ shortlistedConfigurations().length }}</z-badge
       >
       }
     </button>
+    }
   </div>
 
   @if (summariesError()) {
@@ -246,7 +282,7 @@
   </div>
   } @if (visibleConfigurations().length) {
   <div
-    class="mx-4 mb-4 overflow-hidden rounded-xl border border-border bg-card sm:mx-6 sm:mb-6"
+    class="mb-2 overflow-hidden border-y border-border bg-card sm:mx-6 sm:mb-6 sm:rounded-xl sm:border"
     role="list"
   >
     @for (vehicle of visibleConfigurations(); track vehicle.id; let last =
@@ -258,19 +294,22 @@
     >
       <button
         type="button"
-        class="grid min-w-0 flex-1 grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 p-3 text-left outline-none focus-visible:bg-muted/50 sm:grid-cols-[5rem_minmax(0,1fr)_repeat(3,minmax(5rem,7rem))] sm:gap-4"
+        class="grid min-w-0 flex-1 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-3 px-3 py-4 text-left outline-none focus-visible:bg-muted/50 sm:grid-cols-[5rem_minmax(0,1fr)_repeat(3,minmax(5rem,7rem))] sm:gap-4 sm:p-3"
         [attr.aria-label]="'Open ' + vehicle.brand + ' ' + vehicle.model + ' ' + vehicle.name + ' details'"
         (click)="vehicleSelected.emit(vehicle)"
       >
         <span
-          class="grid aspect-[4/3] place-items-center rounded-lg bg-gradient-to-br from-primary/15 to-muted text-primary"
+          class="grid aspect-square place-items-center rounded-xl bg-gradient-to-br from-primary/15 to-muted text-primary sm:aspect-[4/3] sm:rounded-lg"
           aria-label="Vehicle image not available"
         >
           <ng-icon name="lucideCarFront" aria-hidden="true" />
         </span>
         <span class="min-w-0">
-          <span class="flex items-center gap-2">
-            <span class="truncate text-sm font-semibold"
+          <span
+            class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2"
+          >
+            <span
+              class="text-base leading-5 font-semibold break-words sm:truncate sm:text-sm"
               >{{ vehicle.brand }} {{ vehicle.model }}</span
             >
             @if (vehicle.identityStatus !== 'CONFIRMED') {
@@ -280,10 +319,11 @@
             >
             }
           </span>
-          <span class="block truncate text-xs text-muted-foreground"
+          <span
+            class="mt-1 block text-sm leading-5 break-words text-muted-foreground sm:mt-0 sm:truncate sm:text-xs"
             >{{ vehicle.name }}</span
           >
-          <span class="mt-1 block text-[11px] text-muted-foreground"
+          <span class="mt-1 block text-xs text-muted-foreground sm:text-[11px]"
             >{{ vehicle.market }} · {{ vehicle.modelYear }}</span
           >
         </span>
@@ -313,9 +353,10 @@
         [zType]="isShortlisted(vehicle) ? 'default' : 'outline'"
         zSize="icon-sm"
         type="button"
-        class="mr-3 shrink-0"
+        class="mr-3 size-11 shrink-0 rounded-xl sm:size-8 sm:rounded-md"
         [attr.data-action]="isShortlisted(vehicle) ? 'remove-shortlist' : 'add-shortlist'"
         [attr.aria-label]="isShortlisted(vehicle) ? 'Remove ' + vehicle.model + ' ' + vehicle.name + ' from comparison' : 'Add ' + vehicle.model + ' ' + vehicle.name + ' to comparison'"
+        [attr.aria-pressed]="isShortlisted(vehicle)"
         (click)="toggleShortlist($event, vehicle)"
       >
         <ng-icon
@@ -354,16 +395,8 @@
   </div>
   }
 
-  <p
-    class="mx-4 mb-5 flex items-start gap-2 rounded-lg bg-muted/40 px-3 py-2.5 text-xs leading-5 text-muted-foreground sm:mx-6"
-  >
-    <ng-icon
-      name="lucidePanelRightOpen"
-      class="mt-0.5 shrink-0"
-      aria-hidden="true"
-    />
-    Details open in a side sheet and use the catalog's sourced specification
-    contract. Media is not modeled yet, so deliberate placeholders are shown.
+  <p class="px-3 pb-3 text-xs leading-5 text-muted-foreground sm:px-6 sm:pb-5">
+    Tap a vehicle for specifications. Select two or more to compare.
   </p>
   } @else {
   <section

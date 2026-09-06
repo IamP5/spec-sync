@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ZardDialogService } from '@/ui/components/dialog';
+import { ZardDrawerService } from '@/ui/components/drawer';
 
 import { matrix } from '../../../testing/vehicle-fixtures';
 import { VehicleReviewsSearch } from './vehicle-reviews-search';
@@ -16,7 +16,7 @@ const modelReview = {
   context: 'Contexto maior da avaliação.',
 };
 
-describe('Vehicle review dialog', () => {
+describe('Vehicle reviews', () => {
   const draft = vi.fn();
   beforeEach(() => {
     draft.mockReset();
@@ -31,7 +31,7 @@ describe('Vehicle review dialog', () => {
     trigger.textContent = 'Open reviews';
     document.body.append(trigger);
     trigger.focus();
-    const ref = TestBed.inject(ZardDialogService).create({
+    const ref = TestBed.inject(ZardDrawerService).create({
       zTitle: 'Review sources',
       zContent: 'Evidence context',
       zDuration: 0,
@@ -70,6 +70,29 @@ describe('Vehicle review dialog', () => {
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelectorAll('article')).toHaveLength(1);
+    const filtersToggle =
+      element.querySelector<HTMLButtonElement>('[aria-controls]')!;
+    expect(filtersToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(
+      element.querySelector(
+        `[id="${filtersToggle.getAttribute('aria-controls')}"]`,
+      ),
+    ).not.toBeNull();
+    filtersToggle.click();
+    await fixture.whenStable();
+    const vehicle = element.querySelector<HTMLSelectElement>(
+      'select[aria-label="Veículo"]',
+    )!;
+    vehicle.value = matrix.configurations[1].id;
+    vehicle.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    filtersToggle.click();
+    await fixture.whenStable();
+    expect(filtersToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(filtersToggle.textContent).toContain('(1)');
+    expect(vehicle.value).toBe(matrix.configurations[1].id);
+    expect(element.querySelectorAll('article')).toHaveLength(1);
+
     expect(element.querySelector('[role="alert"]')).toBeNull();
     expect(element.textContent).toContain('versão não confirmada');
     element

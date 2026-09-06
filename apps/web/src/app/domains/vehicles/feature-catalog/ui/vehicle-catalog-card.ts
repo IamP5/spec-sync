@@ -16,7 +16,6 @@ import {
   lucideGitCompareArrows,
   lucideInfo,
   lucideLayoutList,
-  lucidePanelRightOpen,
   lucideSearch,
   lucideSlidersHorizontal,
   lucideUsers,
@@ -64,7 +63,6 @@ import {
       lucideGitCompareArrows,
       lucideInfo,
       lucideLayoutList,
-      lucidePanelRightOpen,
       lucideSearch,
       lucideSlidersHorizontal,
       lucideUsers,
@@ -79,6 +77,9 @@ export class VehicleCatalogCard {
   private readonly uniqueId = inject(ZardIdDirective);
   protected readonly searchId = `${this.uniqueId.id()}-search`;
   protected readonly sortId = `${this.uniqueId.id()}-sort`;
+  protected readonly sortPanelId = `${this.uniqueId.id()}-sort-panel`;
+  protected readonly modelsPanelId = `${this.uniqueId.id()}-models-panel`;
+  protected readonly filtersExpanded = signal(false);
   readonly page = input<CatalogPage>();
   readonly failure = input<string>();
   readonly complete = input(false);

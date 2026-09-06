@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,6 +21,7 @@ import { displayValue, safeSourceUrl } from '../../util/vehicle-display';
   selector: 'app-vehicle-comparison-card',
   imports: [
     FormField,
+    NgTemplateOutlet,
     ZardBadgeComponent,
     ZardButtonComponent,
     ZardCardComponent,

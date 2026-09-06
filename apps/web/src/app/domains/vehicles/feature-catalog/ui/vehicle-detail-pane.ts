@@ -73,7 +73,7 @@ interface DetailEvidence {
   ],
   templateUrl: './vehicle-detail-pane.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block h-full min-h-0' },
+  host: { class: 'flex flex-1 min-h-0 flex-col overflow-hidden' },
 })
 export class VehicleDetailPane {
   readonly vehicle = input.required<VehicleConfiguration>();

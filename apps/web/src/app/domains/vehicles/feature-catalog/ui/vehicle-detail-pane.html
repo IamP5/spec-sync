@@ -1,8 +1,8 @@
 <article
-  class="flex h-full min-h-0 flex-col overflow-y-auto bg-background overscroll-contain [scrollbar-gutter:stable]"
+  class="flex h-full min-h-0 flex-col overflow-y-auto bg-background overscroll-contain [scrollbar-gutter:stable] pb-[env(safe-area-inset-bottom)] md:pb-0"
 >
   <header
-    class="relative min-h-56 shrink-0 overflow-hidden bg-slate-950 text-white sm:min-h-64"
+    class="relative min-h-52 shrink-0 overflow-hidden bg-slate-950 text-white sm:min-h-64"
   >
     <div
       class="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(59,130,246,0.42),transparent_34%),linear-gradient(135deg,#172554_0%,#0f172a_52%,#020617_100%)]"
@@ -15,16 +15,16 @@
       <ng-icon name="lucideCarFront" class="size-20! sm:size-24!" />
     </div>
     <p
-      class="absolute top-5 left-5 text-[10px] font-medium tracking-[0.2em] text-white/45 uppercase sm:left-7"
+      class="absolute top-5 left-5 text-xs font-medium tracking-widest text-white/70 uppercase sm:left-7"
     >
-      Catalog record · media pending
+      Vehicle details
     </p>
     <button
       z-button
       zType="ghost"
       zSize="icon-sm"
       type="button"
-      class="absolute top-4 right-4 z-10 rounded-full border border-white/15 bg-black/20 text-white hover:bg-black/40 hover:text-white"
+      class="absolute top-3 right-3 z-10 size-11 rounded-full border border-white/15 bg-black/20 text-white hover:bg-black/40 hover:text-white sm:top-4 sm:right-4 sm:size-8"
       aria-label="Close vehicle details"
       (click)="closed.emit()"
     >
@@ -68,7 +68,7 @@
     </div>
   </header>
 
-  <div class="p-5 sm:p-7">
+  <div class="p-4 sm:p-7">
     <section
       class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
       aria-labelledby="reference-price-heading"
@@ -100,7 +100,7 @@
         z-button
         zType="outline"
         type="button"
-        class="shrink-0"
+        class="min-h-11 shrink-0 sm:min-h-9"
         data-action="ask-about-vehicle"
         (click)="askRequested.emit()"
       >
@@ -151,8 +151,8 @@
       class="animate-in fade-in-0 slide-in-from-bottom-1 min-h-88 gap-5 duration-300 motion-reduce:animate-none"
     >
       <z-tab label="Overview">
-        <div class="grid gap-3 pt-5 sm:grid-cols-3">
-          <div class="rounded-xl border bg-muted/25 p-4">
+        <div class="grid grid-cols-2 gap-3 pt-5 sm:grid-cols-3">
+          <div class="rounded-xl border bg-muted/25 p-3 sm:p-4">
             <p class="text-xs text-muted-foreground">Power</p>
             <p
               class="mt-1 text-lg font-semibold"
@@ -164,7 +164,7 @@
               {{ power().value }}
             </p>
           </div>
-          <div class="rounded-xl border bg-muted/25 p-4">
+          <div class="rounded-xl border bg-muted/25 p-3 sm:p-4">
             <p class="text-xs text-muted-foreground">Torque</p>
             <p
               class="mt-1 text-lg font-semibold"
@@ -176,7 +176,9 @@
               {{ torque().value }}
             </p>
           </div>
-          <div class="rounded-xl border bg-muted/25 p-4">
+          <div
+            class="col-span-2 rounded-xl border bg-muted/25 p-3 sm:col-span-1 sm:p-4"
+          >
             <p class="text-xs text-muted-foreground">Drivetrain</p>
             <p
               class="mt-1 text-lg font-semibold"
@@ -332,11 +334,9 @@
           }
 
           <div class="rounded-xl border p-4">
-            <p class="font-medium">Media contract missing</p>
+            <p class="font-medium">Vehicle photos unavailable</p>
             <p class="mt-1 text-muted-foreground">
-              The catalog schema has no media asset, attribution, angle, color,
-              or configuration applicability. The hero treatment is a branded
-              placeholder, not a vehicle photograph.
+              Photos are not available for this configuration yet.
             </p>
           </div>
         </div>

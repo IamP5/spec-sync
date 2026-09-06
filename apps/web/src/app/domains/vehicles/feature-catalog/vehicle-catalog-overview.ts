@@ -1,20 +1,21 @@
+import { BreakpointObserver } from '@angular/cdk/layout';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   inject,
   input,
   OnChanges,
   output,
   signal,
-  TemplateRef,
-  viewChild,
-  ViewContainerRef,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { form } from '@angular/forms/signals';
 
-import { ZardDrawerRef, ZardDrawerService } from '@/ui/components/drawer';
+import {
+  ZardDrawerComponent,
+  ZardDrawerTitleComponent,
+} from '@/ui/components/drawer';
 
 import type {
   CatalogPage,
@@ -34,7 +35,12 @@ import { VehicleCatalogSearchStore } from './vehicle-catalog-search-store';
 
 @Component({
   selector: 'app-vehicle-catalog-overview',
-  imports: [VehicleCatalogCard, VehicleDetailPane],
+  imports: [
+    VehicleCatalogCard,
+    VehicleDetailPane,
+    ZardDrawerComponent,
+    ZardDrawerTitleComponent,
+  ],
   providers: [VehicleCatalogSearchStore, VehicleCatalogDetailStore],
   templateUrl: './vehicle-catalog-overview.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,11 +55,12 @@ export class VehicleCatalogOverview implements OnChanges {
 
   private readonly searchStore = inject(VehicleCatalogSearchStore);
   private readonly detailStore = inject(VehicleCatalogDetailStore);
-  private readonly drawer = inject(ZardDrawerService);
-  private readonly viewContainerRef = inject(ViewContainerRef);
-  private readonly detailsTemplate =
-    viewChild.required<TemplateRef<unknown>>('vehicleDetails');
-  private detailsDrawer?: ZardDrawerRef<unknown>;
+  protected readonly mobileScreen = toSignal(
+    inject(BreakpointObserver).observe('(max-width: 767px)'),
+    { initialValue: { matches: false, breakpoints: {} } },
+  );
+  protected readonly detailsOpen = signal(false);
+  private pendingQuestion?: VehicleQuestion;
 
   protected readonly summaries = this.searchStore.summariesValue;
   protected readonly summariesLoading = this.searchStore.summariesIsLoading;
@@ -148,51 +155,35 @@ export class VehicleCatalogOverview implements OnChanges {
     this.filters.update((filters) => ({ ...filters, query: '' }));
   }
 
-  private questionTimer?: ReturnType<typeof setTimeout>;
-  constructor() {
-    inject(DestroyRef).onDestroy(() => {
-      this.detailsDrawer?.close();
-      clearTimeout(this.questionTimer);
-    });
-  }
-
   ngOnChanges(): void {
     const page = this.page();
     if (page) this.searchStore.load(page.items.map(({ id }) => id));
   }
 
   protected openDetails(vehicle: VehicleConfiguration): void {
+    this.pendingQuestion = undefined;
     this.focused.set(vehicle);
     this.detailStore.load(vehicle.id);
-    this.detailsDrawer?.close();
-    this.detailsDrawer = this.drawer.create({
-      zTitle: `${vehicle.brand} ${vehicle.model} ${vehicle.name}`,
-      zDescription: `Catalog details for ${vehicle.market} ${vehicle.modelYear}`,
-      zContent: this.detailsTemplate(),
-      zClosable: false,
-      zDuration: 260,
-      zHideFooter: true,
-      zPlacement: 'right',
-      zViewContainerRef: this.viewContainerRef,
-      zCustomClasses:
-        'h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)]! sm:w-[min(42rem,calc(100vw-1rem))]! [&_[data-slot=drawer-header]]:sr-only [&_[data-slot=drawer-content]_main]:gap-0 [&_[data-slot=drawer-content]_main]:overflow-hidden [&_[data-slot=drawer-content]_main]:p-0',
-    });
+    this.detailsOpen.set(true);
   }
 
   protected closeDetails(): void {
-    this.detailsDrawer?.close();
+    this.detailsOpen.set(false);
   }
 
   protected askAboutFocused(): void {
     const vehicle = this.focused();
     if (!vehicle) return;
+    this.pendingQuestion = { kind: 'vehicle', vehicle };
     this.closeDetails();
-    // Let the drawer restore focus before its host handles the question.
-    clearTimeout(this.questionTimer);
-    this.questionTimer = setTimeout(
-      () => this.questionRequested.emit({ kind: 'vehicle', vehicle }),
-      270,
-    );
+  }
+
+  protected afterDetailsClosed(): void {
+    this.focused.set(undefined);
+    // The drawer restores focus before the host prepares the chat draft.
+    const question = this.pendingQuestion;
+    this.pendingQuestion = undefined;
+    if (question) this.questionRequested.emit(question);
   }
 
   protected compareShortlist(): void {

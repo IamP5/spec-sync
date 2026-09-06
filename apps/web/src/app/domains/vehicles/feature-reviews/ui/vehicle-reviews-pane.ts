@@ -1,9 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   input,
   output,
+  signal,
   viewChild,
 } from '@angular/core';
 import { type FieldTree, FormField } from '@angular/forms/signals';
@@ -22,6 +24,8 @@ import {
 } from '../../data/vehicle-reviews';
 import { displayValue } from '../../util/vehicle-display';
 
+let nextReviewFiltersId = 0;
+
 @Component({
   selector: 'app-vehicle-reviews-pane',
   imports: [
@@ -35,6 +39,13 @@ import { displayValue } from '../../util/vehicle-display';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VehicleReviewsPane {
+  protected readonly filtersId = `review-filters-${++nextReviewFiltersId}`;
+  protected readonly filtersExpanded = signal(false);
+  protected readonly activeFilters = computed(
+    () =>
+      Number(!!this.filterForm().vehicle().value()) +
+      Number(!!this.filterForm().media().value()),
+  );
   readonly context = input.required<VehicleReviewsContext>();
   readonly filterForm =
     input.required<

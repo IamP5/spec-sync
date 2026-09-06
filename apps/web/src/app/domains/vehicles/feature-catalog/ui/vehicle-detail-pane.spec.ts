@@ -53,7 +53,7 @@ describe('VehicleDetailPane', () => {
     expect(element.querySelector<HTMLAnchorElement>('a')?.href).toBe(
       'https://example.com/ranger-price',
     );
-    expect(element.textContent).toContain('Media contract missing');
+    expect(element.textContent).toContain('Vehicle photos unavailable');
   });
 
   it('emits close, retry, and ask intents from the panel controls', async () => {

@@ -11,7 +11,17 @@
   (reviewsRequested)="openReviews($event)"
   (followUpRequested)="followUp()"
 />
-<ng-template #reviews>
+<z-drawer
+  [(zVisible)]="reviewsOpen"
+  [zPlacement]="mobileScreen().matches ? 'bottom' : 'right'"
+  [zHandle]="mobileScreen().matches"
+  (zAfterClose)="afterReviewsClosed()"
+  class="specsync-vehicle-drawer overflow-hidden md:w-[min(44rem,calc(100vw-3rem))]!"
+>
+  <z-drawer-title class="sr-only"
+    >Avaliações sobre {{ reviewContext()?.row?.attribute?.label
+    }}</z-drawer-title
+  >
   @if (reviewContext(); as context) {
   <app-vehicle-reviews-search
     [context]="context"
@@ -19,4 +29,4 @@
     (questionRequested)="finishReview($event)"
   />
   }
-</ng-template>
+</z-drawer>

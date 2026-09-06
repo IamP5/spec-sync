@@ -1,7 +1,9 @@
-import { BreakpointObserver } from '@angular/cdk/layout';
+import { BreakpointObserver, MediaMatcher } from '@angular/cdk/layout';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, map } from 'rxjs';
+
+import { EDarkModes, ZardDarkMode } from '@/ui/services';
 
 import { App } from './app';
 import { FakeChatAgent, provideFakeChatAgent } from './testing/fake-chat-agent';
@@ -55,6 +57,120 @@ describe('App', () => {
       element.querySelector('[data-role="history-empty"]')?.textContent,
     ).toContain('Your conversations will appear here.');
     expect(element.querySelector('main router-outlet')).not.toBeNull();
+  });
+
+  it('keeps browser colors in sync with saved, explicit, and system themes', async () => {
+    const systemTheme = Object.assign(new EventTarget(), { matches: false });
+    TestBed.overrideProvider(MediaMatcher, {
+      useValue: { matchMedia: () => systemTheme },
+    });
+    localStorage.setItem('theme', 'dark');
+    const theme = TestBed.inject(ZardDarkMode);
+    theme.init();
+    const fixture = TestBed.createComponent(App);
+    const expectTheme = (scheme: string, color: string) => {
+      expect(document.documentElement.style.colorScheme).toBe(scheme);
+      expect(document.documentElement.classList.contains('dark')).toBe(
+        scheme === 'dark',
+      );
+      expect(
+        document
+          .querySelector('meta[name="color-scheme"]')
+          ?.getAttribute('content'),
+      ).toBe(scheme);
+      const colors = document.querySelectorAll('meta[name="theme-color"]');
+      expect(colors).toHaveLength(1);
+      expect(colors[0].getAttribute('content')).toBe(color);
+    };
+
+    await fixture.whenStable();
+    expectTheme('dark', '#0f0f0f');
+    theme.toggleTheme(EDarkModes.LIGHT);
+    await fixture.whenStable();
+    expectTheme('light', '#ffffff');
+    theme.toggleTheme(EDarkModes.DARK);
+    await fixture.whenStable();
+    expectTheme('dark', '#0f0f0f');
+    theme.toggleTheme(EDarkModes.SYSTEM);
+    await fixture.whenStable();
+    expectTheme('light', '#ffffff');
+    systemTheme.matches = true;
+    systemTheme.dispatchEvent(
+      Object.assign(new Event('change'), { matches: true }),
+    );
+    await fixture.whenStable();
+    expectTheme('dark', '#0f0f0f');
+    theme.toggleTheme(EDarkModes.LIGHT);
+    await fixture.whenStable();
+    expectTheme('light', '#ffffff');
+  });
+
+  it('tracks the mobile keyboard viewport and cleans up its listeners', async () => {
+    const visualViewport = Object.assign(new EventTarget(), {
+      height: 780,
+      offsetTop: 0,
+      scale: 1,
+    });
+    vi.stubGlobal('visualViewport', visualViewport);
+    viewport.next(390);
+    try {
+      const fixture = TestBed.createComponent(App);
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.style.getPropertyValue('--visual-viewport-height')).toBe(
+        '780px',
+      );
+      visualViewport.height = 420;
+      visualViewport.offsetTop = 24;
+      visualViewport.dispatchEvent(new Event('resize'));
+      await fixture.whenStable();
+      expect(element.style.getPropertyValue('--visual-viewport-height')).toBe(
+        '420px',
+      );
+      expect(element.style.getPropertyValue('--visual-viewport-top')).toBe(
+        '24px',
+      );
+      expect(
+        document.documentElement.style.getPropertyValue(
+          '--visual-viewport-height',
+        ),
+      ).toBe('420px');
+      expect(
+        document.documentElement.style.getPropertyValue(
+          '--visual-viewport-top',
+        ),
+      ).toBe('24px');
+      visualViewport.scale = 2;
+      visualViewport.height = 210;
+      visualViewport.dispatchEvent(new Event('resize'));
+      await fixture.whenStable();
+      expect(element.style.getPropertyValue('--visual-viewport-height')).toBe(
+        '420px',
+      );
+      viewport.next(1440);
+      await fixture.whenStable();
+      expect(element.style.getPropertyValue('--visual-viewport-height')).toBe(
+        '',
+      );
+      expect(
+        document.documentElement.style.getPropertyValue(
+          '--visual-viewport-height',
+        ),
+      ).toBe('');
+      expect(
+        document.documentElement.style.getPropertyValue(
+          '--visual-viewport-top',
+        ),
+      ).toBe('');
+      visualViewport.scale = 1;
+      visualViewport.dispatchEvent(new Event('resize'));
+      await fixture.whenStable();
+      expect(element.style.getPropertyValue('--visual-viewport-height')).toBe(
+        '',
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('collapses on compact screens and expands again when there is room', async () => {

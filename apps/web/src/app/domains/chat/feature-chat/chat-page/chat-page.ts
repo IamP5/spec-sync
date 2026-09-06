@@ -1,3 +1,4 @@
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { NgOptimizedImage, NgTemplateOutlet } from '@angular/common';
 import {
   afterRenderEffect,
@@ -124,6 +125,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
 @Component({
   selector: 'app-chat-page',
   imports: [
+    CdkTextareaAutosize,
     FormField,
     MarkdownPipe,
     NgIcon,
@@ -344,9 +346,14 @@ export class ChatPage {
     });
   }
 
-  /** Enter sends, Shift+Enter inserts a line break. */
+  /** Touch keyboards keep Return for writing; desktop Enter sends. */
   protected onPromptKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+    if (
+      event.key === 'Enter' &&
+      !event.shiftKey &&
+      !event.isComposing &&
+      !this.touchKeyboard()
+    ) {
       event.preventDefault();
       (event.target as HTMLElement).closest('form')?.requestSubmit();
     }
@@ -421,7 +428,7 @@ export class ChatPage {
       return;
     const overlap =
       target.getBoundingClientRect().bottom -
-      (composer.getBoundingClientRect().top - 32);
+      (composer.getBoundingClientRect().top - 64);
     if (overlap > 0) {
       this.atBottom.set(false);
       element.scrollTop += overlap;
@@ -464,7 +471,7 @@ export class ChatPage {
     this.clearPrompt();
     this.copyError.set('');
     this.atBottom.set(true);
-    this.prompt()?.nativeElement.focus();
+    this.focusForTyping();
   }
 
   private followReply(): void {
@@ -488,8 +495,19 @@ export class ChatPage {
         replaceUrl: true,
       });
     }
-    this.prompt()?.nativeElement.focus();
+    this.focusForTyping();
     await sending;
+  }
+
+  private touchKeyboard(): boolean {
+    return (
+      window.matchMedia?.('(hover: none) and (pointer: coarse)').matches ??
+      false
+    );
+  }
+
+  private focusForTyping(): void {
+    if (!this.touchKeyboard()) this.prompt()?.nativeElement.focus();
   }
 
   private clearPrompt(): void {

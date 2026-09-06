@@ -4,9 +4,9 @@
 >
   @if (result(); as comparison) {
   <header
-    class="flex flex-wrap items-start justify-between gap-3 px-5 py-5 sm:px-6"
+    class="flex flex-wrap items-start justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5"
   >
-    <div>
+    <div class="min-w-0">
       <p
         class="text-xs font-medium tracking-widest text-muted-foreground uppercase"
       >
@@ -17,7 +17,7 @@
         {{ comparison.configurations.length > 1 ? 'Comparação de especificações'
         : 'Especificações do veículo' }}
       </h2>
-      <p class="mt-1 text-xs text-muted-foreground">
+      <p class="mt-1 hidden text-xs text-muted-foreground sm:block">
         Compare os dados. Explore as fontes e o contexto de uso.
       </p>
     </div>
@@ -25,17 +25,18 @@
       z-button
       zType="outline"
       zSize="sm"
+      class="min-h-11 w-full sm:min-h-8 sm:w-auto"
       (click)="followUpRequested.emit()"
     >
       Analisar para o meu uso ↗</button
     >}
   </header>
   <div
-    class="flex flex-wrap items-center gap-3 border-y bg-muted/20 px-5 py-3 sm:px-6"
+    class="flex flex-wrap items-center gap-2 border-y bg-muted/20 px-4 py-3 sm:px-6"
   >
     <input
       z-input
-      class="h-9 w-full sm:w-64"
+      class="h-11 w-full text-base sm:h-9 sm:w-64 sm:text-sm"
       aria-label="Filtrar especificações"
       placeholder="Filtrar especificações…"
       [formField]="queryField()"
@@ -44,17 +45,107 @@
       z-button
       [zType]="differencesOnly() ? 'secondary' : 'ghost'"
       zSize="sm"
+      class="min-h-11 rounded-full border px-3 sm:min-h-8"
       [attr.aria-pressed]="differencesOnly()"
       (click)="differencesChanged.emit(!differencesOnly())"
     >
       {{ differencesOnly() ? '✓ ' : '' }}Só diferenças</button
     >}
-    <span class="text-xs text-muted-foreground sm:ml-auto" role="status"
+    <span class="text-xs text-muted-foreground ml-auto" role="status"
       >{{ rows().length }} de {{ comparison.rows.length }} itens</span
     >
   </div>
+  <div class="comparison-mobile md:hidden">
+    <details class="border-b px-4">
+      <summary
+        class="min-h-11 cursor-pointer content-center rounded text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring"
+      >
+        Veículos e versões ({{ comparison.configurations.length }})
+      </summary>
+      <div class="space-y-4 pb-4">
+        @for (configuration of comparison.configurations; track
+        configuration.id) {
+        <div
+          class="min-w-0 border-l-2 border-primary/40 pl-3 [overflow-wrap:anywhere]"
+        >
+          <ng-container
+            [ngTemplateOutlet]="configurationContent"
+            [ngTemplateOutletContext]="{ configuration: configuration }"
+          />
+        </div>
+        }
+      </div>
+    </details>
+    <div class="divide-y">
+      @for (row of rows(); track row.attribute.id) {
+      <section
+        class="comparison-spec min-w-0 p-4"
+        [attr.aria-label]="row.attribute.label"
+      >
+        <div class="mb-3 flex items-start justify-between gap-2">
+          <h3
+            class="min-w-0 self-center text-base font-semibold [overflow-wrap:anywhere]"
+          >
+            {{ row.attribute.label }} @if (row.attribute.unit) {
+            <span class="text-sm font-normal text-muted-foreground"
+              >({{ row.attribute.unit }})</span
+            >
+            }
+          </h3>
+          @if (questionsEnabled()) {
+          <button
+            z-button
+            zType="ghost"
+            zSize="sm"
+            class="min-h-11 shrink-0 px-2 text-xs"
+            [attr.aria-label]="'Ver avaliações sobre ' + row.attribute.label"
+            (click)="openReviews(row)"
+          >
+            Avaliações ↗
+          </button>
+          }
+        </div>
+        <div class="divide-y rounded-xl border bg-muted/15">
+          @for (configuration of comparison.configurations; track
+          configuration.id) {
+          <div
+            class="comparison-value min-w-0 p-3 [overflow-wrap:anywhere]"
+            [attr.data-configuration-id]="configuration.id"
+          >
+            <p class="text-sm font-medium">
+              {{ configuration.brand }} {{ configuration.model }}
+            </p>
+            <p class="mb-3 text-xs leading-5 text-muted-foreground">
+              {{ configuration.name }} · {{ configuration.modelYear }} · {{
+              configuration.market }}
+            </p>
+            <ng-container
+              [ngTemplateOutlet]="cellContent"
+              [ngTemplateOutletContext]="{ row: row, configuration: configuration }"
+            />
+          </div>
+          }
+        </div>
+      </section>
+      } @empty {
+      <div class="p-5 text-center">
+        <p class="text-sm text-muted-foreground">
+          Nenhum item corresponde aos filtros.
+        </p>
+        <button
+          z-button
+          zType="outline"
+          class="mt-3 min-h-11"
+          (click)="filtersCleared.emit()"
+        >
+          Limpar filtros
+        </button>
+      </div>
+      }
+    </div>
+  </div>
   <div
-    class="max-h-[65dvh] overflow-auto overscroll-contain"
+    class="hidden max-h-[65dvh] overflow-auto overscroll-contain md:block"
     tabindex="0"
     role="region"
     aria-label="Tabela de especificações; role para ver mais veículos e itens"
@@ -80,29 +171,10 @@
             scope="col"
             class="min-w-60 max-w-80 border-b border-l px-5 py-4 align-top"
           >
-            <span class="text-xs font-normal text-muted-foreground"
-              >{{ configuration.brand }} {{ configuration.model }}</span
-            >
-            <span class="mt-1 block font-semibold whitespace-normal"
-              >{{ configuration.name }}</span
-            >
-            <span class="mt-1 block text-xs font-normal text-muted-foreground"
-              >{{ configuration.market }} · {{ configuration.modelYear }}</span
-            >
-            @if (configuration.identityStatus !== 'CONFIRMED') {
-            <details class="mt-2 text-xs font-normal">
-              <summary
-                class="cursor-pointer rounded py-1 text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
-              >
-                {{ configuration.identityStatus === 'PROVISIONAL' ? 'Versão a
-                confirmar' : 'Versão identificada nas notas' }}
-              </summary>
-              <p class="mt-2 max-w-64 leading-5 whitespace-normal">
-                {{ configuration.identityNote || 'Identificação baseada nas
-                notas compiladas; consulte a fonte para confirmar a versão.' }}
-              </p>
-            </details>
-            }
+            <ng-container
+              [ngTemplateOutlet]="configurationContent"
+              [ngTemplateOutletContext]="{ configuration: configuration }"
+            />
           </th>
           }
         </tr>
@@ -134,86 +206,10 @@
           @for (configuration of comparison.configurations; track
           configuration.id) {
           <td class="border-b border-l px-5 py-5 align-top whitespace-normal">
-            @for (cell of row.cells; track cell.configurationId) { @if
-            (cell.configurationId === configuration.id) { @if
-            (cell.knowledgeStatus !== 'KNOWN') {
-            <p class="font-medium">
-              {{ cell.knowledgeStatus === 'CONFLICTING' ? 'Dados divergentes' :
-              'Não informado' }}
-            </p>
-            <p class="mt-1 max-w-72 text-xs leading-5 text-muted-foreground">
-              {{ cell.knowledgeStatus === 'CONFLICTING' ? 'As fontes divergem.
-              Confira os registros abaixo.' : 'Ausência de informação não
-              significa ausência do equipamento.' }}
-            </p>
-            } @for (observation of observations(cell); track observation.id) {
-            <div class="mb-3 last:mb-0">
-              @if (observation.value !== null) {
-              <p class="text-base font-semibold tracking-tight tabular-nums">
-                {{ format(observation.value) }}
-                <span class="text-xs font-normal text-muted-foreground"
-                  >{{ row.attribute.unit }}</span
-                >
-              </p>
-              } @if (observation.availability) {<z-badge
-                zType="secondary"
-                class="mt-1"
-                >{{ availability(observation.availability) }}</z-badge
-              >} @for (qualifier of qualifiers(observation.qualifiers); track
-              qualifier) {
-              <p class="mt-1 max-w-72 text-xs leading-5 text-muted-foreground">
-                {{ qualifier }}
-              </p>
-              }
-              <details class="mt-2 max-w-80">
-                <summary
-                  class="cursor-pointer rounded py-2 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
-                >
-                  Fontes e evidências ({{ observation.evidence.length }})
-                </summary>
-                @for (evidence of observation.evidence; track evidence.id) {
-                <div class="my-3 border-l-2 pl-3 text-xs leading-5">
-                  <p class="font-medium">{{ evidence.title }}</p>
-                  <p class="text-muted-foreground">
-                    {{ evidence.locator }} · Capturado em {{ evidence.capturedOn
-                    }}
-                  </p>
-                  <blockquote class="mt-2 whitespace-pre-wrap">
-                    {{ evidence.excerpt }}
-                  </blockquote>
-                  <p class="mt-2 text-muted-foreground">
-                    {{ evidence.provenance === 'CURATED_NOTE' ? 'Notas
-                    compiladas' : evidence.provenance }} · A referência original
-                    não representa verificação independente.
-                  </p>
-                  @for (url of evidence.upstreamUrls; track url) {@if
-                  (safeUrl(url); as href) {<a
-                    class="mt-2 inline-block rounded underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
-                    [href]="href"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >Referência original ↗<span class="sr-only">
-                      (nova aba)</span
-                    ></a
-                  >}}
-                </div>
-                } @empty {
-                <p class="py-2 text-xs text-muted-foreground">
-                  Nenhuma evidência anexada a este registro.
-                </p>
-                }
-              </details>
-            </div>
-            } @if (questionsEnabled()) {<button
-              z-button
-              zType="ghost"
-              zSize="sm"
-              class="mt-2 -ml-2 text-xs text-muted-foreground"
-              [attr.aria-label]="'Relatos desta versão: ' + configuration.name + ' sobre ' + row.attribute.label"
-              (click)="openReviews(row, configuration.id)"
-            >
-              Relatos desta versão <span aria-hidden="true">↗</span></button
-            >} }}
+            <ng-container
+              [ngTemplateOutlet]="cellContent"
+              [ngTemplateOutletContext]="{ row: row, configuration: configuration }"
+            />
           </td>
           }
         </tr>
@@ -258,3 +254,106 @@
   </div>
   }
 </z-card>
+
+<ng-template #configurationContent let-configuration="configuration">
+  <span class="text-xs font-normal text-muted-foreground"
+    >{{ configuration.brand }} {{ configuration.model }}</span
+  >
+  <span class="mt-1 block font-semibold whitespace-normal"
+    >{{ configuration.name }}</span
+  >
+  <span class="mt-1 block text-xs font-normal text-muted-foreground"
+    >{{ configuration.market }} · {{ configuration.modelYear }}</span
+  >
+  @if (configuration.identityStatus !== 'CONFIRMED') {
+  <details class="mt-2 text-xs font-normal">
+    <summary
+      class="min-h-11 cursor-pointer content-center rounded py-1 text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
+    >
+      {{ configuration.identityStatus === 'PROVISIONAL' ? 'Versão a confirmar' :
+      'Versão identificada nas notas' }}
+    </summary>
+    <p class="mt-2 max-w-64 leading-5 whitespace-normal">
+      {{ configuration.identityNote || 'Identificação baseada nas notas
+      compiladas; consulte a fonte para confirmar a versão.' }}
+    </p>
+  </details>
+  }
+</ng-template>
+
+<ng-template #cellContent let-row="row" let-configuration="configuration">
+  @for (cell of row.cells; track cell.configurationId) { @if
+  (cell.configurationId === configuration.id) { @if (cell.knowledgeStatus !==
+  'KNOWN') {
+  <p class="font-medium">
+    {{ cell.knowledgeStatus === 'CONFLICTING' ? 'Dados divergentes' : 'Não
+    informado' }}
+  </p>
+  <p class="mt-1 max-w-72 text-xs leading-5 text-muted-foreground">
+    {{ cell.knowledgeStatus === 'CONFLICTING' ? 'As fontes divergem. Confira os
+    registros abaixo.' : 'Ausência de informação não significa ausência do
+    equipamento.' }}
+  </p>
+  } @for (observation of observations(cell); track observation.id) {
+  <div class="mb-3 last:mb-0">
+    @if (observation.value !== null) {
+    <p class="text-base font-semibold tracking-tight tabular-nums">
+      {{ format(observation.value) }}
+      <span class="text-xs font-normal text-muted-foreground"
+        >{{ row.attribute.unit }}</span
+      >
+    </p>
+    } @if (observation.availability) {<z-badge zType="secondary" class="mt-1"
+      >{{ availability(observation.availability) }}</z-badge
+    >} @for (qualifier of qualifiers(observation.qualifiers); track qualifier) {
+    <p class="mt-1 max-w-72 text-xs leading-5 text-muted-foreground">
+      {{ qualifier }}
+    </p>
+    }
+    <details class="mt-2 max-w-80">
+      <summary
+        class="min-h-11 cursor-pointer content-center rounded py-2 text-sm text-muted-foreground md:min-h-0 md:text-xs focus-visible:outline-2 focus-visible:outline-ring"
+      >
+        Fontes e evidências ({{ observation.evidence.length }})
+      </summary>
+      @for (evidence of observation.evidence; track evidence.id) {
+      <div class="my-3 border-l-2 pl-3 text-xs leading-5">
+        <p class="font-medium">{{ evidence.title }}</p>
+        <p class="text-muted-foreground">
+          {{ evidence.locator }} · Capturado em {{ evidence.capturedOn }}
+        </p>
+        <blockquote class="mt-2 whitespace-pre-wrap">
+          {{ evidence.excerpt }}
+        </blockquote>
+        <p class="mt-2 text-muted-foreground">
+          {{ evidence.provenance === 'CURATED_NOTE' ? 'Notas compiladas' :
+          evidence.provenance }} · A referência original não representa
+          verificação independente.
+        </p>
+        @for (url of evidence.upstreamUrls; track url) {@if (safeUrl(url); as
+        href) {<a
+          class="mt-2 inline-block min-h-11 content-center rounded underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
+          [href]="href"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Referência original ↗<span class="sr-only"> (nova aba)</span></a
+        >}}
+      </div>
+      } @empty {
+      <p class="py-2 text-xs text-muted-foreground">
+        Nenhuma evidência anexada a este registro.
+      </p>
+      }
+    </details>
+  </div>
+  } @if (questionsEnabled()) {<button
+    z-button
+    zType="ghost"
+    zSize="sm"
+    class="mt-1 -ml-2 min-h-11 text-xs text-muted-foreground md:mt-2 md:min-h-8"
+    [attr.aria-label]="'Relatos desta versão: ' + configuration.name + ' sobre ' + row.attribute.label"
+    (click)="openReviews(row, configuration.id)"
+  >
+    Relatos desta versão <span aria-hidden="true">↗</span></button
+  >} }}
+</ng-template>
