@@ -28,6 +28,7 @@ import {
   lucideArrowDown,
   lucideArrowUp,
   lucideBrain,
+  lucideCarFront,
   lucideCheck,
   lucideCopy,
   lucideFileSearch,
@@ -150,7 +151,10 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
       provide: CHAT_CARD_ACTIONS,
       useFactory: () => {
         const page = inject(ChatPage);
-        return { draft: (prompt: string) => page.prepareDraft(prompt) };
+        return {
+          draft: (prompt: string) => page.prepareDraft(prompt),
+          send: (prompt: string) => page.sendFromCard(prompt),
+        };
       },
     },
   ],
@@ -159,6 +163,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
       lucideArrowDown,
       lucideArrowUp,
       lucideBrain,
+      lucideCarFront,
       lucideCheck,
       lucideCopy,
       lucideFileSearch,
@@ -351,6 +356,10 @@ export class ChatPage {
     const current = this.model().prompt.trim();
     this.model.set({ prompt: current ? `${current}\n\n${prompt}` : prompt });
     this.prompt()?.nativeElement.focus();
+  }
+
+  sendFromCard(prompt: string): void {
+    if (!this.streaming()) void this.send(prompt);
   }
 
   protected onSuggestion(prompt: string): void {

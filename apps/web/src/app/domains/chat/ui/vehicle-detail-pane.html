@@ -1,0 +1,347 @@
+<article
+  class="flex h-full min-h-0 flex-col overflow-y-auto bg-background overscroll-contain [scrollbar-gutter:stable]"
+>
+  <header
+    class="relative min-h-56 shrink-0 overflow-hidden bg-slate-950 text-white sm:min-h-64"
+  >
+    <div
+      class="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(59,130,246,0.42),transparent_34%),linear-gradient(135deg,#172554_0%,#0f172a_52%,#020617_100%)]"
+      aria-hidden="true"
+    ></div>
+    <div
+      class="absolute top-8 right-6 grid size-36 place-items-center rounded-full border border-white/10 bg-white/5 text-white/15 sm:right-10 sm:size-44"
+      aria-hidden="true"
+    >
+      <ng-icon name="lucideCarFront" class="size-20! sm:size-24!" />
+    </div>
+    <p
+      class="absolute top-5 left-5 text-[10px] font-medium tracking-[0.2em] text-white/45 uppercase sm:left-7"
+    >
+      Catalog record · media pending
+    </p>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon-sm"
+      type="button"
+      class="absolute top-4 right-4 z-10 rounded-full border border-white/15 bg-black/20 text-white hover:bg-black/40 hover:text-white"
+      aria-label="Close vehicle details"
+      (click)="closed.emit()"
+    >
+      <ng-icon name="lucideX" aria-hidden="true" />
+    </button>
+
+    <div
+      class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/75 via-black/35 to-transparent p-5 pt-20 sm:p-7 sm:pt-24"
+    >
+      <div class="mb-3 flex flex-wrap gap-2">
+        <z-badge
+          zType="outline"
+          class="border-white/25 bg-black/25 text-white backdrop-blur-sm"
+        >
+          {{ vehicle().market }} · {{ vehicle().modelYear }}
+        </z-badge>
+        @if (vehicle().identityStatus === 'PROVISIONAL') {
+        <z-badge
+          zType="outline"
+          class="border-amber-300/50 bg-amber-950/35 text-amber-100 backdrop-blur-sm"
+        >
+          <ng-icon name="lucideCircleAlert" aria-hidden="true" />
+          Provisional identity
+        </z-badge>
+        } @else {
+        <z-badge
+          zType="outline"
+          class="border-white/25 bg-black/25 text-white backdrop-blur-sm"
+        >
+          <ng-icon name="lucideBadgeCheck" aria-hidden="true" />
+          {{ vehicle().identityStatus === 'CONFIRMED' ? 'Confirmed identity' :
+          'Resolved from notes' }}
+        </z-badge>
+        }
+      </div>
+      <p class="text-sm font-medium text-white/70">{{ vehicle().brand }}</p>
+      <h2 class="text-2xl font-semibold tracking-tight sm:text-3xl">
+        {{ vehicle().model }}
+      </h2>
+      <p class="mt-1 text-sm text-white/80">{{ vehicle().name }}</p>
+    </div>
+  </header>
+
+  <div class="p-5 sm:p-7">
+    <section
+      class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+      aria-labelledby="reference-price-heading"
+    >
+      <div class="min-w-0">
+        <p
+          id="reference-price-heading"
+          class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+        >
+          Reference price
+        </p>
+        @if (loading() && !comparison()) {
+        <z-skeleton class="mt-2 h-7 w-36" />
+        <z-skeleton class="mt-2 h-3 w-64 max-w-full" />
+        } @else {
+        <p
+          class="mt-1 text-xl font-semibold tracking-tight"
+          [class.text-warning]="price().status === 'conflicting'"
+          [class.text-muted-foreground]="price().status === 'not-reported'"
+        >
+          {{ price().value }}
+        </p>
+        <p class="mt-1 text-xs leading-5 text-muted-foreground">
+          {{ priceContext() }}
+        </p>
+        }
+      </div>
+      <button
+        z-button
+        zType="outline"
+        type="button"
+        class="shrink-0"
+        data-action="ask-about-vehicle"
+        (click)="askRequested.emit()"
+      >
+        <ng-icon name="lucideMessageCircle" aria-hidden="true" />
+        Ask about this vehicle
+      </button>
+    </section>
+
+    @if (failed()) {
+    <div
+      class="animate-in fade-in-0 slide-in-from-bottom-1 min-h-88 rounded-xl border border-destructive/35 bg-destructive/5 p-4 duration-200 motion-reduce:animate-none"
+      role="alert"
+    >
+      <h3 class="text-sm font-medium">Vehicle details are unavailable</h3>
+      <p class="mt-1 text-sm leading-6 text-muted-foreground">
+        The catalog identity is still available, but its sourced specifications
+        could not be loaded.
+      </p>
+      <button
+        z-button
+        zType="outline"
+        zSize="sm"
+        type="button"
+        class="mt-3"
+        (click)="retried.emit()"
+      >
+        <ng-icon name="lucideRotateCcw" aria-hidden="true" />
+        Try again
+      </button>
+    </div>
+    } @else if (loading() && !comparison()) {
+    <div class="min-h-88 space-y-5" aria-label="Loading vehicle specifications">
+      <div class="flex gap-5 border-b pb-3">
+        <z-skeleton class="h-4 w-16" />
+        <z-skeleton class="h-4 w-24" />
+        <z-skeleton class="h-4 w-16" />
+      </div>
+      <div class="grid gap-3 sm:grid-cols-3">
+        <z-skeleton class="h-24 rounded-xl" />
+        <z-skeleton class="h-24 rounded-xl" />
+        <z-skeleton class="h-24 rounded-xl" />
+      </div>
+      <z-skeleton class="h-28 rounded-xl" />
+    </div>
+    } @else {
+    <z-tab-group
+      zVariant="line"
+      class="animate-in fade-in-0 slide-in-from-bottom-1 min-h-88 gap-5 duration-300 motion-reduce:animate-none"
+    >
+      <z-tab label="Overview">
+        <div class="grid gap-3 pt-5 sm:grid-cols-3">
+          <div class="rounded-xl border bg-muted/25 p-4">
+            <p class="text-xs text-muted-foreground">Power</p>
+            <p
+              class="mt-1 text-lg font-semibold"
+              [class.text-warning]="power().status === 'conflicting'"
+              [class.text-muted-foreground]="
+                  power().status === 'not-reported'
+                "
+            >
+              {{ power().value }}
+            </p>
+          </div>
+          <div class="rounded-xl border bg-muted/25 p-4">
+            <p class="text-xs text-muted-foreground">Torque</p>
+            <p
+              class="mt-1 text-lg font-semibold"
+              [class.text-warning]="torque().status === 'conflicting'"
+              [class.text-muted-foreground]="
+                  torque().status === 'not-reported'
+                "
+            >
+              {{ torque().value }}
+            </p>
+          </div>
+          <div class="rounded-xl border bg-muted/25 p-4">
+            <p class="text-xs text-muted-foreground">Drivetrain</p>
+            <p
+              class="mt-1 text-lg font-semibold"
+              [class.text-warning]="drivetrain().status === 'conflicting'"
+              [class.text-muted-foreground]="
+                  drivetrain().status === 'not-reported'
+                "
+            >
+              {{ drivetrain().value }}
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-5 rounded-xl border bg-card p-4">
+          <div class="flex items-start gap-3">
+            <ng-icon
+              name="lucideInfo"
+              class="mt-0.5 shrink-0 text-info"
+              aria-hidden="true"
+            />
+            <div>
+              <h3 class="text-sm font-medium">Catalog confidence</h3>
+              <p class="mt-1 text-sm leading-6 text-muted-foreground">
+                {{ knownCount() }} of {{ facts().length }} shown attributes have
+                accepted observations. {{ uncertainCount() }} need clearer
+                evidence or were not reported in the curated subset.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        @if (vehicle().identityNote) {
+        <div class="mt-3 rounded-xl border border-warning/30 bg-warning/5 p-4">
+          <p class="text-xs font-medium tracking-wide uppercase">
+            Identity note
+          </p>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            {{ vehicle().identityNote }}
+          </p>
+        </div>
+        }
+      </z-tab>
+
+      <z-tab label="Specifications">
+        <dl class="divide-y divide-border pt-4">
+          @for (fact of facts(); track fact.code) {
+          <div
+            class="grid gap-1 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-6"
+          >
+            <dt class="text-sm text-muted-foreground">{{ fact.label }}</dt>
+            <dd class="text-sm font-medium sm:text-right">
+              <span class="inline-flex items-center gap-1.5">
+                @switch (fact.status) { @case ('known') {
+                <ng-icon
+                  name="lucideCheck"
+                  class="shrink-0 text-success"
+                  aria-label="Accepted observation"
+                />
+                } @case ('conflicting') {
+                <ng-icon
+                  name="lucideCircleAlert"
+                  class="shrink-0 text-warning"
+                  aria-label="Conflicting observations"
+                />
+                } @case ('not-reported') {
+                <ng-icon
+                  name="lucideCircleHelp"
+                  class="shrink-0 text-muted-foreground"
+                  aria-label="Not reported"
+                />
+                } } {{ fact.value }}
+              </span>
+              @if (fact.note) {
+              <p
+                class="mt-1 text-xs font-normal leading-5 text-muted-foreground"
+              >
+                {{ fact.note }}
+              </p>
+              } @if (fact.evidenceCount > 0) {
+              <p class="mt-1 text-[11px] font-normal text-info">
+                {{ fact.evidenceCount }} {{ fact.evidenceCount === 1 ? 'source'
+                : 'sources' }}
+              </p>
+              }
+            </dd>
+          </div>
+          } @empty {
+          <div class="py-8 text-center text-sm text-muted-foreground">
+            No attributes were returned for this configuration.
+          </div>
+          }
+        </dl>
+      </z-tab>
+
+      <z-tab label="Evidence">
+        <div class="space-y-4 pt-5 text-sm leading-6">
+          <div class="rounded-xl border border-warning/30 bg-warning/5 p-4">
+            <div class="flex items-start gap-3">
+              <ng-icon
+                name="lucideCircleAlert"
+                class="mt-1 shrink-0 text-warning"
+                aria-hidden="true"
+              />
+              <div>
+                <h3 class="font-medium">Curated notes, not OEM verification</h3>
+                <p class="mt-1 text-muted-foreground">
+                  Exact excerpts, accepted assertions, gaps, and conflicts
+                  remain visible instead of being flattened into a single claim.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          @for (item of evidence(); track item.id) {
+          <article class="rounded-xl border p-4">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h3 class="font-medium">{{ item.title }}</h3>
+                <p class="text-xs text-muted-foreground">
+                  {{ item.locator }} · captured {{ item.capturedOn }}
+                </p>
+              </div>
+              <z-badge zType="secondary">{{ item.provenance }}</z-badge>
+            </div>
+            <blockquote
+              class="mt-3 border-l-2 border-info/50 pl-3 text-muted-foreground"
+            >
+              {{ item.excerpt }}
+            </blockquote>
+            @if (item.upstreamUrls.length > 0) {
+            <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1">
+              @for (url of item.upstreamUrls; track url; let index = $index) {
+              @if (safeUrl(url); as href) {
+              <a
+                class="text-xs font-medium text-info underline-offset-4 hover:underline"
+                [href]="href"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Source {{ index + 1 }}
+              </a>
+              } }
+            </div>
+            }
+          </article>
+          } @empty {
+          <div class="rounded-xl border border-dashed p-4">
+            <p class="font-medium">No evidence excerpts returned</p>
+            <p class="mt-1 text-muted-foreground">
+              Treat unreported facts as unknown, not as absent equipment.
+            </p>
+          </div>
+          }
+
+          <div class="rounded-xl border p-4">
+            <p class="font-medium">Media contract missing</p>
+            <p class="mt-1 text-muted-foreground">
+              The catalog schema has no media asset, attribution, angle, color,
+              or configuration applicability. The hero treatment is a branded
+              placeholder, not a vehicle photograph.
+            </p>
+          </div>
+        </div>
+      </z-tab>
+    </z-tab-group>
+    }
+  </div>
+</article>

@@ -23,7 +23,7 @@ The agent has ten typed tools: `searchVehicleConfigurations`,
 `getEvidenceExcerpt`, and `discoverVehicleContent`. All are read-only. Graph tools
 use fixed parameterized queries behind Spring Boot; arbitrary Cypher is not exposed.
 
-Specification responses render directly as a wide Zard comparison matrix. The browser supports attribute search and an exact-value difference filter, keeping unknown and conflicting cells visible. Related reviews open in a dialog with vehicle/media/text filters and selectable evidence. A selection prepares an editable composer draft with evidence IDs; it never sends automatically or ingests content. See `apps/web/docs/comparison-experience.md` for the version E decision and retrieval limits.
+Specification responses render directly as a wide Zard comparison matrix. An unscoped catalog request renders a dedicated interactive catalog; configuration searches used only to resolve named vehicles remain background work. The browser supports attribute search and an exact-value difference filter, keeping unknown and conflicting cells visible. Related reviews open in a dialog with vehicle/media/text filters and selectable evidence. A selection prepares an editable composer draft with evidence IDs; it never sends automatically or ingests content. See `apps/web/docs/comparison-experience.md` for the production catalog and version E comparison decisions and retrieval limits.
 Accepted values are selected by `selectedObservationId`, never by observation order.
 Source excerpts and original qualifiers remain available in expandable details.
 Related review cards distinguish model scope, configuration scope, opinion kind,

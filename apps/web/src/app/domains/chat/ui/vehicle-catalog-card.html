@@ -1,0 +1,514 @@
+<ng-template #vehicleDetails>
+  @if (focused(); as vehicle) {
+  <app-vehicle-detail-pane
+    [vehicle]="vehicle"
+    [comparison]="detail()"
+    [loading]="detailLoading()"
+    [failed]="!!detailError()"
+    (closed)="closeDetails()"
+    (retried)="retryDetail()"
+    (askRequested)="askAboutFocused()"
+  />
+  }
+</ng-template>
+
+<z-card
+  class="min-w-0 gap-0 overflow-hidden rounded-xl border-border p-0 shadow-none"
+  aria-label="Vehicle catalog"
+>
+  @if (result(); as page) {
+  <header
+    class="flex flex-wrap items-end justify-between gap-4 px-4 py-5 sm:px-6"
+  >
+    <div>
+      <p
+        class="flex items-center gap-2 text-xs font-medium tracking-widest text-info uppercase"
+      >
+        <ng-icon name="lucideCarFront" aria-hidden="true" />
+        Vehicle catalog
+      </p>
+      <h2 class="mt-1 text-xl font-semibold tracking-tight">
+        Explore available configurations
+      </h2>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Search the loaded page, inspect sourced details, or build a shortlist.
+      </p>
+    </div>
+    <div
+      class="flex rounded-lg border border-border bg-muted/35 p-1"
+      aria-label="Catalog display mode"
+    >
+      <button
+        z-button
+        [zType]="catalogView() === 'catalog' ? 'default' : 'ghost'"
+        zSize="sm"
+        type="button"
+        class="h-8 rounded-md"
+        [attr.aria-pressed]="catalogView() === 'catalog'"
+        (click)="setCatalogView('catalog')"
+      >
+        <ng-icon name="lucideLayoutList" aria-hidden="true" />
+        Catalog
+      </button>
+      <button
+        z-button
+        [zType]="catalogView() === 'competitors' ? 'default' : 'ghost'"
+        zSize="sm"
+        type="button"
+        class="h-8 rounded-md"
+        [attr.aria-pressed]="catalogView() === 'competitors'"
+        (click)="setCatalogView('competitors')"
+      >
+        <ng-icon name="lucideUsers" aria-hidden="true" />
+        Competitors
+      </button>
+    </div>
+  </header>
+
+  @if (catalogView() === 'catalog') {
+  <div class="border-y border-border bg-muted/15 px-4 py-4 sm:px-6">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+      <div class="relative min-w-0 flex-1">
+        <ng-icon
+          name="lucideSearch"
+          class="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
+        <label for="catalog-search" class="sr-only">Search catalog</label>
+        <input
+          id="catalog-search"
+          z-input
+          type="search"
+          placeholder="Search make, model, or configuration…"
+          class="h-10 rounded-lg pr-9 pl-9"
+          [value]="searchQuery()"
+          (input)="updateSearch($event)"
+        />
+        @if (searchQuery()) {
+        <button
+          type="button"
+          class="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          aria-label="Clear search"
+          (click)="searchQuery.set('')"
+        >
+          <ng-icon name="lucideX" aria-hidden="true" />
+        </button>
+        }
+      </div>
+      <div class="flex min-w-0 items-center gap-2">
+        <ng-icon
+          name="lucideArrowDownUp"
+          class="shrink-0 text-muted-foreground"
+          aria-hidden="true"
+        />
+        <label for="catalog-sort" class="sr-only">Order by</label>
+        <select
+          id="catalog-sort"
+          class="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 lg:w-52"
+          [value]="sortMode()"
+          (change)="updateSort($event)"
+        >
+          <option value="catalog-order">Catalog order</option>
+          <option value="price-asc">Lowest reference price</option>
+          <option value="power-desc">Highest power</option>
+          <option value="torque-desc">Highest torque</option>
+        </select>
+      </div>
+    </div>
+
+    <z-separator class="my-3" />
+
+    <div class="flex flex-wrap items-center gap-2">
+      <span
+        class="mr-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+      >
+        <ng-icon name="lucideSlidersHorizontal" aria-hidden="true" />
+        Make
+      </span>
+      <button
+        z-button
+        [zType]="brandFilter() === 'all' ? 'secondary' : 'ghost'"
+        zSize="sm"
+        type="button"
+        class="h-8 rounded-full"
+        [attr.aria-pressed]="brandFilter() === 'all'"
+        (click)="setBrandFilter('all')"
+      >
+        All
+      </button>
+      @for (brand of brands(); track brand) {
+      <button
+        z-button
+        [zType]="brandFilter() === brand ? 'secondary' : 'ghost'"
+        zSize="sm"
+        type="button"
+        class="h-8 rounded-full"
+        [attr.aria-pressed]="brandFilter() === brand"
+        (click)="setBrandFilter(brand)"
+      >
+        {{ brand }}
+      </button>
+      } @if (activeFilterCount()) {
+      <button
+        z-button
+        zType="ghost"
+        zSize="sm"
+        type="button"
+        class="ml-auto h-8"
+        (click)="clearFilters()"
+      >
+        Clear filters
+      </button>
+      }
+    </div>
+  </div>
+
+  @if (modelSummaries().length) {
+  <div class="px-4 pt-4 sm:px-6">
+    <div class="mb-2 flex items-center justify-between gap-3">
+      <p class="text-xs font-medium text-muted-foreground">Model families</p>
+      @if (modelFilter() !== 'all') {
+      <button
+        z-button
+        zType="ghost"
+        zSize="sm"
+        type="button"
+        class="h-8"
+        (click)="setModelFilter(modelFilter())"
+      >
+        Show all models
+      </button>
+      }
+    </div>
+    <div class="grid gap-2 sm:grid-cols-3">
+      @for (model of modelSummaries(); track model.model) {
+      <button
+        type="button"
+        class="group flex min-w-0 items-center gap-3 rounded-xl border bg-card p-2 text-left transition-colors hover:border-foreground/25 hover:bg-muted/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        [class.border-primary]="modelFilter() === model.model"
+        [class.bg-muted]="modelFilter() === model.model"
+        [attr.aria-pressed]="modelFilter() === model.model"
+        (click)="setModelFilter(model.model)"
+      >
+        <span
+          class="grid size-14 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 text-primary"
+          aria-hidden="true"
+        >
+          <ng-icon name="lucideCarFront" class="text-xl" />
+        </span>
+        <span class="min-w-0">
+          <span class="block text-[11px] text-muted-foreground"
+            >{{ model.brand }}</span
+          >
+          <span class="block truncate text-sm font-semibold"
+            >{{ model.model }}</span
+          >
+          <span class="mt-0.5 block text-[11px] text-muted-foreground">
+            {{ model.configurationCount }} {{ model.configurationCount === 1 ?
+            'configuration' : 'configurations' }} on this page
+          </span>
+        </span>
+      </button>
+      }
+    </div>
+  </div>
+  }
+
+  <div
+    class="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6"
+  >
+    <p class="text-sm text-muted-foreground" role="status">
+      <span class="font-medium text-foreground"
+        >{{ visibleConfigurations().length }}</span
+      >
+      {{ visibleConfigurations().length === 1 ? 'configuration' :
+      'configurations' }} shown on this page @if (page.hasMore) { · more are
+      available }
+    </p>
+    <button
+      z-button
+      zType="outline"
+      zSize="sm"
+      type="button"
+      [zDisabled]="shortlistedConfigurations().length < 2"
+      (click)="setCatalogView('competitors')"
+    >
+      <ng-icon name="lucideGitCompareArrows" aria-hidden="true" />
+      Compare shortlist @if (shortlistedConfigurations().length) {
+      <z-badge zType="secondary" class="ml-1"
+        >{{ shortlistedConfigurations().length }}</z-badge
+      >
+      }
+    </button>
+  </div>
+
+  @if (summariesError()) {
+  <div class="mx-4 mb-3 rounded-lg border border-warning/40 p-3 sm:mx-6">
+    <p class="text-xs" role="status">
+      Card highlights could not be loaded. Catalog identities remain available.
+    </p>
+    <button
+      z-button
+      zType="ghost"
+      zSize="sm"
+      type="button"
+      class="mt-1"
+      (click)="retrySummaries()"
+    >
+      Retry highlights
+    </button>
+  </div>
+  } @if (visibleConfigurations().length) {
+  <div
+    class="mx-4 mb-4 overflow-hidden rounded-xl border border-border bg-card sm:mx-6 sm:mb-6"
+    role="list"
+  >
+    @for (vehicle of visibleConfigurations(); track vehicle.id; let last =
+    $last) {
+    <div
+      class="flex items-center transition-colors hover:bg-muted/30"
+      role="listitem"
+      [attr.data-configuration-id]="vehicle.id"
+    >
+      <button
+        type="button"
+        class="grid min-w-0 flex-1 grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 p-3 text-left outline-none focus-visible:bg-muted/50 sm:grid-cols-[5rem_minmax(0,1fr)_repeat(3,minmax(5rem,7rem))] sm:gap-4"
+        [attr.aria-label]="'Open ' + vehicle.brand + ' ' + vehicle.model + ' ' + vehicle.name + ' details'"
+        (click)="openDetails(vehicle)"
+      >
+        <span
+          class="grid aspect-[4/3] place-items-center rounded-lg bg-gradient-to-br from-primary/15 to-muted text-primary"
+          aria-label="Vehicle image not available"
+        >
+          <ng-icon name="lucideCarFront" aria-hidden="true" />
+        </span>
+        <span class="min-w-0">
+          <span class="flex items-center gap-2">
+            <span class="truncate text-sm font-semibold"
+              >{{ vehicle.brand }} {{ vehicle.model }}</span
+            >
+            @if (vehicle.identityStatus !== 'CONFIRMED') {
+            <z-badge zType="outline" class="shrink-0 text-[10px]"
+              >{{ vehicle.identityStatus === 'PROVISIONAL' ? 'Provisional' :
+              'From notes' }}</z-badge
+            >
+            }
+          </span>
+          <span class="block truncate text-xs text-muted-foreground"
+            >{{ vehicle.name }}</span
+          >
+          <span class="mt-1 block text-[11px] text-muted-foreground"
+            >{{ vehicle.market }} · {{ vehicle.modelYear }}</span
+          >
+        </span>
+        @for (metric of [ { label: 'Power', code: 'power_max' }, { label:
+        'Torque', code: 'torque_max' }, { label: 'Reference price', code:
+        'reference_price' } ]; track metric.code) {
+        <span class="hidden min-w-0 sm:block">
+          <span
+            class="block text-[10px] tracking-wide text-muted-foreground uppercase"
+            >{{ metric.label }}</span
+          >
+          @if (summariesLoading() && !summaries()) {
+          <z-skeleton class="mt-1 h-4 w-16" />
+          } @else {
+          <span
+            class="mt-1 block truncate text-xs font-medium"
+            [class.text-warning]="fact(vehicle, metric.code).status === 'conflicting'"
+            [class.text-muted-foreground]="fact(vehicle, metric.code).status === 'not-reported'"
+            >{{ fact(vehicle, metric.code).text }}</span
+          >
+          }
+        </span>
+        }
+      </button>
+      <button
+        z-button
+        [zType]="isShortlisted(vehicle) ? 'default' : 'outline'"
+        zSize="icon-sm"
+        type="button"
+        class="mr-3 shrink-0"
+        [attr.data-action]="isShortlisted(vehicle) ? 'remove-shortlist' : 'add-shortlist'"
+        [attr.aria-label]="isShortlisted(vehicle) ? 'Remove ' + vehicle.model + ' ' + vehicle.name + ' from comparison' : 'Add ' + vehicle.model + ' ' + vehicle.name + ' to comparison'"
+        (click)="toggleShortlist($event, vehicle)"
+      >
+        <ng-icon
+          [name]="isShortlisted(vehicle) ? 'lucideCheck' : 'lucideGitCompareArrows'"
+          aria-hidden="true"
+        />
+      </button>
+    </div>
+    @if (!last) { <z-separator /> } }
+  </div>
+  } @else {
+  <div
+    class="mx-4 mb-6 rounded-xl border border-dashed px-6 py-10 text-center sm:mx-6"
+  >
+    <ng-icon
+      name="lucideSearch"
+      class="text-muted-foreground"
+      aria-hidden="true"
+    />
+    <h3 class="mt-2 text-sm font-medium">No configurations found</h3>
+    <p class="mt-1 text-xs text-muted-foreground">
+      Try a broader literal search or clear the active filters.
+    </p>
+    @if (activeFilterCount()) {
+    <button
+      z-button
+      zType="outline"
+      zSize="sm"
+      type="button"
+      class="mt-4"
+      (click)="clearFilters()"
+    >
+      Clear filters
+    </button>
+    }
+  </div>
+  }
+
+  <p
+    class="mx-4 mb-5 flex items-start gap-2 rounded-lg bg-muted/40 px-3 py-2.5 text-xs leading-5 text-muted-foreground sm:mx-6"
+  >
+    <ng-icon
+      name="lucidePanelRightOpen"
+      class="mt-0.5 shrink-0"
+      aria-hidden="true"
+    />
+    Details open in a side sheet and use the catalog's sourced specification
+    contract. Media is not modeled yet, so deliberate placeholders are shown.
+  </p>
+  } @else {
+  <section
+    class="border-t border-border px-4 py-5 sm:px-6"
+    aria-label="Shortlist comparison"
+  >
+    @if (shortlistedConfigurations().length < 2) {
+    <div class="rounded-xl border border-dashed px-6 py-10 text-center">
+      <ng-icon
+        name="lucideUsers"
+        class="text-muted-foreground"
+        aria-hidden="true"
+      />
+      <h3 class="mt-2 font-medium">Choose at least two configurations</h3>
+      <p class="mx-auto mt-1 max-w-lg text-xs leading-5 text-muted-foreground">
+        Competitor membership is not inferred. This view compares only the
+        configurations you explicitly shortlist.
+      </p>
+      <button
+        z-button
+        zType="outline"
+        zSize="sm"
+        type="button"
+        class="mt-4"
+        (click)="setCatalogView('catalog')"
+      >
+        Return to catalog
+      </button>
+    </div>
+    } @else {
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h3 class="font-semibold">Your shortlist</h3>
+        <p class="mt-1 text-xs text-muted-foreground">
+          Descriptive bars show relative values within this shortlist; higher is
+          not universally better.
+        </p>
+      </div>
+      <button
+        z-button
+        type="button"
+        data-action="compare-shortlist"
+        (click)="compareShortlist()"
+      >
+        <ng-icon name="lucideGitCompareArrows" aria-hidden="true" />
+        Compare in chat
+      </button>
+    </div>
+    <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      @for (vehicle of shortlistedConfigurations(); track vehicle.id) {
+      <article class="rounded-xl border border-border p-4">
+        <div
+          class="grid aspect-[16/7] place-items-center rounded-lg bg-gradient-to-br from-primary/15 to-muted text-primary"
+          aria-label="Vehicle image not available"
+        >
+          <ng-icon name="lucideCarFront" class="text-2xl" aria-hidden="true" />
+        </div>
+        <p class="mt-3 text-xs text-muted-foreground">{{ vehicle.brand }}</p>
+        <h4 class="font-semibold">{{ vehicle.model }}</h4>
+        <p class="min-h-8 text-xs text-muted-foreground">{{ vehicle.name }}</p>
+        <p class="mt-2 text-sm font-semibold">
+          {{ fact(vehicle, 'reference_price').text }}
+        </p>
+        @for (metric of [ { label: 'Power', code: 'power_max' }, { label:
+        'Torque', code: 'torque_max' } ]; track metric.code) {
+        <div class="mt-4">
+          <div class="flex justify-between gap-3 text-xs">
+            <span class="text-muted-foreground">{{ metric.label }}</span>
+            <span class="font-medium"
+              >{{ fact(vehicle, metric.code).text }}</span
+            >
+          </div>
+          <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div
+              class="h-full rounded-full bg-foreground"
+              [style.width.%]="metric.code === 'power_max' ? metricPercent(vehicle, 'power_max') : metricPercent(vehicle, 'torque_max')"
+            ></div>
+          </div>
+        </div>
+        }
+        <dl class="mt-4 divide-y divide-border border-y text-xs">
+          @for (metric of [ { label: 'Payload', code: 'payload' }, { label:
+          'Adaptive cruise', code: 'adaptive_cruise' }, { label: '360° camera',
+          code: 'camera_360' } ]; track metric.code) {
+          <div class="flex justify-between gap-3 py-2.5">
+            <dt class="text-muted-foreground">{{ metric.label }}</dt>
+            <dd class="text-right font-medium">
+              {{ fact(vehicle, metric.code).text }}
+            </dd>
+          </div>
+          }
+        </dl>
+        <button
+          z-button
+          zType="outline"
+          zSize="sm"
+          type="button"
+          class="mt-4 w-full justify-between"
+          (click)="openDetails(vehicle)"
+        >
+          View specifications
+          <ng-icon name="lucideChevronRight" aria-hidden="true" />
+        </button>
+      </article>
+      }
+    </div>
+    <p
+      class="mt-4 flex items-start gap-2 text-xs leading-5 text-muted-foreground"
+    >
+      <ng-icon name="lucideInfo" class="mt-0.5 shrink-0" aria-hidden="true" />
+      No segment label is claimed because curated segment membership is not yet
+      part of the catalog ontology.
+    </p>
+    }
+  </section>
+  }
+  <p class="sr-only" role="status" aria-live="polite">
+    {{ shortlistMessage() }}
+  </p>
+  } @else if (error(); as failure) {
+  <p class="p-5 text-sm" role="alert">{{ failure.message }}</p>
+  } @else {
+  <div class="space-y-3 p-5">
+    <p class="text-sm text-muted-foreground" role="status">
+      {{ toolCall().status === 'complete' ? 'This saved catalog result is no
+      longer compatible. Ask the assistant to open the catalog again.' :
+      'Loading the vehicle catalog…' }}
+    </p>
+    @if (toolCall().status !== 'complete') {
+    <z-skeleton class="h-40 w-full" />
+    }
+  </div>
+  }
+</z-card>

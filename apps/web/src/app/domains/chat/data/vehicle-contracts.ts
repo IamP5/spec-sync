@@ -58,6 +58,12 @@ export const comparisonSchema = z.object({
     z.object({ attribute: attributeSchema, cells: z.array(cellSchema) }),
   ),
 });
+export const catalogPageSchema = z.object({
+  items: z.array(configurationSchema),
+  limit: z.number().int(),
+  offset: z.number().int(),
+  hasMore: z.boolean(),
+});
 export const knowledgeSchema = z.object({
   status: z.enum(['OK', 'EMPTY', 'UNAVAILABLE']),
   message: z.string(),
@@ -91,3 +97,5 @@ export const searchSchema = z.object({
   offset: z.number().int().min(0).max(100000).default(0),
 });
 export type Comparison = z.infer<typeof comparisonSchema>;
+export type VehicleConfiguration = z.infer<typeof configurationSchema>;
+export type CatalogPage = z.infer<typeof catalogPageSchema>;

@@ -172,6 +172,31 @@
 
     <ng-container *ngTemplateOutlet="composer" />
 
+    <button
+      z-button
+      zType="outline"
+      type="button"
+      data-action="catalog"
+      class="group h-auto w-full max-w-xl justify-start rounded-2xl border-primary/25 bg-primary/5 px-5 py-4 text-left whitespace-normal shadow-none hover:border-primary/45 hover:bg-primary/10"
+      (click)="onSuggestion('Show me the current vehicle catalog. Search all available configurations with an empty query and display the interactive catalog.')"
+    >
+      <span
+        class="mr-3 grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"
+      >
+        <ng-icon name="lucideCarFront" aria-hidden="true" />
+      </span>
+      <span class="min-w-0 flex-1">
+        <span class="block font-semibold text-foreground"
+          >Browse the vehicle catalog</span
+        >
+        <span class="mt-0.5 block text-xs leading-5 text-muted-foreground"
+          >Start a new chat with search, filters, details, and a comparison
+          shortlist.</span
+        >
+      </span>
+      <span class="ml-3 text-primary" aria-hidden="true">→</span>
+    </button>
+
     <ul class="flex flex-wrap justify-center gap-2" aria-label="Suggestions">
       @for (suggestion of suggestions; track suggestion.prompt) {
       <li>

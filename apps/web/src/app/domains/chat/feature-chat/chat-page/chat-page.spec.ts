@@ -72,6 +72,52 @@ describe('ChatPage', () => {
     expect(element.querySelector('[aria-label="Suggestions"]')).not.toBeNull();
   });
 
+  it('starts a new catalog chat from the home call to action', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify(matrix), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      ),
+    );
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'searchVehicleConfigurations',
+        { q: '', limit: 20, offset: 0 },
+        {
+          items: matrix.configurations,
+          limit: 20,
+          offset: 0,
+          hasMore: false,
+        },
+        'Here is the current catalog.',
+      ),
+    );
+    try {
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      element
+        .querySelector<HTMLButtonElement>('[data-action="catalog"]')
+        ?.click();
+      await settled(TestBed.inject(ConversationDetailStore));
+      await fixture.whenStable();
+      await fixture.whenStable();
+
+      expect(TestBed.inject(Router).url).toMatch(/^\/c\//);
+      expect(
+        element.querySelector('[data-role="user"]')?.textContent,
+      ).toContain('Show me the current vehicle catalog');
+      expect(element.querySelector('app-vehicle-catalog-card')).not.toBeNull();
+      expect(element.textContent).toContain('Explore available configurations');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('keeps an empty composer neutral after focus, blur, or Enter', async () => {
     const fixture = TestBed.createComponent(ChatPage);
     await fixture.whenStable();
