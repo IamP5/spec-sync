@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { safeSourceUrl } from './vehicle-comparison';
+import { safeSourceUrl } from '../util/vehicle-display';
 import { knowledgeSchema } from './vehicle-contracts';
 
 export const reviewSchema = z.object({
@@ -98,13 +98,4 @@ export function reviewMedia(type: string | null | undefined): string {
     type ??
     'Outro'
   );
-}
-
-export function reviewPrompt(
-  attributeCode: string,
-  configurationIds: string[],
-  reviews: RelatedReview[],
-): string {
-  // Send stable evidence IDs, not potentially long or untrusted review text.
-  return `Analise os relatos selecionados sobre ${attributeCode} para as configurações ${configurationIds.join(', ')}. Consulte os trechos pelos IDs de evidência: ${[...new Set(reviews.map((r) => r.evidenceId))].join(', ')}. Observações selecionadas: ${reviews.map((r) => r.id).join(', ')}. Explique concordâncias, divergências e limites de aplicação a cada versão. Separe opiniões de especificações técnicas.`;
 }

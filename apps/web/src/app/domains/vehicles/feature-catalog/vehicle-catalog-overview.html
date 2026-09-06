@@ -1,0 +1,41 @@
+<ng-template #vehicleDetails>
+  @if (focused(); as vehicle) {
+  <app-vehicle-detail-pane
+    [vehicle]="vehicle"
+    [comparison]="detail()"
+    [loading]="detailLoading()"
+    [failed]="!!detailError()"
+    (closed)="closeDetails()"
+    (retried)="retryDetail()"
+    (askRequested)="askAboutFocused()"
+  />
+  }
+</ng-template>
+
+<app-vehicle-catalog-card
+  [page]="page()"
+  [failure]="failure()"
+  [complete]="complete()"
+  [summaries]="summaries()"
+  [searchField]="filterForm.query"
+  [sortField]="filterForm.sort"
+  [searchQuery]="searchQuery()"
+  [brandFilter]="brandFilter()"
+  [modelFilter]="modelFilter()"
+  [shortlistedConfigurations]="shortlistedConfigurations()"
+  [visibleConfigurations]="visibleConfigurations()"
+  [brands]="brands()"
+  [modelSummaries]="modelSummaries()"
+  [activeFilterCount]="activeFilterCount()"
+  [shortlistMessage]="shortlistMessage()"
+  (shortlistToggled)="toggleShortlist($event)"
+  (brandChanged)="setBrandFilter($event)"
+  (modelChanged)="setModelFilter($event)"
+  (filtersCleared)="clearFilters()"
+  (searchCleared)="clearSearch()"
+  [summariesLoading]="summariesLoading()"
+  [summariesError]="!!summariesError()"
+  (vehicleSelected)="openDetails($event)"
+  (shortlistCompared)="compareShortlist()"
+  (summariesRetried)="retrySummaries()"
+/>

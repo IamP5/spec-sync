@@ -1,0 +1,22 @@
+<app-vehicle-comparison-card
+  [result]="comparison()"
+  [failure]="failure()"
+  [complete]="complete()"
+  [questionsEnabled]="questionsEnabled()"
+  [queryField]="filterForm.query"
+  [differencesOnly]="differencesOnly()"
+  [rows]="rows()"
+  (differencesChanged)="differencesOnly.set($event)"
+  (filtersCleared)="reset()"
+  (reviewsRequested)="openReviews($event)"
+  (followUpRequested)="followUp()"
+/>
+<ng-template #reviews>
+  @if (reviewContext(); as context) {
+  <app-vehicle-reviews-search
+    [context]="context"
+    (closed)="closeReviews()"
+    (questionRequested)="finishReview($event)"
+  />
+  }
+</ng-template>

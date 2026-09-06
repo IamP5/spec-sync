@@ -102,14 +102,14 @@ export class ZardDialogOptions<T, U> {
       @if (config.zTitle || config.zDescription) {
         <header [class]="headerClasses()" data-slot="dialog-header">
           @if (config.zTitle) {
-            <h4
+            <h2
               data-testid="z-title"
               data-slot="dialog-title"
               [class]="titleClasses()"
               [id]="idRef.id() + '-title'"
             >
               {{ config.zTitle }}
-            </h4>
+            </h2>
 
             @if (config.zDescription) {
               <p

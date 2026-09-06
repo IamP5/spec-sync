@@ -1,22 +1,8 @@
-<ng-template #vehicleDetails>
-  @if (focused(); as vehicle) {
-  <app-vehicle-detail-pane
-    [vehicle]="vehicle"
-    [comparison]="detail()"
-    [loading]="detailLoading()"
-    [failed]="!!detailError()"
-    (closed)="closeDetails()"
-    (retried)="retryDetail()"
-    (askRequested)="askAboutFocused()"
-  />
-  }
-</ng-template>
-
 <z-card
   class="min-w-0 gap-0 overflow-hidden rounded-xl border-border p-0 shadow-none"
   aria-label="Vehicle catalog"
 >
-  @if (result(); as page) {
+  @if (page(); as page) {
   <header
     class="flex flex-wrap items-end justify-between gap-4 px-4 py-5 sm:px-6"
   >
@@ -45,7 +31,7 @@
         type="button"
         class="h-8 rounded-md"
         [attr.aria-pressed]="catalogView() === 'catalog'"
-        (click)="setCatalogView('catalog')"
+        (click)="catalogView.set('catalog')"
       >
         <ng-icon name="lucideLayoutList" aria-hidden="true" />
         Catalog
@@ -57,7 +43,7 @@
         type="button"
         class="h-8 rounded-md"
         [attr.aria-pressed]="catalogView() === 'competitors'"
-        (click)="setCatalogView('competitors')"
+        (click)="catalogView.set('competitors')"
       >
         <ng-icon name="lucideUsers" aria-hidden="true" />
         Competitors
@@ -74,22 +60,22 @@
           class="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"
         />
-        <label for="catalog-search" class="sr-only">Search catalog</label>
+        <label [for]="searchId" class="sr-only">Search catalog</label>
         <input
-          id="catalog-search"
+          [id]="searchId"
+          data-catalog-search
           z-input
           type="search"
           placeholder="Search make, model, or configuration…"
           class="h-10 rounded-lg pr-9 pl-9"
-          [value]="searchQuery()"
-          (input)="updateSearch($event)"
+          [formField]="searchField()"
         />
         @if (searchQuery()) {
         <button
           type="button"
           class="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label="Clear search"
-          (click)="searchQuery.set('')"
+          (click)="searchCleared.emit()"
         >
           <ng-icon name="lucideX" aria-hidden="true" />
         </button>
@@ -101,12 +87,12 @@
           class="shrink-0 text-muted-foreground"
           aria-hidden="true"
         />
-        <label for="catalog-sort" class="sr-only">Order by</label>
+        <label [for]="sortId" class="sr-only">Order by</label>
         <select
-          id="catalog-sort"
+          [id]="sortId"
+          data-catalog-sort
           class="h-10 min-w-0 flex-1 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 lg:w-52"
-          [value]="sortMode()"
-          (change)="updateSort($event)"
+          [formField]="sortField()"
         >
           <option value="catalog-order">Catalog order</option>
           <option value="price-asc">Lowest reference price</option>
@@ -132,7 +118,7 @@
         type="button"
         class="h-8 rounded-full"
         [attr.aria-pressed]="brandFilter() === 'all'"
-        (click)="setBrandFilter('all')"
+        (click)="brandChanged.emit('all')"
       >
         All
       </button>
@@ -144,7 +130,7 @@
         type="button"
         class="h-8 rounded-full"
         [attr.aria-pressed]="brandFilter() === brand"
-        (click)="setBrandFilter(brand)"
+        (click)="brandChanged.emit(brand)"
       >
         {{ brand }}
       </button>
@@ -155,7 +141,7 @@
         zSize="sm"
         type="button"
         class="ml-auto h-8"
-        (click)="clearFilters()"
+        (click)="filtersCleared.emit()"
       >
         Clear filters
       </button>
@@ -174,7 +160,7 @@
         zSize="sm"
         type="button"
         class="h-8"
-        (click)="setModelFilter(modelFilter())"
+        (click)="modelChanged.emit(modelFilter())"
       >
         Show all models
       </button>
@@ -188,7 +174,7 @@
         [class.border-primary]="modelFilter() === model.model"
         [class.bg-muted]="modelFilter() === model.model"
         [attr.aria-pressed]="modelFilter() === model.model"
-        (click)="setModelFilter(model.model)"
+        (click)="modelChanged.emit(model.model)"
       >
         <span
           class="grid size-14 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 text-primary"
@@ -231,7 +217,7 @@
       zSize="sm"
       type="button"
       [zDisabled]="shortlistedConfigurations().length < 2"
-      (click)="setCatalogView('competitors')"
+      (click)="catalogView.set('competitors')"
     >
       <ng-icon name="lucideGitCompareArrows" aria-hidden="true" />
       Compare shortlist @if (shortlistedConfigurations().length) {
@@ -253,7 +239,7 @@
       zSize="sm"
       type="button"
       class="mt-1"
-      (click)="retrySummaries()"
+      (click)="summariesRetried.emit()"
     >
       Retry highlights
     </button>
@@ -274,7 +260,7 @@
         type="button"
         class="grid min-w-0 flex-1 grid-cols-[4rem_minmax(0,1fr)] items-center gap-3 p-3 text-left outline-none focus-visible:bg-muted/50 sm:grid-cols-[5rem_minmax(0,1fr)_repeat(3,minmax(5rem,7rem))] sm:gap-4"
         [attr.aria-label]="'Open ' + vehicle.brand + ' ' + vehicle.model + ' ' + vehicle.name + ' details'"
-        (click)="openDetails(vehicle)"
+        (click)="vehicleSelected.emit(vehicle)"
       >
         <span
           class="grid aspect-[4/3] place-items-center rounded-lg bg-gradient-to-br from-primary/15 to-muted text-primary"
@@ -360,7 +346,7 @@
       zSize="sm"
       type="button"
       class="mt-4"
-      (click)="clearFilters()"
+      (click)="filtersCleared.emit()"
     >
       Clear filters
     </button>
@@ -402,7 +388,7 @@
         zSize="sm"
         type="button"
         class="mt-4"
-        (click)="setCatalogView('catalog')"
+        (click)="catalogView.set('catalog')"
       >
         Return to catalog
       </button>
@@ -420,7 +406,7 @@
         z-button
         type="button"
         data-action="compare-shortlist"
-        (click)="compareShortlist()"
+        (click)="shortlistCompared.emit()"
       >
         <ng-icon name="lucideGitCompareArrows" aria-hidden="true" />
         Compare in chat
@@ -476,7 +462,7 @@
           zSize="sm"
           type="button"
           class="mt-4 w-full justify-between"
-          (click)="openDetails(vehicle)"
+          (click)="vehicleSelected.emit(vehicle)"
         >
           View specifications
           <ng-icon name="lucideChevronRight" aria-hidden="true" />
@@ -497,16 +483,16 @@
   <p class="sr-only" role="status" aria-live="polite">
     {{ shortlistMessage() }}
   </p>
-  } @else if (error(); as failure) {
-  <p class="p-5 text-sm" role="alert">{{ failure.message }}</p>
+  } @else if (failure(); as failure) {
+  <p class="p-5 text-sm" role="alert">{{ failure }}</p>
   } @else {
   <div class="space-y-3 p-5">
     <p class="text-sm text-muted-foreground" role="status">
-      {{ toolCall().status === 'complete' ? 'This saved catalog result is no
-      longer compatible. Ask the assistant to open the catalog again.' :
-      'Loading the vehicle catalog…' }}
+      {{ complete() ? 'This saved catalog result is no longer compatible. Ask
+      the assistant to open the catalog again.' : 'Loading the vehicle catalog…'
+      }}
     </p>
-    @if (toolCall().status !== 'complete') {
+    @if (!complete()) {
     <z-skeleton class="h-40 w-full" />
     }
   </div>

@@ -25,7 +25,10 @@ The binding rules live in the docs; this section only names the red lines.
   when the change touches stores, coordinators, or data access. The reasoning
   behind the rules is recorded in `apps/web/docs/adr/`.
 - Domains live in `apps/web/src/app/domains/<domain>/<layer>`; layers are
-  `feature → ui → data → util`. Domains never import each other directly.
+  `feature → ui → data → util`, with acyclic composition through feature entry
+  points. `chat` accesses vehicles only through `vehicles/api/contracts` or
+  `vehicles/api/features`; vehicles never imports chat. UI is strictly dumb,
+  including feature-local UI: no stores, coordinators, clients, or chat actions.
 - Components never call a data access client (`-client.ts`). Data flows
   client → store (`-store.ts`) → smart component (`-page`, `-search`,
   `-edit`, `-detail`, `-overview`). Stores never depend on other stores; use
@@ -51,7 +54,7 @@ The binding rules live in the docs; this section only names the red lines.
 - The chat domain (`apps/web/src/app/domains/chat`) talks to the Mastra
   service of `apps/ai` over AG-UI with `@copilotkit/angular`, headless:
   Zard components render the transcript, `copilot-render-tool-calls`
-  renders tool calls through the cards registered in
+  renders tool calls through the smart adapters and generic cards registered in
   `feature-chat/chat-page/chat-tools.ts` (generative UI), assistant text is
   Markdown (`util/markdown-pipe.ts`). Do not switch to CopilotKit's own chat
   components (`copilot-chat`, `copilot-sidebar`, ...): they bring a second
@@ -68,7 +71,10 @@ The binding rules live in the docs; this section only names the red lines.
   either, which is why the initial bundle budget in `project.json` is
   1.7 MB (warning) / 2 MB (error).
 - The contract with `apps/ai` lives in `domains/chat/data/chat-agent.ts`
-  (agent id, runtime URL) and `data/vehicle-contracts.ts` (vehicle result schemas). Change them only together with the service.
+  (agent id, runtime URL) and `domains/vehicles/data/vehicle-contracts.ts`
+  (vehicle result schemas, exposed via `vehicles/api/contracts`). Coordinate
+  wire-contract changes with the service. Chat adapters translate structured
+  vehicle intentions into prompts; vehicle features stay independent of chat.
 - `ChatAgentClient` (`data/chat-agent-client.ts`) is the data access: it
   connects the runtime URL lazily and wraps the AG-UI agent; the
   conversation lives in that agent, `ConversationDetailStore` mirrors it.

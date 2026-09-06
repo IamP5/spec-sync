@@ -8,17 +8,17 @@
           Avaliações e contexto
         </p>
         <h2 class="mt-1 text-xl font-semibold tracking-tight">
-          {{ data.row.attribute.label }}
+          {{ context().row.attribute.label }}
         </h2>
       </div>
       <button
         z-button
         zType="ghost"
         zSize="sm"
-        (click)="close()"
+        (click)="closed.emit()"
         aria-label="Fechar avaliações"
       >
-        Fechar ×
+        Fechar
       </button>
     </div>
     <div
@@ -27,7 +27,7 @@
       role="region"
       aria-label="Resumo das especificações"
     >
-      @for (configuration of data.comparison.configurations; track
+      @for (configuration of context().comparison.configurations; track
       configuration.id) {
       <p class="max-w-64">
         <span class="block text-xs text-muted-foreground"
@@ -49,11 +49,11 @@
       <label class="text-xs font-medium"
         >Veículo<select
           aria-label="Veículo"
-          [formField]="filterForm.vehicle"
+          [formField]="filterForm().vehicle"
           class="mt-1 block h-10 w-full rounded-md border bg-background px-2 text-sm focus-visible:outline-2 focus-visible:outline-ring"
         >
           <option value="">Todos os veículos</option>
-          @for (c of data.comparison.configurations; track c.id) {
+          @for (c of context().comparison.configurations; track c.id) {
           <option [value]="c.id">{{ c.name }}</option>
           }
         </select></label
@@ -61,7 +61,7 @@
       <label class="text-xs font-medium"
         >Formato<select
           aria-label="Formato"
-          [formField]="filterForm.media"
+          [formField]="filterForm().media"
           class="mt-1 block h-10 w-full rounded-md border bg-background px-2 text-sm focus-visible:outline-2 focus-visible:outline-ring"
         >
           <option value="">Todos os formatos</option>
@@ -75,7 +75,7 @@
           z-input
           #reviewQuery
           aria-label="Buscar nos relatos"
-          [formField]="filterForm.query"
+          [formField]="filterForm().query"
           placeholder="Trecho, autor ou contexto…"
           class="mt-1 h-10"
       /></label>
@@ -84,9 +84,9 @@
   <section
     class="min-h-0 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7"
     aria-label="Avaliações encontradas"
-    [attr.aria-busy]="store.reviewsIsLoading()"
+    [attr.aria-busy]="loading()"
   >
-    @if (store.reviewsIsLoading()) {
+    @if (loading()) {
     <p class="mb-4 text-sm text-muted-foreground" role="status">
       Consultando avaliações relacionadas…
     </p>
@@ -95,7 +95,7 @@
         class="h-40 w-full rounded-xl"
       />}
     </div>
-    } @else { @if (failedNames() || store.reviewsError()) {
+    } @else { @if (failedNames() || failed()) {
     <div class="mb-4 rounded-lg border p-4 text-sm" role="alert">
       <p>
         Não foi possível consultar as avaliações{{ failedNames() ? ' de ' +
@@ -106,7 +106,7 @@
         zType="outline"
         zSize="sm"
         class="mt-3"
-        (click)="store.retry()"
+        (click)="retried.emit()"
       >
         Tentar novamente
       </button>
@@ -116,7 +116,7 @@
       {{ visible().length }} de {{ items().length }} relatos carregados · {{
       selectedReviews().length }} selecionados
     </p>
-    @if (store.reviewsValue()?.limited) {
+    @if (limited()) {
     <p class="mb-4 text-xs text-muted-foreground">
       Exibindo até 30 relatos por veículo. Use o chat para uma pesquisa mais
       específica.
@@ -138,7 +138,7 @@
             [attr.aria-pressed]="selected().includes(review.id)"
             [attr.aria-label]="'Selecionar relato: ' + review.title"
             [zDisabled]="!selected().includes(review.id) && selected().length >= 8"
-            (click)="toggle(review.id)"
+            (click)="selectionToggled.emit(review.id)"
           >
             {{ selected().includes(review.id) ? 'Selecionado ✓' : 'Selecionar +'
             }}
@@ -203,7 +203,7 @@
       </div>
       }
     </div>
-    } @else if (!failedNames() && !store.reviewsError()) {
+    } @else if (!failedNames() && !failed()) {
     <div class="mx-auto max-w-md py-10 text-center">
       <h3 class="font-medium">
         Ainda não há avaliações indexadas para este item
@@ -212,7 +212,12 @@
         Você pode pedir ao assistente para encontrar artigos e vídeos. Os links
         encontrados serão apresentados como referências ainda não verificadas.
       </p>
-      <button z-button zType="outline" class="mt-5" (click)="discover()">
+      <button
+        z-button
+        zType="outline"
+        class="mt-5"
+        (click)="discoverRequested.emit()"
+      >
         Pesquisar com o assistente ↗
       </button>
     </div>
@@ -230,7 +235,7 @@
         zSize="sm"
         class="max-w-full"
         [attr.aria-label]="'Remover seleção: ' + review.title"
-        (click)="toggle(review.id)"
+        (click)="selectionToggled.emit(review.id)"
       >
         <span class="truncate">{{ review.title }}</span> ×</button
       >}
@@ -242,8 +247,8 @@
       </p>
       <button
         z-button
-        [zDisabled]="!selectedReviews().length || store.reviewsIsLoading()"
-        (click)="ask()"
+        [zDisabled]="!selectedReviews().length || loading()"
+        (click)="askRequested.emit()"
       >
         Levar ao chat{{ selectedReviews().length ? ' (' +
         selectedReviews().length + ')' : '' }} ↗

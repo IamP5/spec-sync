@@ -1,4 +1,4 @@
-import type { Comparison } from '../domains/chat/data/vehicle-contracts';
+import type { Comparison } from '../domains/vehicles/data/vehicle-contracts';
 const id = '08e08761-a2e7-5ae5-b2ad-387e93829fb7';
 const second = 'f94a2350-0a1a-5ad3-aef8-3c0c472c72a1';
 const configuration = {

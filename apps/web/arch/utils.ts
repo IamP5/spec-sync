@@ -1,5 +1,3 @@
-import { posix } from 'node:path';
-
 export interface Dependency {
   source: string;
   target: string;
@@ -22,21 +20,6 @@ export function toDependency(violation: unknown): Dependency {
     dependency: { sourceLabel: string; targetLabel: string };
   };
   return { source: dependency.sourceLabel, target: dependency.targetLabel };
-}
-
-/**
- * Returns true when `target` lives in the same folder as `source` or in a
- * child folder of it.
- *
- * Example: isLocalAccess('a/x.ts', 'a/b/y.ts') is true, because the target
- * folder `a/b` is a child of the source folder `a`.
- */
-export function isLocalAccess(source: string, target: string): boolean {
-  const sourceFolder = posix.dirname(source);
-  const targetFolder = posix.dirname(target);
-  return (
-    targetFolder === sourceFolder || targetFolder.startsWith(`${sourceFolder}/`)
-  );
 }
 
 export function formatDependency(dependency: Dependency): string {

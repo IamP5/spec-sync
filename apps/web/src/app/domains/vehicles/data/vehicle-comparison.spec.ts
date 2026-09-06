@@ -1,11 +1,5 @@
-import type { Message } from '@ag-ui/client';
-
-import {
-  cellObservations,
-  comparisonRows,
-  comparisonSelection,
-  safeSourceUrl,
-} from './vehicle-comparison';
+import { safeSourceUrl } from '../util/vehicle-display';
+import { cellObservations, comparisonRows } from './vehicle-comparison';
 import type { Comparison } from './vehicle-contracts';
 
 const id = '08e08761-a2e7-5ae5-b2ad-387e93829fb7';
@@ -52,51 +46,7 @@ const matrix: Comparison = {
   ],
   rows: [{ attribute, cells: [cell, { ...cell, configurationId: second }] }],
 };
-function messages(result: unknown): Message[] {
-  return [
-    {
-      id: 'assistant',
-      role: 'assistant',
-      toolCalls: [
-        {
-          id: 'call',
-          type: 'function',
-          function: { name: 'compareVehicleConfigurations', arguments: '{}' },
-        },
-      ],
-    },
-    {
-      id: 'result',
-      role: 'tool',
-      toolCallId: 'call',
-      content: JSON.stringify(result),
-    },
-  ];
-}
-describe('comparison state and presentation', () => {
-  it('reconstructs selection from a stored successful result', () => {
-    expect(comparisonSelection(messages(matrix))).toEqual({
-      version: 1,
-      configurationIds: [id, second],
-      attributeCodes: ['camera_360'],
-      lastComparisonToolCallId: 'call',
-    });
-  });
-  it('does not overwrite a successful selection with a tool error', () => {
-    expect(
-      comparisonSelection([
-        ...messages(matrix),
-        ...messages({ status: 'ERROR' }),
-      ])?.configurationIds,
-    ).toEqual([id, second]);
-  });
-  it('does not interpret model prose as selection', () => {
-    expect(
-      comparisonSelection([
-        { id: 'text', role: 'assistant', content: JSON.stringify(matrix) },
-      ]),
-    ).toBeUndefined();
-  });
+describe('comparison semantics', () => {
   it('hides equal facts but retains missing and conflicting cells', () => {
     expect(comparisonRows(matrix, true)).toHaveLength(0);
     const conflict = {

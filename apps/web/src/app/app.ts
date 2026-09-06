@@ -19,7 +19,7 @@ import {
   ZardSidebarProviderComponent,
 } from '@/ui/components/sidebar';
 
-import { ThreadSearch } from './domains/chat/feature-chat/thread-search/thread-search';
+import { ThreadSearch } from './domains/chat/feature-chat';
 
 const WIDE_SCREEN = '(min-width: 1200px)';
 const MOBILE_SCREEN = '(max-width: 767px)';

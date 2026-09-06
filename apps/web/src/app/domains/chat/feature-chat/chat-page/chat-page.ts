@@ -65,11 +65,11 @@ import {
   ChatTurn,
   textOf,
 } from '../../data/chat-agent';
-import { CHAT_CARD_ACTIONS } from '../../ui/chat-card-actions';
 import { MarkdownPipe } from '../../util/markdown-pipe';
 import { revealText } from '../../util/text-reveal';
 import { ChatCoordinator } from '../chat-coordinator';
 import { PreferencesDetailStore } from '../settings-edit/preferences-detail-store';
+import { CHAT_CARD_ACTIONS } from '../tool-adapters/chat-card-actions';
 import { registerChatTools } from './chat-tools';
 import { ConversationDetailStore } from './conversation-detail-store';
 

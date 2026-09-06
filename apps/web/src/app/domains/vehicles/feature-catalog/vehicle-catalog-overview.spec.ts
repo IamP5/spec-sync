@@ -1,11 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type { Comparison } from '../data/vehicle-contracts';
-import { CHAT_CARD_ACTIONS } from './chat-card-actions';
-import { VehicleCatalogCard } from './vehicle-catalog-card';
+import { VehicleCatalogOverview } from './vehicle-catalog-overview';
 
-describe('VehicleCatalogCard', () => {
-  let fixture: ComponentFixture<VehicleCatalogCard>;
+describe('VehicleCatalogOverview', () => {
+  let fixture: ComponentFixture<VehicleCatalogOverview>;
   const draft = vi.fn();
   const send = vi.fn();
 
@@ -29,28 +28,97 @@ describe('VehicleCatalogCard', () => {
       ),
     );
     await TestBed.configureTestingModule({
-      imports: [VehicleCatalogCard],
-      providers: [{ provide: CHAT_CARD_ACTIONS, useValue: { draft, send } }],
+      imports: [VehicleCatalogOverview],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(VehicleCatalogCard);
-    fixture.componentRef.setInput('toolCall', {
-      name: 'searchVehicleConfigurations',
-      args: { q: '' },
-      status: 'complete',
-      result: JSON.stringify({
-        items: configurations,
-        limit: 20,
-        offset: 0,
-        hasMore: true,
-      }),
+    fixture = TestBed.createComponent(VehicleCatalogOverview);
+    fixture.componentRef.setInput('page', {
+      items: configurations,
+      limit: 20,
+      offset: 0,
+      hasMore: true,
     });
+    fixture.componentRef.setInput('complete', true);
+    fixture.componentInstance.questionRequested.subscribe(draft);
+    fixture.componentInstance.comparisonRequested.subscribe(send);
     await fixture.whenStable();
     draft.mockReset();
     send.mockReset();
   });
 
   afterEach(() => vi.unstubAllGlobals());
+
+  it('isolates filters and shortlists for multiple rendered catalogs', async () => {
+    const second = TestBed.createComponent(VehicleCatalogOverview);
+    second.componentRef.setInput('page', {
+      items: configurations,
+      limit: 20,
+      offset: 0,
+      hasMore: false,
+    });
+    const compared = vi.fn();
+    second.componentInstance.comparisonRequested.subscribe(compared);
+    await second.whenStable();
+    const firstElement = fixture.nativeElement as HTMLElement;
+    const secondElement = second.nativeElement as HTMLElement;
+    firstElement
+      .querySelector<HTMLButtonElement>('[data-action="add-shortlist"]')
+      ?.click();
+    await fixture.whenStable();
+    expect(
+      secondElement.querySelectorAll('[data-action="add-shortlist"]'),
+    ).toHaveLength(3);
+    const controls = [firstElement, secondElement].flatMap((element) => [
+      ...element.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+        '[data-catalog-search], [data-catalog-sort]',
+      ),
+    ]);
+    expect(new Set(controls.map((control) => control.id)).size).toBe(4);
+    for (const control of controls) expect(control.labels).toHaveLength(1);
+    const search = firstElement.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+    if (!search) throw new Error('Catalog search missing');
+    search.value = 'Hilux';
+    search.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    expect(rows(firstElement)).toHaveLength(1);
+    expect(rows(secondElement)).toHaveLength(3);
+    expect(compared).not.toHaveBeenCalled();
+    second.destroy();
+  });
+
+  it('cancels pending highlight requests when its catalog is destroyed', async () => {
+    const signals: AbortSignal[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, options: RequestInit) =>
+          new Promise((_resolve, reject) => {
+            const signal = options.signal;
+            if (!signal) throw new Error('Missing cancellation signal');
+            signals.push(signal);
+            signal.addEventListener(
+              'abort',
+              () => reject(new DOMException('Aborted', 'AbortError')),
+              { once: true },
+            );
+          }),
+      ),
+    );
+    const pending = TestBed.createComponent(VehicleCatalogOverview);
+    pending.componentRef.setInput('page', {
+      items: configurations,
+      limit: 20,
+      offset: 0,
+      hasMore: false,
+    });
+    TestBed.tick();
+    await Promise.resolve();
+    expect(signals.length).toBeGreaterThan(0);
+    pending.destroy();
+    expect(signals.every((signal) => signal.aborted)).toBe(true);
+  });
 
   it('filters the loaded page and sorts known highlights before unknowns', async () => {
     const element = fixture.nativeElement as HTMLElement;
@@ -60,7 +128,9 @@ describe('VehicleCatalogCard', () => {
     );
     expect(element.textContent).toContain('more are available');
 
-    const search = element.querySelector<HTMLInputElement>('#catalog-search');
+    const search = element.querySelector<HTMLInputElement>(
+      '[data-catalog-search]',
+    );
     if (!search) throw new Error('Catalog search input was not rendered');
     search.value = 'Hilux';
     search.dispatchEvent(new Event('input', { bubbles: true }));
@@ -71,10 +141,12 @@ describe('VehicleCatalogCard', () => {
 
     search.value = '';
     search.dispatchEvent(new Event('input', { bubbles: true }));
-    const sort = element.querySelector<HTMLSelectElement>('#catalog-sort');
+    const sort = element.querySelector<HTMLSelectElement>(
+      '[data-catalog-sort]',
+    );
     if (!sort) throw new Error('Catalog sort was not rendered');
     sort.value = 'power-desc';
-    sort.dispatchEvent(new Event('change', { bubbles: true }));
+    sort.dispatchEvent(new Event('input', { bubbles: true }));
     await fixture.whenStable();
     expect(rows(element).map((row) => row.dataset['configurationId'])).toEqual([
       LIMITED_ID,
@@ -83,7 +155,7 @@ describe('VehicleCatalogCard', () => {
     ]);
 
     sort.value = 'price-asc';
-    sort.dispatchEvent(new Event('change', { bubbles: true }));
+    sort.dispatchEvent(new Event('input', { bubbles: true }));
     await fixture.whenStable();
     const sortedByPrice = rows(element);
     expect(
@@ -128,8 +200,12 @@ describe('VehicleCatalogCard', () => {
       ?.click();
 
     expect(send).toHaveBeenCalledOnce();
-    expect(send.mock.calls[0]?.[0]).toContain(BLACK_ID);
-    expect(send.mock.calls[0]?.[0]).toContain(LIMITED_ID);
+    expect(
+      send.mock.calls[0]?.[0].map((vehicle: { id: string }) => vehicle.id),
+    ).toContain(BLACK_ID);
+    expect(
+      send.mock.calls[0]?.[0].map((vehicle: { id: string }) => vehicle.id),
+    ).toContain(LIMITED_ID);
     expect(element.textContent).toContain('No segment label is claimed');
   });
 
@@ -159,7 +235,10 @@ describe('VehicleCatalogCard', () => {
     expect(drawer?.dataset['state']).toBe('closed');
 
     await new Promise((resolve) => setTimeout(resolve, 280));
-    expect(draft).toHaveBeenCalledWith(expect.stringContaining(BLACK_ID));
+    expect(draft).toHaveBeenCalledWith({
+      kind: 'vehicle',
+      vehicle: configurations[0],
+    });
     expect(overlay?.querySelector('z-drawer-panel')).toBeNull();
   });
 });

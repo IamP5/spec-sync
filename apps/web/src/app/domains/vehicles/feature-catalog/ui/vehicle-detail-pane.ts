@@ -23,15 +23,12 @@ import { ZardButtonComponent } from '@/ui/components/button';
 import { ZardSkeletonComponent } from '@/ui/components/skeleton';
 import { ZardTabsImports } from '@/ui/components/tabs';
 
-import {
-  cellObservations,
-  displayValue,
-  safeSourceUrl,
-} from '../data/vehicle-comparison';
+import { cellObservations } from '../../data/vehicle-comparison';
 import type {
   Comparison,
   VehicleConfiguration,
-} from '../data/vehicle-contracts';
+} from '../../data/vehicle-contracts';
+import { displayValue, safeSourceUrl } from '../../util/vehicle-display';
 
 interface DetailFact {
   readonly code: string;

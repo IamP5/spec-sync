@@ -1,13 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
-import {
-  Z_MODAL_DATA,
-  ZardDialogRef,
-  ZardDialogService,
-} from '@/ui/components/dialog';
+import { ZardDialogService } from '@/ui/components/dialog';
 
 import { matrix } from '../../../testing/vehicle-fixtures';
-import { VehicleReviewsDialog } from './vehicle-reviews-dialog';
+import { VehicleReviewsSearch } from './vehicle-reviews-search';
 
 const modelReview = {
   id: 'b9e06761-a2e7-5ae5-b2ad-387e93829fb7',
@@ -22,19 +18,10 @@ const modelReview = {
 
 describe('Vehicle review dialog', () => {
   const draft = vi.fn();
-  const close = vi.fn();
   beforeEach(() => {
     draft.mockReset();
-    close.mockReset();
     TestBed.configureTestingModule({
-      imports: [VehicleReviewsDialog],
-      providers: [
-        {
-          provide: Z_MODAL_DATA,
-          useValue: { comparison: matrix, row: matrix.rows[0], draft },
-        },
-        { provide: ZardDialogRef, useValue: { close } },
-      ],
+      imports: [VehicleReviewsSearch],
     });
   });
   afterEach(() => vi.unstubAllGlobals());
@@ -74,7 +61,12 @@ describe('Vehicle review dialog', () => {
           ),
       ),
     );
-    const fixture = TestBed.createComponent(VehicleReviewsDialog);
+    const fixture = TestBed.createComponent(VehicleReviewsSearch);
+    fixture.componentRef.setInput('context', {
+      comparison: matrix,
+      row: matrix.rows[0],
+    });
+    fixture.componentInstance.questionRequested.subscribe(draft);
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelectorAll('article')).toHaveLength(1);
@@ -98,20 +90,58 @@ describe('Vehicle review dialog', () => {
       b.textContent?.includes('Levar ao chat'),
     );
     ask?.click();
-    expect(close).toHaveBeenCalled();
     fixture.destroy();
     await Promise.resolve();
-    expect(draft).toHaveBeenCalledWith(
-      expect.stringContaining(modelReview.evidenceId),
-    );
-    expect(draft).not.toHaveBeenCalledWith(
-      expect.stringContaining(modelReview.excerpt),
-    );
+    expect(draft).toHaveBeenCalledWith({
+      kind: 'reviews',
+      attributeCode: matrix.rows[0].attribute.code,
+      configurationIds: matrix.configurations.map(
+        (configuration) => configuration.id,
+      ),
+      evidenceIds: [modelReview.evidenceId],
+      observationIds: [modelReview.id],
+    });
+    expect(JSON.stringify(draft.mock.calls)).not.toContain(modelReview.excerpt);
   });
+  it('cancels requests when a reviews instance is destroyed', async () => {
+    const signals: AbortSignal[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, options: RequestInit) =>
+          new Promise((_resolve, reject) => {
+            const signal = options.signal;
+            if (!signal) throw new Error('Missing cancellation signal');
+            signals.push(signal);
+            signal.addEventListener(
+              'abort',
+              () => reject(new DOMException('Aborted', 'AbortError')),
+              { once: true },
+            );
+          }),
+      ),
+    );
+    const pending = TestBed.createComponent(VehicleReviewsSearch);
+    pending.componentRef.setInput('context', {
+      comparison: matrix,
+      row: matrix.rows[0],
+    });
+    TestBed.tick();
+    await Promise.resolve();
+    expect(signals).toHaveLength(matrix.configurations.length);
+    pending.destroy();
+    expect(signals.every((signal) => signal.aborted)).toBe(true);
+  });
+
   it('shows failures rather than an empty corpus, then allows retry', async () => {
     const fetch = vi.fn().mockRejectedValue(new Error('offline'));
     vi.stubGlobal('fetch', fetch);
-    const fixture = TestBed.createComponent(VehicleReviewsDialog);
+    const fixture = TestBed.createComponent(VehicleReviewsSearch);
+    fixture.componentRef.setInput('context', {
+      comparison: matrix,
+      row: matrix.rows[0],
+    });
+    fixture.componentInstance.questionRequested.subscribe(draft);
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('[role="alert"]')?.textContent).toContain(

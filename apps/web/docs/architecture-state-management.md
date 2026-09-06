@@ -10,8 +10,9 @@ the tsarch tests in `apps/web/arch/`.
 
 - Place new Signal Stores at the feature level whenever possible, co-located
   with the smart component that uses them (same folder).
-- If a store is needed by additional features, move it down to a lower level
-  of the same domain.
+- Stores remain private to their feature. Reuse a complete feature through its
+  public entry; do not import its store into another feature. Propose a dedicated
+  shared state owner only when independent consumers truly require one.
 - If a store is needed across different domains, consult the user before
   moving it to the shared area.
 
@@ -66,8 +67,9 @@ the tsarch tests in `apps/web/arch/`.
 - When a feature needs to read and combine state from several stores (and
   delegate writes back to them), introduce a coordinator instead of letting a
   store depend on other stores.
-- A coordinator is a plain `@Injectable({ providedIn: 'root' })` service class
-  — NOT a Signal Store. Use the suffix `Coordinator` and the file suffix
+- A coordinator is a plain injectable service class, not a Signal Store.
+  Application-wide coordination may use `providedIn: 'root'`; coordination of
+  scoped stores must be provided at the same feature/dialog scope. Use the suffix `Coordinator` and the file suffix
   `-coordinator.ts` (e.g. `SummaryCoordinator` in `summary-coordinator.ts`).
 - A coordinator MAY inject several stores; it typically exposes `computed`
   views derived from them and forwards write actions to the underlying stores.
@@ -114,14 +116,24 @@ export const GreetingDetailStore = signalStore(
   `Card` / `Pane`. They receive data via `input()` and report via `output()`.
 - Components obtain data only from a store or from a coordinator that
   combines several stores — never directly from a data access service.
-- Exception (locality): a dumb component MAY use a store that is co-located in
-  the same folder or in a child folder of it.
-- Exception (ai): files inside an `ai` layer (any `ai/` folder) are exempt
-  from these access restrictions and may access stores and data access
-  services directly.
+- No locality or AI-folder exception exists. UI cannot contain or reach stores,
+  coordinators, clients, or smart components, even through helper re-exports.
+- Provide catalog and review stores on their feature components. A repeated tool
+  result and each review dialog must get independent state and cancellation.
+- Smart components may own local filters/selection signals when they are only
+  needed by that instance. A feature does not require a store merely to be smart.
+- Vehicle features emit structured intentions; chat adapters own prompt building
+  and draft/send behavior. UI never receives injected application actions.
 
 ## Forms
 
 - Build forms with Angular Signal Forms (`form()` from
   `@angular/forms/signals`) in the smart component. The form model is a local
   `signal`/`linkedSignal`; the store receives only the submitted value.
+
+- Dumb form fragments may accept a parent-owned `FieldTree` and render its
+  controls. Importing `FormField` is allowed; constructing `form()` belongs in
+  the smart component.
+- Thread history mutations live in `ThreadDetailStore`; `ThreadSearchStore`
+  owns reads/filtering. `ChatCoordinator` refreshes the list after mutations and
+  synchronizes the open conversation.

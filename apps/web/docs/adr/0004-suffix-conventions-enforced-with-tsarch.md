@@ -1,6 +1,6 @@
 # ADR-0004: Suffix conventions enforced with tsarch
 
-- Status: accepted
+- Status: amended by [ADR-0005](0005-composable-features-and-pure-ui.md)
 - Date: 2026-09-04
 
 ## Context

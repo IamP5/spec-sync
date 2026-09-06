@@ -59,21 +59,6 @@ export const ThreadSearchStore = signalStore(
     setQuery(query: string): void {
       patchState(store, { query });
     },
-
-    rename(id: string, title: string): void {
-      store._threadClient.rename(id, title);
-      this.load();
-    },
-
-    remove(id: string): void {
-      store._threadClient.remove(id);
-      this.load();
-    },
-
-    clear(): void {
-      store._threadClient.clear();
-      this.load();
-    },
   })),
 
   withHooks({

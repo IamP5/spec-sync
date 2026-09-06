@@ -11,7 +11,7 @@ import {
   normalizeThread,
   ToolCallPlacements,
 } from './chat-agent';
-import { comparisonSelection } from './vehicle-comparison';
+import { comparisonSelection } from './comparison-selection';
 
 /**
  * Data access for the chat agent. It is a thin adapter over the AG-UI client

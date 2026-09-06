@@ -9,11 +9,8 @@ import { z } from 'zod';
 
 import { ZardCardComponent } from '@/ui/components/card';
 
-import {
-  displayValue,
-  parseResult,
-  safeSourceUrl,
-} from '../data/vehicle-comparison';
+import { displayValue, safeSourceUrl } from '../../util/knowledge-display';
+import { parseResult } from '../../util/parse-result';
 
 const schema = z.object({
   status: z.string().optional(),

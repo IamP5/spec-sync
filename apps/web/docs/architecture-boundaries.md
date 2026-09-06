@@ -1,188 +1,151 @@
 # Architecture Rules
 
-## Goal
+These rules bind changes in `apps/web` and `libs/ui`. Sheriff checks domain and
+layer permissions during lint; `arch/access-rules.spec.ts` checks building-block
+access with tsarch; `arch/feature-boundaries.spec.ts` checks public entries,
+transitive UI/contract access, form ownership, and feature cycles. Nx continues
+to enforce dependencies between workspace projects.
 
-This document defines the architecture rules for the Angular application in
-`apps/web` and the UI library in `libs/ui`. Both agents and developers are
-required to adhere to these rules whenever they modify application code.
+The rationale is recorded in [ADR-0005](adr/0005-composable-features-and-pure-ui.md),
+which supersedes the locality exception and downward-only feature reuse in
+ADRs 0001, 0003, and 0004.
 
-The rules are enforced deterministically by:
+## Domains and structure
 
-- **Sheriff** (`apps/web/sheriff.config.ts`, runs as part of `nx lint`): domain and
-  layer boundaries between folders.
-- **tsarch** (`apps/web/arch/*.spec.ts`, runs as `nx run web:test-arch`):
-  access rules between building blocks identified by file-name suffixes.
-- **Nx module boundaries** (`eslint.config.mjs`): dependencies between Nx
-  projects (`web`, `ui`, `api`, `infra`).
+- `chat` owns conversations, history, preferences, AG-UI state restoration,
+  CopilotKit registration, and prompt/draft/send integration.
+- `vehicles` owns configurations, specifications, comparison semantics, related
+  reviews, and their reusable workflows.
+- Catalog, comparison, and reviews are features within vehicles. Vehicle details
+  stay local to catalog while it is their only independent consumer.
 
-Concise rules live here. The reasoning behind them lives in the linked ADRs
-under `apps/web/docs/adr/`.
-
-## Reference Implementations
-
-- Model new features after the chat domain in terms of structure and style:
-  - smart components: `apps/web/src/app/domains/chat/feature-chat/chat-page/chat-page.ts`
-    (`ChatPage`) and `.../feature-chat/thread-search/thread-search.ts` (`ThreadSearch`)
-  - detail store: `.../feature-chat/chat-page/conversation-detail-store.ts`
-  - search store: `.../feature-chat/thread-search/thread-search-store.ts`
-  - coordinator: `.../feature-chat/chat-coordinator.ts`
-  - data access clients: `apps/web/src/app/domains/chat/data/chat-agent-client.ts`
-    (AG-UI agent) and `.../data/thread-client.ts` (local storage)
-
-## Folder Structure
-
-_(derived from [ADR-0001](adr/0001-domains-and-layers-enforced-with-sheriff.md))_
-
-```
-apps/web/src/app/
-  app.ts, app.routes.ts, app.config.ts   # shell (Sheriff root module)
-  testing/                               # test helpers, may be used by anything
+```text
+src/app/
+  app.ts, app.html, app.routes.ts, app.config.ts
   domains/
-    <domain>/
-      feature-<name>/                    # use cases, smart components, stores
-      ui-<name>/ or ui/                  # dumb, reusable components of the domain
-      data-<name>/ or data/              # models and data access clients
-      util-<name>/ or util/              # technical helpers
-      api/                               # optional public API (explicit request only)
-    shared/
-      ui-<name>/, util-<name>/, ...      # technical code used by 2+ domains
-libs/ui/                                 # design-system library (Zard), type:ui-kit
+    chat/
+      feature-chat/
+        index.ts
+        chat-page/, thread-search/, settings-edit/
+        tool-adapters/, ui/, chat-coordinator.ts
+      data/, util/
+    vehicles/
+      api/contracts/index.ts
+      api/features/index.ts
+      feature-catalog/
+        index.ts, vehicle-catalog-overview.ts
+        vehicle-catalog-search-store.ts, vehicle-catalog-detail-store.ts
+        ui/vehicle-catalog-card.ts, ui/vehicle-detail-pane.ts
+      feature-comparison/
+        index.ts, vehicle-comparison-overview.ts
+        ui/vehicle-comparison-card.ts
+      feature-reviews/
+        index.ts, vehicle-reviews-search.ts, vehicle-reviews-search-store.ts
+        ui/vehicle-reviews-pane.ts
+      data/, util/
+  testing/
+libs/ui/  # Generic Zard design system
 ```
 
-- `apps/web/src/app/domains/<domain>/<layer>` is the unit Sheriff tags. The
-  folder names carry the tags `domain:<domain>` and `type:<layer>`.
-- `libs/ui` is the design-system library. It is tagged `domain:shared` and
-  `type:ui-kit` and must stay free of application or domain logic. Add
-  components there with the Zard CLI (`components.json`), not by hand.
+Templates, tests, and feature-only helpers stay beside their owners. A feature
+is a workflow boundary, not one folder per component. Domain-level `ui/` or
+`ui-<name>/` is available when two independent features need the same dumb view.
 
-## Domain Boundaries
+## Public boundaries and composition
 
-- Add a new domain only when the user explicitly requests it. The agent may
-  always propose a new domain, but such a proposal must be accepted by the user
-  before it is created.
-- Respect the existing domain boundaries enforced by Sheriff.
-- Never import implementation details from the private internals of another
-  feature or domain.
-- Cross-domain communication must occur exclusively through the public APIs
-  configured in Sheriff (`api/` folder, tag `domain:<domain>/api`) or through
-  dedicated parts of the shared area.
-- A domain may access another domain when the latter exposes a dedicated API
-  that publishes only selected details. This requires a Sheriff change
-  (allow `domain:<consumer>` to access `domain:<provider>/api`). Consult the
-  user before choosing this approach.
+- A feature exports its smart entry components from its root `index.ts`.
+  Routed components may use an exported lazy loader, such as `loadChatPage`,
+  so importing an eager sidebar does not also load the routed page.
+  Consumers, including pages, import that entry. Stores, coordinators, helper
+  files, and internal UI remain private to the owning feature.
+- Same-domain features may compose other features through those entries. The
+  feature dependency graph must be acyclic, including dependencies through APIs.
+- Reusing a whole feature does not make its internal UI or state shared.
+- Cross-domain imports use explicitly allowed public APIs. The current grant is
+  `chat → vehicles/api`; vehicles cannot import chat. Direct cross-domain data,
+  UI, feature, or helper imports are forbidden.
+- `api/contracts/index.ts` exports selected types and schemas from data/util.
+  Its dependency closure contains no clients, stores, coordinators, UI, or
+  features. Chat data consumers may use this contract API for validating saved
+  tool results without depending on vehicle feature implementations.
+- `api/features/index.ts` exports feature entries only. Only feature/shell
+  consumers may use it; data, util, and UI cannot.
+- Sheriff enforces domain/layer permissions; barrels enforce module privacy;
+  architecture tests additionally reject private paths even when barrel-less
+  imports would otherwise be possible. Do not bypass an entry via another
+  re-export or move application logic into a contract file.
 
-## Layering
+## Layers and building blocks
 
-- Apply _relaxed_ layering.
-- Permit only the following import direction:
-  `feature → ui → data → util`.
-- Every layer from `ui` upwards may additionally use the design-system
-  library `libs/ui` (`type:ui-kit`). `data` and `util` must not.
+Relaxed downward layering remains `feature → ui → data → util`, with explicit
+feature composition and the contract/API permissions above. Feature and UI may
+use the Zard design system; data/util may not.
 
-## Changing the Sheriff Configuration
+| Building block  | File suffix / location                                           | Responsibility                                               |
+| --------------- | ---------------------------------------------------------------- | ------------------------------------------------------------ |
+| Smart component | `-page`, `-search`, `-edit`, `-detail`, `-overview` in a feature | Workflow, form ownership, store access, feature composition  |
+| Dumb component  | `-card`, `-pane`, or any `ui/` / `ui-<name>/` folder             | Supplied state, presentation, input/output interactions      |
+| Store           | `-store.ts`                                                      | One state responsibility; delegates I/O to a client          |
+| Coordinator     | `-coordinator.ts`                                                | Combines stores and coordinates their actions                |
+| Client          | `-client.ts` in data                                             | Stateless HTTP/storage access                                |
+| Chat adapter    | Smart component in `feature-chat/tool-adapters/`                 | Tool envelopes and host interactions around vehicle features |
 
-- Modify `apps/web/sheriff.config.ts` only when explicitly instructed to do so.
-- Never change the Sheriff configuration merely to relax existing boundaries.
-- The same applies to the tsarch rules in `apps/web/arch/` and to the Nx
-  `depConstraints` in `eslint.config.mjs`.
+- UI is strictly presentational regardless of suffix or locality. Application
+  stores, clients, coordinators, and smart components cannot live inside UI.
+- Dumb components cannot reach application workflows through imports, helper
+  re-exports, injected actions, or callbacks passed as an alternative to outputs.
+  They receive data/form fields via inputs and report intentions via outputs.
+- Local presentation signals (tabs, expansion), focus handling, formatting,
+  domain models, and technical design-system dependencies are allowed in UI.
+- Only smart components and coordinators access stores. Only stores access
+  clients. There is no colocated-store or AI-folder exception.
+- Components never call clients directly. Clients expose reads, resource
+  factories, and writes without caching. Only stores depend on clients.
+- Stores never depend on other stores. Use a coordinator when state must be
+  combined; do not add coordinators without an orchestration responsibility.
+- Follow [state management](architecture-state-management.md) for state scope,
+  store responsibilities, and forms. Renaming a suffix changes classification;
+  it does not change the actual responsibility.
 
-## Locality
+## Chat integration
 
-- Keep code that is used and changed together in close proximity (e.g. within
-  the same folder).
+Vehicle features accept validated domain data/IDs and emit typed intentions.
+`VehicleQuestion` carries vehicle, comparison, discovery, or selected-evidence
+context. It contains no chat callbacks or CopilotKit types. Chat adapters turn
+those intentions into prompts and choose draft or send behavior.
 
-## Single Responsibility
+`ChatAgentClient` derives AG-UI selection through `comparison-selection.ts`,
+using the vehicle contract API. Generic tool-result parsing stays in chat util;
+vehicle comparison semantics stay in vehicles data. Wire schemas and server
+behavior must remain compatible when moving files.
 
-- Each file should have a single, well-defined responsibility.
-- Adding helper constructs (functions, etc.) that are used only within the
-  current file is acceptable.
+The catalog and review features keep state per rendered result/dialog, so older
+transcript results and simultaneous instances do not share selection or loading.
 
-## Signals
+## Locality, shared code, and changes
 
-- Computed signals whose computation exceeds a single line should delegate to
-  pure functions.
-  - If such a function is used only once, place it at the end of the current
-    file.
+- Keep files with one responsibility and code that changes together nearby.
+  File-local pure helpers are appropriate; multiline computed expressions
+  delegate to pure functions.
+- Share dumb views within a domain only when another independent feature needs
+  the view directly. Keep each feature's internal view local otherwise.
+- `shared` is for demonstrated technical reuse across domains, not a fallback
+  for domain coupling. Obtain explicit approval before moving domain-specific
+  code there. Classify proposed shared moves and explain their consumers.
+- Adding domains or public domain grants, changing Sheriff/tsarch/Nx rules, or
+  moving code to shared requires an explicit request in the current conversation.
+  Never weaken a boundary merely to silence a failing check.
+- `libs/ui` contains only the generic Zard design system. Add design-system
+  components with the Zard CLI; import via `@/ui/components/...`,
+  `@/ui/services`, or `@/ui/utils`, not relative paths out of the app.
 
-## Feature Slicing
+## Reference implementations and checks
 
-_(derived from [ADR-0003](adr/0003-feature-slicing-and-shared-code.md))_
+Use `VehicleCatalogOverview` plus its card for controlled presentation,
+`VehicleReviewsSearch` for scoped reads, `ChatVehicleComparisonOverview` for a
+host adapter, and `ChatCoordinator` for cross-store orchestration. Conversation
+streaming still follows `ConversationDetailStore` and `ChatAgentClient`.
 
-- If code is used by a single feature only, place it in the corresponding
-  feature folder.
-- If code from one feature must be reused by another feature within the same
-  domain, move it down to a lower layer of that domain.
-- If technical code from one feature must be reused by a feature in a
-  different domain, move it down to a lower layer of the shared area.
-  - If the code might be domain-specific, the agent MUST ask for explicit user
-    approval before moving it to `shared`.
-  - Explicit approval means a clear confirmation in the current chat.
-  - Without explicit approval, keep the code in the current domain and propose
-    alternatives.
-
-## Data Access Services
-
-_(derived from [ADR-0004](adr/0004-suffix-conventions-enforced-with-tsarch.md))_
-
-- Use the suffix `Client` and the file suffix `-client.ts`
-  (e.g. `ThreadClient` in `thread-client.ts`).
-- Follow `ThreadClient` (storage) and `ChatAgentClient` (AG-UI) as the
-  reference implementations.
-- Data access services must be stateless. They expose `httpResource`
-  factories, plain `HttpClient` calls or storage reads and writes; they do
-  not cache.
-- Components must never call a data access service directly. They obtain data
-  through a store or through a coordinator that combines several stores (see
-  `apps/web/docs/architecture-state-management.md`).
-- Only stores may access a data access service directly. Exception: files
-  inside an `ai` layer (any `ai/` folder) may access data access services
-  directly.
-
-## Shared Code
-
-_(derived from [ADR-0003](adr/0003-feature-slicing-and-shared-code.md))_
-
-- Promote code to a shared area only when at least two independent features
-  require it.
-- Avoid premature shared abstractions.
-- `shared` is a deliberate architectural decision, not a fallback folder.
-
-## Pre-Change Checklist (Shared Moves)
-
-- Before moving code to `shared`, verify cross-domain reuse is truly required.
-- Classify the code as technical or domain-specific, and state that
-  classification explicitly.
-- If there is any domain-specific ambiguity, obtain explicit user approval
-  first.
-- Record the chosen option and rationale in the response.
-
-## File-Name Suffixes
-
-_(derived from [ADR-0004](adr/0004-suffix-conventions-enforced-with-tsarch.md))_
-
-File-name suffixes carry architectural meaning and are checked by tsarch.
-Renaming or moving a file across suffixes is a re-classification, not a
-cosmetic change.
-
-| Building block  | File suffix                                                               | Class suffix                                                         |
-| --------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Smart component | `-page.ts`, `-search.ts`, `-edit.ts`, `-detail.ts`, `-overview.ts`        | `Page`, `Search`, `Edit`, `Detail`, `Overview`                       |
-| Dumb component  | `-card.ts`, `-pane.ts`, or any file inside a `ui/` or `ui-<name>/` folder | free                                                                 |
-| Store           | `-store.ts`                                                               | `<Entity>SearchStore`, `<Entity>DetailStore`, `<Feature>LookupStore` |
-| Coordinator     | `-coordinator.ts`                                                         | `Coordinator`                                                        |
-| Data access     | `-client.ts`                                                              | `Client`                                                             |
-
-## State Management
-
-_(derived from [ADR-0002](adr/0002-ngrx-signal-store-for-state.md))_
-
-- Follow `apps/web/docs/architecture-state-management.md` where applicable.
-
-## Nx Project Boundaries
-
-- `web` (`type:app`) may depend on every library.
-- `ui` (`type:ui-kit`, `scope:shared`) may depend only on other `type:ui-kit`
-  libraries.
-- Import the design system through the configured aliases
-  (`@/ui/components/...`, `@/ui/services`, `@/ui/utils`), never through
-  relative paths that leave `apps/web`.
+Run `npm exec -- nx run-many -t lint -p web,ui` and
+`npm exec -- nx run web:test-arch` for boundaries. Full verification is
+`npm run verify` (or `npm run verify -- --changed` for changed projects).

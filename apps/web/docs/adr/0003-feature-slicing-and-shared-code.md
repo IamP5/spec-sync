@@ -1,6 +1,6 @@
 # ADR-0003: Feature slicing and shared code
 
-- Status: accepted
+- Status: amended by [ADR-0005](0005-composable-features-and-pure-ui.md)
 - Date: 2026-09-04
 
 ## Context

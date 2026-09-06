@@ -21,11 +21,11 @@
         Compare os dados. Explore as fontes e o contexto de uso.
       </p>
     </div>
-    @if (actions) {<button
+    @if (questionsEnabled()) {<button
       z-button
       zType="outline"
       zSize="sm"
-      (click)="followUp()"
+      (click)="followUpRequested.emit()"
     >
       Analisar para o meu uso ↗</button
     >}
@@ -38,14 +38,14 @@
       class="h-9 w-full sm:w-64"
       aria-label="Filtrar especificações"
       placeholder="Filtrar especificações…"
-      [formField]="filterForm.query"
+      [formField]="queryField()"
     />
     @if (comparison.configurations.length > 1) {<button
       z-button
       [zType]="differencesOnly() ? 'secondary' : 'ghost'"
       zSize="sm"
       [attr.aria-pressed]="differencesOnly()"
-      (click)="differencesOnly.set(!differencesOnly())"
+      (click)="differencesChanged.emit(!differencesOnly())"
     >
       {{ differencesOnly() ? '✓ ' : '' }}Só diferenças</button
     >}
@@ -120,7 +120,7 @@
             (row.attribute.unit) {<span
               class="mt-1 block text-xs font-normal text-muted-foreground"
               >{{ row.attribute.unit }}</span
-            >} @if (actions) {<button
+            >} @if (questionsEnabled()) {<button
               z-button
               zType="ghost"
               zSize="sm"
@@ -204,15 +204,15 @@
                 }
               </details>
             </div>
-            } @if (actions) {<button
+            } @if (questionsEnabled()) {<button
               z-button
               zType="ghost"
               zSize="sm"
               class="mt-2 -ml-2 text-xs text-muted-foreground"
-              [attr.aria-label]="'Avaliações de ' + configuration.name + ' sobre ' + row.attribute.label"
+              [attr.aria-label]="'Relatos desta versão: ' + configuration.name + ' sobre ' + row.attribute.label"
               (click)="openReviews(row, configuration.id)"
             >
-              Relatos desta versão ↗</button
+              Relatos desta versão <span aria-hidden="true">↗</span></button
             >} }}
           </td>
           }
@@ -231,7 +231,7 @@
               zType="outline"
               zSize="sm"
               class="mt-3"
-              (click)="reset()"
+              (click)="filtersCleared.emit()"
             >
               Limpar filtros
             </button>
@@ -245,16 +245,16 @@
     Itens opcionais dependem do pacote contratado. Dados não informados e
     divergências permanecem explícitos.
   </footer>
-  } @else if (error(); as failure) {
-  <p class="p-5 text-sm" role="alert">{{ failure.message }}</p>
+  } @else if (failure(); as failure) {
+  <p class="p-5 text-sm" role="alert">{{ failure }}</p>
   } @else {
   <div class="p-5">
     <p class="mb-4 text-sm text-muted-foreground" role="status">
-      {{ toolCall().status === 'complete' ? 'Não foi possível exibir esta
-      comparação. Peça ao assistente para tentar novamente.' : 'Consultando
-      especificações e fontes…' }}
+      {{ complete() ? 'Não foi possível exibir esta comparação. Peça ao
+      assistente para tentar novamente.' : 'Consultando especificações e
+      fontes…' }}
     </p>
-    @if (toolCall().status !== 'complete') {<z-skeleton class="h-32 w-full" />}
+    @if (!complete()) {<z-skeleton class="h-32 w-full" />}
   </div>
   }
 </z-card>

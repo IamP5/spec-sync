@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 
 import { ConversationDetailStore } from './chat-page/conversation-detail-store';
+import { ThreadDetailStore } from './thread-search/thread-detail-store';
 import { ThreadSearchStore } from './thread-search/thread-search-store';
 
 /**
@@ -14,6 +15,7 @@ import { ThreadSearchStore } from './thread-search/thread-search-store';
 export class ChatCoordinator {
   private readonly conversation = inject(ConversationDetailStore);
   private readonly threads = inject(ThreadSearchStore);
+  private readonly threadDetail = inject(ThreadDetailStore);
 
   /** Id of the open thread; the sidebar highlights it. */
   readonly activeThreadId = this.conversation.threadId;
@@ -53,7 +55,8 @@ export class ChatCoordinator {
     if (!name) {
       return;
     }
-    this.threads.rename(id, name);
+    this.threadDetail.rename(id, name);
+    this.threads.load();
     if (this.conversation.threadId() === id) {
       this.conversation.rename(name);
     }
@@ -61,7 +64,8 @@ export class ChatCoordinator {
 
   /** Deletes a thread from the history. Returns true when it was the open one. */
   remove(id: string): boolean {
-    this.threads.remove(id);
+    this.threadDetail.remove(id);
+    this.threads.load();
     const wasOpen = this.conversation.threadId() === id;
     if (wasOpen) {
       this.conversation.reset();
@@ -71,7 +75,8 @@ export class ChatCoordinator {
 
   /** Deletes the whole history and starts a new conversation. */
   clear(): void {
-    this.threads.clear();
+    this.threadDetail.clear();
+    this.threads.load();
     this.conversation.reset();
   }
 }

@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type {
   Comparison,
   VehicleConfiguration,
-} from '../data/vehicle-contracts';
+} from '../../data/vehicle-contracts';
 import { VehicleDetailPane } from './vehicle-detail-pane';
 
 describe('VehicleDetailPane', () => {
