@@ -1,3 +1,14 @@
+<!-- BEGIN:mastra-agent-rules -->
+
+# This is NOT the Mastra you know
+
+Mastra evolves rapidly, so APIs, conventions, and recommended patterns may
+differ from your training data. Invoke the `mastra` skill and consult the
+relevant embedded documentation before writing any Mastra code. Heed
+deprecation notices.
+
+<!-- END:mastra-agent-rules -->
+
 # SpecSync AI service (Mastra)
 
 Node/TypeScript service built with [Mastra](https://mastra.ai) inside the Nx
@@ -13,7 +24,7 @@ apps/ai/
     index.ts          # Mastra registry: agents, storage (dev only), logger
     models.ts         # Vertex AI provider (AI SDK) + the Gemini model
     agents/           # one file per agent (<name>-agent.ts)
-    tools/            # server tools (<name>-tool.ts), e.g. the requirement quality check
+    tools/            # server tools (<name>-tool.ts), vehicle catalog, graph retrieval and content discovery
   .env.example        # GOOGLE_VERTEX_PROJECT / GOOGLE_VERTEX_LOCATION
   Dockerfile          # build with `nx build ai`, run .mastra/output on Cloud Run
   checks.mjs          # lint + typecheck (fast), test + build (full)
@@ -38,12 +49,12 @@ apps/ai/
   `/ai/copilotkit`; nginx and `apps/web/proxy.conf.json` strip the `/ai`
   prefix. Register custom routes only through the Mastra `server` option,
   never a second HTTP server.
-- Names are part of the contract with `apps/web`: the agent id `chat`, the
-  route path `/copilotkit`, the server tool `checkRequirementQuality` (the
-  browser renders its call as a card) and the frontend tool
-  `presentRequirementDraft` (executed and rendered in the browser; the agent
-  only sees it when the client advertises it, so instructions treat it as
-  optional). Rename only together with the web client.
+- Names are part of the contract with `apps/web`: agent id `chat`, route
+  `/copilotkit`, and vehicle tool names in `tools/vehicle-tools.ts`. The web client
+  renders server tool results directly. Change names only together with the client.
+- Read `docs/conversational-vehicles.md` for retrieval boundaries and startup.
+  No ingestion or publication tools are included. External discovery links must
+  never be represented as verified quotes or stored review evidence.
 - Keep `zod` on the same line as the workspace root (currently 3.25.x, the
   line `@ag-ui/mastra` and `@copilotkit/runtime` use). Two zod copies in one
   process break Mastra's OpenAPI generation at startup

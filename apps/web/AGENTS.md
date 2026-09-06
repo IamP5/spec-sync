@@ -68,8 +68,7 @@ The binding rules live in the docs; this section only names the red lines.
   either, which is why the initial bundle budget in `project.json` is
   1.7 MB (warning) / 2 MB (error).
 - The contract with `apps/ai` lives in `domains/chat/data/chat-agent.ts`
-  (agent id, runtime URL) and `data/requirement-*.ts` (tool names and
-  schemas). Change them only together with the service.
+  (agent id, runtime URL) and `data/vehicle-contracts.ts` (vehicle result schemas). Change them only together with the service.
 - `ChatAgentClient` (`data/chat-agent-client.ts`) is the data access: it
   connects the runtime URL lazily and wraps the AG-UI agent; the
   conversation lives in that agent, `ConversationDetailStore` mirrors it.

@@ -5,7 +5,7 @@ import { Mastra } from '@mastra/core/mastra';
 import { LibSQLStore } from '@mastra/libsql';
 import { PinoLogger } from '@mastra/loggers';
 
-import { CHAT_AGENT_ID, chatAgent } from './agents/chat-agent';
+import { CHAT_AGENT_ID, specSyncAgent } from './agents/spec-sync-agent';
 
 const production = process.env['NODE_ENV'] === 'production';
 
@@ -41,7 +41,7 @@ const devDatabase = `file:${fileURLToPath(new URL('../dev.db', import.meta.url))
  * injects PORT and the Dockerfile sets MASTRA_HOST=0.0.0.0.
  */
 export const mastra = new Mastra({
-  agents: { [chatAgent.id]: chatAgent },
+  agents: { [specSyncAgent.id]: specSyncAgent },
   storage: production
     ? undefined
     : new LibSQLStore({ id: 'ai-dev', url: devDatabase }),

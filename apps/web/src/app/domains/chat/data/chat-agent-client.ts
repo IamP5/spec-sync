@@ -11,6 +11,7 @@ import {
   normalizeThread,
   ToolCallPlacements,
 } from './chat-agent';
+import { comparisonSelection } from './vehicle-comparison';
 
 /**
  * Data access for the chat agent. It is a thin adapter over the AG-UI client
@@ -110,7 +111,8 @@ export class ChatAgentClient {
     const agent = this.agentStore().agent;
     agent.threadId = threadId;
     agent.setMessages(messages);
-    agent.setState({});
+    const selection = comparisonSelection(messages);
+    agent.setState(selection ? { comparison: selection } : {});
     this._placements.set(new Map());
     this._threadId.set(threadId);
   }
@@ -132,7 +134,21 @@ export class ChatAgentClient {
    */
   private async run(agent: AbstractAgent): Promise<void> {
     this.track(agent);
-    await this.copilotKit.core.runAgent({ agent });
+    const selection = comparisonSelection(agent.messages);
+    agent.setState(selection ? { comparison: selection } : {});
+    const contextId = this.copilotKit.core.addContext({
+      description:
+        'SpecSync comparison selection (last successful structured tool result)',
+      value: JSON.stringify(selection ?? null),
+      agentIds: [CHAT_AGENT_ID],
+    });
+    try {
+      await this.copilotKit.core.runAgent({ agent });
+    } finally {
+      this.copilotKit.core.removeContext(contextId);
+    }
+    const nextSelection = comparisonSelection(agent.messages);
+    agent.setState(nextSelection ? { comparison: nextSelection } : {});
     const normalized = normalizeThread(agent.messages, this._placements());
     if (normalized !== agent.messages) {
       agent.setMessages(normalized);

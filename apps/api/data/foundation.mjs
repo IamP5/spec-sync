@@ -233,6 +233,7 @@ export function snapshotSql() {
 
 export function projectionStatements(snapshot, fingerprint) {
   const statements = [
+    { statement: 'MATCH (p:SpecSyncReview:ReviewProjection) DELETE p' },
     { statement: 'MATCH (n:SpecSyncCatalog) DETACH DELETE n' },
   ];
   const node = (table, label, props) =>

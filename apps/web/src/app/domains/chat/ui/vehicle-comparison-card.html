@@ -1,0 +1,260 @@
+<z-card
+  class="min-w-0 gap-0 overflow-hidden rounded-xl border-border p-0 shadow-none"
+  aria-label="Comparação de veículos"
+>
+  @if (result(); as comparison) {
+  <header
+    class="flex flex-wrap items-start justify-between gap-3 px-5 py-5 sm:px-6"
+  >
+    <div>
+      <p
+        class="text-xs font-medium tracking-widest text-muted-foreground uppercase"
+      >
+        Catálogo · {{ comparison.configurations.length }} {{
+        comparison.configurations.length > 1 ? 'veículos' : 'veículo' }}
+      </p>
+      <h2 class="mt-1 text-lg font-semibold tracking-tight">
+        {{ comparison.configurations.length > 1 ? 'Comparação de especificações'
+        : 'Especificações do veículo' }}
+      </h2>
+      <p class="mt-1 text-xs text-muted-foreground">
+        Compare os dados. Explore as fontes e o contexto de uso.
+      </p>
+    </div>
+    @if (actions) {<button
+      z-button
+      zType="outline"
+      zSize="sm"
+      (click)="followUp()"
+    >
+      Analisar para o meu uso ↗</button
+    >}
+  </header>
+  <div
+    class="flex flex-wrap items-center gap-3 border-y bg-muted/20 px-5 py-3 sm:px-6"
+  >
+    <input
+      z-input
+      class="h-9 w-full sm:w-64"
+      aria-label="Filtrar especificações"
+      placeholder="Filtrar especificações…"
+      [formField]="filterForm.query"
+    />
+    @if (comparison.configurations.length > 1) {<button
+      z-button
+      [zType]="differencesOnly() ? 'secondary' : 'ghost'"
+      zSize="sm"
+      [attr.aria-pressed]="differencesOnly()"
+      (click)="differencesOnly.set(!differencesOnly())"
+    >
+      {{ differencesOnly() ? '✓ ' : '' }}Só diferenças</button
+    >}
+    <span class="text-xs text-muted-foreground sm:ml-auto" role="status"
+      >{{ rows().length }} de {{ comparison.rows.length }} itens</span
+    >
+  </div>
+  <div
+    class="max-h-[65dvh] overflow-auto overscroll-contain"
+    tabindex="0"
+    role="region"
+    aria-label="Tabela de especificações; role para ver mais veículos e itens"
+  >
+    <table
+      z-table
+      class="w-full border-collapse text-left text-sm [&_th]:h-auto [&_th]:px-5 [&_th]:align-top [&_th]:text-foreground [&_td]:p-5 [&_td]:align-top"
+    >
+      <caption class="sr-only">
+        Especificações por versão, com disponibilidade, incertezas e fontes.
+      </caption>
+      <thead class="sticky top-0 z-20 bg-card">
+        <tr>
+          <th
+            scope="col"
+            class="sticky left-0 z-30 min-w-44 border-b bg-card px-5 py-4 text-xs font-medium text-muted-foreground"
+          >
+            Especificação
+          </th>
+          @for (configuration of comparison.configurations; track
+          configuration.id) {
+          <th
+            scope="col"
+            class="min-w-60 max-w-80 border-b border-l px-5 py-4 align-top"
+          >
+            <span class="text-xs font-normal text-muted-foreground"
+              >{{ configuration.brand }} {{ configuration.model }}</span
+            >
+            <span class="mt-1 block font-semibold whitespace-normal"
+              >{{ configuration.name }}</span
+            >
+            <span class="mt-1 block text-xs font-normal text-muted-foreground"
+              >{{ configuration.market }} · {{ configuration.modelYear }}</span
+            >
+            @if (configuration.identityStatus !== 'CONFIRMED') {
+            <details class="mt-2 text-xs font-normal">
+              <summary
+                class="cursor-pointer rounded py-1 text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
+              >
+                {{ configuration.identityStatus === 'PROVISIONAL' ? 'Versão a
+                confirmar' : 'Versão identificada nas notas' }}
+              </summary>
+              <p class="mt-2 max-w-64 leading-5 whitespace-normal">
+                {{ configuration.identityNote || 'Identificação baseada nas
+                notas compiladas; consulte a fonte para confirmar a versão.' }}
+              </p>
+            </details>
+            }
+          </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.attribute.id) {
+        <tr
+          class="group transition-colors duration-150 hover:bg-muted/20 motion-reduce:transition-none"
+        >
+          <th
+            scope="row"
+            class="sticky left-0 z-10 border-b bg-card px-5 py-5 align-top font-medium whitespace-normal"
+          >
+            <span class="block">{{ row.attribute.label }}</span> @if
+            (row.attribute.unit) {<span
+              class="mt-1 block text-xs font-normal text-muted-foreground"
+              >{{ row.attribute.unit }}</span
+            >} @if (actions) {<button
+              z-button
+              zType="ghost"
+              zSize="sm"
+              class="mt-3 -ml-2 text-xs font-normal"
+              [attr.aria-label]="'Ver avaliações sobre ' + row.attribute.label"
+              (click)="openReviews(row)"
+            >
+              Avaliações ↗</button
+            >}
+          </th>
+          @for (configuration of comparison.configurations; track
+          configuration.id) {
+          <td class="border-b border-l px-5 py-5 align-top whitespace-normal">
+            @for (cell of row.cells; track cell.configurationId) { @if
+            (cell.configurationId === configuration.id) { @if
+            (cell.knowledgeStatus !== 'KNOWN') {
+            <p class="font-medium">
+              {{ cell.knowledgeStatus === 'CONFLICTING' ? 'Dados divergentes' :
+              'Não informado' }}
+            </p>
+            <p class="mt-1 max-w-72 text-xs leading-5 text-muted-foreground">
+              {{ cell.knowledgeStatus === 'CONFLICTING' ? 'As fontes divergem.
+              Confira os registros abaixo.' : 'Ausência de informação não
+              significa ausência do equipamento.' }}
+            </p>
+            } @for (observation of observations(cell); track observation.id) {
+            <div class="mb-3 last:mb-0">
+              @if (observation.value !== null) {
+              <p class="text-base font-semibold tracking-tight tabular-nums">
+                {{ format(observation.value) }}
+                <span class="text-xs font-normal text-muted-foreground"
+                  >{{ row.attribute.unit }}</span
+                >
+              </p>
+              } @if (observation.availability) {<z-badge
+                zType="secondary"
+                class="mt-1"
+                >{{ availability(observation.availability) }}</z-badge
+              >} @for (qualifier of qualifiers(observation.qualifiers); track
+              qualifier) {
+              <p class="mt-1 max-w-72 text-xs leading-5 text-muted-foreground">
+                {{ qualifier }}
+              </p>
+              }
+              <details class="mt-2 max-w-80">
+                <summary
+                  class="cursor-pointer rounded py-2 text-xs text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                >
+                  Fontes e evidências ({{ observation.evidence.length }})
+                </summary>
+                @for (evidence of observation.evidence; track evidence.id) {
+                <div class="my-3 border-l-2 pl-3 text-xs leading-5">
+                  <p class="font-medium">{{ evidence.title }}</p>
+                  <p class="text-muted-foreground">
+                    {{ evidence.locator }} · Capturado em {{ evidence.capturedOn
+                    }}
+                  </p>
+                  <blockquote class="mt-2 whitespace-pre-wrap">
+                    {{ evidence.excerpt }}
+                  </blockquote>
+                  <p class="mt-2 text-muted-foreground">
+                    {{ evidence.provenance === 'CURATED_NOTE' ? 'Notas
+                    compiladas' : evidence.provenance }} · A referência original
+                    não representa verificação independente.
+                  </p>
+                  @for (url of evidence.upstreamUrls; track url) {@if
+                  (safeUrl(url); as href) {<a
+                    class="mt-2 inline-block rounded underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
+                    [href]="href"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Referência original ↗<span class="sr-only">
+                      (nova aba)</span
+                    ></a
+                  >}}
+                </div>
+                } @empty {
+                <p class="py-2 text-xs text-muted-foreground">
+                  Nenhuma evidência anexada a este registro.
+                </p>
+                }
+              </details>
+            </div>
+            } @if (actions) {<button
+              z-button
+              zType="ghost"
+              zSize="sm"
+              class="mt-2 -ml-2 text-xs text-muted-foreground"
+              [attr.aria-label]="'Avaliações de ' + configuration.name + ' sobre ' + row.attribute.label"
+              (click)="openReviews(row, configuration.id)"
+            >
+              Relatos desta versão ↗</button
+            >} }}
+          </td>
+          }
+        </tr>
+        } @empty {
+        <tr>
+          <td
+            [attr.colspan]="comparison.configurations.length + 1"
+            class="px-5 py-10 text-center"
+          >
+            <p class="text-sm text-muted-foreground">
+              Nenhum item corresponde aos filtros.
+            </p>
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              class="mt-3"
+              (click)="reset()"
+            >
+              Limpar filtros
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <footer class="px-5 py-3 text-xs leading-5 text-muted-foreground sm:px-6">
+    Itens opcionais dependem do pacote contratado. Dados não informados e
+    divergências permanecem explícitos.
+  </footer>
+  } @else if (error(); as failure) {
+  <p class="p-5 text-sm" role="alert">{{ failure.message }}</p>
+  } @else {
+  <div class="p-5">
+    <p class="mb-4 text-sm text-muted-foreground" role="status">
+      {{ toolCall().status === 'complete' ? 'Não foi possível exibir esta
+      comparação. Peça ao assistente para tentar novamente.' : 'Consultando
+      especificações e fontes…' }}
+    </p>
+    @if (toolCall().status !== 'complete') {<z-skeleton class="h-32 w-full" />}
+  </div>
+  }
+</z-card>

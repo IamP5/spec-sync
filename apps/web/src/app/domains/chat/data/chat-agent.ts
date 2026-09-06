@@ -14,7 +14,7 @@ export interface ChatAgentError {
 
 /**
  * Id of the Mastra agent the chat talks to. Part of the contract with
- * `apps/ai` (`CHAT_AGENT_ID` in `src/mastra/agents/chat-agent.ts`).
+ * `apps/ai` (`CHAT_AGENT_ID` in `src/mastra/agents/spec-sync-agent.ts`).
  */
 export const CHAT_AGENT_ID = 'chat';
 
@@ -166,7 +166,7 @@ export function toolActivities(messages: Message[], running: boolean) {
                 return {
                   id: call.id,
                   name: call.function.name,
-                  label: toolLabel(call.function.name),
+                  label: call.function.name,
                   status: result
                     ? result.error
                       ? 'Failed'
@@ -183,17 +183,6 @@ export function toolActivities(messages: Message[], running: boolean) {
         : [],
     ),
   );
-}
-
-function toolLabel(name: string): string {
-  switch (name) {
-    case 'checkRequirementQuality':
-      return 'Check requirement quality';
-    case 'presentRequirementDraft':
-      return 'Present requirement draft';
-    default:
-      return name;
-  }
 }
 
 function formatToolData(value: string): string {

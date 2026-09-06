@@ -181,6 +181,7 @@ module "ai" {
   # MASTRA_HOST/PORT are set by the image (apps/ai/Dockerfile) and Cloud Run.
   env = {
     NODE_ENV               = "production"
+    SPECSYNC_API_URL        = module.api.uri
     GOOGLE_VERTEX_PROJECT  = var.project_id
     GOOGLE_VERTEX_LOCATION = var.vertex_location
   }

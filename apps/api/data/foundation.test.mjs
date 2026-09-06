@@ -178,6 +178,10 @@ test('graph projection parameterizes source content and includes selected facts 
   );
   assert.equal(
     statements[0].statement,
+    'MATCH (p:SpecSyncReview:ReviewProjection) DELETE p',
+  );
+  assert.equal(
+    statements[1].statement,
     'MATCH (n:SpecSyncCatalog) DETACH DELETE n',
   );
   assert(statements.some((s) => s.statement.includes('SELECTS')));

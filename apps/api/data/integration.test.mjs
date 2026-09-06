@@ -44,7 +44,7 @@ test('migrations, seed and projection can be repeated without changing PostgreSQ
     await postgres(
       'SELECT count(*) FROM public.flyway_schema_history WHERE success;',
     ),
-    '2',
+    '4',
   );
 });
 

@@ -134,3 +134,28 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Messages scroll behind the floating composer; the last reply can clear the fade. */
+.chat-transcript {
+  padding-bottom: calc(var(--composer-height, 180px) + 48px);
+  scroll-padding-bottom: calc(var(--composer-height, 180px) + 48px);
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(100% - var(--composer-height, 180px) - 32px),
+    transparent calc(100% - var(--composer-height, 180px) + 100px)
+  );
+}
+
+.chat-floating-composer {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@media (forced-colors: active) {
+  .chat-transcript {
+    mask-image: none;
+  }
+  .chat-floating-composer {
+    background: Canvas;
+  }
+}

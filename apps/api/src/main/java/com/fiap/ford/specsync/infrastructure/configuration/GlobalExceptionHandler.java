@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * a violated invariant becomes an RFC 9457 problem with the list of failed properties.
  */
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler
+        extends org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DomainException.class)
     ProblemDetail handleDomainException(final DomainException exception) {

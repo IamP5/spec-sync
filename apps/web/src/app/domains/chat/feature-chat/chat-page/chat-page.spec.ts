@@ -11,8 +11,7 @@ import {
   textReply,
   toolCallReply,
 } from '../../../../testing/fake-chat-agent';
-import { PRESENT_REQUIREMENT_DRAFT_TOOL } from '../../data/requirement-draft';
-import { REQUIREMENT_QUALITY_TOOL } from '../../data/requirement-quality';
+import { matrix } from '../../../../testing/vehicle-fixtures';
 import { TEXT_REVEAL_ENABLED } from '../../util/text-reveal';
 import { ChatPage } from './chat-page';
 import { ConversationDetailStore } from './conversation-detail-store';
@@ -37,6 +36,30 @@ describe('ChatPage', () => {
         { provide: TEXT_REVEAL_ENABLED, useValue: false },
       ],
     }).compileComponents();
+  });
+
+  it('renders the vehicle comparison from server results through CopilotKit', async () => {
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'compareVehicleConfigurations',
+        {},
+        matrix,
+        'Compared vehicles',
+      ),
+    );
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'Compare vehicles');
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+    await fixture.whenStable();
+    const card = fixture.nativeElement.querySelector(
+      'app-vehicle-comparison-card',
+    );
+    expect(card?.textContent).toContain('Opcional');
+    expect(card?.textContent).toContain('Black');
+    expect(card?.querySelectorAll('thead th').length).toBe(3);
   });
 
   it('renders the empty conversation and the prompt', async () => {
@@ -208,7 +231,7 @@ describe('ChatPage', () => {
     );
   });
 
-  it('advertises the frontend tools to the agent', async () => {
+  it('does not advertise server renderers as frontend tools', async () => {
     agent.replyWith((input) => textReply(input, 'ok'));
     const fixture = TestBed.createComponent(ChatPage);
     await fixture.whenStable();
@@ -216,48 +239,7 @@ describe('ChatPage', () => {
     await sendPrompt(fixture.nativeElement, 'hello');
     await settled(TestBed.inject(ConversationDetailStore));
 
-    expect(agent.runs[0].tools.map((tool) => tool.name)).toContain(
-      PRESENT_REQUIREMENT_DRAFT_TOOL,
-    );
-  });
-
-  it('renders a server tool call as the requirement quality card', async () => {
-    agent.replyWith((input) =>
-      toolCallReply(
-        input,
-        REQUIREMENT_QUALITY_TOOL,
-        { requirement: 'The system shall be fast.' },
-        {
-          requirement: 'The system shall be fast.',
-          score: 90,
-          verdict: 'good',
-          findings: [
-            {
-              rule: 'ambiguous-term',
-              severity: 'warning',
-              message: '"fast" is not measurable.',
-            },
-          ],
-        },
-        'Replace "fast" with a number.',
-      ),
-    );
-    const fixture = TestBed.createComponent(ChatPage);
-    await fixture.whenStable();
-
-    await sendPrompt(
-      fixture.nativeElement,
-      'review: The system shall be fast.',
-    );
-    await settled(TestBed.inject(ConversationDetailStore));
-    await fixture.whenStable();
-    await fixture.whenStable();
-
-    const element = fixture.nativeElement as HTMLElement;
-    const card = element.querySelector('app-requirement-quality-card');
-    expect(card?.textContent).toContain('90/100');
-    expect(card?.textContent).toContain('"fast" is not measurable.');
-    expect(element.textContent).toContain('Replace "fast" with a number.');
+    expect(agent.runs[0].tools).toEqual([]);
   });
 
   it('discloses thinking separately from the answer and hides activity on request', async () => {
@@ -313,14 +295,9 @@ describe('ChatPage', () => {
     agent.replyWith((input) =>
       toolCallReply(
         input,
-        REQUIREMENT_QUALITY_TOOL,
-        { requirement: 'A requirement' },
-        {
-          requirement: 'A requirement',
-          score: 90,
-          verdict: 'good',
-          findings: [],
-        },
+        'compareVehicleConfigurations',
+        { configurationIds: matrix.configurations.map((item) => item.id) },
+        matrix,
         'Done',
       ),
     );
@@ -338,7 +315,7 @@ describe('ChatPage', () => {
     details?.querySelector('summary')?.click();
     expect(details?.open).toBe(true);
     expect(details?.querySelector('pre')?.textContent).toContain(
-      'A requirement',
+      matrix.configurations[0].id,
     );
     element
       .querySelector<HTMLButtonElement>(
@@ -348,8 +325,8 @@ describe('ChatPage', () => {
     await fixture.whenStable();
     expect(element.querySelector('[data-role="tool-activity"]')).toBeNull();
     expect(
-      element.querySelector('app-requirement-quality-card')?.textContent,
-    ).toContain('90/100');
+      element.querySelector('app-vehicle-comparison-card')?.textContent,
+    ).toContain('Limited');
   });
 
   it('explains the character limit and prevents an oversized prompt', async () => {
@@ -383,7 +360,7 @@ describe('ChatPage', () => {
     await fixture.whenStable();
 
     const turns = element.querySelectorAll('[data-slot="message"]');
-    expect(turns[0].textContent).toContain(suggestion?.textContent?.trim());
+    expect(turns[0].textContent).toContain('Compare Ranger Black and Limited');
     expect(element.querySelector('[aria-label="Suggestions"]')).toBeNull();
   });
 
@@ -511,17 +488,19 @@ describe('ChatPage', () => {
     expect(log.scrollTop).toBe(1200);
   });
 
-  it('follows layout resizing only while pinned and disconnects its observer', async () => {
+  it('follows layout resizing only while pinned and disconnects its observers', async () => {
     let resize: ResizeObserverCallback | undefined;
-    const disconnect = vi.fn();
+    const observers: { disconnect: ReturnType<typeof vi.fn> }[] = [];
     vi.stubGlobal(
       'ResizeObserver',
       class {
-        constructor(callback: ResizeObserverCallback) {
-          resize = callback;
+        constructor(private readonly callback: ResizeObserverCallback) {
+          observers.push(this);
         }
-        observe = vi.fn();
-        disconnect = disconnect;
+        observe = vi.fn((target: Element) => {
+          if (target.getAttribute('role') === 'log') resize = this.callback;
+        });
+        disconnect = vi.fn();
       },
     );
     try {
@@ -554,7 +533,8 @@ describe('ChatPage', () => {
       expect(log.scrollTop).toBe(1800);
 
       fixture.destroy();
-      expect(disconnect).toHaveBeenCalledOnce();
+      for (const observer of observers)
+        expect(observer.disconnect).toHaveBeenCalledOnce();
     } finally {
       vi.unstubAllGlobals();
     }

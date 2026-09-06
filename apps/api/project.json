@@ -32,28 +32,32 @@
       "dependsOn": [],
       "options": {
         "excludeDependsOn": false
-      }
+      },
+      "inputs": ["default"]
     },
     "test": {
       "cache": true,
       "dependsOn": [],
       "options": {
         "excludeDependsOn": false
-      }
+      },
+      "inputs": ["default"]
     },
     "bootJar": {
       "cache": true,
       "dependsOn": [],
       "options": {
         "excludeDependsOn": false
-      }
+      },
+      "inputs": ["default"]
     },
     "spotlessCheck": {
       "cache": true,
       "dependsOn": [],
       "options": {
         "excludeDependsOn": false
-      }
+      },
+      "inputs": ["default"]
     },
     "data-up": {
       "executor": "nx:run-commands",
@@ -103,6 +107,14 @@
       "cache": false,
       "options": {
         "command": "node --test apps/api/data/integration.test.mjs"
+      }
+    },
+    "comparison-integration": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": ["bootJar"],
+      "options": {
+        "command": "node --test apps/api/data/comparison.integration.test.mjs"
       }
     }
   }

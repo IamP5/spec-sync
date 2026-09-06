@@ -67,7 +67,7 @@
     <form (submit)="onSubmit($event)" novalidate>
       <label for="prompt" class="sr-only">Message</label>
       <div
-        class="flex flex-col rounded-2xl border border-border bg-card p-2 shadow-[0_2px_12px_-4px_rgb(0_0_0/10%)] transition-[border-color,box-shadow] focus-within:border-ring focus-within:shadow-sm"
+        class="flex flex-col rounded-2xl border border-border bg-card/95 p-2 backdrop-blur-xl shadow-[0_2px_12px_-4px_rgb(0_0_0/10%)] transition-[border-color,box-shadow] focus-within:border-ring focus-within:shadow-sm"
       >
         <textarea
           #promptInput
@@ -139,7 +139,7 @@
       </div>
     </form>
     <p class="px-3 text-center text-[11px] text-muted-foreground">
-      AI can make mistakes. Review requirements before using them.
+      Check sources, vehicle versions and dates before relying on a comparison.
     </p>
     <p role="status" class="text-center text-xs text-foreground">
       {{ copyError() }}
@@ -197,22 +197,27 @@
   </div>
 </div>
 } @else {
-<div class="relative flex min-h-0 flex-1 flex-col">
+<div
+  class="relative flex min-h-0 flex-1 flex-col"
+  [style.--composer-height.px]="composerHeight()"
+>
   <div
     #transcript
-    class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-6"
+    class="chat-transcript min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-6 sm:px-6"
     role="log"
     aria-live="off"
     aria-label="Conversation"
     tabindex="0"
     (scroll)="onTranscriptScroll()"
+    (focusin)="onTranscriptFocus($event)"
   >
-    <div class="mx-auto w-full max-w-3xl">
+    <div class="mx-auto w-full max-w-7xl">
       <z-message-group class="gap-7">
         @for (turn of turns(); track turn.id) { @if (turn.role === 'user') {
         <z-message
           zAlign="end"
           zVariant="muted"
+          class="mx-auto w-full max-w-3xl [--muted:var(--sidebar-accent)]"
           zAlt="You"
           data-role="user"
           role="group"
@@ -223,7 +228,7 @@
         } @else if (turn.role === 'reasoning') { @if (showActivity() &&
         turn.content) {
         <details
-          class="activity-disclosure text-sm"
+          class="activity-disclosure mx-auto w-full max-w-3xl text-sm"
           data-role="reasoning"
           (toggle)="onDisclosureToggle($event)"
         >
@@ -253,11 +258,14 @@
           <z-message-content class="gap-4">
             @if (textOf(turn)) {
             <div
-              class="chat-markdown text-base leading-7"
+              class="chat-markdown mx-auto w-full max-w-3xl text-base leading-7"
               [innerHTML]="visibleText(turn) | markdown: isRevealing(turn)"
             ></div>
             } @if (turn.toolCalls?.length) { @if (showActivity()) {
-            <div class="flex flex-col gap-2" aria-label="Tool activity">
+            <div
+              class="mx-auto flex w-full max-w-3xl flex-col gap-2"
+              aria-label="Tool activity"
+            >
               @for (call of activityFor(turn); track call.id) {
               <details
                 class="activity-disclosure rounded-lg border border-border px-3 text-sm"
@@ -281,7 +289,7 @@
                     <h3 class="mb-1 text-xs font-semibold">Input</h3>
                     <pre
                       tabindex="0"
-                      class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs break-words whitespace-pre-wrap"
+                      class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs wrap-break-word whitespace-pre-wrap"
                     >
 {{ call.input || 'Receiving input…' }}</pre
                     >
@@ -290,7 +298,7 @@
                     <h3 class="mb-1 text-xs font-semibold">Result</h3>
                     <pre
                       tabindex="0"
-                      class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs break-words whitespace-pre-wrap"
+                      class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs wrap-break-word whitespace-pre-wrap"
                     >
 {{ call.result || (call.status === 'Running' ? 'Waiting for the tool…' : 'No result received.') }}</pre
                     >
@@ -308,7 +316,7 @@
               [agentId]="agentId"
             />
             } @if (textOf(turn) && !isRevealing(turn)) {
-            <z-message-footer class="gap-1 px-0">
+            <z-message-footer class="mx-auto w-full max-w-3xl gap-1 px-0">
               <button
                 z-button
                 zType="ghost"
@@ -343,7 +351,7 @@
           </z-message-content>
         </z-message>
         } } @if (streaming()) {
-        <z-marker>
+        <z-marker class="mx-auto w-full max-w-3xl">
           <z-marker-icon
             ><z-spinner class="size-4" zAriaLabel="Assistant working"
           /></z-marker-icon>
@@ -355,21 +363,22 @@
         <z-marker
           zVariant="separator"
           zIcon="lucideSquare"
-          class="mt-2 text-xs"
+          class="mx-auto mt-2 w-full max-w-3xl text-xs"
           data-role="stopped"
           >Reply stopped</z-marker
         >
-        <button
-          z-button
-          zType="ghost"
-          zSize="sm"
-          type="button"
-          class="self-start"
-          data-action="retry-stopped"
-          (click)="onRegenerate()"
-        >
-          Try again
-        </button>
+        <div class="mx-auto w-full max-w-3xl">
+          <button
+            z-button
+            zType="ghost"
+            zSize="sm"
+            type="button"
+            data-action="retry-stopped"
+            (click)="onRegenerate()"
+          >
+            Try again
+          </button>
+        </div>
         }
       </z-message-group>
     </div>
@@ -380,17 +389,22 @@
     zType="outline"
     zSize="icon-sm"
     type="button"
-    class="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-background shadow-md"
+    class="absolute left-1/2 z-20 -translate-x-1/2 rounded-full bg-background shadow-md"
+    [style.bottom.px]="composerHeight() + 16"
     aria-label="Scroll to the latest message"
     (click)="scrollToBottom()"
   >
     <ng-icon name="lucideArrowDown" aria-hidden="true" />
   </button>
   }
-</div>
-
-<div class="mx-auto w-full max-w-3xl shrink-0 px-4 pt-2 pb-3 sm:px-6">
-  <ng-container *ngTemplateOutlet="composer" />
+  <div
+    #floatingComposer
+    class="chat-floating-composer pointer-events-none absolute inset-x-0 bottom-0 z-10 w-full px-4 pt-2 pb-3 sm:px-6"
+  >
+    <div class="pointer-events-auto mx-auto w-full max-w-3xl">
+      <ng-container *ngTemplateOutlet="composer" />
+    </div>
+  </div>
 </div>
 }
 

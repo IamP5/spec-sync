@@ -64,6 +64,7 @@ import {
   ChatTurn,
   textOf,
 } from '../../data/chat-agent';
+import { CHAT_CARD_ACTIONS } from '../../ui/chat-card-actions';
 import { MarkdownPipe } from '../../util/markdown-pipe';
 import { revealText } from '../../util/text-reveal';
 import { ChatCoordinator } from '../chat-coordinator';
@@ -84,13 +85,14 @@ const AT_BOTTOM_THRESHOLD_PX = 32;
 const SUGGESTIONS = [
   {
     icon: 'lucidePenLine',
-    label: 'Write a requirement',
-    prompt: 'Write a requirement for resetting a password by email.',
+    label: 'Compare vehicles',
+    prompt:
+      'Compare Ranger Black and Limited, BR 2026, on power, torque and 360 camera.',
   },
   {
     icon: 'lucideFileSearch',
-    label: 'Review a statement',
-    prompt: 'Review: The system shall be fast and user-friendly.',
+    label: 'Find related reviews',
+    prompt: 'Find articles and videos reviewing the Ford Ranger ride comfort.',
   },
   {
     icon: 'lucideMessageCircleQuestion',
@@ -143,6 +145,15 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     ZardTextareaComponent,
     ZardTooltipDirective,
   ],
+  providers: [
+    {
+      provide: CHAT_CARD_ACTIONS,
+      useFactory: () => {
+        const page = inject(ChatPage);
+        return { draft: (prompt: string) => page.prepareDraft(prompt) };
+      },
+    },
+  ],
   viewProviders: [
     provideIcons({
       lucideArrowDown,
@@ -170,6 +181,9 @@ export class ChatPage {
   private readonly router = inject(Router);
   private readonly transcript =
     viewChild<ElementRef<HTMLElement>>('transcript');
+  private readonly floatingComposer =
+    viewChild<ElementRef<HTMLElement>>('floatingComposer');
+  protected readonly composerHeight = signal(180);
   private lastScrollTop = 0;
   private readonly prompt = viewChild('promptInput', {
     read: ElementRef<HTMLTextAreaElement>,
@@ -243,6 +257,20 @@ export class ChatPage {
       untracked(() => this.syncWithRoute(id));
     });
 
+    // Reserve the actual composer height as multiline input and validation resize it.
+    afterRenderEffect((onCleanup) => {
+      const element = this.floatingComposer()?.nativeElement;
+      if (!element || typeof ResizeObserver === 'undefined') return;
+      const measure = () =>
+        this.composerHeight.set(
+          Math.ceil(element.getBoundingClientRect().height),
+        );
+      measure();
+      const observer = new ResizeObserver(measure);
+      observer.observe(element);
+      onCleanup(() => observer.disconnect());
+    });
+
     // Tool cards, fonts and viewport changes can resize the transcript without
     // changing any of the signals used by the render effect below.
     afterRenderEffect((onCleanup) => {
@@ -264,6 +292,7 @@ export class ChatPage {
       this.revealed();
       this.streaming();
       this.messages();
+      this.composerHeight();
       if (!this.empty() && untracked(this.atBottom)) {
         this.followReply();
       }
@@ -318,6 +347,12 @@ export class ChatPage {
     }
   }
 
+  prepareDraft(prompt: string): void {
+    const current = this.model().prompt.trim();
+    this.model.set({ prompt: current ? `${current}\n\n${prompt}` : prompt });
+    this.prompt()?.nativeElement.focus();
+  }
+
   protected onSuggestion(prompt: string): void {
     void this.send(prompt);
   }
@@ -361,6 +396,26 @@ export class ChatPage {
   protected onDisclosureToggle(event: Event): void {
     if ((event.target as HTMLDetailsElement).open) {
       this.atBottom.set(false);
+    }
+  }
+
+  protected onTranscriptFocus(event: FocusEvent): void {
+    const element = this.transcript()?.nativeElement;
+    const composer = this.floatingComposer()?.nativeElement;
+    const target = event.target;
+    if (
+      !element ||
+      !composer ||
+      !(target instanceof HTMLElement) ||
+      target === element
+    )
+      return;
+    const overlap =
+      target.getBoundingClientRect().bottom -
+      (composer.getBoundingClientRect().top - 32);
+    if (overlap > 0) {
+      this.atBottom.set(false);
+      element.scrollTop += overlap;
     }
   }
 

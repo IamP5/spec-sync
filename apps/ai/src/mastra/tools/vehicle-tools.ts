@@ -1,0 +1,195 @@
+import { createTool } from '@mastra/core/tools';
+import { z } from 'zod';
+
+import { catalogRequest, withToolFailure } from '../catalog/api-client';
+import {
+  attributeSchema,
+  comparisonSchema,
+  configurationSchema,
+  failureSchema,
+  knowledgeSchema,
+  searchSchema,
+  selectionSchema,
+  singleSelectionSchema,
+} from '../catalog/contracts';
+import { retrieveReviews } from '../catalog/review-search';
+
+const pageSchema = z.object({
+  items: z.array(configurationSchema),
+  limit: z.number(),
+  offset: z.number(),
+  hasMore: z.boolean(),
+});
+export const searchVehicleConfigurations = createTool({
+  id: 'searchVehicleConfigurations',
+  description:
+    'Find catalog configurations by name. Search each vehicle separately; broaden literal queries when empty. Return market, year and identity status; never select an ambiguous trim silently.',
+  inputSchema: searchSchema,
+  outputSchema: z.union([pageSchema, failureSchema]),
+  execute: (input, context) =>
+    withToolFailure(() =>
+      catalogRequest(
+        '/api/vehicle-configurations',
+        input,
+        pageSchema,
+        context?.abortSignal,
+      ),
+    ),
+});
+export const listComparisonAttributes = createTool({
+  id: 'listComparisonAttributes',
+  description:
+    'List canonical attribute codes, meanings, types and units. Use these codes when comparing; unsupported requested attributes must be reported.',
+  inputSchema: z.object({}),
+  outputSchema: z.union([
+    z.object({ items: z.array(attributeSchema) }),
+    failureSchema,
+  ]),
+  execute: (_input, context) =>
+    withToolFailure(() =>
+      catalogRequest(
+        '/api/comparison-attributes',
+        {},
+        z.object({ items: z.array(attributeSchema) }),
+        context?.abortSignal,
+      ),
+    ),
+});
+export const compareVehicleConfigurations = createTool({
+  id: 'compareVehicleConfigurations',
+  description:
+    'Compare 2–5 resolved configuration UUIDs. Returns authoritative ordered cells with accepted observations, conflicts, missing data and exact sources. The browser renders this result directly.',
+  inputSchema: selectionSchema,
+  outputSchema: z.union([comparisonSchema, failureSchema]),
+  execute: (input, context) =>
+    withToolFailure(() =>
+      catalogRequest(
+        '/api/comparisons',
+        input,
+        comparisonSchema,
+        context?.abortSignal,
+      ),
+    ),
+});
+export const getVehicleSpecifications = createTool({
+  id: 'getVehicleSpecifications',
+  description:
+    'Retrieve specifications and sources for exactly one resolved configuration UUID.',
+  inputSchema: singleSelectionSchema,
+  outputSchema: z.union([comparisonSchema, failureSchema]),
+  execute: (input, context) =>
+    withToolFailure(() =>
+      catalogRequest(
+        '/api/vehicle-specifications',
+        input,
+        comparisonSchema,
+        context?.abortSignal,
+      ),
+    ),
+});
+const conceptInput = z.object({
+  q: z.string().max(500),
+  limit: z.number().int().min(1).max(30).default(10),
+});
+export const resolveComparisonConcepts = createTool({
+  id: 'resolveComparisonConcepts',
+  description:
+    'Resolve terminology against curated graph attribute definitions and aliases. No match is not proof of functional inequivalence; use listComparisonAttributes as fallback.',
+  inputSchema: conceptInput,
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
+  execute: (input, context) =>
+    withToolFailure(() =>
+      catalogRequest(
+        '/api/knowledge/concepts',
+        input,
+        knowledgeSchema,
+        context?.abortSignal,
+      ),
+    ),
+});
+const capabilityInput = z.object({
+  attributeCode: z.string(),
+  market: z.string().optional(),
+  modelYear: z.number().int().optional(),
+  includeOptional: z.boolean().default(true),
+  limit: z.number().int().min(1).max(30).default(10),
+});
+export const findConfigurationsByCapabilities = createTool({
+  id: 'findConfigurationsByCapabilities',
+  description:
+    'Find configurations with an accepted STANDARD or optionally OPTIONAL equipment attribute, including package evidence. Resolve attribute first. This graph snapshot can lag: confirm specifications through the catalog; empty results do not prove absence.',
+  inputSchema: capabilityInput,
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
+  execute: (input, context) =>
+    withToolFailure(() =>
+      catalogRequest(
+        '/api/knowledge/capabilities',
+        input,
+        knowledgeSchema,
+        context?.abortSignal,
+      ),
+    ),
+});
+const reviewInput = z.object({
+  q: z.string().max(500).default(''),
+  configurationId: z.string().uuid().optional(),
+  attributeCode: z.string().optional(),
+  limit: z.number().int().min(1).max(30).default(10),
+});
+export const searchReviewEvidence = createTool({
+  id: 'searchReviewEvidence',
+  description:
+    'Search existing indexed review passages, scoped to a configuration and optionally a specification. Returns exact excerpts, context, opinion kind and model/configuration scope. Never ingests content.',
+  inputSchema: reviewInput,
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
+  execute: (input, context) =>
+    withToolFailure(() => retrieveReviews(input, context?.abortSignal)),
+});
+const relatedInput = z.object({
+  configurationId: z.string().uuid(),
+  attributeCode: z.string(),
+  limit: z.number().int().min(1).max(30).default(10),
+});
+export const getRelatedReviews = createTool({
+  id: 'getRelatedReviews',
+  description:
+    'Find indexed review observations related to one specification. Related opinion is not evidence proving the technical specification.',
+  inputSchema: relatedInput,
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
+  execute: (input, context) =>
+    withToolFailure(() =>
+      catalogRequest(
+        '/api/knowledge/related-reviews',
+        input,
+        knowledgeSchema,
+        context?.abortSignal,
+      ),
+    ),
+});
+export const getEvidenceExcerpt = createTool({
+  id: 'getEvidenceExcerpt',
+  description:
+    'Retrieve exact stored specification or review evidence by UUID. Use only returned excerpts for quotations; source discovery snippets are not verified quotes.',
+  inputSchema: z.object({ evidenceId: z.string().uuid() }),
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
+  execute: (input, context) =>
+    withToolFailure(() =>
+      catalogRequest(
+        `/api/knowledge/evidence/${input.evidenceId}`,
+        {},
+        knowledgeSchema,
+        context?.abortSignal,
+      ),
+    ),
+});
+export const vehicleTools = {
+  searchVehicleConfigurations,
+  listComparisonAttributes,
+  compareVehicleConfigurations,
+  getVehicleSpecifications,
+  resolveComparisonConcepts,
+  findConfigurationsByCapabilities,
+  searchReviewEvidence,
+  getRelatedReviews,
+  getEvidenceExcerpt,
+};

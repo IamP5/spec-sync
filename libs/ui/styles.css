@@ -26,8 +26,9 @@
  *   Warning        caution2 #ba4e00 (5.03:1 on white)
  *   Error          #d93025 (ford.com)
  *
- * Sidebar surfaces and interaction states are neutral in both themes.
- * Brand colors remain available for charts and domain-specific accents.
+ * Subtle surfaces mix the logo's Ford Action blue into neutral backgrounds.
+ * Shared components retain their original variants and consume these tokens.
+ * Saturated blue is reserved for primary actions and focus indicators.
  *
  * Dark mode is derived from those values: ford.com's own dark surfaces
  * (#0f0f0f, #1a1a1a) with neutral grays lifted for contrast, while the brand
@@ -61,17 +62,17 @@
   --primary: var(--ford-action); /* #066fef */
   --primary-hover: var(--ford-action-hover);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.955 0 0); /* #f0f0f0 */
+  --secondary: var(--muted);
   --secondary-foreground: oklch(0.321 0 0); /* #333333 */
-  --muted: oklch(0.955 0 0); /* #f0f0f0 */
+  --muted: color-mix(in srgb, var(--ford-action) 7%, #f7f7f7);
   --muted-foreground: oklch(0.51 0 0); /* #666666 */
-  --accent: oklch(0.985 0 0); /* #fafafa */
-  --accent-foreground: oklch(0 0 0);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
   --destructive: oklch(0.578 0.206 29); /* #d93025 */
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.922 0 0); /* #e5e5e5 */
   --input: oklch(0.764 0 0); /* #b2b2b2 */
-  --ring: var(--ford-blue);
+  --ring: var(--ford-action);
 
   /* Charts: accent blue, Ford Blue, red, green, amber */
   --chart-1: var(--ford-blue);
@@ -80,13 +81,13 @@
   --chart-4: oklch(0.7 0.181 135.3);
   --chart-5: oklch(0.844 0.172 84.9);
 
-  /* Neutral navigation keeps attention on the conversation. */
+  /* Navigation uses a slightly stronger tint for hover and selection. */
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.205 0 0);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: oklch(0.955 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-accent: color-mix(in srgb, var(--ford-action) 10%, #f7f7f7);
+  --sidebar-accent-foreground: var(--sidebar-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 }
@@ -102,14 +103,14 @@
   /* Brand blues do not flip */
   --primary: var(--ford-action);
   --primary-foreground: oklch(1 0 0);
-  --ring: oklch(0.609 0.189 256.4); /* #2480f1 — lighter ring on dark */
+  --ring: var(--ford-action);
 
-  --secondary: oklch(0.269 0 0); /* #262626 */
+  --secondary: var(--muted);
   --secondary-foreground: oklch(0.922 0 0); /* #e5e5e5 */
-  --muted: oklch(0.269 0 0);
+  --muted: color-mix(in srgb, var(--ford-action) 12%, #262626);
   --muted-foreground: oklch(0.764 0 0); /* #b2b2b2 */
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.955 0 0);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
   --destructive: oklch(0.65 0.2 27); /* #d93025 lifted for dark */
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(1 0 0 / 10%);
@@ -129,8 +130,8 @@
   --sidebar-foreground: oklch(0.955 0 0);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.955 0 0);
+  --sidebar-accent: color-mix(in srgb, var(--ford-action) 16%, #262626);
+  --sidebar-accent-foreground: var(--sidebar-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 }

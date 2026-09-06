@@ -241,7 +241,8 @@ RETURN c.name, fact.raw_value, e.excerpt, e.locator, source.path, e.line_start;
 
 ## Next slice
 
-Add configuration search and the comparison use case behind Spring domain
-gateways. Both chat and catalog will consume that API. Then add agent tools and
-comparison cards. Scraping should eventually submit observations through an
-application ingestion command rather than writing directly to either database.
+Configuration search and sourced comparisons are implemented in the
+[Comparison API](comparison-api.md). Both chat and catalog can consume this API.
+The next step is agent tools and comparison cards. Scraping should eventually
+submit observations through an application ingestion command rather than writing
+directly to either database.

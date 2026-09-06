@@ -53,3 +53,24 @@
     opacity: 1;
   }
 }
+
+/* Keep the evidence dialog's motion subtle, without changing other Zard overlays. */
+z-dialog.specsync-review-dialog {
+  transform: translateY(0) scale(1);
+}
+@starting-style {
+  z-dialog.specsync-review-dialog {
+    opacity: 0;
+    transform: translateY(4px) scale(0.985);
+  }
+}
+z-dialog.specsync-review-dialog.dialog-leave {
+  opacity: 0;
+  transform: translateY(4px) scale(0.985);
+}
+@media (prefers-reduced-motion: reduce) {
+  z-dialog.specsync-review-dialog {
+    transform: none !important;
+    transition: none !important;
+  }
+}

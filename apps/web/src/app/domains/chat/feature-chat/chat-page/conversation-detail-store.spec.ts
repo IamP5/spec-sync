@@ -9,7 +9,7 @@ import {
   textReply,
   toolCallReply,
 } from '../../../../testing/fake-chat-agent';
-import { PRESENT_REQUIREMENT_DRAFT_TOOL } from '../../data/requirement-draft';
+import { matrix } from '../../../../testing/vehicle-fixtures';
 import { ThreadClient } from '../../data/thread-client';
 import { ConversationDetailStore } from './conversation-detail-store';
 
@@ -20,6 +20,44 @@ describe('ConversationDetailStore', () => {
     localStorage.clear();
     agent = new FakeChatAgent();
     TestBed.configureTestingModule({ providers: provideFakeChatAgent(agent) });
+  });
+
+  it('restores explicit comparison selection and keeps it isolated between threads', async () => {
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'compareVehicleConfigurations',
+        {},
+        matrix,
+        'Compared',
+      ),
+    );
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Compare vehicles');
+    const first = store.threadId();
+    agent.replyWith((input) => textReply(input, 'Follow-up'));
+    await store.send('Add transmission');
+    expect(
+      agent.runs[agent.runs.length - 1]?.context.some(
+        (c) =>
+          c.description.includes('SpecSync comparison selection') &&
+          c.value.includes('camera_360'),
+      ),
+    ).toBe(true);
+    store.reset();
+    await store.send('New chat');
+    expect(
+      agent.runs[agent.runs.length - 1]?.context.find((c) =>
+        c.description.includes('SpecSync comparison selection'),
+      )?.value,
+    ).toBe('null');
+    store.open(first);
+    await store.send('Show sources');
+    expect(
+      agent.runs[agent.runs.length - 1]?.state['comparison'],
+    ).toMatchObject({
+      configurationIds: matrix.configurations.map((c) => c.id),
+    });
   });
 
   it('stores the thread with the first message and again after the reply', async () => {
@@ -104,15 +142,15 @@ describe('ConversationDetailStore', () => {
     agent.replyWith((input) =>
       toolCallReply(
         input,
-        'checkRequirementQuality',
-        { requirement: 'x' },
-        { score: 1 },
+        'searchVehicleConfigurations',
+        { q: 'Ranger' },
+        { items: [] },
         'Done',
       ),
     );
     const store = TestBed.inject(ConversationDetailStore);
 
-    await store.send('review x');
+    await store.send('find Ranger');
 
     expect(store.messages().map((m) => m.role)).toEqual([
       'user',
@@ -133,7 +171,7 @@ describe('ConversationDetailStore', () => {
     agent.replyWith((input) =>
       toolCallReply(
         input,
-        'checkRequirementQuality',
+        'searchVehicleConfigurations',
         {},
         {},
         'Proposal:',
@@ -143,13 +181,17 @@ describe('ConversationDetailStore', () => {
               {
                 type: EventType.TOOL_CALL_START,
                 toolCallId: 'call-present',
-                toolCallName: PRESENT_REQUIREMENT_DRAFT_TOOL,
+                toolCallName: 'compareVehicleConfigurations',
                 parentMessageId: `reply-${input.runId}`,
               } as BaseEvent,
               {
                 type: EventType.TOOL_CALL_ARGS,
                 toolCallId: 'call-present',
-                delta: '{"title":"T","statement":"S"}',
+                delta: JSON.stringify({
+                  configurationIds: matrix.configurations.map(
+                    (item) => item.id,
+                  ),
+                }),
               } as BaseEvent,
               {
                 type: EventType.TOOL_CALL_END,
@@ -159,7 +201,7 @@ describe('ConversationDetailStore', () => {
                 type: EventType.TOOL_CALL_RESULT,
                 toolCallId: 'call-present',
                 messageId: 'call-present-result',
-                content: '{"presented":true}',
+                content: JSON.stringify(matrix),
                 role: 'tool',
               } as BaseEvent,
               event,
@@ -169,7 +211,7 @@ describe('ConversationDetailStore', () => {
     );
     const store = TestBed.inject(ConversationDetailStore);
 
-    await store.send('review x');
+    await store.send('find Ranger');
 
     const shape = () =>
       store
@@ -182,8 +224,8 @@ describe('ConversationDetailStore', () => {
         ]);
     expect(shape()).toEqual([
       ['user', undefined],
-      ['assistant', ['checkRequirementQuality']],
-      ['assistant', [PRESENT_REQUIREMENT_DRAFT_TOOL]],
+      ['assistant', ['searchVehicleConfigurations']],
+      ['assistant', ['compareVehicleConfigurations']],
     ]);
     // The agent's own thread was rewritten the same way for the next run:
     // each tool result follows the message that owns its call.
@@ -291,14 +333,12 @@ describe('ConversationDetailStore', () => {
     expect(agent.threadId).not.toBe(firstThread);
   });
 
-  it('does not advertise the frontend tools before the chat page registers them', async () => {
+  it('does not advertise server tools as frontend tools', async () => {
     agent.replyWith((input) => textReply(input, 'x'));
     const store = TestBed.inject(ConversationDetailStore);
 
     await store.send('hi');
 
-    expect(agent.runs[0].tools.map((tool) => tool.name)).not.toContain(
-      PRESENT_REQUIREMENT_DRAFT_TOOL,
-    );
+    expect(agent.runs[0].tools).toEqual([]);
   });
 });

@@ -1,4 +1,4 @@
-import { A11yModule } from '@angular/cdk/a11y';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { OverlayModule } from '@angular/cdk/overlay';
 import {
   BasePortalOutlet,
@@ -73,7 +73,14 @@ export class ZardDialogOptions<T, U> {
 
 @Component({
   selector: 'z-dialog',
-  imports: [A11yModule, OverlayModule, PortalModule, ZardButtonComponent, ZardIdDirective, NgIcon],
+  imports: [
+    OverlayModule,
+    PortalModule,
+    ZardButtonComponent,
+    ZardIdDirective,
+    NgIcon,
+  ],
+  hostDirectives: [CdkTrapFocus],
   template: `
     <ng-container zardId="z-dialog" #idRef="zardId">
       @if (config.zClosable || config.zClosable === undefined) {
@@ -95,7 +102,12 @@ export class ZardDialogOptions<T, U> {
       @if (config.zTitle || config.zDescription) {
         <header [class]="headerClasses()" data-slot="dialog-header">
           @if (config.zTitle) {
-            <h4 data-testid="z-title" data-slot="dialog-title" [class]="titleClasses()" [id]="idRef.id() + '-title'">
+            <h4
+              data-testid="z-title"
+              data-slot="dialog-title"
+              [class]="titleClasses()"
+              [id]="idRef.id() + '-title'"
+            >
               {{ config.zTitle }}
             </h4>
 
@@ -125,7 +137,13 @@ export class ZardDialogOptions<T, U> {
       @if (!config.zHideFooter) {
         <footer [class]="footerClasses()" data-slot="dialog-footer">
           @if (config.zCancelText !== null) {
-            <button type="button" data-testid="z-cancel-button" z-button zType="outline" (click)="onCloseClick()">
+            <button
+              type="button"
+              data-testid="z-cancel-button"
+              z-button
+              zType="outline"
+              (click)="onCloseClick()"
+            >
               @if (config.zCancelIcon) {
                 @if (isSvgString(config.zCancelIcon)) {
                   <ng-icon [svg]="config.zCancelIcon" class="size-4!" />
@@ -199,26 +217,38 @@ export class ZardDialogOptions<T, U> {
     'aria-modal': 'true',
     '[attr.aria-labelledby]': 'titleId()',
     '[attr.aria-describedby]': 'descriptionId()',
-    cdkTrapFocus: 'true',
-    cdkTrapFocusAutoCapture: 'true',
   },
   exportAs: 'zDialog',
 })
 export class ZardDialogComponent<T, U> extends BasePortalOutlet {
+  constructor() {
+    super();
+    // Host attributes alone do not instantiate Angular directives.
+    inject(CdkTrapFocus).autoCapture = true;
+  }
+
   private readonly host = inject(ElementRef<HTMLElement>);
   protected readonly config = inject(ZardDialogOptions<T, U>);
   private readonly idRef = viewChild.required<ZardIdDirective>('idRef');
 
-  protected readonly classes = computed(() => mergeClasses(dialogVariants(), this.config.zCustomClasses));
+  protected readonly classes = computed(() =>
+    mergeClasses(dialogVariants(), this.config.zCustomClasses),
+  );
   protected readonly headerClasses = computed(() =>
     mergeClasses(dialogHeaderVariants(), this.config.zHideHeader && 'sr-only'),
   );
 
   protected readonly titleClasses = computed(() => dialogTitleVariants());
-  protected readonly descriptionClasses = computed(() => dialogDescriptionVariants());
+  protected readonly descriptionClasses = computed(() =>
+    dialogDescriptionVariants(),
+  );
   protected readonly footerClasses = computed(() => dialogFooterVariants());
-  protected readonly isStringContent = computed(() => typeof this.config.zContent === 'string');
-  protected readonly titleId = computed(() => (this.config.zTitle ? `${this.idRef().id()}-title` : null));
+  protected readonly isStringContent = computed(
+    () => typeof this.config.zContent === 'string',
+  );
+  protected readonly titleId = computed(() =>
+    this.config.zTitle ? `${this.idRef().id()}-title` : null,
+  );
   protected readonly descriptionId = computed(() =>
     this.config.zDescription ? `${this.idRef().id()}-description` : null,
   );
@@ -244,14 +274,18 @@ export class ZardDialogComponent<T, U> extends BasePortalOutlet {
 
   attachComponentPortal<C>(portal: ComponentPortal<C>): ComponentRef<C> {
     if (this.portalOutlet().hasAttached()) {
-      throw new Error('Attempting to attach modal content after content is already attached');
+      throw new Error(
+        'Attempting to attach modal content after content is already attached',
+      );
     }
     return this.portalOutlet().attachComponentPortal(portal);
   }
 
   attachTemplatePortal<C>(portal: TemplatePortal<C>): EmbeddedViewRef<C> {
     if (this.portalOutlet().hasAttached()) {
-      throw new Error('Attempting to attach modal content after content is already attached');
+      throw new Error(
+        'Attempting to attach modal content after content is already attached',
+      );
     }
     return this.portalOutlet().attachTemplatePortal(portal);
   }

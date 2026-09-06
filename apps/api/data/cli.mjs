@@ -1,3 +1,5 @@
+import { projectReviews, seedAttributeAliases } from './reviews.mjs';
+
 import { pathToFileURL } from 'node:url';
 
 import { compose, neo4j, postgres } from './database.mjs';
@@ -17,6 +19,7 @@ export async function migrate() {
 export async function seed() {
   const { dataset, digest } = await loadDataset();
   await postgres(seedSql(dataset, digest));
+  await seedAttributeAliases();
   console.log(
     `Seed ready: ${dataset.version} (${dataset.tables.vehicle_configuration.length} configurations).`,
   );
@@ -41,6 +44,7 @@ export async function project() {
       'PostgreSQL changed during projection. The graph contains a consistent older snapshot; rerun api:data-project.',
     );
   }
+  await projectReviews();
   console.log(
     `Graph ready: ${snapshot.vehicle_configuration.length} configurations, fingerprint ${fingerprint}.`,
   );
