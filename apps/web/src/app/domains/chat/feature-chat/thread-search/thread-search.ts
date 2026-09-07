@@ -43,7 +43,9 @@ import {
   ZardSidebarMenuItemComponent,
   ZardSidebarService,
 } from '@/ui/components/sidebar';
+import { ZardSkeletonComponent } from '@/ui/components/skeleton';
 
+import { AuthSessionCoordinator } from '../../../auth/api/authentication';
 import { SESSION } from '../../../auth/api/session';
 import { ChatThreadSummary, MAX_TITLE_LENGTH } from '../../data/thread';
 import { ChatCoordinator } from '../chat-coordinator';
@@ -66,6 +68,7 @@ import { ThreadSearchStore } from './thread-search-store';
     ZardDropdownMenuItemComponent,
     ZardDropdownMenuSeparatorComponent,
     ZardInputComponent,
+    ZardSkeletonComponent,
 
     ZardSidebarContentComponent,
     ZardSidebarGroupComponent,
@@ -99,6 +102,7 @@ export class ThreadSearch {
   private readonly sidebar = inject(ZardSidebarService);
 
   private readonly session = inject(SESSION);
+  private readonly auth = inject(AuthSessionCoordinator);
   private confirmation?: ZardAlertDialogRef<unknown>;
   private readonly alertDialog = inject(ZardAlertDialogService);
   private readonly renameInput = viewChild('renameInput', {
@@ -117,6 +121,22 @@ export class ThreadSearch {
   protected readonly groups = this.store.groups;
   protected readonly query = this.store.query;
   protected readonly noThreads = this.store.isEmpty;
+  /**
+   * Skeleton rows stand in for the history while the session is restored and
+   * until the first read answers. A later reload (`load()` after a new
+   * conversation) keeps the cached list on screen instead.
+   */
+  protected readonly loading = computed(
+    () =>
+      this.auth.pending() ||
+      (this.session.authenticated() &&
+        ['idle', 'loading'].includes(this.store.historyStatus())),
+  );
+  /** Rows of the placeholder history, one date section per entry. */
+  protected readonly skeletonSections = [
+    { label: 'w-10', rows: ['w-4/5', 'w-3/5', 'w-11/12'] },
+    { label: 'w-16', rows: ['w-2/3', 'w-5/6', 'w-1/2', 'w-3/4'] },
+  ];
   protected readonly activeId = this.coordinator.activeThreadId;
   protected readonly maxTitleLength = MAX_TITLE_LENGTH;
 

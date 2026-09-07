@@ -57,6 +57,28 @@ describe('public chat authentication flow', () => {
     await fixture.whenStable();
     return fixture;
   }
+  it.each(['restoring', 'verifying'] as const)(
+    'keeps a new chat and its draft available while the account is %s',
+    async (status) => {
+      const fixture = await draft();
+      testSession().invalidate(status);
+      await fixture.whenStable();
+
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.querySelector('[data-role="chat-loading"]')).toBeNull();
+      expect(element.querySelector('h1')?.textContent).toContain('New chat');
+      expect(element.querySelector('textarea')?.value).toBe(
+        'Compare Ford vehicles',
+      );
+
+      testSession().invalidate();
+      await fixture.whenStable();
+      expect(element.querySelector('textarea')?.value).toBe(
+        'Compare Ford vehicles',
+      );
+      expect(agent.runs).toHaveLength(0);
+    },
+  );
   it('lets guests draft without creating a conversation or sending AI requests', async () => {
     const fixture = await draft();
     expect(agent.runs).toHaveLength(0);

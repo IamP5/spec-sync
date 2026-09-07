@@ -8,7 +8,14 @@
   ></button>
   <z-separator zOrientation="vertical" class="h-4 md:hidden" />
   <h1 id="chat-title" class="min-w-0 truncate text-sm font-medium">
-    {{ title() || 'New chat' }}
+    @if (loading()) {
+    <span class="sr-only">{{ loadingLabel() }}</span>
+    <z-skeleton class="inline-block h-4 w-36 align-middle" />
+    } @else {
+    <span class="animate-in fade-in duration-300"
+      >{{ title() || 'New chat' }}</span
+    >
+    }
   </h1>
   <div class="ml-auto flex shrink-0 items-center gap-1">
     <button
@@ -139,7 +146,7 @@
             zSize="icon"
             type="submit"
             class="ml-auto rounded-full bg-primary text-primary-foreground hover:bg-primary-hover"
-            [zDisabled]="promptInvalid()"
+            [zDisabled]="promptInvalid() || loading()"
             aria-label="Send message"
           >
             <ng-icon name="lucideArrowUp" aria-hidden="true" />
@@ -171,13 +178,68 @@
   </div>
 </ng-template>
 
-@if (loadingThread()) {
+@if (loading()) {
 <div
-  class="flex min-h-0 flex-1 flex-col items-center justify-center px-4 pb-8 sm:px-6"
+  class="relative flex min-h-0 flex-1 flex-col"
+  [style.--composer-height.px]="composerHeight()"
+  data-role="chat-loading"
   role="status"
   aria-live="polite"
+  aria-atomic="true"
 >
-  <p class="text-sm text-muted-foreground">Loading conversation…</p>
+  <span class="sr-only">{{ loadingLabel() }}</span>
+  <!-- Same boxes as the transcript: turn gap, bubble padding and 28px text lines. -->
+  <div
+    class="chat-transcript min-h-0 flex-1 overflow-hidden px-4 pt-6 sm:px-6"
+    aria-hidden="true"
+  >
+    <div class="mx-auto flex w-full max-w-7xl flex-col gap-7">
+      <div class="mx-auto flex w-full max-w-3xl justify-end">
+        <div
+          class="w-3/5 max-w-[38rem] rounded-3xl bg-sidebar-accent px-4 py-3"
+        >
+          <div class="py-0.5">
+            <z-skeleton class="h-4 w-full rounded-full bg-foreground/6" />
+          </div>
+          <div class="py-0.5">
+            <z-skeleton class="h-4 w-2/3 rounded-full bg-foreground/6" />
+          </div>
+        </div>
+      </div>
+      <div class="mx-auto w-full max-w-3xl">
+        <div class="py-1.5"><z-skeleton class="h-4 w-11/12" /></div>
+        <div class="py-1.5"><z-skeleton class="h-4 w-full" /></div>
+        <div class="py-1.5"><z-skeleton class="h-4 w-4/5" /></div>
+        <div class="py-1.5"><z-skeleton class="h-4 w-3/5" /></div>
+        <div class="mt-4 flex h-7 gap-1">
+          <z-skeleton class="size-7" />
+          <z-skeleton class="size-7" />
+        </div>
+      </div>
+      <div class="mx-auto flex w-full max-w-3xl justify-end">
+        <div
+          class="w-2/5 max-w-[38rem] rounded-3xl bg-sidebar-accent px-4 py-3"
+        >
+          <div class="py-0.5">
+            <z-skeleton class="h-4 w-full rounded-full bg-foreground/6" />
+          </div>
+        </div>
+      </div>
+      <div class="mx-auto w-full max-w-3xl">
+        <div class="py-1.5"><z-skeleton class="h-4 w-full" /></div>
+        <div class="py-1.5"><z-skeleton class="h-4 w-11/12" /></div>
+        <div class="py-1.5"><z-skeleton class="h-4 w-2/3" /></div>
+      </div>
+    </div>
+  </div>
+  <div
+    #floatingComposer
+    class="chat-floating-composer pointer-events-none absolute inset-x-0 bottom-0 z-10 w-full px-4 pt-2 pb-3 sm:px-6"
+  >
+    <div class="pointer-events-auto mx-auto w-full max-w-3xl">
+      <ng-container *ngTemplateOutlet="composer" />
+    </div>
+  </div>
 </div>
 } @else if (empty()) {
 <div
@@ -259,7 +321,7 @@
 </div>
 } @else {
 <div
-  class="relative flex min-h-0 flex-1 flex-col"
+  class="relative flex min-h-0 flex-1 flex-col animate-in fade-in duration-300"
   [style.--composer-height.px]="composerHeight()"
 >
   <div
@@ -470,6 +532,6 @@
 }
 
 <span class="sr-only" role="status" aria-live="polite" aria-atomic="true"
-  >{{ streaming() ? activityStatus() : stopped() ? 'Reply stopped' : !empty() &&
-  !error() ? 'Response ready' : '' }}</span
+  >{{ loading() ? '' : streaming() ? activityStatus() : stopped() ? 'Reply
+  stopped' : !empty() && !error() ? 'Response ready' : '' }}</span
 >

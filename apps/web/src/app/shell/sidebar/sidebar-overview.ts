@@ -17,16 +17,18 @@ import {
 import { ZardButtonComponent } from '@/ui/components/button';
 import { ZardDialogRef, ZardDialogService } from '@/ui/components/dialog';
 import {
+  ZardSidebarFooterComponent,
   ZardSidebarHeaderComponent,
   ZardSidebarMenuButtonComponent,
   ZardSidebarService,
   ZardSidebarTriggerComponent,
 } from '@/ui/components/sidebar';
 
+import { AuthSessionCoordinator } from '../../domains/auth/api/authentication';
 import { AuthLoginOverview } from '../../domains/auth/api/features';
 import { SESSION } from '../../domains/auth/api/session';
-import { ChatConnectionCoordinator } from '../../domains/chat/api/connection';
 import { ThreadSearch } from '../../domains/chat/api/features';
+import { UserProfileOverview } from '../../domains/user/api/features';
 import { AccountMenuOverview } from '../account-menu/account-menu-overview';
 
 @Component({
@@ -36,11 +38,13 @@ import { AccountMenuOverview } from '../account-menu/account-menu-overview';
     NgIcon,
     RouterLink,
     ZardButtonComponent,
+    ZardSidebarFooterComponent,
     ZardSidebarHeaderComponent,
     ZardSidebarMenuButtonComponent,
     ZardSidebarTriggerComponent,
     ThreadSearch,
     AccountMenuOverview,
+    UserProfileOverview,
   ],
   viewProviders: [
     provideIcons({ lucideSquarePen, lucideFileInput, lucideLogIn }),
@@ -83,12 +87,16 @@ import { AccountMenuOverview } from '../account-menu/account-menu-overview';
         >
       }
     </z-sidebar-header>
-    @if (session.authenticated()) {
-      @if (connection.ready()) {
-        <app-thread-search (navigated)="onNavigate()" />
-      }
+    @if (auth.pending() || session.authenticated()) {
+      <app-thread-search (navigated)="onNavigate()" />
       @defer (on immediate) {
         <app-account-menu-overview />
+      } @placeholder {
+        <z-sidebar-footer class="mt-auto border-t border-sidebar-border p-2">
+          <div class="flex min-h-12 items-center gap-2 rounded-md p-2 text-sm">
+            <app-user-profile-overview />
+          </div>
+        </z-sidebar-footer>
       }
     } @else {
       <p class="sidebar-expanded p-4 text-sm text-muted-foreground">
@@ -115,7 +123,7 @@ import { AccountMenuOverview } from '../account-menu/account-menu-overview';
 export class SidebarOverview {
   readonly navigated = output<void>();
   protected readonly session = inject(SESSION);
-  protected readonly connection = inject(ChatConnectionCoordinator);
+  protected readonly auth = inject(AuthSessionCoordinator);
   private readonly sidebar = inject(ZardSidebarService);
   private readonly router = inject(Router);
   private readonly dialogs = inject(ZardDialogService);

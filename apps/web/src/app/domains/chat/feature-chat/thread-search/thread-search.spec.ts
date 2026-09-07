@@ -1,10 +1,11 @@
+import { resource } from '@angular/core';
 import { DeferBlockBehavior, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { ZardSidebarService } from '@/ui/components/sidebar';
 import { provideZard } from '@/ui/core';
 
-import { provideFakeAuth } from '../../../../testing/fake-auth';
+import { provideFakeAuth, testSession } from '../../../../testing/fake-auth';
 import {
   FakeChatAgent,
   provideFakeChatAgent,
@@ -16,6 +17,7 @@ import {
   storedThread,
 } from '../../../../testing/fake-threads';
 import { provideFakeUser } from '../../../../testing/fake-user';
+import { ChatThreadSummary } from '../../data/thread';
 import { ChatCoordinator } from '../chat-coordinator';
 import { ConversationDetailStore } from '../chat-page/conversation-detail-store';
 import { ThreadSearch } from './thread-search';
@@ -57,6 +59,78 @@ describe('ThreadSearch', () => {
       ),
     ).map((anchor) => anchor.textContent?.trim());
   }
+
+  it('shows history skeletons instead of an empty state until threads arrive', async () => {
+    let finish!: (threads: ChatThreadSummary[]) => void;
+    vi.spyOn(threads, 'listResource').mockImplementation(() =>
+      resource({
+        loader: () =>
+          new Promise<ChatThreadSummary[]>((resolve) => {
+            finish = resolve;
+          }),
+        defaultValue: [],
+      }),
+    );
+    const fixture = TestBed.createComponent(ThreadSearch);
+    const element = fixture.nativeElement as HTMLElement;
+    await vi.waitFor(() =>
+      expect(
+        element.querySelector('[data-role="history-loading"] z-skeleton'),
+      ).not.toBeNull(),
+    );
+    expect(element.querySelector('[data-role="history-empty"]')).toBeNull();
+    expect(titles(fixture)).toEqual([]);
+
+    finish([storedThread('loaded', 'Loaded conversation')]);
+    await fixture.whenStable();
+    expect(element.querySelector('[data-role="history-loading"]')).toBeNull();
+    expect(titles(fixture)).toEqual(['Loaded conversation']);
+  });
+
+  it('keeps the cached list on screen while the history reloads', async () => {
+    const answers: ((threads: ChatThreadSummary[]) => void)[] = [];
+    vi.spyOn(threads, 'listResource').mockImplementation(() =>
+      resource({
+        loader: () =>
+          new Promise<ChatThreadSummary[]>((resolve) => {
+            answers.push(resolve);
+          }),
+        defaultValue: [],
+      }),
+    );
+    const fixture = TestBed.createComponent(ThreadSearch);
+    const element = fixture.nativeElement as HTMLElement;
+    await vi.waitFor(() => expect(answers).toHaveLength(1));
+    answers[0]([storedThread('loaded', 'Loaded conversation')]);
+    await fixture.whenStable();
+    expect(titles(fixture)).toEqual(['Loaded conversation']);
+
+    const store = TestBed.inject(ThreadSearchStore);
+    store.load();
+    await vi.waitFor(() => expect(store.historyStatus()).toBe('reloading'));
+    fixture.detectChanges();
+
+    expect(element.querySelector('[data-role="history-loading"]')).toBeNull();
+    expect(titles(fixture)).toEqual(['Loaded conversation']);
+  });
+
+  it('shows history skeletons while the session is restored', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('[data-role="history-loading"]')).toBeNull();
+
+    testSession().invalidate('restoring');
+    await fixture.whenStable();
+    expect(
+      element.querySelector('[data-role="history-loading"] z-skeleton'),
+    ).not.toBeNull();
+    expect(element.querySelector('[data-role="history-empty"]')).toBeNull();
+
+    testSession().invalidate();
+    await fixture.whenStable();
+    expect(element.querySelector('[data-role="history-loading"]')).toBeNull();
+    expect(element.querySelector('[data-role="history-empty"]')).not.toBeNull();
+  });
 
   it('lists the conversations the service stores, newest on top', async () => {
     threads.seed(

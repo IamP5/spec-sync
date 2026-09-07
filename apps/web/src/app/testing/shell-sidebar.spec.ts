@@ -4,8 +4,9 @@ import { provideRouter, Router } from '@angular/router';
 import { ZardSidebarService } from '@/ui/components/sidebar';
 import { provideZard } from '@/ui/core';
 
+import { PhotoClient } from '../domains/user/data/photo-client';
 import { SidebarOverview } from '../shell/sidebar/sidebar-overview';
-import { provideFakeAuth } from './fake-auth';
+import { provideFakeAuth, testSession } from './fake-auth';
 import { FakeChatAgent, provideFakeChatAgent } from './fake-chat-agent';
 import { provideFakeUser } from './fake-user';
 
@@ -38,6 +39,56 @@ describe('SidebarOverview', () => {
     expect(element.textContent).toContain('Alice Smith');
     expect(element.textContent).toContain('alice@example.com');
     expect(element.textContent).not.toContain('reviewer');
+  });
+
+  it('holds the account skeleton until the profile photo is decoded', async () => {
+    let decoded!: (shown: boolean) => void;
+    const [, photos] = provideFakeUser(
+      undefined,
+      () => new Promise<boolean>((resolve) => (decoded = resolve)),
+    );
+    TestBed.overrideProvider(PhotoClient, { useValue: photos.useValue });
+    const fixture = TestBed.createComponent(SidebarOverview);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    await vi.waitFor(() => expect(decoded).toBeDefined());
+    fixture.detectChanges();
+
+    expect(
+      element.querySelector('[data-role="profile-loading"]'),
+    ).not.toBeNull();
+    expect(element.textContent).not.toContain('Alice Smith');
+    expect(element.textContent).not.toContain('User');
+
+    decoded(true);
+    await fixture.whenStable();
+    expect(element.querySelector('[data-role="profile-loading"]')).toBeNull();
+    expect(element.textContent).toContain('Alice Smith');
+    expect(element.querySelector('img')?.getAttribute('src')).toContain(
+      'lh3.googleusercontent.com/alice',
+    );
+  });
+
+  it('shows history and account skeletons instead of the sign-in prompt while the session is restored', async () => {
+    const fixture = TestBed.createComponent(SidebarOverview);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+
+    testSession().invalidate('restoring');
+    await fixture.whenStable();
+    expect(
+      element.querySelector('[data-role="history-loading"]'),
+    ).not.toBeNull();
+    expect(
+      element.querySelector('[data-role="profile-loading"]'),
+    ).not.toBeNull();
+    expect(element.querySelector('[aria-label="Sign in"]')).toBeNull();
+
+    testSession().invalidate();
+    await fixture.whenStable();
+    expect(element.querySelector('[data-role="history-loading"]')).toBeNull();
+    expect(element.querySelector('[data-role="profile-loading"]')).toBeNull();
+    expect(element.querySelector('[aria-label="Sign in"]')).not.toBeNull();
   });
 
   it('opens the account menu with the theme and settings entries', async () => {

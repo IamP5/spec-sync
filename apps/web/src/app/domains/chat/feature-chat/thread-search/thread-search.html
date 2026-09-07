@@ -32,95 +32,121 @@
 </z-sidebar-header>
 
 <z-sidebar-content class="sidebar-expanded gap-0 px-1">
-  @if (noThreads()) {
-  <p
-    class="px-4 py-8 text-center text-xs leading-relaxed text-muted-foreground"
-    data-role="history-empty"
-  >
-    Your conversations will appear here.
-  </p>
-  } @else if (noMatches()) {
-  <p class="px-4 py-8 text-center text-xs text-muted-foreground" role="status">
-    No conversations match “{{ query() }}”.
-  </p>
-  } @for (group of groups(); track group.label) {
-  <z-sidebar-group class="py-1">
-    <z-sidebar-group-label class="text-muted-foreground"
-      >{{ group.label }}</z-sidebar-group-label
-    >
-    <z-sidebar-group-content>
-      <ul z-sidebar-menu [attr.aria-label]="group.label">
-        @for (thread of group.threads; track thread.id) {
-        <li z-sidebar-menu-item data-role="thread">
-          @if (renamingId() === thread.id) {
-          <input
-            #renameInput
-            z-input
-            type="text"
-            class="h-8 border-sidebar-ring bg-sidebar-accent text-sidebar-foreground"
-            aria-label="Conversation title"
-            [value]="thread.title"
-            [maxLength]="maxTitleLength"
-            (keydown)="onRenameKeydown($event, thread)"
-            (blur)="onRenameBlur($event, thread)"
-          />
-          } @else {
-          <a
-            z-sidebar-menu-button
-            class="h-9"
-            [routerLink]="['/c', thread.id]"
-            [zActive]="activeId() === thread.id"
-            [attr.aria-current]="activeId() === thread.id ? 'page' : null"
-            [title]="thread.title"
-            (click)="onOpen()"
-          >
-            <span>{{ thread.title }}</span>
-          </a>
-          <button
-            z-sidebar-menu-action
-            zShowOnHover
-            z-dropdown
-            [zDropdownMenu]="threadMenu"
-            class="size-6 text-muted-foreground hover:bg-sidebar-border hover:text-sidebar-foreground data-[state=open]:opacity-100 data-[state=open]:bg-sidebar-accent"
-            [attr.aria-label]="'Options for ' + thread.title"
-          >
-            <ng-icon name="lucideEllipsisVertical" aria-hidden="true" />
-          </button>
-          <z-dropdown-menu-content
-            #threadMenu
-            zSide="bottom"
-            zAlign="end"
-            [zSideOffset]="4"
-            class="flex w-52 flex-col rounded-xl p-1.5"
-          >
-            <button
-              z-dropdown-menu-item
-              class="min-h-9 w-full rounded-md px-3"
-              type="button"
-              data-action="rename"
-              (click)="onRename(thread)"
-            >
-              <ng-icon name="lucidePencil" aria-hidden="true" />
-              Rename
-            </button>
-            <z-dropdown-menu-separator />
-            <button
-              z-dropdown-menu-item
-              class="min-h-9 w-full rounded-md px-3"
-              type="button"
-              zType="destructive"
-              data-action="delete"
-              (click)="onDelete(thread)"
-            >
-              <ng-icon name="lucideTrash2" aria-hidden="true" />
-              Delete
-            </button>
-          </z-dropdown-menu-content>
-          }
+  @if (loading()) {
+  <div role="status" aria-live="polite" data-role="history-loading">
+    <span class="sr-only">Loading conversations…</span>
+    <!-- Same boxes as a loaded history: group padding, label row, 36px rows. -->
+    @for (section of skeletonSections; track $index) {
+    <div class="flex flex-col px-2 py-1" aria-hidden="true">
+      <div class="h-8 px-2 py-2.5">
+        <z-skeleton [class]="'h-3 ' + section.label" />
+      </div>
+      <ul class="flex flex-col gap-1">
+        @for (width of section.rows; track $index) {
+        <li class="h-9 px-2 py-2.5">
+          <z-skeleton [class]="'h-4 ' + width" />
         </li>
         }
       </ul>
-    </z-sidebar-group-content>
-  </z-sidebar-group>
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="flex flex-col animate-in fade-in duration-300">
+    @if (noThreads()) {
+    <p
+      class="px-4 py-8 text-center text-xs leading-relaxed text-muted-foreground"
+      data-role="history-empty"
+    >
+      Your conversations will appear here.
+    </p>
+    } @else if (noMatches()) {
+    <p
+      class="px-4 py-8 text-center text-xs text-muted-foreground"
+      role="status"
+    >
+      No conversations match “{{ query() }}”.
+    </p>
+    } @for (group of groups(); track group.label) {
+    <z-sidebar-group class="py-1">
+      <z-sidebar-group-label class="text-muted-foreground"
+        >{{ group.label }}</z-sidebar-group-label
+      >
+      <z-sidebar-group-content>
+        <ul z-sidebar-menu [attr.aria-label]="group.label">
+          @for (thread of group.threads; track thread.id) {
+          <li z-sidebar-menu-item data-role="thread">
+            @if (renamingId() === thread.id) {
+            <input
+              #renameInput
+              z-input
+              type="text"
+              class="h-8 border-sidebar-ring bg-sidebar-accent text-sidebar-foreground"
+              aria-label="Conversation title"
+              [value]="thread.title"
+              [maxLength]="maxTitleLength"
+              (keydown)="onRenameKeydown($event, thread)"
+              (blur)="onRenameBlur($event, thread)"
+            />
+            } @else {
+            <a
+              z-sidebar-menu-button
+              class="h-9"
+              [routerLink]="['/c', thread.id]"
+              [zActive]="activeId() === thread.id"
+              [attr.aria-current]="activeId() === thread.id ? 'page' : null"
+              [title]="thread.title"
+              (click)="onOpen()"
+            >
+              <span>{{ thread.title }}</span>
+            </a>
+            <button
+              z-sidebar-menu-action
+              zShowOnHover
+              z-dropdown
+              [zDropdownMenu]="threadMenu"
+              class="size-6 text-muted-foreground hover:bg-sidebar-border hover:text-sidebar-foreground data-[state=open]:opacity-100 data-[state=open]:bg-sidebar-accent"
+              [attr.aria-label]="'Options for ' + thread.title"
+            >
+              <ng-icon name="lucideEllipsisVertical" aria-hidden="true" />
+            </button>
+            <z-dropdown-menu-content
+              #threadMenu
+              zSide="bottom"
+              zAlign="end"
+              [zSideOffset]="4"
+              class="flex w-52 flex-col rounded-xl p-1.5"
+            >
+              <button
+                z-dropdown-menu-item
+                class="min-h-9 w-full rounded-md px-3"
+                type="button"
+                data-action="rename"
+                (click)="onRename(thread)"
+              >
+                <ng-icon name="lucidePencil" aria-hidden="true" />
+                Rename
+              </button>
+              <z-dropdown-menu-separator />
+              <button
+                z-dropdown-menu-item
+                class="min-h-9 w-full rounded-md px-3"
+                type="button"
+                zType="destructive"
+                data-action="delete"
+                (click)="onDelete(thread)"
+              >
+                <ng-icon name="lucideTrash2" aria-hidden="true" />
+                Delete
+              </button>
+            </z-dropdown-menu-content>
+            }
+          </li>
+          }
+        </ul>
+      </z-sidebar-group-content>
+    </z-sidebar-group>
+    }
+  </div>
   }
 </z-sidebar-content>

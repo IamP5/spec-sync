@@ -2,10 +2,12 @@ import { BaseEvent, EventType } from '@ag-ui/client';
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { Subject } from 'rxjs';
 
 import { ZardSidebarService } from '@/ui/components/sidebar';
 import { provideZard } from '@/ui/core';
 
+import { testSession } from '../../../../testing/fake-auth';
 import {
   FakeChatAgent,
   provideFakeChatAgent,
@@ -20,6 +22,7 @@ import {
 } from '../../../../testing/fake-threads';
 import { matrix } from '../../../../testing/vehicle-fixtures';
 import { UserPreferencesCoordinator } from '../../../user/api/preferences';
+import { ChatThread } from '../../data/thread';
 import { TEXT_REVEAL_ENABLED } from '../../util/text-reveal';
 import { ChatPage } from './chat-page';
 import { ConversationDetailStore } from './conversation-detail-store';
@@ -96,6 +99,68 @@ describe('ChatPage', () => {
     expect(element.querySelector('h1')?.textContent).toContain('New chat');
     expect(element.querySelector('textarea#prompt')).not.toBeNull();
     expect(element.querySelector('[aria-label="Suggestions"]')).not.toBeNull();
+  });
+
+  it('shows conversation skeletons for a stored chat while the account is restored', async () => {
+    const fixture = TestBed.createComponent(ChatPage);
+    fixture.componentRef.setInput('threadId', 'saved-chat');
+    testSession().invalidate('restoring');
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const loading = element.querySelector('[data-role="chat-loading"]');
+    expect(loading?.textContent).toContain('Loading your account');
+    expect(loading?.querySelector('z-skeleton')).not.toBeNull();
+    expect(element.querySelector('textarea')).not.toBeNull();
+    expect(
+      element.querySelector<HTMLButtonElement>('[aria-label="Send message"]')
+        ?.disabled,
+    ).toBe(true);
+    expect(element.textContent).not.toContain('New chat');
+  });
+
+  it('shows message skeletons until the opened conversation arrives', async () => {
+    const response = new Subject<ChatThread>();
+    vi.spyOn(TestBed.inject(FakeThreadClient), 'find').mockReturnValue(
+      response,
+    );
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    fixture.componentRef.setInput('threadId', 'saved-chat');
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(
+      element.querySelector('[data-role="chat-loading"] z-skeleton'),
+    ).not.toBeNull();
+    expect(element.querySelector('textarea')).not.toBeNull();
+    expect(
+      element.querySelector<HTMLButtonElement>('[aria-label="Send message"]')
+        ?.disabled,
+    ).toBe(true);
+    expect(element.textContent).not.toContain('New chat');
+
+    response.next(
+      storedThread('saved-chat', 'Saved conversation', 1, [
+        {
+          id: 'saved-message',
+          role: 'user',
+          content: 'Compare the Ranger versions',
+        },
+      ]),
+    );
+    response.complete();
+    await vi.waitFor(() =>
+      expect(TestBed.inject(ConversationDetailStore).loading()).toBe(false),
+    );
+    await fixture.whenStable();
+
+    expect(element.querySelector('[data-role="chat-loading"]')).toBeNull();
+    expect(element.querySelector('h1')?.textContent).toContain(
+      'Saved conversation',
+    );
+    expect(element.textContent).toContain('Compare the Ranger versions');
+    expect(element.querySelector('textarea')).not.toBeNull();
   });
 
   it.each([false, true])(

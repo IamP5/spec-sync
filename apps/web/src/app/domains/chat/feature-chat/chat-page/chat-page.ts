@@ -60,10 +60,12 @@ import {
 } from '@/ui/components/message';
 import { ZardSeparatorComponent } from '@/ui/components/separator';
 import { ZardSidebarTriggerComponent } from '@/ui/components/sidebar';
+import { ZardSkeletonComponent } from '@/ui/components/skeleton';
 import { ZardSpinnerComponent } from '@/ui/components/spinner';
 import { ZardTextareaComponent } from '@/ui/components/textarea';
 import { ZardTooltipDirective } from '@/ui/components/tooltip';
 
+import { AuthSessionCoordinator } from '../../../auth/api/authentication';
 import { AuthLoginOverview } from '../../../auth/api/features';
 import { SESSION } from '../../../auth/api/session';
 import { UserPreferencesCoordinator } from '../../../user/api/preferences';
@@ -165,6 +167,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     ZardMessageGroupComponent,
     ZardSeparatorComponent,
     ZardSidebarTriggerComponent,
+    ZardSkeletonComponent,
     ZardSpinnerComponent,
     ZardTextareaComponent,
     ZardTooltipDirective,
@@ -222,6 +225,7 @@ export class ChatPage {
   /** Route parameter of `/c/:threadId`; undefined on the root route. */
   readonly threadId = input<string>();
   private readonly session = inject(SESSION);
+  private readonly auth = inject(AuthSessionCoordinator);
   private readonly connection = inject(ChatConnectionCoordinator);
   private readonly dialogs = inject(ZardDialogService);
   private loginDialog?: ZardDialogRef<AuthLoginOverview>;
@@ -249,6 +253,23 @@ export class ChatPage {
   protected readonly empty = this.store.isEmpty;
   /** True while a stored conversation is read back from the AI service. */
   protected readonly loadingThread = this.store.loading;
+  /**
+   * A stored conversation shows skeletons until its messages can be read:
+   * while the session is restored, the transport prepared and the thread
+   * fetched. The root route never waits; a new chat is available at once.
+   */
+  protected readonly loading = computed(
+    () =>
+      this.loadingThread() ||
+      (!!this.threadId() &&
+        (this.auth.pending() ||
+          (this.session.authenticated() &&
+            !this.connection.ready() &&
+            !this.connection.error()))),
+  );
+  protected readonly loadingLabel = computed(() =>
+    this.auth.pending() ? 'Loading your account…' : 'Loading conversation…',
+  );
   protected readonly stopped = this.store.stopped;
   protected readonly title = this.store.title;
   protected readonly showActivity = this.preferences.showActivity;
@@ -422,7 +443,7 @@ export class ChatPage {
 
   protected onSubmit(event: Event): void {
     event.preventDefault();
-    if (this.streaming() || this.promptInvalid()) {
+    if (this.streaming() || this.promptInvalid() || this.loading()) {
       return;
     }
     submit(this.promptForm, async () => {
