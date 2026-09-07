@@ -7,6 +7,8 @@ import com.fiap.ford.specsync.domain.exceptions.DomainException;
 import com.fiap.ford.specsync.domain.ingestion.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -18,6 +20,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 @Repository
 public class IngestionJdbcGateway implements IngestionGateway {
+    private static final int MAX_WARNINGS = 50;
     private final NamedParameterJdbcTemplate jdbc;
     private final JsonMapper json = JsonMapper.builder().build();
 
@@ -33,8 +36,9 @@ public class IngestionJdbcGateway implements IngestionGateway {
         return json.readValue(value.toString(), type);
     }
 
-    private Map<String, Object> map(String value) {
-        return json.readValue(value, new TypeReference<Map<String, Object>>() {});
+    private Map<String, UUID> configurationIds(Object value) {
+        if (value == null) return Map.of();
+        return json.readValue(value.toString(), new TypeReference<Map<String, UUID>>() {});
     }
 
     private static String hash(byte[] bytes) {
@@ -43,6 +47,10 @@ public class IngestionJdbcGateway implements IngestionGateway {
         } catch (java.security.NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private static Instant instant(Object value) {
+        return value instanceof Timestamp timestamp ? timestamp.toInstant() : null;
     }
 
     private Map<String, Object> row(UUID id, String owner, boolean lock) {
@@ -69,6 +77,28 @@ public class IngestionJdbcGateway implements IngestionGateway {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Ingestion.Summary> list(String owner) {
+        return jdbc.query(
+                """
+   SELECT id,request,status,error,created_at,updated_at,
+     coalesce(jsonb_array_length(draft->'configurations'),0) AS configurations,
+     coalesce((SELECT sum(jsonb_array_length(c->'claims')) FROM jsonb_array_elements(draft->'configurations') c),0) AS claims
+   FROM ingestion.run WHERE owner_name=:owner ORDER BY created_at DESC LIMIT 100
+   """,
+                Map.of("owner", owner),
+                (rs, index) -> new Ingestion.Summary(
+                        (UUID) rs.getObject("id"),
+                        decode(rs.getObject("request"), Ingestion.Request.class),
+                        rs.getString("status"),
+                        rs.getInt("configurations"),
+                        rs.getInt("claims"),
+                        rs.getString("error"),
+                        rs.getTimestamp("created_at").toInstant(),
+                        rs.getTimestamp("updated_at").toInstant()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Ingestion.CapturedFile source(UUID id, String owner) {
         row(id, owner, false);
         var rows = jdbc.queryForList(
@@ -79,7 +109,8 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 (byte[]) saved.get("original_bytes"), saved.get("mime_type").toString());
     }
 
-    private UUID configuration(Ingestion.Request request) {
+    /** Catalog identity of one configuration name within the run's brand, model, market and year. */
+    private UUID configuration(Ingestion.Request request, String name) {
         var rows = jdbc.queryForList(
                 """
    SELECT c.id FROM catalog.vehicle_configuration c JOIN catalog.vehicle_model m ON m.id=c.model_id JOIN catalog.brand b ON b.id=m.brand_id
@@ -91,16 +122,22 @@ public class IngestionJdbcGateway implements IngestionGateway {
                         "model",
                         request.model(),
                         "name",
-                        request.name(),
+                        name,
                         "market",
                         request.market(),
                         "year",
                         request.modelYear()));
         require(rows.size() <= 1, "Ambiguous catalog identity requires curation");
-        UUID found = rows.isEmpty() ? null : (UUID) rows.getFirst().get("id");
-        if (request.configurationId() != null)
-            require(request.configurationId().equals(found), "Configuration ID does not match the submitted identity");
-        return found;
+        return rows.isEmpty() ? null : (UUID) rows.getFirst().get("id");
+    }
+
+    /** Names the run addresses: the draft's configurations once extracted, the request's before. */
+    private static List<String> configurationNames(Ingestion.Request request, Ingestion.Draft draft) {
+        if (draft != null)
+            return draft.configurations().stream()
+                    .map(Ingestion.ConfigurationDraft::name)
+                    .toList();
+        return request.configurations();
     }
 
     @Override
@@ -109,10 +146,13 @@ public class IngestionJdbcGateway implements IngestionGateway {
         var saved = row(id, owner, false);
         var request = decode(saved.get("request"), Ingestion.Request.class);
         var draft = saved.get("draft") == null ? null : decode(saved.get("draft"), Ingestion.Draft.class);
-        var current = new LinkedHashMap<String, Object>();
-        UUID configurationId = (UUID) saved.get("configuration_id");
-        if (configurationId == null) configurationId = configuration(request);
-        if (configurationId != null)
+        var ids = new LinkedHashMap<>(configurationIds(saved.get("configuration_ids")));
+        var current = new LinkedHashMap<String, Map<String, Object>>();
+        for (String name : configurationNames(request, draft)) {
+            UUID configurationId = ids.containsKey(name) ? ids.get(name) : configuration(request, name);
+            if (configurationId == null) continue;
+            ids.put(name, configurationId);
+            var cells = new LinkedHashMap<String, Object>();
             for (var cell : jdbc.queryForList(
                     "SELECT attribute_code,knowledge_status,value,availability,qualifiers FROM catalog.specification_matrix WHERE configuration_id=:id",
                     Map.of("id", configurationId))) {
@@ -120,8 +160,10 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 for (String key : List.of("value", "qualifiers"))
                     if (value.get(key) != null)
                         value.put(key, json.readValue(value.get(key).toString(), Object.class));
-                current.put(cell.get("attribute_code").toString(), value);
+                cells.put(cell.get("attribute_code").toString(), value);
             }
+            current.put(name, cells);
+        }
         long revision = jdbc.queryForObject("SELECT revision FROM ingestion.catalog_version", Map.of(), Long.class);
         var event = jdbc.queryForList(
                 "SELECT applied_at FROM ingestion.projection_event WHERE run_id=:id", Map.of("id", id));
@@ -138,11 +180,13 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 draft,
                 (String) saved.get("draft_hash"),
                 revision,
-                configurationId,
+                Map.copyOf(ids),
                 (String) saved.get("error"),
                 projection,
                 projection.equals("PENDING") ? projectionError : null,
-                current);
+                current,
+                instant(saved.get("created_at")),
+                instant(saved.get("updated_at")));
     }
 
     @Override
@@ -172,6 +216,14 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 Map.of("id", work.id(), "token", work.leaseToken(), "error", error));
     }
 
+    private static List<String> warnings(List<String> values) {
+        if (values == null) return List.of();
+        require(values.size() <= MAX_WARNINGS, "Too many extraction warnings");
+        for (String warning : values)
+            require(warning != null && warning.length() <= 500, "Extraction warnings must be short text");
+        return List.copyOf(values);
+    }
+
     @Override
     @Transactional
     public void complete(Ingestion.Work work, Ingestion.Draft extracted) {
@@ -193,13 +245,8 @@ public class IngestionJdbcGateway implements IngestionGateway {
                         && hash(source.text().getBytes(StandardCharsets.UTF_8)).equals(source.textSha256()),
                 "Source checksum mismatch");
         require(
-                Ingestion.exactExcerpt(
-                        source.text(),
-                        extracted.identityLineStart(),
-                        extracted.identityLineEnd(),
-                        extracted.identityExcerpt()),
-                "Identity evidence must match the source text");
-        require(extracted.claims() != null && extracted.claims().size() <= 100, "Maximum 100 claims per source");
+                extracted.configurations() != null && extracted.configurations().size() <= Ingestion.MAX_CONFIGURATIONS,
+                "Maximum " + Ingestion.MAX_CONFIGURATIONS + " configurations per source");
         var attributes = new HashMap<String, Catalog.Attribute>();
         jdbc.query("SELECT * FROM catalog.attribute_definition", Map.of(), rs -> {
             attributes.put(
@@ -212,71 +259,36 @@ public class IngestionJdbcGateway implements IngestionGateway {
                             rs.getString("value_type"),
                             rs.getString("unit")));
         });
-        var claims = new ArrayList<Ingestion.Claim>();
-        for (var claim : extracted.claims()) {
-            var issues = new ArrayList<String>();
-            Object value = null;
-            var attribute = attributes.get(claim.attributeCode());
-            if (attribute == null) issues.add("Unknown attribute");
-            if (!Ingestion.exactExcerpt(source.text(), claim.lineStart(), claim.lineEnd(), claim.excerpt()))
-                issues.add("Evidence does not match source lines");
-            if (claim.rawValue() == null || claim.rawValue().isBlank()) issues.add("Raw source value is missing");
-            if (claim.rawValue() != null
-                    && claim.excerpt() != null
-                    && !claim.excerpt()
-                            .toLowerCase(Locale.ROOT)
-                            .contains(claim.rawValue().toLowerCase(Locale.ROOT)))
-                issues.add("Raw value is not present in the supporting excerpt");
-            if (claim.listValue() != null
-                    && claim.excerpt() != null
-                    && claim.listValue().stream()
-                            .anyMatch(item -> item == null
-                                    || !claim.excerpt()
-                                            .toLowerCase(Locale.ROOT)
-                                            .contains(item.toLowerCase(Locale.ROOT))))
-                issues.add("A list item is not present in the supporting excerpt");
-            if (claim.locator() == null || claim.locator().isBlank()) issues.add("Source location is missing");
-            if (attribute != null)
-                try {
-                    value = switch (attribute.valueType()) {
-                        case "NUMBER" -> Ingestion.normalizeNumber(claim.rawValue(), claim.rawUnit(), attribute.unit());
-                        case "TEXT" -> claim.rawValue();
-                        case "LIST" -> {
-                            require(
-                                    claim.listValue() != null
-                                            && !claim.listValue().isEmpty()
-                                            && claim.listValue().stream().allMatch(v -> v != null && !v.isBlank()),
-                                    "List items are required");
-                            yield claim.listValue();
-                        }
-                        case "AVAILABILITY" -> {
-                            require(
-                                    claim.availability() != null
-                                            && Set.of("STANDARD", "OPTIONAL", "ABSENT", "NOT_APPLICABLE")
-                                                    .contains(claim.availability()),
-                                    "Equipment requires a source-defined availability");
-                            yield null;
-                        }
-                        default -> throw new IllegalStateException("Unsupported attribute type");
-                    };
-                } catch (DomainException e) {
-                    issues.add(e.getMessage());
-                }
-            claims.add(new Ingestion.Claim(
-                    claim.attributeCode(),
-                    attribute == null ? claim.attributeCode() : attribute.label(),
-                    attribute == null ? null : attribute.unit(),
-                    claim.rawValue(),
-                    claim.rawUnit(),
-                    attribute != null && attribute.valueType().equals("AVAILABILITY") ? claim.availability() : null,
-                    claim.listValue(),
-                    claim.qualifiers() == null ? Map.of() : claim.qualifiers(),
-                    claim.lineStart(),
-                    claim.lineEnd(),
-                    claim.excerpt(),
-                    claim.locator(),
-                    value,
-                    List.copyOf(issues)));
+        var names = new HashSet<String>();
+        var configurations = new ArrayList<Ingestion.ConfigurationDraft>();
+        for (var configuration : extracted.configurations()) {
+            require(
+                    configuration.name() != null
+                            && !configuration.name().isBlank()
+                            && configuration.name().length() <= 150,
+                    "Configuration names must be between 1 and 150 characters");
+            require(
+                    names.add(configuration.name().trim().toLowerCase(Locale.ROOT)),
+                    "The extractor proposed the same configuration twice");
+            require(
+                    Ingestion.exactExcerpt(
+                            source.text(),
+                            configuration.identityLineStart(),
+                            configuration.identityLineEnd(),
+                            configuration.identityExcerpt()),
+                    "Identity evidence must match the source text");
+            require(
+                    configuration.claims() != null && configuration.claims().size() <= Ingestion.MAX_CLAIMS,
+                    "Maximum " + Ingestion.MAX_CLAIMS + " claims per configuration");
+            var claims = new ArrayList<Ingestion.Claim>();
+            for (var claim : configuration.claims()) claims.add(validate(source, attributes, claim));
+            configurations.add(new Ingestion.ConfigurationDraft(
+                    configuration.name().trim(),
+                    configuration.identityLineStart(),
+                    configuration.identityLineEnd(),
+                    configuration.identityExcerpt(),
+                    List.copyOf(claims),
+                    warnings(configuration.warnings())));
         }
         var params = new HashMap<String, Object>();
         params.put("id", work.id());
@@ -300,18 +312,79 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 source.text(),
                 source.textSha256(),
                 source.parserVersion());
-        var draft = new Ingestion.Draft(
-                storedSource,
-                extracted.identityLineStart(),
-                extracted.identityLineEnd(),
-                extracted.identityExcerpt(),
-                List.copyOf(claims));
+        var draft = new Ingestion.Draft(storedSource, List.copyOf(configurations), warnings(extracted.warnings()));
         String encoded = encode(draft);
         params.put("draft", encoded);
         params.put("hash", hash(encoded.getBytes(StandardCharsets.UTF_8)));
         jdbc.update(
                 "UPDATE ingestion.run SET status='REVIEW',draft=CAST(:draft AS jsonb),draft_hash=:hash,base_revision=(SELECT revision FROM ingestion.catalog_version),lease_token=NULL,error=NULL,updated_at=now() WHERE id=:id",
                 params);
+    }
+
+    /** Deterministic checks and normalization of one proposed claim; problems become review issues. */
+    private static Ingestion.Claim validate(
+            Ingestion.Source source, Map<String, Catalog.Attribute> attributes, Ingestion.Claim claim) {
+        var issues = new ArrayList<String>();
+        Object value = null;
+        var attribute = attributes.get(claim.attributeCode());
+        if (attribute == null) issues.add("Unknown attribute");
+        if (!Ingestion.exactExcerpt(source.text(), claim.lineStart(), claim.lineEnd(), claim.excerpt()))
+            issues.add("Evidence does not match source lines");
+        if (claim.rawValue() == null || claim.rawValue().isBlank()) issues.add("Raw source value is missing");
+        if (claim.rawValue() != null
+                && claim.excerpt() != null
+                && !claim.excerpt()
+                        .toLowerCase(Locale.ROOT)
+                        .contains(claim.rawValue().toLowerCase(Locale.ROOT)))
+            issues.add("Raw value is not present in the supporting excerpt");
+        if (claim.listValue() != null
+                && claim.excerpt() != null
+                && claim.listValue().stream()
+                        .anyMatch(item -> item == null
+                                || !claim.excerpt().toLowerCase(Locale.ROOT).contains(item.toLowerCase(Locale.ROOT))))
+            issues.add("A list item is not present in the supporting excerpt");
+        if (claim.locator() == null || claim.locator().isBlank()) issues.add("Source location is missing");
+        if (attribute != null)
+            try {
+                value = switch (attribute.valueType()) {
+                    case "NUMBER" -> Ingestion.normalizeNumber(claim.rawValue(), claim.rawUnit(), attribute.unit());
+                    case "TEXT" -> claim.rawValue();
+                    case "LIST" -> {
+                        require(
+                                claim.listValue() != null
+                                        && !claim.listValue().isEmpty()
+                                        && claim.listValue().stream().allMatch(v -> v != null && !v.isBlank()),
+                                "List items are required");
+                        yield claim.listValue();
+                    }
+                    case "AVAILABILITY" -> {
+                        require(
+                                claim.availability() != null
+                                        && Set.of("STANDARD", "OPTIONAL", "ABSENT", "NOT_APPLICABLE")
+                                                .contains(claim.availability()),
+                                "Equipment requires a source-defined availability");
+                        yield null;
+                    }
+                    default -> throw new IllegalStateException("Unsupported attribute type");
+                };
+            } catch (DomainException e) {
+                issues.add(e.getMessage());
+            }
+        return new Ingestion.Claim(
+                claim.attributeCode(),
+                attribute == null ? claim.attributeCode() : attribute.label(),
+                attribute == null ? null : attribute.unit(),
+                claim.rawValue(),
+                claim.rawUnit(),
+                attribute != null && attribute.valueType().equals("AVAILABILITY") ? claim.availability() : null,
+                claim.listValue(),
+                claim.qualifiers() == null ? Map.of() : claim.qualifiers(),
+                claim.lineStart(),
+                claim.lineEnd(),
+                claim.excerpt(),
+                claim.locator(),
+                value,
+                List.copyOf(issues));
     }
 
     @Override
@@ -342,23 +415,8 @@ public class IngestionJdbcGateway implements IngestionGateway {
         require(revision == review.baseRevision(), "Catalog changed; reload and review the current values again");
         var draft = decode(saved.get("draft"), Ingestion.Draft.class);
         var request = decode(saved.get("request"), Ingestion.Request.class);
-        var selected = new ArrayList<Ingestion.Claim>();
-        var seen = new HashSet<String>();
-        for (int index : review.selectedClaims()) {
-            require(index >= 0 && index < draft.claims().size(), "Unknown claim selection");
-            var claim = draft.claims().get(index);
-            require(claim.issues().isEmpty(), "A selected claim has validation issues");
-            require(
-                    seen.add(claim.attributeCode()),
-                    "Choose one claim per attribute; conflicting claims must remain pending");
-            selected.add(claim);
-        }
-        UUID config = configuration(request);
         UUID sourceId =
                 stableId("source:" + draft.source().url() + ":" + draft.source().textSha256());
-        UUID identityId =
-                stableId("evidence:" + sourceId + ":" + draft.identityLineStart() + ":" + draft.identityLineEnd());
-        boolean changed = false;
         var params = new HashMap<String, Object>();
         params.put("run", id);
         params.put("source", sourceId);
@@ -369,98 +427,37 @@ public class IngestionJdbcGateway implements IngestionGateway {
         jdbc.update(
                 "INSERT INTO catalog.source_revision(id,path,sha256,title,provenance,upstream_urls,captured_on) VALUES(:source,:path,:sha,:title,'PRIMARY_SOURCE',CAST(:urls AS jsonb),(SELECT captured_at::date FROM ingestion.source_capture WHERE run_id=:run)) ON CONFLICT(id) DO NOTHING",
                 params);
-        evidence(
-                identityId,
-                sourceId,
-                draft.identityLineStart(),
-                draft.identityLineEnd(),
-                draft.identityExcerpt(),
-                "Reviewed vehicle identity");
-        if (config == null) {
-            var brands = jdbc.queryForList(
-                    "SELECT id FROM catalog.brand WHERE lower(name)=lower(:name)", Map.of("name", request.brand()));
-            require(brands.size() <= 1, "Ambiguous brand identity");
-            UUID brand = brands.isEmpty()
-                    ? UUID.randomUUID()
-                    : (UUID) brands.getFirst().get("id");
-            if (brands.isEmpty())
-                jdbc.update(
-                        "INSERT INTO catalog.brand(id,name) VALUES(:id,:name)",
-                        Map.of("id", brand, "name", request.brand()));
-            var models = jdbc.queryForList(
-                    "SELECT id FROM catalog.vehicle_model WHERE brand_id=:brand AND lower(name)=lower(:name)",
-                    Map.of("brand", brand, "name", request.model()));
-            require(models.size() <= 1, "Ambiguous model identity");
-            UUID model = models.isEmpty()
-                    ? UUID.randomUUID()
-                    : (UUID) models.getFirst().get("id");
-            if (models.isEmpty())
-                jdbc.update(
-                        "INSERT INTO catalog.vehicle_model(id,brand_id,name) VALUES(:id,:brand,:name)",
-                        Map.of("id", model, "brand", brand, "name", request.model()));
-            config = UUID.randomUUID();
-            jdbc.update(
-                    "INSERT INTO catalog.vehicle_configuration(id,model_id,name,market,model_year,identity_status,identity_evidence_id,identity_note) VALUES(:id,:model,:name,:market,:year,'RESOLVED_FROM_PRIMARY_SOURCE',:evidence,:note)",
-                    Map.of(
-                            "id",
-                            config,
-                            "model",
-                            model,
-                            "name",
-                            request.name(),
-                            "market",
-                            request.market(),
-                            "year",
-                            request.modelYear(),
-                            "evidence",
-                            identityId,
-                            "note",
-                            review.reason()));
-        }
-        for (var claim : selected) {
-            UUID evidence = stableId("evidence:" + sourceId + ":" + claim.lineStart() + ":" + claim.lineEnd());
-            evidence(evidence, sourceId, claim.lineStart(), claim.lineEnd(), claim.excerpt(), claim.locator());
-            var attribute = jdbc.queryForMap(
-                    "SELECT id,value_type FROM catalog.attribute_definition WHERE code=:code",
-                    Map.of("code", claim.attributeCode()));
-            UUID attr = (UUID) attribute.get("id");
-            var q = new TreeMap<String, Object>(claim.qualifiers());
-            q.put("originalUnit", Objects.toString(claim.rawUnit(), ""));
-            q.put("normalizerVersion", "1");
-            UUID assertion = stableId("assertion:" + config + ":" + attr + ":" + sourceId + ":" + evidence + ":"
-                    + encode(Arrays.asList(claim.value(), claim.availability(), claim.rawValue(), q)));
-            if (jdbc.queryForObject(
-                            "SELECT count(*) FROM catalog.accepted_specification WHERE configuration_id=:config AND attribute_id=:attr AND assertion_id=:assertion AND knowledge_status='KNOWN'",
-                            Map.of("config", config, "attr", attr, "assertion", assertion),
-                            Long.class)
-                    > 0) continue;
-            changed = true;
-            var a = new HashMap<String, Object>();
-            a.put("id", assertion);
-            a.put("config", config);
-            a.put("attr", attr);
-            a.put("type", attribute.get("value_type"));
-            a.put("value", claim.value() == null ? null : encode(claim.value()));
-            a.put("availability", claim.availability());
-            a.put("qualifiers", encode(q));
-            a.put("raw", claim.rawValue());
-            jdbc.update(
-                    "INSERT INTO catalog.spec_assertion(id,configuration_id,attribute_id,value_type,value,availability,qualifiers,raw_value,review_status) VALUES(:id,:config,:attr,:type,CAST(:value AS jsonb),:availability,CAST(:qualifiers AS jsonb),:raw,'VERIFIED') ON CONFLICT(id) DO NOTHING",
-                    a);
-            jdbc.update(
-                    "INSERT INTO catalog.assertion_evidence(assertion_id,evidence_id) VALUES(:assertion,:evidence) ON CONFLICT DO NOTHING",
-                    Map.of("assertion", assertion, "evidence", evidence));
-            a.put("decision", UUID.randomUUID());
-            a.put("run", id);
-            a.put("owner", owner);
-            a.put("reason", review.reason());
-            a.put("revision", revision + 1);
-            jdbc.update(
-                    "INSERT INTO ingestion.selection_decision(id,run_id,reviewer,configuration_id,attribute_id,previous_selection,assertion_id,reason,revision) VALUES(:decision,:run,:owner,:config,:attr,(SELECT to_jsonb(s) FROM catalog.accepted_specification s WHERE configuration_id=:config AND attribute_id=:attr),:id,:reason,:revision)",
-                    a);
-            jdbc.update(
-                    "INSERT INTO catalog.accepted_specification(configuration_id,attribute_id,knowledge_status,assertion_id,reason) VALUES(:config,:attr,'KNOWN',:id,:reason) ON CONFLICT(configuration_id,attribute_id) DO UPDATE SET knowledge_status='KNOWN',assertion_id=excluded.assertion_id,reason=excluded.reason",
-                    a);
+        var ids = new LinkedHashMap<>(configurationIds(saved.get("configuration_ids")));
+        boolean changed = false;
+        for (var decision : review.configurations()) {
+            require(decision.configuration() < draft.configurations().size(), "Unknown configuration selection");
+            var configuration = draft.configurations().get(decision.configuration());
+            if (decision.selectedClaims().isEmpty()) continue;
+            var selected = new ArrayList<Ingestion.Claim>();
+            var seen = new HashSet<String>();
+            for (int index : decision.selectedClaims()) {
+                require(index >= 0 && index < configuration.claims().size(), "Unknown claim selection");
+                var claim = configuration.claims().get(index);
+                require(claim.issues().isEmpty(), "A selected claim has validation issues");
+                require(
+                        seen.add(claim.attributeCode()),
+                        "Choose one claim per attribute; conflicting claims must remain pending");
+                selected.add(claim);
+            }
+            UUID identityId = stableId("evidence:" + sourceId + ":" + configuration.identityLineStart() + ":"
+                    + configuration.identityLineEnd());
+            evidence(
+                    identityId,
+                    sourceId,
+                    configuration.identityLineStart(),
+                    configuration.identityLineEnd(),
+                    configuration.identityExcerpt(),
+                    "Reviewed vehicle identity: " + configuration.name());
+            UUID config = configuration(request, configuration.name());
+            if (config == null)
+                config = createConfiguration(request, configuration.name(), identityId, review.reason());
+            ids.put(configuration.name(), config);
+            for (var claim : selected) changed |= publishClaim(id, owner, review, sourceId, config, claim, revision);
         }
         if (changed) {
             jdbc.update("UPDATE ingestion.catalog_version SET revision=revision+1", Map.of());
@@ -469,9 +466,98 @@ public class IngestionJdbcGateway implements IngestionGateway {
                     Map.of("revision", revision + 1, "id", id));
         }
         jdbc.update(
-                "UPDATE ingestion.run SET status='PUBLISHED',configuration_id=:config,decision=CAST(:decision AS jsonb),updated_at=now() WHERE id=:id",
-                Map.of("config", config, "decision", encode(review), "id", id));
+                "UPDATE ingestion.run SET status='PUBLISHED',configuration_ids=CAST(:ids AS jsonb),decision=CAST(:decision AS jsonb),updated_at=now() WHERE id=:id",
+                Map.of("ids", encode(ids), "decision", encode(review), "id", id));
         return get(id, owner);
+    }
+
+    private UUID createConfiguration(Ingestion.Request request, String name, UUID identityId, String reason) {
+        var brands = jdbc.queryForList(
+                "SELECT id FROM catalog.brand WHERE lower(name)=lower(:name)", Map.of("name", request.brand()));
+        require(brands.size() <= 1, "Ambiguous brand identity");
+        UUID brand =
+                brands.isEmpty() ? UUID.randomUUID() : (UUID) brands.getFirst().get("id");
+        if (brands.isEmpty())
+            jdbc.update(
+                    "INSERT INTO catalog.brand(id,name) VALUES(:id,:name)",
+                    Map.of("id", brand, "name", request.brand()));
+        var models = jdbc.queryForList(
+                "SELECT id FROM catalog.vehicle_model WHERE brand_id=:brand AND lower(name)=lower(:name)",
+                Map.of("brand", brand, "name", request.model()));
+        require(models.size() <= 1, "Ambiguous model identity");
+        UUID model =
+                models.isEmpty() ? UUID.randomUUID() : (UUID) models.getFirst().get("id");
+        if (models.isEmpty())
+            jdbc.update(
+                    "INSERT INTO catalog.vehicle_model(id,brand_id,name) VALUES(:id,:brand,:name)",
+                    Map.of("id", model, "brand", brand, "name", request.model()));
+        UUID config = UUID.randomUUID();
+        var params = new HashMap<String, Object>();
+        params.put("id", config);
+        params.put("model", model);
+        params.put("name", name);
+        params.put("market", request.market());
+        params.put("year", request.modelYear());
+        params.put("evidence", identityId);
+        params.put("note", reason);
+        jdbc.update(
+                "INSERT INTO catalog.vehicle_configuration(id,model_id,name,market,model_year,identity_status,identity_evidence_id,identity_note) VALUES(:id,:model,:name,:market,:year,'RESOLVED_FROM_PRIMARY_SOURCE',:evidence,:note)",
+                params);
+        return config;
+    }
+
+    /** Appends the evidenced assertion and moves the accepted selection; false when already accepted. */
+    private boolean publishClaim(
+            UUID run,
+            String owner,
+            Ingestion.Review review,
+            UUID sourceId,
+            UUID config,
+            Ingestion.Claim claim,
+            long revision) {
+        UUID evidence = stableId("evidence:" + sourceId + ":" + claim.lineStart() + ":" + claim.lineEnd());
+        evidence(evidence, sourceId, claim.lineStart(), claim.lineEnd(), claim.excerpt(), claim.locator());
+        var attribute = jdbc.queryForMap(
+                "SELECT id,value_type FROM catalog.attribute_definition WHERE code=:code",
+                Map.of("code", claim.attributeCode()));
+        UUID attr = (UUID) attribute.get("id");
+        var q = new TreeMap<String, Object>(claim.qualifiers());
+        q.put("originalUnit", Objects.toString(claim.rawUnit(), ""));
+        q.put("normalizerVersion", "2");
+        UUID assertion = stableId("assertion:" + config + ":" + attr + ":" + sourceId + ":" + evidence + ":"
+                + encode(Arrays.asList(claim.value(), claim.availability(), claim.rawValue(), q)));
+        if (jdbc.queryForObject(
+                        "SELECT count(*) FROM catalog.accepted_specification WHERE configuration_id=:config AND attribute_id=:attr AND assertion_id=:assertion AND knowledge_status='KNOWN'",
+                        Map.of("config", config, "attr", attr, "assertion", assertion),
+                        Long.class)
+                > 0) return false;
+        var a = new HashMap<String, Object>();
+        a.put("id", assertion);
+        a.put("config", config);
+        a.put("attr", attr);
+        a.put("type", attribute.get("value_type"));
+        a.put("value", claim.value() == null ? null : encode(claim.value()));
+        a.put("availability", claim.availability());
+        a.put("qualifiers", encode(q));
+        a.put("raw", claim.rawValue());
+        jdbc.update(
+                "INSERT INTO catalog.spec_assertion(id,configuration_id,attribute_id,value_type,value,availability,qualifiers,raw_value,review_status) VALUES(:id,:config,:attr,:type,CAST(:value AS jsonb),:availability,CAST(:qualifiers AS jsonb),:raw,'VERIFIED') ON CONFLICT(id) DO NOTHING",
+                a);
+        jdbc.update(
+                "INSERT INTO catalog.assertion_evidence(assertion_id,evidence_id) VALUES(:assertion,:evidence) ON CONFLICT DO NOTHING",
+                Map.of("assertion", assertion, "evidence", evidence));
+        a.put("decision", UUID.randomUUID());
+        a.put("run", run);
+        a.put("owner", owner);
+        a.put("reason", review.reason());
+        a.put("revision", revision + 1);
+        jdbc.update(
+                "INSERT INTO ingestion.selection_decision(id,run_id,reviewer,configuration_id,attribute_id,previous_selection,assertion_id,reason,revision) VALUES(:decision,:run,:owner,:config,:attr,(SELECT to_jsonb(s) FROM catalog.accepted_specification s WHERE configuration_id=:config AND attribute_id=:attr),:id,:reason,:revision)",
+                a);
+        jdbc.update(
+                "INSERT INTO catalog.accepted_specification(configuration_id,attribute_id,knowledge_status,assertion_id,reason) VALUES(:config,:attr,'KNOWN',:id,:reason) ON CONFLICT(configuration_id,attribute_id) DO UPDATE SET knowledge_status='KNOWN',assertion_id=excluded.assertion_id,reason=excluded.reason",
+                a);
+        return true;
     }
 
     private static UUID stableId(String value) {

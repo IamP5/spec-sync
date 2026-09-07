@@ -319,7 +319,7 @@ describe('ChatPage', () => {
     );
   });
 
-  it('does not advertise server renderers as frontend tools', async () => {
+  it('advertises only the ingestion start tool, never server renderers, as frontend tools', async () => {
     agent.replyWith((input) => textReply(input, 'ok'));
     const fixture = TestBed.createComponent(ChatPage);
     await fixture.whenStable();
@@ -327,7 +327,9 @@ describe('ChatPage', () => {
     await sendPrompt(fixture.nativeElement, 'hello');
     await settled(TestBed.inject(ConversationDetailStore));
 
-    expect(agent.runs[0].tools).toEqual([]);
+    expect(agent.runs[0].tools.map((tool) => tool.name)).toEqual([
+      'startVehicleIngestion',
+    ]);
   });
 
   it('discloses thinking separately from the answer and hides activity on request', async () => {

@@ -12,6 +12,7 @@ import {
   ToolCallPlacements,
 } from './chat-agent';
 import { comparisonSelection } from './comparison-selection';
+import { IngestionActivity } from './ingestion-activity';
 
 /**
  * Data access for the chat agent. It is a thin adapter over the AG-UI client
@@ -27,6 +28,7 @@ import { comparisonSelection } from './comparison-selection';
 @Injectable({ providedIn: 'root' })
 export class ChatAgentClient {
   private readonly copilotKit = inject(CopilotKit);
+  private readonly ingestion = inject(IngestionActivity);
   private readonly agentStore = connectChatAgent(this.copilotKit);
   private readonly _placements = signal<Map<string, string>>(new Map());
   private readonly _threadId = signal(this.agentStore().agent.threadId);
@@ -136,16 +138,29 @@ export class ChatAgentClient {
     this.track(agent);
     const selection = comparisonSelection(agent.messages);
     agent.setState(selection ? { comparison: selection } : {});
-    const contextId = this.copilotKit.core.addContext({
-      description:
-        'SpecSync comparison selection (last successful structured tool result)',
-      value: JSON.stringify(selection ?? null),
-      agentIds: [CHAT_AGENT_ID],
-    });
+    const contextIds = [
+      this.copilotKit.core.addContext({
+        description:
+          'SpecSync comparison selection (last successful structured tool result)',
+        value: JSON.stringify(selection ?? null),
+        agentIds: [CHAT_AGENT_ID],
+      }),
+    ];
+    const runs = this.ingestion.runs();
+    if (runs.length)
+      contextIds.push(
+        this.copilotKit.core.addContext({
+          description:
+            'SpecSync specification imports started or opened in this browser session (persisted status, no credentials)',
+          value: JSON.stringify(runs),
+          agentIds: [CHAT_AGENT_ID],
+        }),
+      );
     try {
       await this.copilotKit.core.runAgent({ agent });
     } finally {
-      this.copilotKit.core.removeContext(contextId);
+      for (const contextId of contextIds)
+        this.copilotKit.core.removeContext(contextId);
     }
     const nextSelection = comparisonSelection(agent.messages);
     agent.setState(nextSelection ? { comparison: nextSelection } : {});

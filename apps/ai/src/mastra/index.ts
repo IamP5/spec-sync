@@ -7,6 +7,7 @@ import { PinoLogger } from '@mastra/loggers';
 
 import { CHAT_AGENT_ID, specSyncAgent } from './agents/spec-sync-agent';
 import { ingestionRoutes } from './ingestion/routes';
+import { vehicleIngestionWorkflow } from './ingestion/workflow';
 
 const production = process.env['NODE_ENV'] === 'production';
 
@@ -43,6 +44,8 @@ const devDatabase = `file:${fileURLToPath(new URL('../dev.db', import.meta.url))
  */
 export const mastra = new Mastra({
   agents: { [specSyncAgent.id]: specSyncAgent },
+  // Bounded ingestion pipeline; the API owns run status, review and publication.
+  workflows: { [vehicleIngestionWorkflow.id]: vehicleIngestionWorkflow },
   storage: production
     ? undefined
     : new LibSQLStore({ id: 'ai-dev', url: devDatabase }),

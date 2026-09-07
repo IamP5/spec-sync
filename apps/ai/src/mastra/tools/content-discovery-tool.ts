@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { withToolFailure } from '../catalog/api-client';
 import { failureSchema } from '../catalog/contracts';
 import { gemini, vertex } from '../models';
+import { describeSource, resolveGroundedSources } from './grounding-links';
 
 /** Isolated grounding call: provider search is never mixed with application tools. */
 const discovery = new Agent({
@@ -55,21 +56,22 @@ export const discoverVehicleContent = createTool({
           maxSteps: 2,
         },
       );
+      // Grounding cites pages through Google redirect links; show the real
+      // page URL instead.
+      const sources = await resolveGroundedSources(
+        output.sources,
+        context?.abortSignal,
+      );
       const seen = new Set<string>();
-      const items = output.sources
-        .flatMap((chunk) => {
-          const source = chunk.payload;
-          if (
-            source.sourceType !== 'url' ||
-            typeof source.url !== 'string' ||
-            !/^https?:\/\//i.test(source.url) ||
-            seen.has(source.url)
-          )
+      const items = sources
+        .flatMap((source) => {
+          if (!/^https?:\/\//i.test(source.url) || seen.has(source.url))
             return [];
           seen.add(source.url);
           return [
             {
-              title: source.title ?? 'Related source',
+              title:
+                describeSource(source.title, source.url) || 'Related source',
               url: source.url,
               verification: 'DISCOVERED_LINK' as const,
             },

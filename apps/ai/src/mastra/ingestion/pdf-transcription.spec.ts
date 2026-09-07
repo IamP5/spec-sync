@@ -15,6 +15,24 @@ describe('visual PDF transcript validation', () => {
       `Page 1\n${lines.join('\n')}`,
     );
   });
+  it('validates a later batch against its own first page', () => {
+    const lines = ['a'.repeat(120)];
+    expect(
+      validateTranscript(
+        {
+          pages: [
+            { page: 5, lines },
+            { page: 6, lines: [] },
+          ],
+        },
+        2,
+        5,
+      ),
+    ).toBe(`Page 5\n${lines[0]}\nPage 6\n`);
+    expect(() =>
+      validateTranscript({ pages: [{ page: 1, lines }] }, 1, 5),
+    ).toThrow('omitted or reordered');
+  });
   it('rejects missing, duplicated and reordered pages', () => {
     for (const pages of [
       [{ page: 1, lines: [] }],

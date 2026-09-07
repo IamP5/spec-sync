@@ -47,58 +47,67 @@ const source = {
   textSha256: digest(text),
   parserVersion: 'synthetic-test-v1',
 };
+const configurationName = 'Synthetic ingestion test';
 const request = {
   sourceUrl: source.url,
   brand: 'Ford',
   model: 'Ranger',
-  name: 'Synthetic ingestion test',
   market: 'BR',
   modelYear: 2026,
-  configurationId: null,
+  configurations: [configurationName],
 };
+const claims = [
+  {
+    attributeCode: 'torque_max',
+    rawValue: '60,0',
+    rawUnit: 'kgf.m',
+    availability: null,
+    listValue: null,
+    qualifiers: { rpm: '2000' },
+    lineStart: 2,
+    lineEnd: 2,
+    excerpt: text.split('\n')[1],
+    locator: 'Synthetic line 2',
+  },
+  {
+    attributeCode: 'camera_360',
+    rawValue: 'optional',
+    rawUnit: null,
+    availability: 'OPTIONAL',
+    listValue: null,
+    qualifiers: { package: 'test package' },
+    lineStart: 3,
+    lineEnd: 3,
+    excerpt: text.split('\n')[2],
+    locator: 'Synthetic line 3',
+  },
+  {
+    attributeCode: 'payload',
+    rawValue: '—',
+    rawUnit: 'kg',
+    availability: null,
+    listValue: null,
+    qualifiers: {},
+    lineStart: 4,
+    lineEnd: 4,
+    excerpt: text.split('\n')[3],
+    locator: 'Synthetic line 4',
+  },
+];
+// One source, one configuration; the API validates identity and claims per configuration.
 const draft = {
   source,
-  identityLineStart: 1,
-  identityLineEnd: 1,
-  identityExcerpt: text.split('\n')[0],
-  claims: [
+  configurations: [
     {
-      attributeCode: 'torque_max',
-      rawValue: '60,0',
-      rawUnit: 'kgf.m',
-      availability: null,
-      listValue: null,
-      qualifiers: { rpm: '2000' },
-      lineStart: 2,
-      lineEnd: 2,
-      excerpt: text.split('\n')[1],
-      locator: 'Synthetic line 2',
-    },
-    {
-      attributeCode: 'camera_360',
-      rawValue: 'optional',
-      rawUnit: null,
-      availability: 'OPTIONAL',
-      listValue: null,
-      qualifiers: { package: 'test package' },
-      lineStart: 3,
-      lineEnd: 3,
-      excerpt: text.split('\n')[2],
-      locator: 'Synthetic line 3',
-    },
-    {
-      attributeCode: 'payload',
-      rawValue: '—',
-      rawUnit: 'kg',
-      availability: null,
-      listValue: null,
-      qualifiers: {},
-      lineStart: 4,
-      lineEnd: 4,
-      excerpt: text.split('\n')[3],
-      locator: 'Synthetic line 4',
+      name: configurationName,
+      identityLineStart: 1,
+      identityLineEnd: 1,
+      identityExcerpt: text.split('\n')[0],
+      claims,
+      warnings: [],
     },
   ],
+  warnings: ['Synthetic coverage note'],
 };
 const sql = (statement) =>
   compose(
@@ -336,8 +345,12 @@ test(
     assert.equal(created.status, 200, JSON.stringify(created.body));
     assert.equal((await http('', { id, request })).body.result.id, id);
     assert.equal(
-      (await http('', { id, request: { ...request, name: 'different' } }))
-        .status,
+      (
+        await http('', {
+          id,
+          request: { ...request, configurations: ['different'] },
+        })
+      ).status,
       422,
     );
     await stop();
@@ -357,26 +370,34 @@ test(
       (await fetch(`${base}/api/ingestions/${id}/source`)).status,
       401,
     );
-    assert.equal(run.draft.claims[0].value, 588.399);
-    assert.equal(run.draft.claims[1].availability, 'OPTIONAL');
-    assert.ok(run.draft.claims[2].issues.length);
+    assert.equal(run.draft.configurations.length, 1);
+    assert.deepEqual(run.draft.warnings, ['Synthetic coverage note']);
+    const reviewed = run.draft.configurations[0];
+    assert.equal(reviewed.name, configurationName);
+    assert.equal(reviewed.claims[0].value, 588.399);
+    assert.equal(reviewed.claims[1].availability, 'OPTIONAL');
+    assert.ok(reviewed.claims[2].issues.length);
+    assert.deepEqual(run.configurationIds, {});
+    assert.deepEqual(run.currentValues, {});
     assert.equal(
       await sql(
         "SELECT count(*) FROM catalog.vehicle_configuration WHERE name='Synthetic ingestion test'",
       ),
       '0',
     );
+    const decision = (selectedClaims, identityConfirmed = true) => [
+      { configuration: 0, selectedClaims, identityConfirmed },
+    ];
     const review = {
       draftHash: run.draftHash,
       baseRevision: run.baseRevision,
-      selectedClaims: [0, 1],
-      identityConfirmed: true,
+      configurations: decision([0, 1]),
       reason: 'Synthetic fixture verified for integration testing',
     };
     assert.equal(
       (
         await http(`/${id}/publish`, {
-          review: { ...review, identityConfirmed: false },
+          review: { ...review, configurations: decision([0, 1], false) },
         })
       ).status,
       400,
@@ -384,7 +405,24 @@ test(
     assert.equal(
       (
         await http(`/${id}/publish`, {
-          review: { ...review, selectedClaims: [2] },
+          review: { ...review, configurations: decision([2]) },
+        })
+      ).status,
+      422,
+    );
+    assert.equal(
+      (
+        await http(`/${id}/publish`, {
+          review: {
+            ...review,
+            configurations: [
+              {
+                configuration: 1,
+                selectedClaims: [0],
+                identityConfirmed: true,
+              },
+            ],
+          },
         })
       ).status,
       422,
@@ -414,8 +452,21 @@ test(
       ),
       '1',
     );
+    const configurationId =
+      published.body.result.configurationIds[configurationName];
+    assert.ok(configurationId, JSON.stringify(published.body));
+    assert.equal(
+      published.body.result.currentValues[configurationName].torque_max
+        .knowledge_status,
+      'KNOWN',
+    );
+    const listed = await http('');
+    assert.equal(listed.status, 200);
+    assert.ok(
+      listed.body.result.some((item) => item.id === id && item.claims === 3),
+    );
     const catalog = await fetch(
-      `${base}/api/vehicle-specifications?configurationId=${published.body.result.configurationId}`,
+      `${base}/api/vehicle-specifications?configurationId=${configurationId}`,
     );
     assert.equal(catalog.status, 200);
     const specs = await catalog.json();
@@ -443,7 +494,7 @@ test(
     assert.equal(run.projectionStatus, 'CURRENT');
     const graph = await graphDriver.executeQuery(
       'MATCH (c:SpecSyncCatalog:VehicleConfiguration {id:$id})-[:HAS_CELL]->(cell:SpecificationCell)-[:SELECTS]->(a:SpecAssertion) RETURN a.availability AS availability,a.value_number AS value',
-      { id: run.configurationId },
+      { id: configurationId },
     );
     assert.equal(graph.records.length, 2);
     assert.ok(
@@ -498,7 +549,7 @@ test(
       (
         await http('', {
           id: rejected,
-          request: { ...request, name: 'Rejected synthetic' },
+          request: { ...request, configurations: ['Rejected synthetic'] },
         })
       ).status,
       200,

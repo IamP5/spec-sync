@@ -1,0 +1,115 @@
+<form (submit)="start($event)" class="space-y-4" novalidate>
+  @if (!compact()) {
+  <div>
+    <h2 class="text-lg font-semibold">Import specifications</h2>
+    <p class="mt-1 text-sm text-muted-foreground">
+      Brazilian market. One official Ford, Toyota or Nissan HTML page or PDF (up
+      to 24 pages) per run. A brochure that lists several versions imports each
+      of them; name the configurations to import, or leave the list empty to
+      import every configuration the source presents.
+    </p>
+  </div>
+  }
+  <label class="block text-sm">
+    <span class="mb-1 block font-medium">Official source URL</span>
+    <input
+      z-input
+      type="url"
+      [formField]="launchForm.sourceUrl"
+      placeholder="https://www.ford.com.br/…"
+    />
+    @if (launchForm.sourceUrl().touched() &&
+    launchForm.sourceUrl().errors().length) {
+    <span class="mt-1 block text-xs text-destructive">
+      {{ launchForm.sourceUrl().errors()[0].message || 'A source URL is
+      required.' }}
+    </span>
+    }
+  </label>
+  <div class="grid gap-4 sm:grid-cols-3">
+    <label class="block text-sm">
+      <span class="mb-1 block font-medium">Brand</span>
+      <input z-input [formField]="launchForm.brand" placeholder="Ford" />
+    </label>
+    <label class="block text-sm">
+      <span class="mb-1 block font-medium">Model</span>
+      <input z-input [formField]="launchForm.model" placeholder="Ranger" />
+    </label>
+    <label class="block text-sm">
+      <span class="mb-1 block font-medium">Model year</span>
+      <input z-input type="number" [formField]="launchForm.modelYear" />
+    </label>
+  </div>
+  <label class="block text-sm">
+    <span class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+      <span class="font-medium">Configurations to import</span>
+      <span
+        class="text-xs text-muted-foreground"
+        data-role="configuration-count"
+      >
+        @if (configurationCount()) { {{ configurationCount() }} of {{
+        maxConfigurations }} } @else { Empty: every configuration the source
+        presents }
+      </span>
+    </span>
+    <textarea
+      z-textarea
+      rows="3"
+      [formField]="launchForm.configurations"
+      placeholder="One per line, e.g.&#10;Limited 3.0 V6 AT Diesel&#10;XLT 2.0 AT Diesel"
+    ></textarea>
+    @if (launchForm.configurations().errors().length) {
+    <span class="mt-1 block text-xs text-destructive">
+      {{ launchForm.configurations().errors()[0].message }}
+    </span>
+    }
+  </label>
+  @if (!hasKey()) {
+  <label class="block text-sm">
+    <span class="mb-1 flex items-center gap-1 font-medium">
+      <ng-icon name="lucideKeyRound" aria-hidden="true" />
+      Curator key
+    </span>
+    <input
+      z-input
+      type="password"
+      autocomplete="off"
+      [formField]="launchForm.key"
+      placeholder="Required to start an import"
+    />
+    <span class="mt-1 block text-xs text-muted-foreground">
+      Kept in memory for this page load and sent only to the API.
+    </span>
+  </label>
+  } @if (error()) {
+  <p
+    role="alert"
+    class="rounded-lg border border-destructive p-3 text-sm text-destructive"
+  >
+    {{ error() }}
+  </p>
+  }
+  <div class="flex flex-wrap items-center gap-2">
+    <button
+      z-button
+      type="submit"
+      data-action="start"
+      [zDisabled]="launchForm().invalid() || busy() || (!hasKey() && !model().key.trim())"
+    >
+      <ng-icon name="lucidePlay" aria-hidden="true" />
+      {{ busy() ? 'Starting…' : 'Start extraction' }}
+    </button>
+    @if (cancellable()) {
+    <button
+      z-button
+      zType="ghost"
+      type="button"
+      data-action="cancel"
+      [zDisabled]="busy()"
+      (click)="cancelled.emit()"
+    >
+      Not now
+    </button>
+    }
+  </div>
+</form>

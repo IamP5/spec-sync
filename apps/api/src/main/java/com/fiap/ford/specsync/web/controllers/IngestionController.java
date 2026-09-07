@@ -3,6 +3,7 @@ package com.fiap.ford.specsync.web.controllers;
 import com.fiap.ford.specsync.application.ingestion.*;
 import com.fiap.ford.specsync.web.api.IngestionApi;
 import com.fiap.ford.specsync.web.dto.request.*;
+import com.fiap.ford.specsync.web.dto.response.IngestionListResponse;
 import com.fiap.ford.specsync.web.dto.response.IngestionResponse;
 import java.security.Principal;
 import java.util.*;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class IngestionController implements IngestionApi {
     private final CreateIngestion create;
     private final GetIngestion get;
+    private final ListIngestions list;
     private final PublishIngestion publish;
     private final RejectIngestion reject;
     private final GetIngestionSource source;
@@ -19,11 +21,13 @@ public class IngestionController implements IngestionApi {
     public IngestionController(
             CreateIngestion create,
             GetIngestion get,
+            ListIngestions list,
             PublishIngestion publish,
             RejectIngestion reject,
             GetIngestionSource source) {
         this.create = Objects.requireNonNull(create);
         this.get = Objects.requireNonNull(get);
+        this.list = Objects.requireNonNull(list);
         this.publish = Objects.requireNonNull(publish);
         this.reject = Objects.requireNonNull(reject);
         this.source = Objects.requireNonNull(source);
@@ -34,6 +38,11 @@ public class IngestionController implements IngestionApi {
         return create.execute(
                 new CreateIngestion.Input(request.id(), principal.getName(), request.request()),
                 o -> new IngestionResponse(o.result()));
+    }
+
+    @Override
+    public IngestionListResponse list(Principal principal) {
+        return list.execute(new ListIngestions.Input(principal.getName()), o -> new IngestionListResponse(o.result()));
     }
 
     @Override

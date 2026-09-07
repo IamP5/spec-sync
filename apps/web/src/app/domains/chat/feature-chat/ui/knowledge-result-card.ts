@@ -50,6 +50,15 @@ const schema = z.object({
                       Discovered link · content not verified or ingested
                     </p>
                   }
+                  @if (item['documentType']) {
+                    <p class="text-xs">
+                      {{
+                        item['documentType'] === 'PDF'
+                          ? 'Brochure PDF · not yet read'
+                          : 'Web page · not yet read'
+                      }}
+                    </p>
+                  }
                   @if (item['excerpt']) {
                     <blockquote class="my-2">
                       {{ format(item['excerpt']) }}

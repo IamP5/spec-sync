@@ -32,6 +32,7 @@ import {
   lucideCarFront,
   lucideCheck,
   lucideCopy,
+  lucideFileInput,
   lucideFileSearch,
   lucideMessageCircleQuestion,
   lucidePenLine,
@@ -95,6 +96,12 @@ const SUGGESTIONS = [
     icon: 'lucideFileSearch',
     label: 'Find related reviews',
     prompt: 'Find articles and videos reviewing the Ford Ranger ride comfort.',
+  },
+  {
+    icon: 'lucideFileInput',
+    label: 'Import specifications',
+    prompt:
+      'Import the official specifications of the Ford Ranger 2026 (Brazil): find the manufacturer PDF or page, show me which versions it lists, and start a reviewed import for the ones I choose.',
   },
   {
     icon: 'lucideMessageCircleQuestion',
@@ -168,6 +175,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
       lucideCarFront,
       lucideCheck,
       lucideCopy,
+      lucideFileInput,
       lucideFileSearch,
       lucideMessageCircleQuestion,
       lucidePenLine,

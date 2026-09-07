@@ -15,7 +15,7 @@ ADRs 0001, 0003, and 0004.
 - `chat` owns conversations, history, preferences, AG-UI state restoration,
   CopilotKit registration, and prompt/draft/send integration.
 - `vehicles` owns configurations, specifications, comparison semantics, related
-  reviews, and their reusable workflows.
+  reviews, reviewed specification ingestion, and their reusable workflows.
 - Catalog, comparison, and reviews are features within vehicles. Vehicle details
   stay local to catalog while it is their only independent consumer.
 
@@ -42,6 +42,11 @@ src/app/
       feature-reviews/
         index.ts, vehicle-reviews-search.ts, vehicle-reviews-search-store.ts
         ui/vehicle-reviews-pane.ts
+      feature-ingestion/
+        index.ts, vehicle-ingestion-page.ts, vehicle-ingestion-run-detail.ts
+        vehicle-ingestion-launch-edit.ts, vehicle-ingestion-search.ts
+        ingestion-detail-store.ts, ingestion-search-store.ts
+        ui/ingestion-claims-pane.ts, ui/ingestion-source-pane.ts, ui/ingestion-run-status-pane.ts
       data/, util/
   testing/
 libs/ui/  # Generic Zard design system

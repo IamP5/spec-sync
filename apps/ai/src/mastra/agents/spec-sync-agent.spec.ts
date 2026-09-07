@@ -19,9 +19,14 @@ describe('SpecSync agent contract', () => {
         'getEvidenceExcerpt',
         'discoverVehicleContent',
         'discoverVehicleSpecificationSources',
+        'previewVehicleSource',
         'prepareVehicleIngestion',
       ].sort(),
     );
+  });
+  it('loads the ingestion procedure as an agent skill', async () => {
+    const skills = await specSyncAgent.listSkills();
+    expect(skills.map((skill) => skill.name)).toEqual(['vehicle-ingestion']);
   });
   it('bounds agent rounds and retains the existing provider summary stream', async () => {
     expect(await specSyncAgent.getDefaultOptions()).toMatchObject({

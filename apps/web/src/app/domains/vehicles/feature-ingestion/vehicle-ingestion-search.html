@@ -1,0 +1,80 @@
+<div class="flex items-center justify-between gap-3">
+  <h2 class="text-lg font-semibold">Recent imports</h2>
+  <button
+    z-button
+    zType="ghost"
+    zSize="sm"
+    type="button"
+    [zDisabled]="!hasKey()"
+    (click)="reload()"
+    aria-label="Refresh imports"
+  >
+    <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+    Refresh
+  </button>
+</div>
+@if (!hasKey()) {
+<p class="mt-3 text-sm text-muted-foreground">
+  Enter the curator key to list your imports.
+</p>
+} @else if (loading() && !runs().length) {
+<div class="mt-3 space-y-2" aria-busy="true" aria-label="Loading imports">
+  <z-skeleton class="h-8 w-full" />
+  <z-skeleton class="h-8 w-full" />
+</div>
+} @else if (failed()) {
+<p class="mt-3 text-sm text-destructive" role="alert">
+  Could not load the imports. Check the curator key and refresh.
+</p>
+} @else if (!runs().length) {
+<p class="mt-3 text-sm text-muted-foreground">
+  No imports yet. Start one above, or ask the assistant to find an official
+  source and import it.
+</p>
+} @else {
+<div class="mt-3 overflow-x-auto">
+  <table z-table zSize="compact" class="min-w-[40rem]">
+    <thead z-table-header>
+      <tr z-table-row>
+        <th z-table-head>Vehicle</th>
+        <th z-table-head>Scope</th>
+        <th z-table-head>Status</th>
+        <th z-table-head class="text-right">Claims</th>
+        <th z-table-head>Updated</th>
+      </tr>
+    </thead>
+    <tbody z-table-body>
+      @for (summary of runs(); track summary.id) {
+      <tr
+        z-table-row
+        class="cursor-pointer"
+        tabindex="0"
+        role="link"
+        [attr.data-run]="summary.id"
+        [attr.aria-label]="'Open import ' + title(summary)"
+        (click)="opened.emit(summary.id)"
+        (keydown.enter)="opened.emit(summary.id)"
+      >
+        <td z-table-cell class="font-medium">{{ title(summary) }}</td>
+        <td z-table-cell class="max-w-xs truncate text-muted-foreground">
+          {{ scope(summary) }}
+        </td>
+        <td z-table-cell>
+          <z-badge [zType]="stage(summary).badge"
+            >{{ stage(summary).label }}</z-badge
+          >
+          @if (summary.error && summary.status !== 'FAILED') {
+          <span class="ml-2 text-xs text-muted-foreground">retrying</span>
+          }
+        </td>
+        <td z-table-cell class="text-right tabular-nums">
+          @if (summary.configurations) { {{ summary.claims }} · {{
+          summary.configurations }} conf. } @else { — }
+        </td>
+        <td z-table-cell class="text-muted-foreground">{{ when(summary) }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+}

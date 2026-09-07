@@ -1,0 +1,228 @@
+<section class="rounded-xl border p-4" aria-label="Vehicle identity">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div class="min-w-0">
+      <h3 class="font-semibold">Identity evidence</h3>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Source lines {{ configuration().identityLineStart }}–{{
+        configuration().identityLineEnd }}. Verify year, trim, engine,
+        transmission and drivetrain before publishing anything for this
+        configuration.
+      </p>
+    </div>
+    @if (reviewing()) {
+    <label
+      class="flex items-start gap-2 rounded-lg border px-3 py-2 text-sm"
+      [class.border-primary]="identityConfirmed()"
+    >
+      <input
+        type="checkbox"
+        class="mt-0.5 size-4 accent-primary"
+        data-role="identity"
+        [checked]="identityConfirmed()"
+        (change)="onIdentityChange($event)"
+      />
+      <span
+        >This source applies to <strong>{{ configuration().name }}</strong>,
+        exactly this model year</span
+      >
+    </label>
+    }
+  </div>
+  <blockquote
+    class="mt-3 rounded-lg bg-muted p-3 text-sm whitespace-pre-wrap"
+    data-role="identity-excerpt"
+  >
+    {{ configuration().identityExcerpt }}
+  </blockquote>
+  @if (configuration().warnings.length) {
+  <ul class="mt-3 space-y-1.5" aria-label="Configuration notes">
+    @for (warning of configuration().warnings; track $index) {
+    <li class="flex items-start gap-2 text-sm">
+      <ng-icon
+        name="lucideTriangleAlert"
+        class="mt-0.5 shrink-0 text-warning"
+        aria-hidden="true"
+      />
+      <span>{{ warning }}</span>
+    </li>
+    }
+  </ul>
+  }
+</section>
+
+<section class="mt-4 rounded-xl border" aria-label="Proposed specifications">
+  <div
+    class="flex flex-wrap items-center gap-2 border-b px-4 py-3"
+    role="toolbar"
+    aria-label="Claim filters"
+  >
+    @for (item of filters; track item.id) {
+    <button
+      z-button
+      [zType]="filter() === item.id ? 'secondary' : 'ghost'"
+      zSize="sm"
+      type="button"
+      [attr.aria-pressed]="filter() === item.id"
+      (click)="filter.set(item.id)"
+    >
+      {{ item.label }} @switch (item.id) { @case ('all') {
+      <span class="text-xs text-muted-foreground">{{ counts().total }}</span>
+      } @case ('changes') {
+      <span class="text-xs text-muted-foreground">{{ counts().changes }}</span>
+      } @case ('conflicts') {
+      <span class="text-xs text-muted-foreground"
+        >{{ counts().conflicts }}</span
+      >
+      } @case ('issues') {
+      <span class="text-xs text-muted-foreground">{{ counts().issues }}</span>
+      } }
+    </button>
+    } @if (reviewing()) {
+    <div class="ml-auto flex flex-wrap items-center gap-2">
+      <span class="text-xs text-muted-foreground" data-role="selected-count"
+        >{{ selectedCount() }} selected</span
+      >
+      <button
+        z-button
+        zType="outline"
+        zSize="sm"
+        type="button"
+        data-action="select-suggested"
+        (click)="suggestedRequested.emit()"
+      >
+        Select new and changed
+      </button>
+      <button
+        z-button
+        zType="ghost"
+        zSize="sm"
+        type="button"
+        data-action="clear-selection"
+        (click)="clearRequested.emit()"
+      >
+        Clear
+      </button>
+    </div>
+    }
+  </div>
+  @if (!groups().length) {
+  <p class="p-4 text-sm text-muted-foreground">
+    No supported specification was extracted for this configuration. Nothing can
+    be published for it; try a more specific source.
+  </p>
+  } @else if (!visibleGroups().length) {
+  <p class="p-4 text-sm text-muted-foreground">No claims match this filter.</p>
+  } @else {
+  <div class="overflow-x-auto">
+    <table z-table zSize="compact" class="min-w-[44rem]">
+      <thead z-table-header>
+        <tr z-table-row>
+          @if (reviewing()) {
+          <th z-table-head class="w-10">
+            <span class="sr-only">Publish</span>
+          </th>
+          }
+          <th z-table-head>Specification</th>
+          <th z-table-head>Current catalog</th>
+          <th z-table-head>Proposed</th>
+          <th z-table-head>As printed</th>
+          <th z-table-head>Evidence</th>
+        </tr>
+      </thead>
+      <tbody z-table-body>
+        @for (group of visibleGroups(); track group.attributeCode) { @for (row
+        of group.rows; track row.index; let first = $first) {
+        <tr
+          z-table-row
+          [attr.data-claim]="row.index"
+          [attr.data-change]="row.change"
+          [class]="selected()[row.index] ? 'bg-primary/5' : ''"
+        >
+          @if (reviewing()) {
+          <td z-table-cell class="align-top">
+            @if (row.change !== 'invalid') {
+            <input
+              type="checkbox"
+              class="size-4 accent-primary"
+              [attr.aria-label]="'Publish ' + group.label"
+              [checked]="selected()[row.index]"
+              (change)="claimToggled.emit(row.index)"
+            />
+            }
+          </td>
+          }
+          <td z-table-cell class="align-top">
+            @if (first) {
+            <span class="font-medium">{{ group.label }}</span>
+            @if (group.conflicting) {
+            <z-badge zType="secondary" class="ml-2">
+              <ng-icon name="lucideGitFork" aria-hidden="true" />
+              {{ group.rows.length }} candidates
+            </z-badge>
+            } } @else {
+            <span class="text-xs text-muted-foreground">↳ alternative</span>
+            }
+          </td>
+          <td z-table-cell class="align-top text-muted-foreground">
+            {{ row.current }}
+          </td>
+          <td z-table-cell class="align-top">
+            <span class="font-medium">{{ row.proposed || '—' }}</span>
+            @switch (row.change) { @case ('new') {
+            <z-badge zType="default" class="ml-2">New</z-badge>
+            } @case ('changed') {
+            <z-badge zType="secondary" class="ml-2">Changed</z-badge>
+            } @case ('same') {
+            <z-badge zType="outline" class="ml-2">Same</z-badge>
+            } @case ('invalid') {
+            <z-badge zType="destructive" class="ml-2">
+              <ng-icon name="lucideCircleAlert" aria-hidden="true" />
+              Needs correction
+            </z-badge>
+            } } @if (row.claim.issues.length) {
+            <p class="mt-1 text-xs text-destructive">
+              {{ row.claim.issues.join('; ') }}
+            </p>
+            }
+          </td>
+          <td z-table-cell class="align-top">
+            <span>{{ row.raw }}</span>
+            @if (row.qualifiers) {
+            <p class="mt-1 text-xs text-muted-foreground">
+              {{ row.qualifiers }}
+            </p>
+            }
+          </td>
+          <td z-table-cell class="align-top">
+            <button
+              type="button"
+              class="inline-flex items-center gap-1 rounded text-left text-xs underline focus-visible:outline-2 focus-visible:outline-ring"
+              [attr.aria-expanded]="isExpanded(row.index)"
+              (click)="toggleExpanded(row.index)"
+            >
+              <ng-icon
+                name="lucideChevronDown"
+                class="transition-transform"
+                [class.rotate-180]="isExpanded(row.index)"
+                aria-hidden="true"
+              />
+              Lines {{ row.claim.lineStart }}–{{ row.claim.lineEnd }}
+            </button>
+            <p class="mt-1 text-xs text-muted-foreground">
+              {{ row.claim.locator }}
+            </p>
+            @if (isExpanded(row.index)) {
+            <blockquote
+              class="mt-2 max-w-md rounded-lg bg-muted p-2 text-xs whitespace-pre-wrap"
+            >
+              {{ row.claim.excerpt }}
+            </blockquote>
+            }
+          </td>
+        </tr>
+        } }
+      </tbody>
+    </table>
+  </div>
+  }
+</section>

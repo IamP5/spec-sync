@@ -1,4 +1,18 @@
 export {
+  type IngestionLaunchPrefill,
+  type IngestionPlan,
+  ingestionPlanSchema,
+  type IngestionRun,
+  type IngestionRunSummary,
+  type IngestionStartArgs,
+  ingestionStartArgsSchema,
+  type IngestionStartResult,
+  ingestionStartResultSchema,
+  samePrefill,
+  type SourcePreview,
+  sourcePreviewSchema,
+} from '../../data/ingestion-contracts';
+export {
   type CatalogPage,
   catalogPageSchema,
   type Comparison,

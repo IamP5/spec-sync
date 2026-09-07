@@ -24,7 +24,10 @@ apps/ai/
     index.ts          # Mastra registry: agents, storage (dev only), logger
     models.ts         # Vertex AI provider (AI SDK) + the Gemini model
     agents/           # one file per agent (<name>-agent.ts)
-    tools/            # server tools (<name>-tool.ts), vehicle catalog, graph retrieval and content discovery
+    tools/            # server tools (<name>-tool.ts), vehicle catalog, graph retrieval, content discovery, ingestion
+    skills/           # code-defined agent skills (createSkill), e.g. the ingestion procedure
+    ingestion/        # vehicleIngestion workflow: capture, identification, extraction, worker routes, source discovery (site-index, linked-documents)
+    graph/            # Neo4j retrieval and projection
   .env.example        # GOOGLE_VERTEX_PROJECT / GOOGLE_VERTEX_LOCATION
   Dockerfile          # build with `nx build ai`, run .mastra/output on Cloud Run
   checks.mjs          # lint + typecheck (fast), test + build (full)
@@ -50,11 +53,17 @@ apps/ai/
   prefix. Register custom routes only through the Mastra `server` option,
   never a second HTTP server.
 - Names are part of the contract with `apps/web`: agent id `chat`, route
-  `/copilotkit`, and vehicle tool names in `tools/vehicle-tools.ts`. The web client
-  renders server tool results directly. Change names only together with the client.
-- Read `docs/conversational-vehicles.md` for retrieval boundaries and startup.
-  No ingestion or publication tools are included. External discovery links must
-  never be represented as verified quotes or stored review evidence.
+  `/copilotkit`, vehicle tool names in `tools/vehicle-tools.ts`, ingestion tool
+  names in `tools/ingestion-tools.ts` and the client tool `startVehicleIngestion`
+  the agent instructions and skill refer to. The web client renders server tool
+  results directly. Change names only together with the client.
+- Read `docs/conversational-vehicles.md` for retrieval boundaries and startup
+  and `docs/vehicle-ingestion.md` for the ingestion workflow. Chat tools never
+  publish catalog data: `previewVehicleSource` reads a source, the browser's
+  `startVehicleIngestion` client tool starts an API-owned run with the curator
+  key that never reaches this service, and publication is a human decision in
+  the web app. External discovery links must never be represented as verified
+  quotes or stored review evidence.
 - Keep `zod` on the same line as the workspace root (currently 3.25.x, the
   line `@ag-ui/mastra` and `@copilotkit/runtime` use). Two zod copies in one
   process break Mastra's OpenAPI generation at startup

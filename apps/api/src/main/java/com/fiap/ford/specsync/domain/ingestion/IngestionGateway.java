@@ -7,6 +7,8 @@ public interface IngestionGateway {
 
     Ingestion.Run get(UUID id, String owner);
 
+    List<Ingestion.Summary> list(String owner);
+
     Ingestion.CapturedFile source(UUID id, String owner);
 
     Ingestion.Run publish(UUID id, String owner, Ingestion.Review review);

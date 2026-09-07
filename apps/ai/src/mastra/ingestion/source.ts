@@ -5,6 +5,8 @@ import { request } from 'node:https';
 import ipaddr from 'ipaddr.js';
 import { type DefaultTreeAdapterMap, parse } from 'parse5';
 
+import { transcribePdf } from './pdf-transcription';
+
 export const sha256 = (bytes: string | Uint8Array) =>
   createHash('sha256').update(bytes).digest('hex');
 export const MAX_BYTES = 5_000_000;
@@ -52,7 +54,8 @@ async function download(
             ? callback(null, [{ address, family: 4 }])
             : callback(null, address, 4),
         headers: {
-          'User-Agent': 'SpecSync/1.0 (vehicle specification research)',
+          'User-Agent':
+            'Mozilla/5.0 (compatible; SpecSync/1.0; +vehicle specification research)',
           Accept: 'text/html,application/pdf',
           'Accept-Encoding': 'identity',
         },
@@ -179,13 +182,45 @@ export async function pdfText(bytes: Uint8Array): Promise<string> {
     await task.destroy();
   }
 }
-export async function captureSource(value: string, signal: AbortSignal) {
-  const domains = (
+
+export interface CapturedSource {
+  url: string;
+  title: string;
+  mimeType: string;
+  originalBase64: string;
+  originalSha256: string;
+  text: string;
+  textSha256: string;
+  parserVersion: string;
+  /** Number of PDF pages, 0 for HTML. */
+  pageCount: number;
+}
+
+/** Approved source domains, overridable per deployment. */
+export function sourceDomains(): string[] {
+  return (
     process.env['SPECSYNC_INGESTION_SOURCE_DOMAINS'] ?? defaults.join(',')
   )
     .split(',')
     .map((domain) => domain.trim())
     .filter(Boolean);
+}
+
+export interface DownloadedSource {
+  url: URL;
+  bytes: Buffer;
+  mime: string;
+}
+
+/**
+ * Downloads one approved manufacturer document, following at most four
+ * redirects and checking every hop against the approved domains.
+ */
+export async function downloadSource(
+  value: string,
+  signal: AbortSignal,
+  domains = sourceDomains(),
+): Promise<DownloadedSource> {
   let url = validateSourceUrl(value, domains);
   const deadline = AbortSignal.any([signal, AbortSignal.timeout(45000)]);
   for (let redirects = 0; redirects <= 4; redirects++) {
@@ -194,41 +229,100 @@ export async function captureSource(value: string, signal: AbortSignal) {
       url = validateSourceUrl(new URL(response.redirect, url).href, domains);
       continue;
     }
-    let text: string, title: string;
-    if (
-      response.mime === 'application/pdf' &&
-      response.bytes.subarray(0, 5).toString() === '%PDF-'
-    ) {
-      text = await pdfText(response.bytes);
-      title = decodeURIComponent(
-        url.pathname.split('/').pop() ?? 'Manufacturer brochure',
-      );
-    } else if (response.mime === 'text/html') {
-      ({ text, title } = htmlText(response.bytes.toString('utf8')));
-    } else
-      throw new Error('Only manufacturer HTML and text PDFs are supported.');
-    deadline.throwIfAborted();
-    if (
-      response.mime !== 'application/pdf' &&
-      text.replace(/Page \d+/g, '').trim().length < 100
-    )
+    return { url, bytes: response.bytes, mime: response.mime };
+  }
+  throw new Error('Too many source redirects.');
+}
+
+/**
+ * Downloads one approved manufacturer document and turns it into line-based
+ * evidence text: HTML keeps table separators, headings and footnotes; PDFs are
+ * rendered and visually transcribed (embedded text alone misses image-based
+ * specification tables). The returned text is what every evidence line range
+ * refers to, so it is hashed and stored verbatim by the API.
+ */
+export async function captureSource(
+  value: string,
+  signal: AbortSignal,
+): Promise<CapturedSource> {
+  const { url, bytes, mime } = await downloadSource(value, signal);
+  let text: string, title: string, parserVersion: string;
+  let pageCount = 0;
+  if (
+    mime === 'application/pdf' &&
+    bytes.subarray(0, 5).toString() === '%PDF-'
+  ) {
+    const embedded = await pdfText(bytes);
+    pageCount = embedded
+      .split('\n')
+      .filter((line) => /^Page \d+$/.test(line)).length;
+    signal.throwIfAborted();
+    const transcript = await transcribePdf(
+      bytes.toString('base64'),
+      pageCount,
+      signal,
+    );
+    text = transcript.text;
+    parserVersion = transcript.parserVersion;
+    title = decodeURIComponent(
+      url.pathname.split('/').pop() ?? 'Manufacturer brochure',
+    );
+  } else if (mime === 'text/html') {
+    ({ text, title } = htmlText(bytes.toString('utf8')));
+    parserVersion = 'specsync-source-v1';
+    signal.throwIfAborted();
+    if (text.trim().length < 100)
       throw new Error(
         'No usable source text. Scanned PDFs require manual review.',
       );
-    if (text.length > MAX_TEXT)
-      throw new Error(
-        'Source text exceeds 150,000 characters. Use a smaller document.',
-      );
-    return {
-      url: url.href,
-      title: title || url.hostname,
-      mimeType: response.mime,
-      originalBase64: response.bytes.toString('base64'),
-      originalSha256: sha256(response.bytes),
-      text,
-      textSha256: sha256(text),
-      parserVersion: 'specsync-source-v1',
-    };
+  } else
+    throw new Error('Only manufacturer HTML pages and PDFs are supported.');
+  if (text.length > MAX_TEXT)
+    throw new Error(
+      'Source text exceeds 150,000 characters. Use a smaller document.',
+    );
+  return {
+    url: url.href,
+    title: title || url.hostname,
+    mimeType: mime,
+    originalBase64: bytes.toString('base64'),
+    originalSha256: sha256(bytes),
+    text,
+    textSha256: sha256(text),
+    parserVersion,
+    pageCount,
+  };
+}
+
+const CACHE_TTL_MS = 15 * 60 * 1000;
+const CACHE_ENTRIES = 6;
+const cache = new Map<string, { expires: number; source: CapturedSource }>();
+
+/**
+ * Capture with a short in-memory cache: the chat previews a source (one
+ * download and, for PDFs, one visual transcription) and the run that follows
+ * seconds later reuses the same capture instead of paying for it twice. The
+ * cache is per process and bounded; nothing here is durable.
+ */
+export async function captureSourceCached(
+  value: string,
+  signal: AbortSignal,
+): Promise<CapturedSource> {
+  const now = Date.now();
+  const hit = cache.get(value);
+  if (hit && hit.expires > now) return hit.source;
+  const source = await captureSource(value, signal);
+  if (cache.size >= CACHE_ENTRIES) {
+    const oldest = [...cache.entries()].sort(
+      (a, b) => a[1].expires - b[1].expires,
+    )[0];
+    if (oldest) cache.delete(oldest[0]);
   }
-  throw new Error('Too many source redirects.');
+  cache.set(value, { expires: now + CACHE_TTL_MS, source });
+  return source;
+}
+
+/** Test hook: forgets cached captures. */
+export function clearSourceCache(): void {
+  cache.clear();
 }

@@ -1,6 +1,7 @@
 package com.fiap.ford.specsync.web.api;
 
 import com.fiap.ford.specsync.web.dto.request.*;
+import com.fiap.ford.specsync.web.dto.response.IngestionListResponse;
 import com.fiap.ford.specsync.web.dto.response.IngestionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,8 +14,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/api/ingestions", produces = "application/json")
 public interface IngestionApi {
     @PostMapping
-    @Operation(summary = "Queue one source for a vehicle; request UUID is the idempotency key")
+    @Operation(summary = "Queue one source for one or more configurations; request UUID is the idempotency key")
     IngestionResponse create(@Valid @RequestBody CreateIngestionRequest request, Principal principal);
+
+    @GetMapping
+    @Operation(summary = "List the curator's imports, newest first")
+    IngestionListResponse list(Principal principal);
 
     @GetMapping("/{id}")
     @Operation(summary = "Read persisted progress and review evidence")
@@ -25,7 +30,7 @@ public interface IngestionApi {
     org.springframework.http.ResponseEntity<byte[]> source(@PathVariable UUID id, Principal principal);
 
     @PostMapping("/{id}/publish")
-    @Operation(summary = "Publish selected claims from the exact reviewed draft")
+    @Operation(summary = "Publish selected claims of the exact reviewed draft, per configuration")
     IngestionResponse publish(
             @PathVariable UUID id, @Valid @RequestBody PublishIngestionRequest request, Principal principal);
 
