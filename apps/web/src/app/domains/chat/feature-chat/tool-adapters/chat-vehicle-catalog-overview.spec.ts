@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type { Comparison } from '../../../vehicles/api/contracts';
@@ -30,7 +31,10 @@ describe('ChatVehicleCatalogOverview', () => {
     );
     await TestBed.configureTestingModule({
       imports: [ChatVehicleCatalogOverview],
-      providers: [{ provide: CHAT_CARD_ACTIONS, useValue: { draft, send } }],
+      providers: [
+        provideHttpClient(),
+        { provide: CHAT_CARD_ACTIONS, useValue: { draft, send } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ChatVehicleCatalogOverview);

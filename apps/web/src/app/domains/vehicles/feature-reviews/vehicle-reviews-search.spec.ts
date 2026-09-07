@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 
 import { ZardDrawerService } from '@/ui/components/drawer';
@@ -22,6 +23,7 @@ describe('Vehicle reviews', () => {
     draft.mockReset();
     TestBed.configureTestingModule({
       imports: [VehicleReviewsSearch],
+      providers: [provideHttpClient()],
     });
   });
   afterEach(() => vi.unstubAllGlobals());

@@ -1,4 +1,5 @@
 import { BaseEvent, EventType } from '@ag-ui/client';
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
@@ -41,6 +42,7 @@ describe('ChatPage', () => {
     await TestBed.configureTestingModule({
       imports: [ChatPage],
       providers: [
+        provideHttpClient(),
         ...provideFakeChatAgent(agent),
         provideRouter([
           { path: '', children: [] },

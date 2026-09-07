@@ -1,4 +1,5 @@
 import { BreakpointObserver, MediaMatcher } from '@angular/cdk/layout';
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, map } from 'rxjs';
@@ -19,6 +20,7 @@ describe('App', () => {
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
+        provideHttpClient(),
         provideFakeUser(),
         provideFakeAuth(),
         provideZard(),

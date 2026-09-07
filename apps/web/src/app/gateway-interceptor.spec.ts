@@ -7,11 +7,16 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { AuthSession, WEB_CONFIG } from './domains/auth/data/auth-session';
+import { ChatModelClient } from './domains/chat/data/chat-model-client';
+import { VehicleCatalogClient } from './domains/vehicles/data/vehicle-catalog-client';
+import { VehicleReviewsClient } from './domains/vehicles/data/vehicle-reviews-client';
 import { gatewayInterceptor } from './gateway-interceptor';
+import { matrix } from './testing/vehicle-fixtures';
 
 describe('gateway credentials', () => {
   const idToken = vi.fn<() => Promise<string>>();
@@ -69,6 +74,61 @@ describe('gateway credentials', () => {
       request.flush({});
       await result;
     }
+  });
+  it('routes model, catalog and review resources through authenticated Angular HTTP', async () => {
+    const resources = TestBed.runInInjectionContext(() => [
+      TestBed.inject(ChatModelClient).catalogResource(),
+      TestBed.inject(VehicleCatalogClient).detailResource(
+        signal(matrix.configurations[0].id),
+      ),
+      TestBed.inject(VehicleReviewsClient).relatedResource(
+        signal({
+          configurationIds: [matrix.configurations[0].id],
+          attributeCode: 'power_max',
+        }),
+      ),
+    ]);
+    TestBed.tick();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const requests = TestBed.inject(HttpTestingController).match(() => true);
+    expect(requests).toHaveLength(3);
+    for (const request of requests) {
+      expect(request.request.url).toMatch(
+        /^https:\/\/gateway\.example\/(api|ai)\//,
+      );
+      expect(request.request.headers.get('Authorization')).toBe(
+        'Bearer fresh-token',
+      );
+      expect(request.request.credentials).toBe('omit');
+      request.flush(
+        request.request.url.includes('/chat/models')
+          ? {
+              defaultModelId: 'test',
+              models: [],
+              defaultEffortId: 'auto',
+              efforts: [],
+            }
+          : request.request.url.includes('/related-reviews')
+            ? { status: 'OK', message: '', projectionVersion: null, items: [] }
+            : matrix,
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    resources.forEach((resource) => resource.destroy());
+  });
+  it('cancels an in-flight catalog request when its resource is destroyed', async () => {
+    const resource = TestBed.runInInjectionContext(() =>
+      TestBed.inject(VehicleCatalogClient).detailResource(
+        signal(matrix.configurations[0].id),
+      ),
+    );
+    TestBed.tick();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const request = TestBed.inject(HttpTestingController).expectOne((request) =>
+      request.url.includes('/api/vehicle-specifications'),
+    );
+    resource.destroy();
+    expect(request.cancelled).toBe(true);
   });
   it('never attaches credentials to external, protocol-relative or lookalike URLs', async () => {
     for (const url of [
