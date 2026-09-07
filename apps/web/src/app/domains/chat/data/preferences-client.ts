@@ -24,6 +24,14 @@ export class PreferencesClient {
           typeof stored.showActivity === 'boolean'
             ? stored.showActivity
             : DEFAULT_PREFERENCES.showActivity,
+        model:
+          typeof stored.model === 'string'
+            ? stored.model
+            : DEFAULT_PREFERENCES.model,
+        effort:
+          typeof stored.effort === 'string'
+            ? stored.effort
+            : DEFAULT_PREFERENCES.effort,
       };
     } catch {
       return { ...DEFAULT_PREFERENCES };

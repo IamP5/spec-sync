@@ -12,6 +12,7 @@ import {
 
 import {
   ChatAgentError,
+  type ChatRunOptions,
   isChatTurn,
   normalizeThread,
   toolActivities,
@@ -114,9 +115,10 @@ export const ConversationDetailStore = signalStore(
       /**
        * Adds the user's turn and streams the assistant's reply. The turn is
        * in the history before the reply starts, so the sidebar shows the new
-       * thread right away.
+       * thread right away. `options` name the model and reasoning effort the
+       * service should answer with; empty leaves the choice to the service.
        */
-      send(content: string): Promise<void> {
+      send(content: string, options: ChatRunOptions = {}): Promise<void> {
         return run(async () => {
           if (store.isEmpty()) {
             patchState(store, {
@@ -126,7 +128,7 @@ export const ConversationDetailStore = signalStore(
           }
           store._chatAgentClient.append(content);
           persist();
-          await store._chatAgentClient.send();
+          await store._chatAgentClient.send(options);
         });
       },
 
@@ -134,11 +136,11 @@ export const ConversationDetailStore = signalStore(
        * Replaces the last reply with a new one, or retries the last turn
        * after a failure. Ignored while the conversation is empty.
        */
-      regenerate(): Promise<void> {
+      regenerate(options: ChatRunOptions = {}): Promise<void> {
         if (store.isEmpty()) {
           return Promise.resolve();
         }
-        return run(() => store._chatAgentClient.regenerate());
+        return run(() => store._chatAgentClient.regenerate(options));
       },
 
       /** Aborts the reply in flight and keeps whatever text arrived so far. */

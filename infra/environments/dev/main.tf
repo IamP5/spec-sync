@@ -187,12 +187,20 @@ module "ai" {
     NEO4J_DATABASE         = "neo4j"
   }
 
-  secret_env = {
-    for name, secret in data.google_secret_manager_secret.neo4j :
-    name => { secret = secret.secret_id }
-  }
+  secret_env = merge(
+    {
+      for name, secret in data.google_secret_manager_secret.neo4j :
+      name => { secret = secret.secret_id }
+    },
+    # Enables the OpenAI entries of the chat's model selector (see openai.tf).
+    { OPENAI_API_KEY = { secret = data.google_secret_manager_secret.openai_api_key.secret_id } },
+  )
 
-  depends_on = [module.services, google_secret_manager_secret_iam_member.ai_neo4j]
+  depends_on = [
+    module.services,
+    google_secret_manager_secret_iam_member.ai_neo4j,
+    google_secret_manager_secret_iam_member.ai_openai_api_key,
+  ]
 }
 
 # --- Web (nginx serving the Angular build, proxying /api to the API and /ai to the AI) ---

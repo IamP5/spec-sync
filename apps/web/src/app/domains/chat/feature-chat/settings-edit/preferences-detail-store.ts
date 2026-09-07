@@ -19,7 +19,8 @@ import { PreferencesClient } from '../../data/preferences-client';
 
 /**
  * Detail store of the user preferences edited in the settings dialog and
- * read by the sidebar (name, avatar) and the chat page (activity details).
+ * read by the sidebar (name, avatar) and the chat page (activity details,
+ * the model and reasoning effort picked in the composer).
  * Persisted through `PreferencesClient`; the theme is owned by the design
  * system's `ZardDarkMode` service and is not mirrored here.
  */
@@ -47,6 +48,8 @@ export const PreferencesDetailStore = signalStore(
       store._preferencesClient.save({
         displayName: store.displayName(),
         showActivity: store.showActivity(),
+        model: store.model(),
+        effort: store.effort(),
       });
     },
   })),

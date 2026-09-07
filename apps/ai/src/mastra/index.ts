@@ -6,6 +6,7 @@ import { LibSQLStore } from '@mastra/libsql';
 import { PinoLogger } from '@mastra/loggers';
 
 import { CHAT_AGENT_ID, specSyncAgent } from './agents/spec-sync-agent';
+import { chatModelRoutes, setChatModelContext } from './chat-model-route';
 import { ingestionRoutes } from './ingestion/routes';
 import { vehicleIngestionWorkflow } from './ingestion/workflow';
 
@@ -56,10 +57,13 @@ export const mastra = new Mastra({
   server: {
     apiRoutes: [
       ...ingestionRoutes,
+      ...chatModelRoutes,
       registerCopilotKit({
         path: COPILOTKIT_PATH,
         // Memory scope for agents that have one; the chat agent has none.
         resourceId: CHAT_AGENT_ID,
+        // The model the user picked travels as a CopilotKit property.
+        setContext: setChatModelContext,
       }),
     ],
   },

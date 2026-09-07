@@ -1,5 +1,7 @@
+import { RequestContext } from '@mastra/core/request-context';
 import { describe, expect, it } from 'vitest';
 
+import { CHAT_EFFORT_KEY, CHAT_MODEL_KEY, gemini } from '../models';
 import { CHAT_AGENT_ID, specSyncAgent } from './spec-sync-agent';
 
 describe('SpecSync agent contract', () => {
@@ -34,6 +36,31 @@ describe('SpecSync agent contract', () => {
       providerOptions: {
         google: { thinkingConfig: { includeThoughts: true } },
       },
+    });
+  });
+  it('applies the reasoning effort the request context names', async () => {
+    const requestContext = new RequestContext();
+    requestContext.set(CHAT_MODEL_KEY, 'gemini-2.5-pro');
+    requestContext.set(CHAT_EFFORT_KEY, 'high');
+    expect(await specSyncAgent.getDefaultOptions({ requestContext })).toEqual({
+      maxSteps: 10,
+      providerOptions: {
+        google: {
+          thinkingConfig: { includeThoughts: true, thinkingBudget: 24576 },
+        },
+      },
+    });
+  });
+  it('runs on the default Gemini model unless the request context names another', async () => {
+    // getModel wraps the model; compare identity through id and provider.
+    expect(await specSyncAgent.getModel()).toMatchObject({
+      modelId: gemini.modelId,
+      provider: gemini.provider,
+    });
+    const requestContext = new RequestContext();
+    requestContext.set(CHAT_MODEL_KEY, 'gemini-2.5-pro');
+    expect(await specSyncAgent.getModel({ requestContext })).toMatchObject({
+      modelId: 'gemini-2.5-pro',
     });
   });
 });

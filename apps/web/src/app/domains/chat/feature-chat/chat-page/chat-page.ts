@@ -67,13 +67,16 @@ import {
   ChatTurn,
   textOf,
 } from '../../data/chat-agent';
+import { effectiveEffort, effectiveModel } from '../../data/chat-model';
 import { MarkdownPipe } from '../../util/markdown-pipe';
 import { revealText } from '../../util/text-reveal';
 import { ChatCoordinator } from '../chat-coordinator';
 import { PreferencesDetailStore } from '../settings-edit/preferences-detail-store';
 import { CHAT_CARD_ACTIONS } from '../tool-adapters/chat-card-actions';
+import { RunOptionsPicker } from '../ui/run-options-picker';
 import { registerChatTools } from './chat-tools';
 import { ConversationDetailStore } from './conversation-detail-store';
+import { ModelSearchStore } from './model-search-store';
 
 const PROMPT_REQUIRED_MESSAGE = 'Type a message to send.';
 const OFFLINE_MESSAGE =
@@ -128,6 +131,10 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
  * Assistant turns render Markdown, revealed progressively while the reply
  * streams; tool calls render through the cards registered in
  * `chat-tools.ts` (generative UI).
+ *
+ * The composer offers the models and reasoning efforts the AI service reports
+ * (`ModelSearchStore`) through `RunOptionsPicker`; the picks are preferences
+ * and travel with every run through the coordinator.
  */
 @Component({
   selector: 'app-chat-page',
@@ -139,6 +146,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     NgTemplateOutlet,
     NgOptimizedImage,
     RenderToolCalls,
+    RunOptionsPicker,
     ZardAlertComponent,
     ZardButtonComponent,
     ZardKbdComponent,
@@ -192,6 +200,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
 export class ChatPage {
   private readonly store = inject(ConversationDetailStore);
   private readonly preferences = inject(PreferencesDetailStore);
+  private readonly modelSearch = inject(ModelSearchStore);
   private readonly coordinator = inject(ChatCoordinator);
   private readonly router = inject(Router);
   private readonly transcript =
@@ -232,6 +241,30 @@ export class ChatPage {
   protected readonly displayName = this.preferences.displayName;
   protected readonly hasName = this.preferences.hasName;
   protected readonly copyError = signal('');
+  /** Models the service offers; the picker shows the model row only when there is a choice. */
+  protected readonly models = this.modelSearch.models;
+  /** The model the next run uses: the preference if still offered, else the service default. */
+  protected readonly selectedModel = computed(
+    () =>
+      effectiveModel(
+        this.preferences.model(),
+        this.modelSearch.catalogValue(),
+      ) || this.modelSearch.defaultModelId(),
+  );
+  /** Reasoning efforts the service offers; the picker shows the track only when there are any. */
+  protected readonly efforts = this.modelSearch.efforts;
+  /** The picker shows as soon as there is anything to pick. */
+  protected readonly hasRunOptions = computed(
+    () => this.models().length > 1 || this.efforts().length > 0,
+  );
+  /** The effort the next run uses: the preference if still offered, else the service default. */
+  protected readonly selectedEffort = computed(
+    () =>
+      effectiveEffort(
+        this.preferences.effort(),
+        this.modelSearch.catalogValue(),
+      ) || this.modelSearch.defaultEffortId(),
+  );
   protected readonly maxPromptLength = MAX_PROMPT_LENGTH;
   protected readonly promptLength = computed(() => this.model().prompt.length);
   protected readonly promptInvalid = computed(() =>
@@ -415,6 +448,18 @@ export class ChatPage {
 
   protected onActivityToggle(): void {
     this.preferences.update({ showActivity: !this.showActivity() });
+  }
+
+  protected onModel(model: string): void {
+    if (model && model !== this.preferences.model()) {
+      this.preferences.update({ model });
+    }
+  }
+
+  protected onEffort(effort: string): void {
+    if (effort && effort !== this.preferences.effort()) {
+      this.preferences.update({ effort });
+    }
   }
 
   protected onDisclosureToggle(event: Event): void {

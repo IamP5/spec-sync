@@ -6,6 +6,16 @@ import type {
 } from '@ag-ui/client';
 import type { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
+/**
+ * How the service should answer a run. Both are ids from the model catalog
+ * (`chat-model.ts`); an empty or missing value leaves the choice to the
+ * service.
+ */
+export interface ChatRunOptions {
+  model?: string;
+  effort?: string;
+}
+
 /** A failure reported by the AG-UI client while connecting or running. */
 export interface ChatAgentError {
   code: CopilotKitCoreErrorCode;

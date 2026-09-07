@@ -4,11 +4,23 @@ export interface Preferences {
   displayName: string;
   /** Show thinking summaries and tool activity in the transcript. */
   showActivity: boolean;
+  /**
+   * Id of the model the assistant answers with (see `chat-model.ts`); empty
+   * leaves the choice to the AI service. Picked in the composer.
+   */
+  model: string;
+  /**
+   * Id of the reasoning effort the assistant thinks with (see
+   * `chat-model.ts`); empty leaves it to the AI service. Picked in the composer.
+   */
+  effort: string;
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
   displayName: '',
   showActivity: true,
+  model: '',
+  effort: '',
 };
 
 export const MAX_DISPLAY_NAME_LENGTH = 40;

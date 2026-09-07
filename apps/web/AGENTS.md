@@ -71,7 +71,8 @@ The binding rules live in the docs; this section only names the red lines.
   either, which is why the initial bundle budget in `project.json` is
   1.7 MB (warning) / 2 MB (error).
 - The contract with `apps/ai` lives in `domains/chat/data/chat-agent.ts`
-  (agent id, runtime URL), `domains/vehicles/data/vehicle-contracts.ts`
+  (agent id, runtime URL), `domains/chat/data/chat-model.ts` (model catalog
+  URL, the `model` and `effort` forwarded properties), `domains/vehicles/data/vehicle-contracts.ts`
   (vehicle result schemas) and `domains/vehicles/data/ingestion-contracts.ts`
   (ingestion runs, source previews and the `startVehicleIngestion` client
   tool), exposed via `vehicles/api/contracts`. Coordinate wire-contract
@@ -89,6 +90,16 @@ The binding rules live in the docs; this section only names the red lines.
 - `ChatAgentClient` (`data/chat-agent-client.ts`) is the data access: it
   connects the runtime URL lazily and wraps the AG-UI agent; the
   conversation lives in that agent, `ConversationDetailStore` mirrors it.
+- The composer's run options follow ChatGPT: one pill
+  (`feature-chat/ui/run-options-picker.ts`, a dumb component) names the
+  reasoning effort and opens a popover with the model row and the effort
+  track; the model row switches to the model list. It lists what
+  `ModelSearchStore` (`feature-chat/chat-page/model-search-store.ts`, fed by
+  `data/chat-model-client.ts` from `/ai/chat/models`) reports; the picks are
+  preferences (`data/preferences.ts`) and `ChatCoordinator` sends them with
+  every run as the `model` and `effort` forwarded properties, or nothing when
+  the service no longer offers them. On phones the options row sits under
+  the prompt (`chat-page.css`), so the pill keeps a 44px tap target.
 - Tests never contact a runtime: `testing/fake-chat-agent.ts` registers an
   in-browser AG-UI agent under the chat agent id and replays scripted events.
 

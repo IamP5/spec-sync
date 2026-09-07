@@ -147,6 +147,7 @@ uses **Aura API credentials**, which differ from database credentials:
 | ----------------------------------------------- | ------------------------ | ---------------------------------------- |
 | `AURA_CLIENT_ID`, `AURA_CLIENT_SECRET`          | Terraform runner         | Manage the Aura instance through its API |
 | `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD` | Mastra Cloud Run service | Connect to the graph database            |
+| `OPENAI_API_KEY`                                | Mastra Cloud Run service | OpenAI models in the chat model selector |
 
 The `specsync-terraform` API credential was created in Aura Account settings → Client
 credentials and stored in Secret Manager. CI uses its existing federated deployer identity
@@ -165,8 +166,9 @@ npm exec -- nx run infra:apply -c dev
 unset AURA_CLIENT_ID AURA_CLIENT_SECRET
 ```
 
-Terraform reads only database secret metadata, grants the AI service account access to
-those three secrets, and injects their latest versions through Cloud Run secret references.
+Terraform reads only secret metadata, grants the AI service account access to those
+secrets (`OPENAI_API_KEY` included, see `openai.tf`), and injects their latest versions
+through Cloud Run secret references.
 `NEO4J_DATABASE` is `neo4j`. The API and web services receive no Neo4j credentials, and
 Mastra receives no Aura management credentials. Existing database secret versions are
 owned outside Terraform; importing an instance cannot recover its database password.

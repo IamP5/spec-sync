@@ -7,10 +7,12 @@ import {
   CHAT_AGENT_ID,
   CHAT_RUNTIME_URL,
   ChatAgentError,
+  type ChatRunOptions,
   CONTINUATION_SUFFIX,
   normalizeThread,
   ToolCallPlacements,
 } from './chat-agent';
+import { CHAT_EFFORT_PROPERTY, CHAT_MODEL_PROPERTY } from './chat-model';
 import { comparisonSelection } from './comparison-selection';
 import { IngestionActivity } from './ingestion-activity';
 
@@ -75,10 +77,11 @@ export class ChatAgentClient {
 
   /**
    * Runs the agent on the current thread. Resolves when the run ends, also
-   * after a failure: errors are reported through {@link onError}.
+   * after a failure: errors are reported through {@link onError}. `options`
+   * name the model and reasoning effort the service should answer with.
    */
-  send(): Promise<void> {
-    return this.run(this.agentStore().agent);
+  send(options: ChatRunOptions = {}): Promise<void> {
+    return this.run(this.agentStore().agent, options);
   }
 
   /**
@@ -86,7 +89,7 @@ export class ChatAgentClient {
    * it again for that turn. Does nothing while the thread has no user turn.
    * A failed run leaves no assistant turn, so this also retries it.
    */
-  async regenerate(): Promise<void> {
+  async regenerate(options: ChatRunOptions = {}): Promise<void> {
     const agent = this.agentStore().agent;
     const lastUser = lastIndexOfRole(agent.messages, 'user');
     if (lastUser < 0) {
@@ -95,7 +98,7 @@ export class ChatAgentClient {
     if (lastUser < agent.messages.length - 1) {
       agent.setMessages(agent.messages.slice(0, lastUser + 1));
     }
-    await this.run(agent);
+    await this.run(agent, options);
   }
 
   /** Aborts the run in flight and keeps whatever arrived so far. */
@@ -130,11 +133,16 @@ export class ChatAgentClient {
   }
 
   /**
-   * Runs the agent on its current thread. The thread is normalised afterwards
-   * (see `normalizeThread`) so the next run sends the model the sequence in
-   * which things happened.
+   * Runs the agent on its current thread. The model and effort choices
+   * travel as AG-UI forwarded properties (see `CHAT_MODEL_PROPERTY` and
+   * `CHAT_EFFORT_PROPERTY`). The thread is
+   * normalised afterwards (see `normalizeThread`) so the next run sends the
+   * model the sequence in which things happened.
    */
-  private async run(agent: AbstractAgent): Promise<void> {
+  private async run(
+    agent: AbstractAgent,
+    options: ChatRunOptions,
+  ): Promise<void> {
     this.track(agent);
     const selection = comparisonSelection(agent.messages);
     agent.setState(selection ? { comparison: selection } : {});
@@ -157,7 +165,10 @@ export class ChatAgentClient {
         }),
       );
     try {
-      await this.copilotKit.core.runAgent({ agent });
+      await this.copilotKit.core.runAgent({
+        agent,
+        forwardedProps: forwardedPropsOf(options),
+      });
     } finally {
       for (const contextId of contextIds)
         this.copilotKit.core.removeContext(contextId);
@@ -214,6 +225,16 @@ export class ChatAgentClient {
       },
     };
   }
+}
+
+/** The run options as forwarded properties; nothing when nothing was picked. */
+function forwardedPropsOf(
+  options: ChatRunOptions,
+): Record<string, string> | undefined {
+  const props: Record<string, string> = {};
+  if (options.model) props[CHAT_MODEL_PROPERTY] = options.model;
+  if (options.effort) props[CHAT_EFFORT_PROPERTY] = options.effort;
+  return Object.keys(props).length ? props : undefined;
 }
 
 function lastIndexOfRole(messages: Message[], role: Message['role']): number {

@@ -110,6 +110,26 @@ describe('ConversationDetailStore', () => {
     );
   });
 
+  it('forwards the picked model and effort with a run and omits what was not picked', async () => {
+    agent.replyWith((input) => textReply(input, 'Hello'));
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Hi', { model: 'gpt-5.6-luna', effort: 'high' });
+    expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
+      model: 'gpt-5.6-luna',
+      effort: 'high',
+    });
+    await store.regenerate({ model: 'gemini-2.5-pro' });
+    const forwarded = () =>
+      agent.runs[agent.runs.length - 1]?.forwardedProps as
+        | Record<string, unknown>
+        | undefined;
+    expect(forwarded()).toMatchObject({ model: 'gemini-2.5-pro' });
+    expect(forwarded()?.['effort']).toBeUndefined();
+    await store.regenerate({ model: '', effort: '' });
+    expect(forwarded()?.['model']).toBeUndefined();
+    expect(forwarded()?.['effort']).toBeUndefined();
+  });
+
   it('starts empty and idle', () => {
     const store = TestBed.inject(ConversationDetailStore);
     expect(store.isEmpty()).toBe(true);

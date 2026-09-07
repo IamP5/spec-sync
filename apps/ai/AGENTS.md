@@ -22,7 +22,8 @@ below are relative to the workspace root.
 apps/ai/
   src/mastra/
     index.ts          # Mastra registry: agents, storage (dev only), logger
-    models.ts         # Vertex AI provider (AI SDK) + the Gemini model
+    models.ts         # Vertex AI provider (AI SDK), the Gemini default, the chat model catalog
+    chat-model-route.ts # GET /chat/models and the CopilotKit setContext hook for the picked model and effort
     agents/           # one file per agent (<name>-agent.ts)
     tools/            # server tools (<name>-tool.ts), vehicle catalog, graph retrieval, content discovery, ingestion
     skills/           # code-defined agent skills (createSkill), e.g. the ingestion procedure
@@ -53,10 +54,24 @@ apps/ai/
   prefix. Register custom routes only through the Mastra `server` option,
   never a second HTTP server.
 - Names are part of the contract with `apps/web`: agent id `chat`, route
-  `/copilotkit`, vehicle tool names in `tools/vehicle-tools.ts`, ingestion tool
-  names in `tools/ingestion-tools.ts` and the client tool `startVehicleIngestion`
-  the agent instructions and skill refer to. The web client renders server tool
-  results directly. Change names only together with the client.
+  `/copilotkit`, the model catalog route `/chat/models` and the `model` and
+  `effort` properties (`chat-model-route.ts`), vehicle tool names in
+  `tools/vehicle-tools.ts`, ingestion tool names in `tools/ingestion-tools.ts`
+  and the client tool `startVehicleIngestion` the agent instructions and skill
+  refer to. The web client renders server tool results directly. Change names
+  only together with the client.
+- The chat agent's `model` is resolved per run (`chatModelFor` in
+  `models.ts`): the browser sends the picked model id as a CopilotKit property
+  (AG-UI `forwardedProps.model`), `setChatModelContext` stores it in the
+  request context and the agent resolves it against `chatModels()`. Gemini ids
+  run on the Vertex provider instance (ADC, see above); OpenAI ids run through
+  Mastra's model router (`openai/<id>`, key from `OPENAI_API_KEY`) and are only
+  offered while that variable is set. Unknown ids fall back to `VERTEX_MODEL`.
+  The agent's `defaultOptions` are resolved the same way: the picked
+  reasoning effort (`forwardedProps.effort`, `auto`/`low`/`medium`/`high`
+  from `chatEfforts()`) becomes a Gemini thinking level (3.x) or thinking
+  budget (2.5) or an OpenAI `reasoningEffort` (`chatProviderOptionsFor`);
+  Gemini thought summaries stay on regardless.
 - Read `docs/conversational-vehicles.md` for retrieval boundaries and startup
   and `docs/vehicle-ingestion.md` for the ingestion workflow. Chat tools never
   publish catalog data: `previewVehicleSource` reads a source, the browser's
@@ -85,7 +100,9 @@ npm exec -- nx dev ai                  # Studio + API on http://localhost:4111
 
 The user account needs `roles/aiplatform.user` on the project. Keep
 `GOOGLE_VERTEX_LOCATION=global` for Gemini 3.x models; a regional location
-such as `us-central1` only serves the 2.5 family and answers 404 otherwise. `nx serve web`
+such as `us-central1` only serves the 2.5 family and answers 404 otherwise.
+`VERTEX_MODELS` lists the Gemini models offered in the chat's selector and
+`OPENAI_MODELS` the OpenAI ones (see `.env.example`). `nx serve web`
 proxies `/ai` to the same server, so the chat page and Studio share one
 process. A stale ADC token shows up as `invalid_grant` in the stream; run the
 login command again. Mastra allows one dev server per directory (lock in

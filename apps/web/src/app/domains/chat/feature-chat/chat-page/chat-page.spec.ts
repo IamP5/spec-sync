@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
 import { ZardSidebarService } from '@/ui/components/sidebar';
+import { provideZard } from '@/ui/core';
 
 import {
   FakeChatAgent,
@@ -13,8 +14,23 @@ import {
 } from '../../../../testing/fake-chat-agent';
 import { matrix } from '../../../../testing/vehicle-fixtures';
 import { TEXT_REVEAL_ENABLED } from '../../util/text-reveal';
+import { PreferencesDetailStore } from '../settings-edit/preferences-detail-store';
 import { ChatPage } from './chat-page';
 import { ConversationDetailStore } from './conversation-detail-store';
+
+const MODEL_CATALOG = {
+  defaultModelId: 'gemini-2.5-flash',
+  models: [
+    { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'vertex' },
+    { id: 'gpt-5.6-luna', label: 'GPT 5.6 Luna', provider: 'openai' },
+  ],
+  defaultEffortId: 'auto',
+  efforts: [
+    { id: 'auto', label: 'Auto' },
+    { id: 'low', label: 'Low' },
+    { id: 'high', label: 'High' },
+  ],
+};
 
 describe('ChatPage', () => {
   let agent: FakeChatAgent;
@@ -30,6 +46,8 @@ describe('ChatPage', () => {
           { path: '', children: [] },
           { path: 'c/:threadId', children: [] },
         ]),
+        // Zard event modifiers (the popover trigger listens to `click.stop`).
+        provideZard(),
         // The page normally sits inside the shell's sidebar provider.
         ZardSidebarService,
         // The DOM is asserted right after the store settles.
@@ -630,6 +648,190 @@ describe('ChatPage', () => {
     }
   });
 
+  it('offers the models the service reports and sends the picked one with the run', async () => {
+    stubCatalog(MODEL_CATALOG);
+    try {
+      agent.replyWith((input) => textReply(input, 'Hello'));
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      const trigger = element.querySelector<HTMLElement>(
+        '[data-role="run-options"]',
+      );
+      expect(trigger).not.toBeNull();
+      // The pill names the effort; the model sits one level in.
+      expect(trigger?.getAttribute('aria-label')).toContain(
+        'Model: Gemini 2.5 Flash',
+      );
+
+      trigger?.click();
+      await fixture.whenStable();
+      const modelRow = document.querySelector<HTMLElement>(
+        '[data-role="model-select"]',
+      );
+      expect(modelRow?.textContent).toContain('Gemini 2.5 Flash');
+      modelRow?.click();
+      await fixture.whenStable();
+      const option = document.querySelector<HTMLElement>(
+        '[data-role="model-option"][data-value="gpt-5.6-luna"]',
+      );
+      expect(option?.textContent).toContain('GPT 5.6 Luna');
+      // Options are grouped by provider.
+      expect(option?.previousElementSibling?.getAttribute('data-role')).toBe(
+        'model-group',
+      );
+      expect(option?.previousElementSibling?.textContent).toContain('OpenAI');
+      option?.click();
+      await fixture.whenStable();
+      expect(TestBed.inject(PreferencesDetailStore).model()).toBe(
+        'gpt-5.6-luna',
+      );
+      // Picking a model returns to the effort view, now naming the new model.
+      expect(
+        document.querySelector('[data-role="model-select"]')?.textContent,
+      ).toContain('GPT 5.6 Luna');
+      expect(trigger?.getAttribute('aria-label')).toContain(
+        'Model: GPT 5.6 Luna',
+      );
+      expect(localStorage.getItem('specsync.chat.preferences.v1')).toContain(
+        'gpt-5.6-luna',
+      );
+
+      await sendPrompt(element, 'Hi');
+      await settled(TestBed.inject(ConversationDetailStore));
+      expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
+        model: 'gpt-5.6-luna',
+      });
+      expect(
+        (
+          agent.runs[agent.runs.length - 1]?.forwardedProps as Record<
+            string,
+            unknown
+          >
+        )['effort'],
+      ).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('offers the reasoning efforts the service reports and sends the picked one with the run', async () => {
+    stubCatalog(MODEL_CATALOG);
+    try {
+      agent.replyWith((input) => textReply(input, 'Hello'));
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      const trigger = element.querySelector<HTMLElement>(
+        '[data-role="run-options"]',
+      );
+      expect(trigger).not.toBeNull();
+      // Nothing picked yet: the service default is shown.
+      expect(trigger?.textContent).toContain('Auto');
+
+      trigger?.click();
+      await fixture.whenStable();
+      const track = document.querySelector<HTMLElement>(
+        '[data-role="effort-select"]',
+      );
+      expect(track?.textContent).toContain('Auto');
+      const option = track?.querySelector<HTMLElement>(
+        '[data-role="effort-option"][data-value="high"]',
+      );
+      expect(option?.getAttribute('aria-label')).toBe('High');
+      option?.click();
+      await fixture.whenStable();
+      expect(TestBed.inject(PreferencesDetailStore).effort()).toBe('high');
+      expect(option?.getAttribute('aria-checked')).toBe('true');
+      expect(track?.textContent).toContain('High');
+      // The panel stays open, like a slider; the pill follows the pick.
+      expect(trigger?.textContent).toContain('High');
+      expect(localStorage.getItem('specsync.chat.preferences.v1')).toContain(
+        '"effort":"high"',
+      );
+
+      // Arrow keys move the selection like a radio group.
+      option?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
+      );
+      await fixture.whenStable();
+      expect(TestBed.inject(PreferencesDetailStore).effort()).toBe('low');
+
+      await sendPrompt(element, 'Hi');
+      await settled(TestBed.inject(ConversationDetailStore));
+      expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
+        effort: 'low',
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('names the model on the pill while the service offers no efforts', async () => {
+    stubCatalog({ ...MODEL_CATALOG, efforts: [] });
+    try {
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      const trigger = (
+        fixture.nativeElement as HTMLElement
+      ).querySelector<HTMLElement>('[data-role="run-options"]');
+      expect(trigger?.textContent).toContain('Gemini 2.5 Flash');
+      trigger?.click();
+      await fixture.whenStable();
+      expect(document.querySelector('[data-role="effort-select"]')).toBeNull();
+      // The panel opens straight on the model list.
+      expect(
+        document.querySelector(
+          '[data-role="model-option"][data-value="gpt-5.6-luna"]',
+        ),
+      ).not.toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('hides the model row while the service offers a single model', async () => {
+    stubCatalog({ ...MODEL_CATALOG, models: MODEL_CATALOG.models.slice(0, 1) });
+    try {
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      const trigger = (
+        fixture.nativeElement as HTMLElement
+      ).querySelector<HTMLElement>('[data-role="run-options"]');
+      expect(trigger?.getAttribute('aria-label')).not.toContain('Model');
+      trigger?.click();
+      await fixture.whenStable();
+      expect(document.querySelector('[data-role="model-select"]')).toBeNull();
+      expect(
+        document.querySelector('[data-role="effort-select"]'),
+      ).not.toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('hides the picker while the service offers nothing to pick', async () => {
+    stubCatalog({
+      ...MODEL_CATALOG,
+      models: MODEL_CATALOG.models.slice(0, 1),
+      efforts: [],
+    });
+    try {
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      expect(
+        fixture.nativeElement.querySelector('[data-role="run-options"]'),
+      ).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('prevents sending an empty prompt', async () => {
     const fixture = TestBed.createComponent(ChatPage);
     await fixture.whenStable();
@@ -655,4 +857,23 @@ async function sendPrompt(host: HTMLElement, text: string): Promise<void> {
   for (let i = 0; i < 10; i++) {
     await new Promise((resolve) => setTimeout(resolve));
   }
+}
+
+/** Serves the catalog on `/ai/chat/models`; every other fetch gets an empty object. */
+function stubCatalog(catalog: unknown): void {
+  vi.stubGlobal(
+    'fetch',
+    vi
+      .fn()
+      .mockImplementation((input: string | URL | Request) =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify(
+              String(input).includes('/ai/chat/models') ? catalog : {},
+            ),
+            { status: 200, headers: { 'content-type': 'application/json' } },
+          ),
+        ),
+      ),
+  );
 }

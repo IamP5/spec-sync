@@ -199,21 +199,25 @@
     min-height: 1.5rem;
     max-height: min(7.75rem, calc(30dvh - 1.25rem));
     padding: 0.625rem 0;
-    margin-inline: 1rem 3.5rem;
+    margin-inline: 1rem;
     line-height: 1.5rem;
   }
 
+  /* Options row under the prompt, like ChatGPT: the picker left, send right. */
   .chat-composer-actions {
-    position: absolute;
-    right: 0.25rem;
-    bottom: 0.25rem;
-    padding: 0;
+    padding: 0 0 0 0.375rem;
   }
 
-  .chat-composer-actions button {
+  .chat-composer-actions > button {
     width: 2.75rem;
     height: 2.75rem;
     border-radius: 50%;
+  }
+
+  .chat-composer-actions .chat-run-options {
+    min-height: 2.75rem;
+    padding-inline: 0.875rem;
+    font-size: 0.875rem;
   }
 
   .chat-composer-actions > span:not(.sr-only) {
