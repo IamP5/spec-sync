@@ -9,6 +9,7 @@ module "services" {
     "apikeys.googleapis.com",
     "dns.googleapis.com",
     "identitytoolkit.googleapis.com",
+    "securetoken.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "cloudscheduler.googleapis.com",
@@ -215,7 +216,7 @@ module "ai" {
   ]
 }
 
-# --- Web (private nginx serving Angular assets through the gateway) ---
+# --- Web (public Angular assets; browser calls the gateway directly) ---
 module "web" {
   source = "../../modules/cloud-run-service"
 
@@ -230,8 +231,15 @@ module "web" {
   memory                = "128Mi" # nginx with a static bundle: first-generation minimum
   min_instances         = 0
   max_instances         = 2
-  allow_unauthenticated = false
-  ingress               = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  allow_unauthenticated = true
+  ingress               = "INGRESS_TRAFFIC_ALL"
+  domain                = var.domain
+  env = {
+    GATEWAY_URL          = local.gateway_origin
+    IDENTITY_API_KEY     = google_apikeys_key.identity.key_string
+    IDENTITY_AUTH_DOMAIN = "${var.project_id}.firebaseapp.com"
+    IDENTITY_PROJECT_ID  = var.project_id
+  }
   # nginx accepts cleartext HTTP/2 (h2c), so the front-end -> container hop runs over
   # HTTP/2 too. Browsers already get HTTP/2 + HTTP/3 from Cloud Run's front end regardless.
   http2 = true

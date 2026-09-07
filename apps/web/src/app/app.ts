@@ -23,6 +23,7 @@ import {
 } from '@/ui/components/sidebar';
 import { ZardDarkMode } from '@/ui/services';
 
+import { AuthSessionOverview } from './domains/auth/api/features';
 import { ThreadSearch } from './domains/chat/feature-chat';
 
 const WIDE_SCREEN = '(min-width: 1200px)';
@@ -32,6 +33,7 @@ const MOBILE_SCREEN = '(max-width: 767px)';
 @Component({
   selector: 'app-root',
   imports: [
+    AuthSessionOverview,
     RouterOutlet,
     ThreadSearch,
     ZardSidebarComponent,

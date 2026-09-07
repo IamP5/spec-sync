@@ -16,7 +16,7 @@ it('streams across real Node HTTP sockets and cancels the upstream when the brow
     expect(request.headers['x-serverless-authorization']).toBe(
       'Bearer workload',
     );
-    expect(request.headers['x-specsync-session']).toBe('signed-session');
+    expect(request.headers['x-specsync-token']).toBe('signed-token');
     expect(request.headers.cookie).toBeUndefined();
     response.writeHead(200, { 'content-type': 'text/event-stream' });
     response.write('data: first\n\n');
@@ -31,19 +31,19 @@ it('streams across real Node HTTP sockets and cancels the upstream when the brow
       publicOrigin: 'http://localhost:3000',
       apiUrl: origin,
       aiUrl: origin,
-      webUrl: 'http://localhost:4200',
+      frontendOrigin: 'http://localhost:4200',
       projectId: 'test',
-      googleClientId: 'test',
-      googleClientSecret: 'test',
-      identityApiKey: 'test',
       cloudRunAuth: true,
     },
     {
-      async signIn() {
-        return 'signed-session';
-      },
-      async verifySession() {
-        return { uid: 'test', email: 'test@example.com', roles: [] };
+      async verifyToken() {
+        return {
+          uid: 'test',
+          email: 'test@example.com',
+          roles: [],
+          displayName: 'Test',
+          photoUrl: null,
+        };
       },
       async invocationToken() {
         return 'Bearer workload';
@@ -60,8 +60,8 @@ it('streams across real Node HTTP sockets and cancels the upstream when the brow
       {
         method: 'POST',
         headers: {
-          cookie: 'specsync-session=signed-session',
-          origin: 'http://localhost:3000',
+          authorization: 'Bearer signed-token',
+          origin: 'http://localhost:4200',
           'content-type': 'application/json',
         },
         body: '{}',

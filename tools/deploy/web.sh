@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build the web image (Angular build + nginx runtime, see apps/web/Dockerfile), push it to
 # Artifact Registry and roll it out to Cloud Run. Terraform owns the service definition
-# (including private ingress); this only swaps the image.
+# (including ingress and runtime configuration); this only swaps the image.
 source "$(dirname "$0")/common.sh"
 
 IMAGE="${REGISTRY}/web:${IMAGE_TAG}"

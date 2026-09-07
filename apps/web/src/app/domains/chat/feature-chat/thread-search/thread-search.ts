@@ -12,36 +12,25 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucideChevronsUpDown,
   lucideEllipsisVertical,
-  lucideMonitor,
-  lucideMoon,
   lucidePencil,
   lucideSearch,
-  lucideSettings,
   lucideSquarePen,
-  lucideSun,
   lucideTrash2,
 } from '@ng-icons/lucide';
 
 import { ZardAlertDialogService } from '@/ui/components/alert-dialog';
-import { ZardAvatarComponent } from '@/ui/components/avatar';
 import { ZardDialogService } from '@/ui/components/dialog';
 import {
   ZardDropdownDirective,
   ZardDropdownMenuContentComponent,
   ZardDropdownMenuItemComponent,
-  ZardDropdownMenuLabelComponent,
   ZardDropdownMenuSeparatorComponent,
-  ZardDropdownMenuShortcutComponent,
-  ZardDropdownMenuSubContentComponent,
-  ZardDropdownMenuSubTriggerComponent,
 } from '@/ui/components/dropdown';
 import { ZardInputComponent } from '@/ui/components/input';
 import { ZardKbdComponent } from '@/ui/components/kbd';
 import {
   ZardSidebarContentComponent,
-  ZardSidebarFooterComponent,
   ZardSidebarGroupComponent,
   ZardSidebarGroupContentComponent,
   ZardSidebarGroupLabelComponent,
@@ -54,11 +43,10 @@ import {
   ZardSidebarService,
   ZardSidebarTriggerComponent,
 } from '@/ui/components/sidebar';
-import { EDarkModes, ZardDarkMode } from '@/ui/services';
 
+import { UserAccountOverview } from '../../../user/api/features';
 import { ChatThreadSummary, MAX_TITLE_LENGTH } from '../../data/thread';
 import { ChatCoordinator } from '../chat-coordinator';
-import { PreferencesDetailStore } from '../settings-edit/preferences-detail-store';
 import { SettingsEdit } from '../settings-edit/settings-edit';
 import { ThreadSearchStore } from './thread-search-store';
 
@@ -73,21 +61,16 @@ import { ThreadSearchStore } from './thread-search-store';
 @Component({
   selector: 'app-thread-search',
   imports: [
+    UserAccountOverview,
     NgIcon,
     RouterLink,
-    ZardAvatarComponent,
     ZardDropdownDirective,
     ZardDropdownMenuContentComponent,
     ZardDropdownMenuItemComponent,
-    ZardDropdownMenuLabelComponent,
     ZardDropdownMenuSeparatorComponent,
-    ZardDropdownMenuShortcutComponent,
-    ZardDropdownMenuSubContentComponent,
-    ZardDropdownMenuSubTriggerComponent,
     ZardInputComponent,
     ZardKbdComponent,
     ZardSidebarContentComponent,
-    ZardSidebarFooterComponent,
     ZardSidebarGroupComponent,
     ZardSidebarGroupContentComponent,
     ZardSidebarGroupLabelComponent,
@@ -101,15 +84,10 @@ import { ThreadSearchStore } from './thread-search-store';
   ],
   viewProviders: [
     provideIcons({
-      lucideChevronsUpDown,
       lucideEllipsisVertical,
-      lucideMonitor,
-      lucideMoon,
       lucidePencil,
       lucideSearch,
-      lucideSettings,
       lucideSquarePen,
-      lucideSun,
       lucideTrash2,
     }),
   ],
@@ -123,11 +101,9 @@ import { ThreadSearchStore } from './thread-search-store';
 })
 export class ThreadSearch {
   private readonly store = inject(ThreadSearchStore);
-  private readonly preferences = inject(PreferencesDetailStore);
   private readonly coordinator = inject(ChatCoordinator);
   private readonly router = inject(Router);
   private readonly sidebar = inject(ZardSidebarService);
-  private readonly darkMode = inject(ZardDarkMode);
   private readonly dialog = inject(ZardDialogService);
   private readonly alertDialog = inject(ZardAlertDialogService);
   private readonly renameInput = viewChild('renameInput', {
@@ -147,11 +123,6 @@ export class ThreadSearch {
   protected readonly query = this.store.query;
   protected readonly noThreads = this.store.isEmpty;
   protected readonly activeId = this.coordinator.activeThreadId;
-  protected readonly displayName = this.preferences.displayName;
-  protected readonly hasName = this.preferences.hasName;
-  protected readonly initials = this.preferences.initials;
-  protected readonly theme = this.darkMode.currentTheme;
-  protected readonly themes = EDarkModes;
   protected readonly maxTitleLength = MAX_TITLE_LENGTH;
 
   /** Id of the thread whose title is being edited inline. */
@@ -231,10 +202,6 @@ export class ThreadSearch {
         }
       },
     });
-  }
-
-  protected onTheme(theme: EDarkModes): void {
-    this.darkMode.toggleTheme(theme);
   }
 
   protected onSettings(): void {

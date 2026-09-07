@@ -11,7 +11,6 @@ const requestHeaders = [
   'last-event-id',
   'range',
   'if-range',
-  'authorization',
   'x-ingestion-key',
 ];
 const responseHeaders = new Set([
@@ -34,7 +33,7 @@ export async function forward(
   path: string,
   user: UserIdentity,
   invocationToken: string | undefined,
-  session: string | undefined,
+  identityToken: string | undefined,
   fetcher: typeof fetch = fetch,
 ): Promise<Response> {
   const url = new URL(origin);
@@ -50,7 +49,7 @@ export async function forward(
     'x-specsync-user',
     Buffer.from(JSON.stringify(user)).toString('base64url'),
   );
-  if (session) headers.set('x-specsync-session', session);
+  if (identityToken) headers.set('x-specsync-token', identityToken);
   if (invocationToken)
     headers.set('x-serverless-authorization', invocationToken);
   const upstream = await proxy(url, {

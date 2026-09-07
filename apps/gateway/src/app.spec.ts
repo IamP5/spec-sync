@@ -10,18 +10,20 @@ const config: GatewayConfig = {
   publicOrigin: 'https://app.example',
   apiUrl: 'https://api.run.app',
   aiUrl: 'https://ai.run.app',
-  webUrl: 'https://web.run.app',
+  frontendOrigin: 'https://web.run.app',
   projectId: 'test',
-  googleClientId: 'client',
-  googleClientSecret: 'secret',
-  identityApiKey: 'api-key',
   cloudRunAuth: true,
 };
-const user = { uid: 'alice', email: 'alice@example.com', roles: ['reviewer'] };
+const user = {
+  uid: 'alice',
+  email: 'alice@example.com',
+  roles: ['reviewer'],
+  displayName: 'Alice',
+  photoUrl: null,
+};
 function setup() {
   const identity: IdentityService = {
-    signIn: vi.fn().mockResolvedValue('session-token'),
-    verifySession: vi.fn().mockImplementation(async (cookie) => {
+    verifyToken: vi.fn().mockImplementation(async (cookie) => {
       if (cookie !== 'valid') throw new Error('expired or revoked');
       return user;
     }),
@@ -34,117 +36,72 @@ function setup() {
   );
   return { app: createGateway(config, identity, fetcher), identity, fetcher };
 }
-const cookie = '__Host-specsync-session=valid';
+const authorization = 'Bearer valid';
 
 describe('gateway authentication and routing', () => {
   it('keeps health public but rejects missing, forged and revoked sessions before proxying', async () => {
     const { app, fetcher } = setup();
     expect((await app.request('/health')).status).toBe(200);
-    for (const supplied of ['', '__Host-specsync-session=forged']) {
+    for (const supplied of ['', 'Bearer forged']) {
       const response = await app.request('/api/vehicles', {
-        headers: { cookie: supplied, 'x-specsync-user': 'admin' },
+        headers: { authorization: supplied, 'x-specsync-user': 'admin' },
       });
       expect(response.status).toBe(401);
     }
     expect(fetcher).not.toHaveBeenCalled();
   });
-  it('sends document navigations through Google login', async () => {
-    const { app } = setup();
-    const response = await app.request('/', {
-      headers: { accept: 'text/html' },
-    });
-    expect(response.headers.get('location')).toBe('/auth/login');
-    const login = await app.request('https://app.example/auth/login');
-    const url = new URL(login.headers.get('location')!);
-    expect(url.origin).toBe('https://accounts.google.com');
-    expect(url.searchParams.get('redirect_uri')).toBe(
-      'https://app.example/auth/callback',
-    );
-    expect(url.searchParams.get('code_challenge_method')).toBe('S256');
-    expect(login.headers.get('set-cookie')).toContain('HttpOnly');
-    expect(login.headers.get('set-cookie')).toContain('Secure');
-  });
-  it('canonicalizes alternate Cloud Run hosts before setting OAuth state', async () => {
-    const { app } = setup();
-    const response = await app.request('https://alternate.run.app/auth/login');
-    expect(response.headers.get('location')).toBe(
-      'https://app.example/auth/login',
-    );
-    expect(response.headers.get('set-cookie')).toBeNull();
-  });
-  it('binds the OAuth callback to its browser, issues a secure session and clears state', async () => {
-    const { app, identity } = setup();
-    const login = await app.request('https://app.example/auth/login');
-    const state = new URL(login.headers.get('location')!).searchParams.get(
-      'state',
-    );
-    const response = await app.request(
-      `/auth/callback?code=code&state=${state}`,
-      {
-        headers: { cookie: login.headers.get('set-cookie')!.split(';')[0]! },
-      },
-    );
-    expect(identity.signIn).toHaveBeenCalledWith('code', expect.any(String));
-    expect(response.status).toBe(302);
-    expect(response.headers.get('set-cookie')).toContain(
-      '__Host-specsync-session=session-token',
-    );
-    expect(response.headers.get('set-cookie')).toContain('SameSite=Lax');
-    expect(response.headers.get('set-cookie')).toContain('Max-Age=0');
-  });
-  it('rejects missing or mismatched state without exchanging a code', async () => {
-    const { app, identity } = setup();
-    const response = await app.request(
-      '/auth/callback?code=code&state=attacker',
-    );
-    expect(response.status).toBe(400);
-    expect(identity.signIn).not.toHaveBeenCalled();
-  });
-  it('does not expose provider errors or secrets', async () => {
-    const { app, identity } = setup();
-    vi.mocked(identity.signIn).mockRejectedValue(
-      new Error('secret google token'),
-    );
-    const response = await app.request('/auth/callback?code=code&state=state', {
-      headers: { cookie: '__Host-specsync-oauth=state.verifier' },
-    });
-    expect(response.status).toBe(401);
-    expect(await response.text()).not.toContain('secret google token');
-  });
-  it('requires the configured origin on cookie-authenticated mutations and logout', async () => {
+  it('redirects gateway navigation to the public frontend and never serves assets', async () => {
     const { app, fetcher } = setup();
-    const form = await app.request('/auth/logout');
-    expect(form.headers.get('referrer-policy')).toBe('same-origin');
-    for (const origin of ['', 'null', 'https://evil.example']) {
-      expect(
-        (
-          await app.request('/ai/copilotkit', {
-            method: 'POST',
-            headers: { cookie, origin },
-            body: '{}',
-          })
-        ).status,
-      ).toBe(403);
-      expect(
-        (
-          await app.request('/auth/logout', {
-            method: 'POST',
-            headers: { cookie, origin },
-          })
-        ).status,
-      ).toBe(403);
-    }
+    expect((await app.request('/')).headers.get('location')).toBe(
+      config.frontendOrigin,
+    );
+    expect(
+      (await app.request('/main.js', { headers: { authorization } })).status,
+    ).toBe(404);
     expect(fetcher).not.toHaveBeenCalled();
-    const logout = await app.request('/auth/logout', {
-      method: 'POST',
-      headers: { origin: config.publicOrigin, cookie },
+  });
+  it('allows preflight only for the configured frontend, including streamed AI calls', async () => {
+    const { app, fetcher, identity } = setup();
+    const response = await app.request('/ai/copilotkit', {
+      method: 'OPTIONS',
+      headers: {
+        origin: config.frontendOrigin,
+        'access-control-request-method': 'POST',
+        'access-control-request-headers': 'authorization,content-type',
+      },
     });
-    expect(logout.status).toBe(204);
-    expect(logout.headers.get('set-cookie')).toContain('Max-Age=0');
+    expect(response.status).toBe(204);
+    expect(response.headers.get('access-control-allow-origin')).toBe(
+      config.frontendOrigin,
+    );
+    expect(response.headers.get('access-control-allow-headers')).toContain(
+      'Authorization',
+    );
+    expect(identity.verifyToken).not.toHaveBeenCalled();
+    expect(fetcher).not.toHaveBeenCalled();
+    const denied = await app.request('/user/me', {
+      headers: { authorization, origin: 'https://evil.example' },
+    });
+    expect(denied.status).toBe(403);
+    expect(denied.headers.get('access-control-allow-origin')).not.toBe(
+      'https://evil.example',
+    );
+  });
+  it('keeps the authenticated session separate from the user profile', async () => {
+    const { app, fetcher } = setup();
+    expect((await app.request('/auth/session')).status).toBe(401);
+    const response = await app.request('/auth/session', {
+      headers: { authorization },
+    });
+    expect(await response.json()).toEqual({ uid: user.uid });
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(fetcher).not.toHaveBeenCalled();
   });
   it('returns verified roles and prevents shared caching', async () => {
     const { app } = setup();
-    const response = await app.request('/auth/me', { headers: { cookie } });
+    const response = await app.request('/user/me', {
+      headers: { authorization },
+    });
     expect(await response.json()).toEqual(user);
     expect(response.headers.get('cache-control')).toContain('no-store');
   });
@@ -152,7 +109,9 @@ describe('gateway authentication and routing', () => {
     const { app, fetcher, identity } = setup();
     await app.request('/api/ingestions?q=a%26b', {
       headers: {
-        cookie,
+        authorization,
+        cookie: 'forged-cookie',
+        'x-specsync-token': 'forged-token',
         'x-specsync-user': 'admin',
         'x-serverless-authorization': 'attacker',
         'x-forwarded-host': 'evil.example',
@@ -171,8 +130,9 @@ describe('gateway authentication and routing', () => {
         Buffer.from(headers.get('x-specsync-user')!, 'base64url').toString(),
       ),
     ).toEqual(user);
-    expect(headers.get('x-specsync-session')).toBe('valid');
+    expect(headers.get('x-specsync-token')).toBe('valid');
     expect(headers.has('cookie')).toBe(false);
+    expect(headers.has('authorization')).toBe(false);
     expect(headers.has('x-forwarded-host')).toBe(false);
     expect(headers.get('x-ingestion-key')).toBe('curator-key');
     expect(request.redirect).toBe('manual');
@@ -197,7 +157,7 @@ describe('gateway authentication and routing', () => {
     );
     const response = await app.request('/ai/copilotkit', {
       method: 'POST',
-      headers: { cookie, origin: config.publicOrigin },
+      headers: { authorization, origin: config.frontendOrigin },
       body: '{"method":"info"}',
     });
     const request = fetcher.mock.calls[0]![0] as Request;
@@ -219,7 +179,7 @@ describe('gateway authentication and routing', () => {
     await app.request(
       new Request('https://app.example/api/vehicles', {
         signal: abort.signal,
-        headers: { cookie },
+        headers: { authorization },
       }),
     );
     abort.abort();
@@ -234,9 +194,9 @@ describe('gateway authentication and routing', () => {
       '/ai/%69nternal/ingestion/extract',
       '/ai//internal/ingestion/extract',
     ])
-      expect((await app.request(path, { headers: { cookie } })).status).toBe(
-        404,
-      );
+      expect(
+        (await app.request(path, { headers: { authorization } })).status,
+      ).toBe(404);
     expect(fetcher).not.toHaveBeenCalled();
   });
   it('does not follow upstream redirects or forward backend cookies', async () => {
@@ -248,7 +208,7 @@ describe('gateway authentication and routing', () => {
       }),
     );
     const response = await app.request('/api/vehicles', {
-      headers: { cookie },
+      headers: { authorization },
     });
     expect(response.status).toBe(502);
     expect(response.headers.get('location')).toBeNull();
@@ -271,7 +231,7 @@ describe('gateway authentication and routing', () => {
       }),
     );
     const response = await app.request('/api/vehicles', {
-      headers: { cookie },
+      headers: { authorization },
     });
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ error: 'busy' });
@@ -287,7 +247,8 @@ describe('gateway authentication and routing', () => {
       new Error('ADC unavailable'),
     );
     expect(
-      (await app.request('/api/vehicles', { headers: { cookie } })).status,
+      (await app.request('/api/vehicles', { headers: { authorization } }))
+        .status,
     ).toBe(502);
     expect(fetcher).not.toHaveBeenCalled();
   });

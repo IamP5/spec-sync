@@ -4,11 +4,13 @@ import { provideRouter, Router } from '@angular/router';
 import { ZardSidebarService } from '@/ui/components/sidebar';
 import { provideZard } from '@/ui/core';
 
+import { provideFakeAuth } from '../../../../testing/fake-auth';
 import {
   FakeChatAgent,
   provideFakeChatAgent,
   textReply,
 } from '../../../../testing/fake-chat-agent';
+import { provideFakeUser } from '../../../../testing/fake-user';
 import { ThreadClient } from '../../data/thread-client';
 import { ChatCoordinator } from '../chat-coordinator';
 import { ConversationDetailStore } from '../chat-page/conversation-detail-store';
@@ -24,6 +26,8 @@ describe('ThreadSearch', () => {
     await TestBed.configureTestingModule({
       imports: [ThreadSearch],
       providers: [
+        provideFakeUser(),
+        provideFakeAuth(),
         ...provideFakeChatAgent(agent),
         provideRouter([]),
         provideZard(),
@@ -107,6 +111,18 @@ describe('ThreadSearch', () => {
     expect(
       element.querySelector('[data-role="thread"] a')?.textContent,
     ).toContain('Password policy');
+  });
+
+  it('shows the Google profile photo and email without rendering roles', async () => {
+    const fixture = TestBed.createComponent(ThreadSearch);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('img')?.getAttribute('src')).toContain(
+      'lh3.googleusercontent.com/alice',
+    );
+    expect(element.textContent).toContain('Alice Smith');
+    expect(element.textContent).toContain('alice@example.com');
+    expect(element.textContent).not.toContain('reviewer');
   });
 
   it('opens the account menu with the theme and settings entries', async () => {

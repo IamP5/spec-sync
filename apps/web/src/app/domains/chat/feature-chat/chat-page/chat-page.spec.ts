@@ -13,8 +13,8 @@ import {
   toolCallReply,
 } from '../../../../testing/fake-chat-agent';
 import { matrix } from '../../../../testing/vehicle-fixtures';
+import { UserPreferencesCoordinator } from '../../../user/api/preferences';
 import { TEXT_REVEAL_ENABLED } from '../../util/text-reveal';
-import { PreferencesDetailStore } from '../settings-edit/preferences-detail-store';
 import { ChatPage } from './chat-page';
 import { ConversationDetailStore } from './conversation-detail-store';
 
@@ -684,7 +684,7 @@ describe('ChatPage', () => {
       expect(option?.previousElementSibling?.textContent).toContain('OpenAI');
       option?.click();
       await fixture.whenStable();
-      expect(TestBed.inject(PreferencesDetailStore).model()).toBe(
+      expect(TestBed.inject(UserPreferencesCoordinator).model()).toBe(
         'gpt-5.6-luna',
       );
       // Picking a model returns to the effort view, now naming the new model.
@@ -743,7 +743,7 @@ describe('ChatPage', () => {
       expect(option?.getAttribute('aria-label')).toBe('High');
       option?.click();
       await fixture.whenStable();
-      expect(TestBed.inject(PreferencesDetailStore).effort()).toBe('high');
+      expect(TestBed.inject(UserPreferencesCoordinator).effort()).toBe('high');
       expect(option?.getAttribute('aria-checked')).toBe('true');
       expect(track?.textContent).toContain('High');
       // The panel stays open, like a slider; the pill follows the pick.
@@ -757,7 +757,7 @@ describe('ChatPage', () => {
         new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
       );
       await fixture.whenStable();
-      expect(TestBed.inject(PreferencesDetailStore).effort()).toBe('low');
+      expect(TestBed.inject(UserPreferencesCoordinator).effort()).toBe('low');
 
       await sendPrompt(element, 'Hi');
       await settled(TestBed.inject(ConversationDetailStore));

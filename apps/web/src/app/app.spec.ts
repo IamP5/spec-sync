@@ -3,10 +3,13 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, map } from 'rxjs';
 
+import { provideZard } from '@/ui/core';
 import { EDarkModes, ZardDarkMode } from '@/ui/services';
 
 import { App } from './app';
+import { provideFakeAuth } from './testing/fake-auth';
 import { FakeChatAgent, provideFakeChatAgent } from './testing/fake-chat-agent';
+import { provideFakeUser } from './testing/fake-user';
 
 describe('App', () => {
   let viewport: BehaviorSubject<number>;
@@ -16,6 +19,9 @@ describe('App', () => {
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
+        provideFakeUser(),
+        provideFakeAuth(),
+        provideZard(),
         provideRouter([]),
         {
           provide: BreakpointObserver,

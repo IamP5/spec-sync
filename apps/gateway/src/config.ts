@@ -2,11 +2,8 @@ export interface GatewayConfig {
   publicOrigin: string;
   apiUrl: string;
   aiUrl: string;
-  webUrl: string;
+  frontendOrigin: string;
   projectId: string;
-  googleClientId: string;
-  googleClientSecret: string;
-  identityApiKey: string;
   cloudRunAuth: boolean;
 }
 
@@ -45,11 +42,8 @@ export function loadConfig(env = process.env): GatewayConfig {
     publicOrigin: origin('PUBLIC_ORIGIN'),
     apiUrl: origin('API_URL'),
     aiUrl: origin('AI_URL'),
-    webUrl: origin('WEB_URL'),
+    frontendOrigin: origin('FRONTEND_ORIGIN'),
     projectId: required('GOOGLE_CLOUD_PROJECT'),
-    googleClientId: required('GOOGLE_CLIENT_ID'),
-    googleClientSecret: required('GOOGLE_CLIENT_SECRET'),
-    identityApiKey: required('IDENTITY_PLATFORM_API_KEY'),
     cloudRunAuth: production || env['CLOUD_RUN_AUTH'] === 'true',
   };
 }

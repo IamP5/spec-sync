@@ -1,196 +1,124 @@
 # SpecSync gateway
 
-Hono on Node.js is the public entry point for the application. It authenticates
-Google users through Google Cloud Identity Platform and proxies the existing
-frontend contracts without buffering AI responses.
+Hono on Node.js authenticates browser requests with Google Cloud Identity Platform.
+Web and gateway are separate public Cloud Run services. Spring Boot and AI stay
+internal and require Cloud Run IAM authentication. There is no load balancer.
 
 ```text
-Browser ── HTTPS ── gateway ── Cloud Run IAM + VPC ── web (static Angular)
-                       ├───── Cloud Run IAM + VPC ── api (Spring Boot)
-                       └───── Cloud Run IAM + VPC ── ai (Mastra)
-                                                     ↕ private service calls
-                                                    api
+Browser → public web (Angular assets + login)
+Browser → public gateway → private API / AI
+                               API ↔ AI (workload identity)
 ```
 
-Only `gateway` grants `allUsers` the Cloud Run invoker role. API, AI and web use
-`allow_unauthenticated = false` **and** `INGRESS_TRAFFIC_INTERNAL_ONLY`.
-Direct VPC egress, Private Google Access and private `run.app` DNS make gateway,
-API and AI calls internal without forcing external AI traffic through Cloud NAT.
-The API and AI identities retain invoker access to each other for catalog and
-worker requests. The static web identity has no backend invocation permissions.
+## Authentication and roles
 
-## Authentication and routes
+Angular uses the Firebase JavaScript SDK against Identity Platform's Google provider.
+The SDK owns popup sign-in, session persistence and ID-token refresh. Browser sessions
+use session storage and end when the tab closes. OAuth secrets remain in the Google
+provider configuration and Secret Manager; the browser receives only public SDK config.
 
-- `GET /auth/login`: Google authorization-code flow, browser-bound random state
-  and PKCE; credentials are exchanged by the gateway, never stored in Angular.
-- `GET /auth/callback`: exchange the Google ID token using Identity Platform's
-  `accounts:signInWithIdp`; verify its issuer, project audience, signature,
-  revocation, Google provider, verified email and recent authentication via the
-  Admin SDK. Create a 24-hour Identity Platform session cookie.
-- `GET /auth/me`: `{ uid, email, roles }` from the verified session.
-- `POST /auth/logout`: clear the session cookie. The confirmation form is at
-  `GET /auth/logout`. Logout clears this browser; operator revocation invalidates
-  every session for a user.
-- `/api/*`: Spring Boot, retaining the path and the existing `X-Ingestion-Key`
-  curator credential. Google login does not grant curator privileges.
-- `/ai/copilotkit` (GET/POST), `/ai/chat/models` (GET): Mastra with `/ai` stripped.
-  Studio, workflow APIs and `/internal/ingestion/*` are never browser routes.
-- Other GET/HEAD requests: private web container; HTML navigation without a valid
-  session redirects to Google login. Unauthenticated data requests return 401.
-- `GET /health`: public liveness endpoint.
+The browser sends `Authorization: Bearer <Identity Platform ID token>`. The gateway
+uses Firebase Admin `verifyIdToken(token, true)` to check signature, expiry, audience,
+issuer, revocation and disabled users, and requires a verified Google email. Google
+access tokens and arbitrary user headers do not authenticate a request. There are no
+cross-site session cookies and no custom OAuth callback/exchange implementation.
 
-Session cookies are HTTP-only, Secure, SameSite=Lax, host-only and use the
-`__Host-` prefix on HTTPS. Every authenticated request checks revocation/disabled
-users. Mutation requests require an exact `Origin` match to `PUBLIC_ORIGIN`;
-there is no cross-origin browser API. Responses are private/no-store. On expiry,
-reload the page to sign in again. Authentication errors never include tokens.
-
-Forwarding uses Hono's built-in [`proxy()` helper](https://hono.dev/docs/helpers/proxy)
-for request/response streaming and transport-header handling. A small gateway
-policy wrapper uses a fixed upstream allowlist, strips browser cookies and identity,
-forwarding and Cloud Run headers, refuses upstream redirects, forwards aborts,
-and streams bodies. `X-Serverless-Authorization` contains an ADC-derived Google
-ID token whose audience is the destination Cloud Run origin. That token proves
-workload identity, independently of the end user or curator credential.
-
-## Roles and the downstream contract
-
-Identity Platform custom claims contain `roles: string[]`. Role names are
-lowercase identifiers (`reviewer`, `admin`, `catalog:read`, etc.). No role is
-granted by default, by email domain, or from browser input. Current routes require
-sign-in; business role policies are deliberately left for the services.
-
-The gateway emits these headers to API and AI after session verification:
-
-- `X-SpecSync-Session`: the signed Identity Platform session JWT, for downstream
-  verification and future authorization. Verify with `verifySessionCookie(token,
-true)` (Firebase Admin SDK) or the equivalent session-cookie verification rules
-  before using its `roles` claim. This is a session JWT, not an OAuth access token
-  or a Cloud Run invocation token; `verifyIdToken` is not the right verifier.
-- `X-SpecSync-User`: base64url-encoded UTF-8 JSON `{ uid, email, roles }` for request
-  context. This normalized header is not independently signed; do not use it as
-  an authorization proof. Other authorized workloads can also reach the services.
-
-The signed user session is not sent to the static web service. Background
-AI-to-API and API-to-AI operations currently carry workload identity only; they
-must not invent a user or inherit roles from model input. Future user-scoped tool
-authorization must explicitly propagate and verify the signed session.
-
-An operator with Firebase Authentication admin permissions can assign roles using
-ADC; the gateway's runtime identity cannot change users or claims:
+`GET /auth/session` returns only `{ uid }` for session verification.
+`GET /user/me` returns `{ uid, email, displayName, photoUrl, roles }` from verified claims.
+Roles are informational application data in Angular, never a UI permission check or
+editable preference. Business authorization remains a future backend policy. New users
+receive no implicit role. Operators can assign roles using ADC:
 
 ```sh
-gcloud auth application-default login
-node apps/gateway/ops/set-user-roles.mjs PROJECT_ID IDENTITY_PLATFORM_UID reviewer
-# Omit all roles to remove them.
+node apps/gateway/ops/set-user-roles.mjs PROJECT_ID UID reviewer
+# Omitting roles clears them. Every change revokes tokens and requires a new login.
 ```
 
-The script preserves unrelated claims and revokes existing sessions so role
-removal takes effect without waiting for cookie expiry. The user signs in again.
-Identity Platform custom claims have a 1,000-byte limit; keep role lists small.
+## Routing and transport
+
+- Public `GET /health` returns `ok`; `/` redirects to the frontend.
+- Authenticated `/api`, `/v3/api-docs` and `/swagger-ui` forward to Spring Boot.
+- Only `/ai/copilotkit` GET/POST and `/ai/chat/models` GET forward to AI.
+- Unknown routes, frontend assets, AI Studio and internal workers are not exposed.
+- Hono's official `hono/proxy` helper handles forwarding with streaming and cancellation.
+  The wrapper filters headers, forbids upstream redirects and prevents shared caching.
+- Hono's official CORS middleware allows exactly `FRONTEND_ORIGIN`, including preflight
+  and the headers needed for streaming and curator workflows. CORS is not authentication;
+  even non-browser clients must supply valid tokens.
+- The gateway adds an ADC Cloud Run ID token in `X-Serverless-Authorization` for the
+  exact upstream audience. Browser cookies, bearer authorization and forged identity
+  headers are removed. Existing `X-Ingestion-Key` curator credentials are preserved.
+- `X-SpecSync-Token` carries the original signed Identity Platform token to API/AI;
+  future user policies must verify it with `verifyIdToken`, including expected project.
+  `X-SpecSync-User` is normalized base64url JSON for context, not an authorization proof.
+- API and AI also use workload identity for their existing internal calls.
+
+Angular uses a functional HTTP interceptor for gateway paths only. It gets a current
+SDK token for each request and never attaches it to external URLs. CopilotKit owns a
+separate streaming transport: the shell updates its headers on SDK token changes and
+refreshes credentials before each run. Writes are not automatically retried.
+
+## Auth and user domains
+
+`apps/web/src/app/domains/auth` owns the SDK session, session store, login page and
+logout component. The sign-in shell creates protected features after gateway session
+verification. Tokens remain outside application stores and devtools.
+
+`apps/web/src/app/domains/user` owns profile, roles, preferences and configuration.
+Its account menu composes auth's logout component and renders the Google photo with
+an initials fallback. Chat consumes the public user preferences interface; the stores
+stay private. Preferences and conversation history use keys scoped to the signed-in
+user. Existing anonymous history is left intact; it is not assigned to an arbitrary
+Google account. Conversation history remains owned by chat.
+These local records do not synchronize between devices.
 
 ## Local development
 
-Configure the Google Web OAuth client and Identity Platform provider as below,
-including `http://localhost:3000/auth/callback` as a redirect URI. Then:
-
 ```sh
-cp apps/gateway/.env.example apps/gateway/.env
-# Fill project, client ID, client secret and the Identity Platform API key.
+cp apps/gateway/.env.example apps/gateway/.env.local
+cp apps/web/public/app-config.example.json apps/web/public/app-config.json
+# Fill in the public Identity Platform API key in app-config.json.
 gcloud auth application-default login
-npm exec -- nx run api:bootRun
-npm exec -- nx dev ai
-npm exec -- nx serve web
 npm exec -- nx serve gateway
+npm exec -- nx serve web
 ```
 
-Run the services in separate terminals and open **http://localhost:3000**.
-Angular serves assets on 4200; its `/api`, `/ai`, `/auth` proxy points to the gateway.
-The gateway remains responsible for sign-in locally. Plain HTTP and unsigned
-workload calls are allowed only for loopback development; production forces
-HTTPS and Cloud Run IAM and rejects the Firebase auth emulator. Angular HMR's
-WebSocket is not proxied; reload the gateway page after frontend edits.
+Open `http://localhost:4200`; the browser calls gateway `http://localhost:3000` directly.
+Add localhost to Identity Platform and the browser key's allowed referrers. The gateway
+uses project ADC to verify users; production forbids the authentication emulator and
+requires HTTPS and Cloud Run workload authentication.
 
-## Provisioning and rollout
+## Cloud configuration
 
-Terraform provisions the infrastructure; the Deploy workflow builds and publishes
-service images. The initial dev migration was applied on 2026-09-07.
+Terraform enables the Google provider, creates a browser API key restricted to Identity
+Toolkit/Secure Token APIs and approved web origins, and supplies public SDK configuration
+to web's `/app-config.json`. Runtime configuration keeps environment values out of the
+Angular build. Do not put OAuth client secrets in this file.
 
-### Configured dev project
+The OAuth web client must authorize `https://PROJECT_ID.firebaseapp.com/__/auth/handler`
+as a redirect URI. Identity Platform must authorize the public frontend hostname,
+`PROJECT_ID.firebaseapp.com`, and localhost for development. The registered Google
+client ID is the `GOOGLE_OAUTH_CLIENT_ID` repository variable; its secret is
+`GOOGLE_OAUTH_CLIENT_SECRET` in Secret Manager.
 
-The console setup for `fiap-challenge-ford` was completed on 2026-09-07:
+Web and gateway grant `allUsers` invocation. API and AI use internal ingress, and
+only the gateway and required workload service accounts can invoke them. Direct VPC
+egress, Private Google Access and private `run.app` DNS allow those private calls.
+The gateway service account can check users but cannot assign roles or access OAuth secrets.
 
-- OAuth application: `SpecSync`; web client: `SpecSync gateway (dev)`.
-- Client ID: `492443755274-eq1mq82jfcc66ark4b2u55c1q9lekq9v.apps.googleusercontent.com`.
-  The same value is stored in the repository variable `GOOGLE_OAUTH_CLIENT_ID`.
-- Secret Manager: `GOOGLE_OAUTH_CLIENT_SECRET`, enabled version 1. The secret
-  payload is not stored in the repository.
-- Identity Platform is enabled with the Google provider. The gateway host and
-  `localhost` are authorized, and both `/auth/callback` URLs are registered.
-- OAuth remains in testing mode. Public publishing still requires completion of
-  the branding requirements shown by Google Auth Platform.
+The dev project is `fiap-challenge-ford`, region `southamerica-east1`. The new public
+frontend is `https://specsync-dev-web-492443755274.southamerica-east1.run.app`;
+the gateway is `https://specsync-dev-gateway-492443755274.southamerica-east1.run.app`.
+The Google OAuth app remains in Testing mode with explicitly configured test users.
 
-The gateway and private-service migration are deployed. Terraform imported the
-console-created Identity Platform resources. API, AI and web require Cloud Run
-IAM authentication and internal ingress. The public entry point is
-https://specsync-dev-gateway-492443755274.southamerica-east1.run.app.
+Before rollout, run `npm run verify`, Terraform format/validation/plan and build both
+images. After rollout, verify the anonymous login page, Google profile/photo, sign-out,
+AI streaming/catalog retrieval, gateway 401 without a token and private backend ingress.
 
-Google sign-in, authenticated SPA loading, streamed AI responses, and the AI
-catalog tool calling the private API were verified in Chrome. Direct anonymous
-requests to API, AI and web are rejected with HTTP 404 by internal ingress. The
-`/health` endpoint avoids Cloud Run reserved URL paths ending in `z`; see
-[Cloud Run known issues](https://cloud.google.com/run/docs/known-issues#reserved-url-paths).
+## References
 
-### Rollout steps
-
-1. In the same GCP project, configure the Google OAuth consent screen and create
-   a **Web application** client. Add `PUBLIC_ORIGIN/auth/callback` as an authorized
-   redirect URI. Without a custom domain the origin is
-   `https://specsync-dev-gateway-PROJECT_NUMBER.REGION.run.app`. Add local callback
-   URLs separately. Consent-screen audience/test-user restrictions still apply.
-2. Store that client's secret in the existing Secret Manager secret named
-   `GOOGLE_OAUTH_CLIENT_SECRET` (or set `google_oauth_secret_id`). Give the Terraform
-   runner permission to read it. No service-account key files are needed.
-3. Set Terraform `google_oauth_client_id` and GitHub repository variable
-   `GOOGLE_OAUTH_CLIENT_ID`. Terraform enables Identity Platform, configures its
-   Google provider and authorized domains, and creates an API key restricted to
-   Identity Toolkit. The dev configuration includes import blocks for Identity
-   Platform and its Google provider, configured through the console in
-   `fiap-challenge-ford`. For a new project, complete that console setup first or
-   remove the two import blocks so Terraform creates these resources.
-   Terraform references the OAuth secret while configuring the provider; its
-   sensitive value is consequently stored in Terraform state. Protect state access.
-   Local Application Default Credentials may require `USER_PROJECT_OVERRIDE=true`
-   and `GOOGLE_BILLING_PROJECT=fiap-challenge-ford` for the Identity Platform API.
-4. Existing deployers need the newly declared `iam.roleAdmin`,
-   `identityplatform.admin`, and `serviceusage.apiKeysAdmin` permissions before the
-   first CI apply (an administrator can apply the IAM update). The gateway itself
-   receives only `firebaseauth.users.get` and `firebaseauth.users.createSession`,
-   access to its OAuth secret and service-scoped invoker grants.
-5. Review the Terraform plan and apply dev infrastructure. This removes existing
-   public invoker bindings, adds internal ingress and moves any custom-domain
-   mapping to the gateway. Build and deploy **gateway, web, api and ai together**
-   using the Deploy workflow's `all=true` option. The first migration has an
-   interruption between closing the old services and deploying the new images;
-   schedule it accordingly. Ordinary subsequent deploys use Nx affected projects.
-6. Validate in GCP: an external anonymous request to API/AI/web must fail; a
-   browser navigation to the gateway must sign in with Google, render the SPA,
-   fetch catalog/model data and stream chat. Validate API worker invocation and
-   AI catalog retrieval. Assign/remove a test role, check `/auth/me`, and confirm
-   that revoked sessions require a new sign-in. Direct default service URLs remain
-   private even when the gateway has a custom domain.
-
-`PUBLIC_ORIGIN` must match the browser origin exactly. The gateway uses the fixed
-configured callback origin rather than trusting Host/X-Forwarded-Host headers.
-No real OAuth credentials or end-to-end GCP calls are needed for the unit tests:
-
-```sh
-npm exec -- nx run-many -p gateway -t lint,typecheck,test,build
-npm exec -- nx run infra:validate
-```
-
-References: [Identity Platform federated exchange](https://cloud.google.com/identity-platform/docs/reference/rest/v1/accounts/signInWithIdp),
-[session cookies](https://firebase.google.com/docs/auth/admin/manage-cookies),
-[custom claims](https://firebase.google.com/docs/auth/admin/custom-claims),
-[Cloud Run service authentication](https://cloud.google.com/run/docs/authenticating/service-to-service),
-[private Cloud Run networking](https://cloud.google.com/run/docs/securing/private-networking).
+- [Identity Platform Google sign-in](https://docs.cloud.google.com/identity-platform/docs/web/google)
+- [Verify ID tokens](https://firebase.google.com/docs/auth/admin/verify-id-tokens)
+- [Custom claims](https://firebase.google.com/docs/auth/admin/custom-claims)
+- [Hono proxy](https://hono.dev/docs/helpers/proxy)
+- [Hono CORS](https://hono.dev/docs/middleware/builtin/cors)

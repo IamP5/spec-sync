@@ -31,8 +31,8 @@ environment".
 ## Topology
 
 ```
-  users ──► Cloud Run "gateway" (Hono: Google Identity Platform, sessions, role claims)
-                 ├──► private Cloud Run "web" (nginx: Angular SPA)
+  users ──► public Cloud Run "web" (nginx: Angular SPA + Google login)
+  users ──► public Cloud Run "gateway" (Hono: verified ID tokens and role claims)
                  ├──► private Cloud Run "api" (Spring Boot)
                  │        ├──► Cloud SQL (private IP, Direct VPC egress + Auth connector)
                  │        ├──► Pub/Sub + GCS + Vertex AI
@@ -43,15 +43,14 @@ environment".
   GitHub Actions ──► Workload Identity Federation ──► deployer service account (no keys)
 ```
 
-The browser talks only to the gateway. It serves the SPA through private web,
-proxies `/api` to Spring Boot and exposes the AI chat/model routes under `/ai`.
-All three upstream services require Cloud Run IAM and internal ingress. Private
+The browser loads the public SPA and calls the public gateway directly. The gateway proxies `/api` to Spring Boot and exposes the AI chat/model routes under `/ai`.
+Both backend services require Cloud Run IAM and internal ingress. Private
 `run.app` DNS plus Direct VPC egress keeps their calls on the environment VPC.
 External AI providers remain reachable without Cloud NAT. Gateway Google sign-in,
 role claims, local startup and the required first deployment steps are documented
 in [the gateway guide](../apps/gateway/README.md).
 
-There is no load balancer or CORS configuration. AI remains stateless; AuraDB
+There is no load balancer. Hono CORS allows exactly the configured frontend origin. AI remains stateless; AuraDB
 stores the vehicle graph. The Vertex location is independent of the Cloud Run
 region (`vertex_location`, default `global`).
 
@@ -247,9 +246,9 @@ changes never fight each other.
 - The SPA is served by nginx on Cloud Run instead of GCS + Cloud CDN. That avoids the flat
   cost of a global load balancer and gives real 200 responses for deep links, at the price of
   no CDN and a short cold start after idle periods.
-- Gateway is the only public service. API, AI and web require internal ingress and
+- Web and gateway are public services. API and AI require internal ingress and
   service-specific invoker grants. Existing curator authorization stays in Spring;
-  the gateway requires a verified Google session for browser access. See the
+  the gateway requires a verified Identity Platform ID token for browser access. See the
   [gateway deployment guide](../apps/gateway/README.md) before the first rollout.
 - `bootstrap/` keeps its state locally (`terraform.tfstate` is git-ignored). Losing it only
   means importing one bucket again; it is deliberately not stored in the bucket it creates.

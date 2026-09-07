@@ -1,6 +1,6 @@
 output "app_url" {
-  description = "Public URL of the SPA (the gateway Cloud Run service)."
-  value       = local.gateway_origin
+  description = "Public URL of the Angular frontend."
+  value       = local.web_origin
 }
 
 output "api_url" {
@@ -14,7 +14,7 @@ output "ai_url" {
 }
 
 output "domain_dns_records" {
-  value = module.gateway.domain_dns_records
+  value = module.web.domain_dns_records
 }
 
 output "artifact_registry" {
@@ -55,4 +55,9 @@ output "neo4j_aura" {
     region      = module.neo4j_aura.region
     database    = "neo4j"
   }
+}
+
+output "gateway_url" {
+  description = "Public authenticated gateway for browser API requests."
+  value       = local.gateway_origin
 }

@@ -25,9 +25,11 @@ export const config: SheriffConfig = {
       data: ['domain:<domain>', 'type:data'],
       ui: ['domain:<domain>', 'type:ui'],
       util: ['domain:<domain>', 'type:util'],
+      state: ['domain:<domain>', 'type:state'],
 
       // Explicit domain APIs separate model contracts from composed features.
       'api/contracts': ['domain:<domain>/api', 'type:contracts-api'],
+      'api/preferences': ['domain:<domain>/api', 'type:preferences-api'],
       'api/features': ['domain:<domain>/api', 'type:features-api'],
     },
 
@@ -45,10 +47,25 @@ export const config: SheriffConfig = {
     // The app shell (apps/web/src/app/*.ts, routes, config) is the root module.
     root: '*',
 
-    'domain:chat': ['domain:chat', 'domain:shared', 'domain:vehicles/api'],
+    'domain:chat': [
+      'domain:chat',
+      'domain:shared',
+      'domain:vehicles/api',
+      'domain:user/api',
+    ],
+    'domain:user': [
+      'domain:user',
+      'domain:user/api',
+      'domain:shared',
+      'domain:auth/api',
+    ],
     'domain:*': [sameTag, 'domain:shared'],
 
+    'type:state': ['type:state', 'type:data', 'type:util', 'type:ui-kit'],
+    'type:preferences-api': ['type:state'],
     'type:feature': [
+      'type:state',
+      'type:preferences-api',
       'type:feature',
       'type:features-api',
       'type:contracts-api',

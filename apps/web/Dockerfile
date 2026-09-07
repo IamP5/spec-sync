@@ -2,7 +2,7 @@
 #
 # Angular SPA for Cloud Run.
 #   build   - installs workspace deps and runs `nx build web` (production), pre-compresses assets
-#   runtime - private unprivileged nginx serving the static bundle through the gateway
+#   runtime - public unprivileged nginx serving the static bundle
 #
 # Build context: the workspace root (see tools/deploy/web.sh and the root .dockerignore).
 
@@ -38,7 +38,7 @@ RUN npx nx build web --configuration=production \
 # -------------------------------------------------------------------------- runtime
 FROM ${NGINX_IMAGE} AS runtime
 
-# nginx serves private static assets; the Hono gateway owns routing and authentication.
+# nginx serves public static assets; the browser calls the Hono gateway for authenticated data.
 ENV PORT=8080
 
 COPY apps/web/nginx/default.conf.template /etc/nginx/templates/default.conf.template

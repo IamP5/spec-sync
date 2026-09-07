@@ -12,7 +12,9 @@ ADRs 0001, 0003, and 0004.
 
 ## Domains and structure
 
-- `chat` owns conversations, history, preferences, AG-UI state restoration,
+- `auth` owns the SDK session, gateway session verification, login page, logout component and authentication stores. SDK credentials stay outside application stores and devtools.
+- `user` owns the verified Google profile, role data, saved preferences and configuration. Its account and preferences components are exposed through `user/api/features`.
+- `chat` owns conversations, history, AG-UI state restoration,
   CopilotKit registration, and prompt/draft/send integration.
 - `vehicles` owns configurations, specifications, comparison semantics, related
   reviews, reviewed specification ingestion, and their reusable workflows.
@@ -68,7 +70,7 @@ is a workflow boundary, not one folder per component. Domain-level `ui/` or
   feature dependency graph must be acyclic, including dependencies through APIs.
 - Reusing a whole feature does not make its internal UI or state shared.
 - Cross-domain imports use explicitly allowed public APIs. The current grant is
-  `chat → vehicles/api`; vehicles cannot import chat. Direct cross-domain data,
+  `chat → vehicles/api`, `chat → user/api` and `user → auth/api/features`; auth does not depend on user, and vehicles cannot import chat. Direct cross-domain data,
   UI, feature, or helper imports are forbidden.
 - `api/contracts/index.ts` exports selected types and schemas from data/util.
   Its dependency closure contains no clients, stores, coordinators, UI, or
@@ -76,6 +78,7 @@ is a workflow boundary, not one folder per component. Domain-level `ui/` or
   tool results without depending on vehicle feature implementations.
 - `api/features/index.ts` exports feature entries only. Only feature/shell
   consumers may use it; data, util, and UI cannot.
+- `user/api/preferences` exposes only `UserPreferencesCoordinator` for smart features that independently consume saved preferences. It coordinates the private stores under `user/state` and the active theme. Data, util, UI and auth cannot consume this API. Direct access to user state outside that owner is forbidden, including from the app shell. Preference model types remain in `user/api/contracts`.
 - Sheriff enforces domain/layer permissions; barrels enforce module privacy;
   architecture tests additionally reject private paths even when barrel-less
   imports would otherwise be possible. Do not bypass an entry via another

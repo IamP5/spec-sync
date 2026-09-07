@@ -58,6 +58,13 @@ server {
         include /etc/nginx/snippets/headers.conf;
     }
 
+    # Public SDK configuration; the API key identifies the project, not a user.
+    location = /app-config.json {
+        default_type application/json;
+        add_header Cache-Control "no-store" always;
+        return 200 '{"gatewayUrl":"${GATEWAY_URL}","firebase":{"apiKey":"${IDENTITY_API_KEY}","authDomain":"${IDENTITY_AUTH_DOMAIN}","projectId":"${IDENTITY_PROJECT_ID}"}}';
+    }
+
     # SPA fallback: deep links render index.html with a real 200.
     location / {
         try_files $uri /index.html;

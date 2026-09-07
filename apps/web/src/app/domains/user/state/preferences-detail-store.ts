@@ -14,16 +14,10 @@ import {
   DEFAULT_PREFERENCES,
   initialsOf,
   Preferences,
-} from '../../data/preferences';
-import { PreferencesClient } from '../../data/preferences-client';
+} from '../data/preferences';
+import { PreferencesClient } from '../data/preferences-client';
 
-/**
- * Detail store of the user preferences edited in the settings dialog and
- * read by the sidebar (name, avatar) and the chat page (activity details,
- * the model and reasoning effort picked in the composer).
- * Persisted through `PreferencesClient`; the theme is owned by the design
- * system's `ZardDarkMode` service and is not mirrored here.
- */
+/** Browser-local user preferences, shared through the public preference coordinator. */
 export const PreferencesDetailStore = signalStore(
   { providedIn: 'root' },
 

@@ -20,6 +20,6 @@ await auth.setCustomUserClaims(uid, {
   ...user.customClaims,
   roles: [...new Set(roles)],
 });
-// Existing cookies carry old claims. Require a new login after every role change.
+// Existing tokens carry old claims. Require a new login after every role change.
 await auth.revokeRefreshTokens(uid);
 console.log(`Updated roles for ${uid}; the user must sign in again.`);
