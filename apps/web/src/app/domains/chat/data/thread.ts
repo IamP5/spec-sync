@@ -1,18 +1,29 @@
 import type { Message } from '@ag-ui/client';
+import { z } from 'zod';
+
+/**
+ * Chat history routes of the AI service, reached through the `/ai` proxy of
+ * the web server. Part of the contract with `apps/ai` (`CHAT_THREADS_PATH` in
+ * `src/mastra/threads/routes.ts`).
+ */
+export const CHAT_THREADS_URL = '/ai/chat/threads';
 
 /** Longest title shown in the sidebar; longer ones are cut with an ellipsis. */
 export const MAX_TITLE_LENGTH = 48;
 
+/** Shown while a conversation has no title yet. */
+const DEFAULT_TITLE = 'New chat';
+
 /**
- * A conversation as it is kept in the browser: the AG-UI thread id, the
- * messages the agent holds (tool results included, so a reopened thread can
- * be continued) and what the sidebar shows about it.
+ * A conversation as the AI service stores it: the AG-UI thread id, the
+ * messages Mastra memory holds (tool results included, so a reopened thread
+ * can be continued) and what the sidebar shows about it.
  */
 export interface ChatThread extends ChatThreadSummary {
   messages: Message[];
 }
 
-/** What the thread list needs; the messages stay in storage until a thread is opened. */
+/** What the thread list needs; the messages are read when a thread is opened. */
 export interface ChatThreadSummary {
   id: string;
   title: string;
@@ -20,6 +31,44 @@ export interface ChatThreadSummary {
   createdAt: number;
   /** Epoch milliseconds of the last change. */
   updatedAt: number;
+}
+
+const threadSummarySchema = z.object({
+  id: z.string().min(1),
+  title: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+const threadListSchema = z.object({ threads: z.array(threadSummarySchema) });
+
+/** AG-UI messages are validated by the client that replays them, not here. */
+const threadSchema = threadSummarySchema.extend({
+  messages: z.array(z.unknown()),
+});
+
+export function parseThreadSummary(value: unknown): ChatThreadSummary {
+  return titled(threadSummarySchema.parse(value));
+}
+
+export function parseThreadList(value: unknown): ChatThreadSummary[] {
+  return threadListSchema.parse(value).threads.map(titled);
+}
+
+export function parseThread(value: unknown): ChatThread {
+  const thread = threadSchema.parse(value);
+  return {
+    ...titled(thread),
+    messages: thread.messages as Message[],
+  };
+}
+
+/**
+ * The AI service writes the title after the reply, so a thread can arrive
+ * before it has one; the sidebar shows the same placeholder as a new chat.
+ */
+function titled<T extends ChatThreadSummary>(thread: T): T {
+  return thread.title.trim() ? thread : { ...thread, title: DEFAULT_TITLE };
 }
 
 /** A section of the thread list, e.g. "Today". */
@@ -42,7 +91,7 @@ export function threadTitleOf(text: string): string {
       .find(Boolean) ?? '';
   return line.length > MAX_TITLE_LENGTH
     ? `${line.slice(0, MAX_TITLE_LENGTH - 1).trimEnd()}…`
-    : line || 'New chat';
+    : line || DEFAULT_TITLE;
 }
 
 /**

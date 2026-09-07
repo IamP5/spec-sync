@@ -10,8 +10,12 @@ import {
   provideFakeChatAgent,
   textReply,
 } from '../../../../testing/fake-chat-agent';
+import {
+  FakeThreadClient,
+  provideFakeThreads,
+  storedThread,
+} from '../../../../testing/fake-threads';
 import { provideFakeUser } from '../../../../testing/fake-user';
-import { ThreadClient } from '../../data/thread-client';
 import { ChatCoordinator } from '../chat-coordinator';
 import { ConversationDetailStore } from '../chat-page/conversation-detail-store';
 import { ThreadSearch } from './thread-search';
@@ -19,6 +23,7 @@ import { ThreadSearchStore } from './thread-search-store';
 
 describe('ThreadSearch', () => {
   let agent: FakeChatAgent;
+  let threads: FakeThreadClient;
 
   beforeEach(async () => {
     localStorage.clear();
@@ -30,42 +35,53 @@ describe('ThreadSearch', () => {
         provideFakeUser(),
         provideFakeAuth(),
         ...provideFakeChatAgent(agent),
+        ...provideFakeThreads(),
         provideRouter([]),
         provideZard(),
         ZardSidebarService,
       ],
     }).compileComponents();
+    threads = TestBed.inject(FakeThreadClient);
   });
 
-  it('lists the conversations the coordinator sends, newest on top', async () => {
-    agent.replyWith((input) => textReply(input, 'ok'));
-    const coordinator = TestBed.inject(ChatCoordinator);
-    await coordinator.send('First question');
-    coordinator.startNew();
-    await coordinator.send('Second question');
-
+  async function render() {
     const fixture = TestBed.createComponent(ThreadSearch);
     await fixture.whenStable();
+    return fixture;
+  }
 
-    const element = fixture.nativeElement as HTMLElement;
-    const titles = Array.from(
-      element.querySelectorAll('[data-role="thread"] a'),
-    ).map((a) => a.textContent?.trim());
-    expect(titles).toEqual(['Second question', 'First question']);
+  function titles(fixture: { nativeElement: unknown }): (string | undefined)[] {
+    return Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll(
+        '[data-role="thread"] a',
+      ),
+    ).map((anchor) => anchor.textContent?.trim());
+  }
+
+  it('lists the conversations the service stores, newest on top', async () => {
+    threads.seed(
+      storedThread('t-1', 'First question', 1),
+      storedThread('t-2', 'Second question', 2),
+    );
+    agent.replyWith((input) => textReply(input, 'ok'));
+    await TestBed.inject(ChatCoordinator).open('t-2');
+
+    const fixture = await render();
+
+    expect(titles(fixture)).toEqual(['Second question', 'First question']);
     expect(
-      element.querySelector('[data-role="thread"] a[aria-current="page"]')
-        ?.textContent,
+      (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-role="thread"] a[aria-current="page"]',
+      )?.textContent,
     ).toContain('Second question');
   });
 
   it('filters the list with the search box', async () => {
-    agent.replyWith((input) => textReply(input, 'ok'));
-    const coordinator = TestBed.inject(ChatCoordinator);
-    await coordinator.send('Password reset');
-    coordinator.startNew();
-    await coordinator.send('Login throttling');
-    const fixture = TestBed.createComponent(ThreadSearch);
-    await fixture.whenStable();
+    threads.seed(
+      storedThread('t-1', 'Password reset', 1),
+      storedThread('t-2', 'Login throttling', 2),
+    );
+    const fixture = await render();
 
     const search = (
       fixture.nativeElement as HTMLElement
@@ -74,56 +90,45 @@ describe('ThreadSearch', () => {
     search!.dispatchEvent(new Event('input'));
     await fixture.whenStable();
 
-    const titles = Array.from(
-      (fixture.nativeElement as HTMLElement).querySelectorAll(
-        '[data-role="thread"] a',
-      ),
-    ).map((a) => a.textContent?.trim());
-    expect(titles).toEqual(['Login throttling']);
+    expect(titles(fixture)).toEqual(['Login throttling']);
   });
 
   it('renames a thread inline', async () => {
+    threads.seed(storedThread('t-1', 'Draft'));
     agent.replyWith((input) => textReply(input, 'ok'));
-    const coordinator = TestBed.inject(ChatCoordinator);
-    await coordinator.send('Draft');
-    const id = TestBed.inject(ConversationDetailStore).threadId();
-    const fixture = TestBed.createComponent(ThreadSearch);
-    await fixture.whenStable();
+    await TestBed.inject(ChatCoordinator).open('t-1');
+    const fixture = await render();
 
-    const element = fixture.nativeElement as HTMLElement;
     (
       fixture.componentInstance as unknown as { onRename(t: unknown): void }
-    ).onRename({ id, title: 'Draft' });
+    ).onRename({ id: 't-1', title: 'Draft' });
     await fixture.whenStable();
-    const input = element.querySelector<HTMLInputElement>(
-      'input[aria-label="Conversation title"]',
-    );
+    const input = (
+      fixture.nativeElement as HTMLElement
+    ).querySelector<HTMLInputElement>('input[aria-label="Conversation title"]');
     expect(input).not.toBeNull();
     input!.value = 'Password policy';
     input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
     await fixture.whenStable();
 
-    expect(TestBed.inject(ThreadClient).find(id)?.title).toBe(
-      'Password policy',
-    );
+    expect(threads.all()[0]?.title).toBe('Password policy');
     expect(TestBed.inject(ConversationDetailStore).title()).toBe(
       'Password policy',
     );
-    expect(
-      element.querySelector('[data-role="thread"] a')?.textContent,
-    ).toContain('Password policy');
+    expect(titles(fixture)).toEqual(['Password policy']);
   });
 
   it('removes the open thread through the coordinator and starts over', async () => {
-    agent.replyWith((input) => textReply(input, 'ok'));
+    threads.seed(storedThread('t-1', 'Doomed'));
     const coordinator = TestBed.inject(ChatCoordinator);
-    await coordinator.send('Doomed');
-    const id = TestBed.inject(ConversationDetailStore).threadId();
+    await coordinator.open('t-1');
+    await render();
 
-    expect(coordinator.remove(id)).toBe(true);
+    await expect(coordinator.remove('t-1')).resolves.toBe(true);
 
     expect(TestBed.inject(ThreadSearchStore).isEmpty()).toBe(true);
     expect(TestBed.inject(ConversationDetailStore).isEmpty()).toBe(true);
-    expect(TestBed.inject(ConversationDetailStore).threadId()).not.toBe(id);
+    expect(TestBed.inject(ConversationDetailStore).threadId()).not.toBe('t-1');
+    expect(threads.all()).toEqual([]);
   });
 });

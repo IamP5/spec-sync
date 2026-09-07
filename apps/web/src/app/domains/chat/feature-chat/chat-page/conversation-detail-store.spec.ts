@@ -9,17 +9,25 @@ import {
   textReply,
   toolCallReply,
 } from '../../../../testing/fake-chat-agent';
+import {
+  FakeThreadClient,
+  provideFakeThreads,
+  storedThread,
+} from '../../../../testing/fake-threads';
 import { matrix } from '../../../../testing/vehicle-fixtures';
-import { ThreadClient } from '../../data/thread-client';
 import { ConversationDetailStore } from './conversation-detail-store';
 
 describe('ConversationDetailStore', () => {
   let agent: FakeChatAgent;
+  let threads: FakeThreadClient;
 
   beforeEach(() => {
     localStorage.clear();
     agent = new FakeChatAgent();
-    TestBed.configureTestingModule({ providers: provideFakeChatAgent(agent) });
+    TestBed.configureTestingModule({
+      providers: [...provideFakeChatAgent(agent), ...provideFakeThreads()],
+    });
+    threads = TestBed.inject(FakeThreadClient);
   });
 
   it('restores explicit comparison selection and keeps it isolated between threads', async () => {
@@ -44,6 +52,8 @@ describe('ConversationDetailStore', () => {
           c.value.includes('camera_360'),
       ),
     ).toBe(true);
+    const restored = store.messages();
+    threads.seed(storedThread(first, 'Compare vehicles', 1, restored));
     store.reset();
     await store.send('New chat');
     expect(
@@ -51,7 +61,7 @@ describe('ConversationDetailStore', () => {
         c.description.includes('SpecSync comparison selection'),
       )?.value,
     ).toBe('null');
-    store.open(first);
+    await store.open(first);
     await store.send('Show sources');
     expect(
       agent.runs[agent.runs.length - 1]?.state['comparison'],
@@ -60,32 +70,26 @@ describe('ConversationDetailStore', () => {
     });
   });
 
-  it('stores the thread with the first message and again after the reply', async () => {
+  it('leaves the history to the service and writes nothing itself', async () => {
     agent.replyWith((input) => textReply(input, 'Hello'));
     const store = TestBed.inject(ConversationDetailStore);
-    const threads = TestBed.inject(ThreadClient);
 
-    const sending = store.send('# Reset password\nby email');
-    expect(threads.list().map((t) => t.title)).toEqual(['Reset password']);
-    expect(threads.find(store.threadId())?.messages.map((m) => m.role)).toEqual(
-      ['user'],
-    );
-    await sending;
+    await store.send('# Reset password\nby email');
 
-    expect(threads.find(store.threadId())?.messages.map((m) => m.role)).toEqual(
-      ['user', 'assistant'],
-    );
+    expect(store.title()).toBe('Reset password');
+    expect(threads.all()).toEqual([]);
   });
 
-  it('open replaces the conversation with a stored thread', async () => {
+  it('open replaces the conversation with the thread the service returns', async () => {
     agent.replyWith((input) => textReply(input, 'first reply'));
     const store = TestBed.inject(ConversationDetailStore);
     await store.send('first');
     const first = store.threadId();
+    threads.seed(storedThread(first, 'first', 1, store.messages()));
     store.reset();
     await store.send('second');
 
-    expect(store.open(first)).toBe(true);
+    await expect(store.open(first)).resolves.toBe(true);
 
     expect(store.threadId()).toBe(first);
     expect(store.title()).toBe('first');
@@ -93,11 +97,11 @@ describe('ConversationDetailStore', () => {
       'first',
       'first reply',
     ]);
-    expect(store.open('missing')).toBe(false);
+    await expect(store.open('missing')).resolves.toBe(false);
     expect(store.threadId()).toBe(first);
   });
 
-  it('rename changes the stored title', async () => {
+  it('rename shows the new title while the service stores it', async () => {
     agent.replyWith((input) => textReply(input, 'x'));
     const store = TestBed.inject(ConversationDetailStore);
     await store.send('hi');
@@ -105,9 +109,6 @@ describe('ConversationDetailStore', () => {
     store.rename('Greeting');
 
     expect(store.title()).toBe('Greeting');
-    expect(TestBed.inject(ThreadClient).find(store.threadId())?.title).toBe(
-      'Greeting',
-    );
   });
 
   it('forwards the picked model and effort with a run and omits what was not picked', async () => {

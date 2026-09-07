@@ -10,7 +10,7 @@ import {
   withState,
 } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
-import { ignoreElements, tap } from 'rxjs';
+import { firstValueFrom, ignoreElements, tap } from 'rxjs';
 
 import { sessionEvents } from '../../../auth/api/events';
 import { SESSION } from '../../../auth/api/session';
@@ -28,16 +28,16 @@ import { ThreadClient } from '../../data/thread-client';
 export type ConversationStatus = 'idle' | 'streaming' | 'error';
 
 /**
- * Detail store of the conversation shown on the chat page. The messages
- * themselves live in the AG-UI agent (the AI service is stateless and
- * receives the whole thread with every run); the store mirrors them as
- * signals and adds what the page needs on top: the run status, the last
- * error, whether the last reply was cut short and the turns worth showing.
+ * Detail store of the conversation shown on the chat page. The AI service
+ * persists every turn in Mastra memory as the run happens, so nothing here
+ * writes the history; the AG-UI agent holds the messages for display and the
+ * store mirrors them as signals, adding what the page needs on top: the run
+ * status, the last error, whether the last reply was cut short and the turns
+ * worth showing.
  *
- * Every change is written to the conversation history (`ThreadClient`), so
- * the thread can be reopened from the sidebar. A run is a stream of AG-UI
- * events rather than a request/response pair, so it is driven by `send()`
- * instead of `withResource` / `withMutations`.
+ * Reopening a thread reads it back from the service (`ThreadClient`). A run
+ * is a stream of AG-UI events rather than a request/response pair, so it is
+ * driven by `send()` instead of `withResource` / `withMutations`.
  */
 export const ConversationDetailStore = signalStore(
   { providedIn: 'root' },
@@ -51,6 +51,8 @@ export const ConversationDetailStore = signalStore(
     title: '',
     /** Epoch milliseconds of the first message; 0 while the thread is empty. */
     createdAt: 0,
+    /** True while a stored thread is being read back from the service. */
+    loading: false,
   }),
 
   withProps(() => ({
@@ -82,22 +84,6 @@ export const ConversationDetailStore = signalStore(
   })),
 
   withMethods((store) => {
-    /** Writes the thread to the history; an empty thread is not worth keeping. */
-    function persist(): void {
-      if (!store._session.authenticated()) return;
-      const messages = store._chatAgentClient.snapshot();
-      if (messages.length === 0) {
-        return;
-      }
-      store._threadClient.save({
-        id: store.threadId(),
-        title: store.title(),
-        createdAt: store.createdAt(),
-        updatedAt: Date.now(),
-        messages,
-      });
-    }
-
     async function run(work: () => Promise<void>): Promise<void> {
       if (store.status() === 'streaming') {
         return;
@@ -112,10 +98,8 @@ export const ConversationDetailStore = signalStore(
       try {
         await work();
       } finally {
-        if (store._session.isCurrent(scope)) {
-          if (store.status() === 'streaming')
-            patchState(store, { status: 'idle' });
-          persist();
+        if (store._session.isCurrent(scope) && store.status() === 'streaming') {
+          patchState(store, { status: 'idle' });
         }
       }
     }
@@ -136,7 +120,6 @@ export const ConversationDetailStore = signalStore(
             });
           }
           store._chatAgentClient.append(content);
-          persist();
           await store._chatAgentClient.send(options);
         });
       },
@@ -158,34 +141,46 @@ export const ConversationDetailStore = signalStore(
         if (store.status() === 'streaming') {
           patchState(store, { status: 'idle', stopped: true });
         }
-        persist();
       },
 
-      /** Gives the open thread a new sidebar title. */
+      /** Shows a new sidebar title for the open thread; the service stores it. */
       rename(title: string): void {
         patchState(store, { title });
-        persist();
       },
 
       /**
-       * Replaces the conversation with a stored thread. Returns false, and
-       * changes nothing, when the history holds no thread with that id.
+       * Replaces the conversation with a stored thread read back from the AI
+       * service. Returns false, and changes nothing, when the service has no
+       * thread with that id for this user.
        */
-      open(id: string): boolean {
-        const thread = store._threadClient.find(id);
-        if (!thread) {
+      async open(id: string): Promise<boolean> {
+        const scope = store._session.scope();
+        if (!scope) {
           return false;
         }
-        store._chatAgentClient.stop();
-        store._chatAgentClient.load(thread.id, thread.messages);
-        patchState(store, {
-          status: 'idle',
-          error: undefined,
-          stopped: false,
-          title: thread.title,
-          createdAt: thread.createdAt,
-        });
-        return true;
+        patchState(store, { loading: true });
+        try {
+          const thread = await firstValueFrom(store._threadClient.find(id));
+          if (!thread || !store._session.isCurrent(scope)) {
+            return false;
+          }
+          store._chatAgentClient.stop();
+          store._chatAgentClient.load(thread.id, thread.messages);
+          patchState(store, {
+            status: 'idle',
+            error: undefined,
+            stopped: false,
+            title: thread.title,
+            createdAt: thread.createdAt,
+          });
+          return true;
+        } catch {
+          return false;
+        } finally {
+          if (store._session.isCurrent(scope)) {
+            patchState(store, { loading: false });
+          }
+        }
       },
 
       /** Starts a new, empty conversation. The previous one stays in the history. */
@@ -198,6 +193,7 @@ export const ConversationDetailStore = signalStore(
           stopped: false,
           title: '',
           createdAt: 0,
+          loading: false,
         });
       },
     };

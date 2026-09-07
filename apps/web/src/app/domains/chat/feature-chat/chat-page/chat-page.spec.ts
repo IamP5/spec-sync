@@ -13,6 +13,11 @@ import {
   textReply,
   toolCallReply,
 } from '../../../../testing/fake-chat-agent';
+import {
+  FakeThreadClient,
+  provideFakeThreads,
+  storedThread,
+} from '../../../../testing/fake-threads';
 import { matrix } from '../../../../testing/vehicle-fixtures';
 import { UserPreferencesCoordinator } from '../../../user/api/preferences';
 import { TEXT_REVEAL_ENABLED } from '../../util/text-reveal';
@@ -44,6 +49,7 @@ describe('ChatPage', () => {
       providers: [
         provideHttpClient(),
         ...provideFakeChatAgent(agent),
+        ...provideFakeThreads(),
         provideRouter([
           { path: '', children: [] },
           { path: 'c/:threadId', children: [] },
@@ -225,6 +231,9 @@ describe('ChatPage', () => {
     const store = TestBed.inject(ConversationDetailStore);
     await store.send('earlier question');
     const id = store.threadId();
+    TestBed.inject(FakeThreadClient).seed(
+      storedThread(id, 'earlier question', 1, store.messages()),
+    );
     store.reset();
     expect(store.isEmpty()).toBe(true);
 
@@ -244,6 +253,9 @@ describe('ChatPage', () => {
     const store = TestBed.inject(ConversationDetailStore);
     await store.send('Earlier question');
     const id = store.threadId();
+    TestBed.inject(FakeThreadClient).seed(
+      storedThread(id, 'Earlier question', 1, store.messages()),
+    );
     store.reset();
     const frame = vi
       .spyOn(globalThis, 'requestAnimationFrame')

@@ -82,14 +82,6 @@ export class ChatAgentClient {
   }
 
   /**
-   * The thread as the agent holds it right now. The `messages` signal
-   * follows on the next tick; use this to persist right after a change.
-   */
-  snapshot(): Message[] {
-    return this.available() ? this.agentStore().agent.messages : [];
-  }
-
-  /**
    * Runs the agent on the current thread. Resolves when the run ends, also
    * after a failure: errors are reported through {@link onError}. `options`
    * name the model and reasoning effort the service should answer with.

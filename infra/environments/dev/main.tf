@@ -184,17 +184,22 @@ module "ai" {
   ingress               = "INGRESS_TRAFFIC_INTERNAL_ONLY"
   deletion_protection   = false
 
+  cloud_sql_instances = [module.database.connection_name]
+
   vpc_access = {
     network    = module.network.network_name
     subnetwork = module.network.run_subnetwork_name
   }
 
   # Read by @ai-sdk/google-vertex; credentials are the service account above.
+  # GOOGLE_CLOUD_PROJECT is the Firebase project whose ID tokens the chat routes
+  # verify (apps/ai/src/mastra/identity.ts).
   # MASTRA_HOST/PORT are set by the image (apps/ai/Dockerfile) and Cloud Run.
   env = {
     NODE_ENV               = "production"
     SPECSYNC_API_URL       = module.api.uri
     CLOUD_RUN_AUTH         = "true"
+    GOOGLE_CLOUD_PROJECT   = var.project_id
     GOOGLE_VERTEX_PROJECT  = var.project_id
     GOOGLE_VERTEX_LOCATION = var.vertex_location
     NEO4J_DATABASE         = "neo4j"
@@ -207,12 +212,15 @@ module "ai" {
     },
     # Enables the OpenAI entries of the chat's model selector (see openai.tf).
     { OPENAI_API_KEY = { secret = data.google_secret_manager_secret.openai_api_key.secret_id } },
+    # Mastra-owned chat history in the `mastra` schema (see ai-memory.tf).
+    { SPECSYNC_MEMORY_DATABASE_URL = { secret = google_secret_manager_secret.ai_memory_url.secret_id } },
   )
 
   depends_on = [
     module.services,
     google_secret_manager_secret_iam_member.ai_neo4j,
     google_secret_manager_secret_iam_member.ai_openai_api_key,
+    google_secret_manager_secret_iam_member.ai_memory_url,
   ]
 }
 

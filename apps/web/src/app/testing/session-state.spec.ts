@@ -9,7 +9,6 @@ import { TestBed } from '@angular/core/testing';
 import { AuthSession } from '../domains/auth/data/auth-session';
 import { SessionContext } from '../domains/auth/session/session-context';
 import { authInterceptor } from '../domains/auth/transport/auth-interceptor';
-import { CHAT_STORAGE_SCOPE } from '../domains/chat/util/storage-scope';
 import { WEB_CONFIG } from '../domains/shared/util-config';
 import { UserProfileClient } from '../domains/user/data/user-profile-client';
 import { PreferencesDetailStore } from '../domains/user/state/preferences-detail-store';
@@ -45,7 +44,6 @@ describe('account-owned state lifecycle', () => {
           useValue: { gatewayUrl: 'https://gateway.example' },
         },
         { provide: USER_STORAGE_SCOPE, useFactory: storageScope },
-        { provide: CHAT_STORAGE_SCOPE, useFactory: storageScope },
       ],
     });
   });

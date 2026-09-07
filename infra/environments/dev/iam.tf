@@ -35,6 +35,7 @@ resource "google_service_account" "ai" {
 resource "google_project_iam_member" "ai" {
   for_each = toset([
     "roles/aiplatform.user",
+    "roles/cloudsql.client",
     "roles/logging.logWriter",
     "roles/monitoring.metricWriter",
   ])

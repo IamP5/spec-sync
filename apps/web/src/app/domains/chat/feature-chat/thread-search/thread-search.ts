@@ -188,9 +188,9 @@ export class ThreadSearch {
       zOkDestructive: true,
       zOnOk: () => {
         if (!this.session.isCurrent(scope)) return;
-        if (this.coordinator.remove(thread.id)) {
-          void this.router.navigateByUrl('/');
-        }
+        void this.coordinator.remove(thread.id).then((wasOpen) => {
+          if (wasOpen) void this.router.navigateByUrl('/');
+        });
       },
     });
   }
@@ -198,7 +198,7 @@ export class ThreadSearch {
   private commitRename(thread: ChatThreadSummary, title: string): void {
     this.renamingId.set(null);
     if (title.trim() && title.trim() !== thread.title) {
-      this.coordinator.rename(thread.id, title);
+      void this.coordinator.rename(thread.id, title);
     }
   }
 

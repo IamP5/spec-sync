@@ -7,8 +7,11 @@ import { PinoLogger } from '@mastra/loggers';
 
 import { CHAT_AGENT_ID, specSyncAgent } from './agents/spec-sync-agent';
 import { chatModelRoutes, setChatModelContext } from './chat-model-route';
+import { requireVerifiedUser, setChatIdentityContext } from './identity';
 import { ingestionRoutes } from './ingestion/routes';
 import { vehicleIngestionWorkflow } from './ingestion/workflow';
+import { postgresStorage } from './memory';
+import { chatThreadRoutes } from './threads/routes';
 
 const production = process.env['NODE_ENV'] === 'production';
 
@@ -35,9 +38,10 @@ const devDatabase = `file:${fileURLToPath(new URL('../dev.db', import.meta.url))
  * the agent as client tools. The Angular app talks to it with
  * `@copilotkit/angular`.
  *
- * Storage is only attached outside production: Studio uses it for traces and
- * chat history while developing. The Cloud Run service is stateless; the
- * conversation lives in the browser (see apps/web, domain `chat`).
+ * Storage is Cloud SQL whenever SPECSYNC_MEMORY_DATABASE_URL is set: Mastra
+ * memory owns the chat threads and messages of every signed-in user (decision
+ * of 2026-09-07). Without that variable a LibSQL file serves local
+ * development, and production runs without storage at all.
  *
  * Host and port come from the environment (`MASTRA_HOST`, `PORT`): Cloud Run
  * injects PORT and the Dockerfile sets MASTRA_HOST=0.0.0.0.
@@ -46,9 +50,11 @@ export const mastra = new Mastra({
   agents: { [specSyncAgent.id]: specSyncAgent },
   // Bounded ingestion pipeline; the API owns run status, review and publication.
   workflows: { [vehicleIngestionWorkflow.id]: vehicleIngestionWorkflow },
-  storage: production
-    ? undefined
-    : new LibSQLStore({ id: 'ai-dev', url: devDatabase }),
+  storage:
+    postgresStorage() ??
+    (production
+      ? undefined
+      : new LibSQLStore({ id: 'ai-dev', url: devDatabase })),
   logger: new PinoLogger({
     name: 'ai',
     level: production ? 'info' : 'debug',
@@ -57,13 +63,20 @@ export const mastra = new Mastra({
     apiRoutes: [
       ...ingestionRoutes,
       ...chatModelRoutes,
-      registerCopilotKit({
-        path: COPILOTKIT_PATH,
-        // Memory scope for agents that have one; the chat agent has none.
-        resourceId: CHAT_AGENT_ID,
-        // The model the user picked travels as a CopilotKit property.
-        setContext: setChatModelContext,
-      }),
+      ...chatThreadRoutes,
+      {
+        ...registerCopilotKit({
+          path: COPILOTKIT_PATH,
+          // Fallback scope; setChatIdentityContext replaces it per request with
+          // the resource id of the user whose gateway token verified.
+          resourceId: CHAT_AGENT_ID,
+          setContext: async (c, requestContext) => {
+            await setChatIdentityContext(c, requestContext);
+            await setChatModelContext(c, requestContext);
+          },
+        }),
+        middleware: requireVerifiedUser,
+      },
     ],
   },
   bundler: {

@@ -12,7 +12,6 @@ import { provideZard } from '@/ui/core';
 
 import {
   provideChatAuthentication,
-  provideChatStorageScope,
   provideUserStorageScope,
 } from './app.providers';
 import { appRoutes } from './app.routes';
@@ -22,7 +21,6 @@ import { authInterceptor } from './domains/auth/api/bootstrap';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideChatStorageScope(),
     provideUserStorageScope(),
     provideChatAuthentication(),
     provideHttpClient(withInterceptors([authInterceptor])),

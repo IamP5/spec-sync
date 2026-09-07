@@ -60,7 +60,7 @@ export class HistorySettingsEdit {
       zOkDestructive: true,
       zOnOk: () => {
         if (!this.session.isCurrent(scope)) return;
-        this.coordinator.clear();
+        void this.coordinator.clear();
         void this.router.navigateByUrl('/');
       },
     });

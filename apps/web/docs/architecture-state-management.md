@@ -102,10 +102,11 @@ export const GreetingDetailStore = signalStore(
 );
 ```
 
-- State that is driven by an event stream or by local storage (the chat
-  conversation, the thread history) uses `withMethods` instead; see
-  `ConversationDetailStore` and `ThreadSearchStore` in
-  `apps/web/src/app/domains/chat/feature-chat`.
+- State that is driven by an event stream (the chat conversation) uses
+  `withMethods` instead; see `ConversationDetailStore` in
+  `apps/web/src/app/domains/chat/feature-chat/chat-page`. The thread history is
+  ordinary HTTP state: `ThreadSearchStore` wraps the list in `withResource`
+  and `ThreadDetailStore` writes through `withMutations`.
 
 ## Smart and Dumb Components and Stores
 
@@ -136,7 +137,9 @@ export const GreetingDetailStore = signalStore(
   the smart component.
 - Thread history mutations live in `ThreadDetailStore`; `ThreadSearchStore`
   owns reads/filtering. `ChatCoordinator` refreshes the list after mutations and
-  synchronizes the open conversation.
+  synchronizes the open conversation. The AI service owns the history, so the
+  browser never writes it: a run persists itself server-side and reopening a
+  thread reads it back.
 
 ## Authentication lifecycle
 

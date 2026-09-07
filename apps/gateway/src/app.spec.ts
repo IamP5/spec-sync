@@ -186,6 +186,44 @@ describe('gateway authentication and routing', () => {
     const request = fetcher.mock.calls[0]![0] as Request;
     expect(request.signal.aborted).toBe(true);
   });
+  it('forwards the chat history routes of the AI service', async () => {
+    const { app, fetcher } = setup();
+    const calls: [string, string][] = [
+      ['/ai/chat/threads', 'GET'],
+      ['/ai/chat/threads', 'DELETE'],
+      ['/ai/chat/threads/t-1', 'GET'],
+      ['/ai/chat/threads/t-1', 'PATCH'],
+      ['/ai/chat/threads/t-1', 'DELETE'],
+    ];
+    for (const [path, method] of calls) {
+      const response = await app.request(path, {
+        method,
+        headers: { authorization, origin: config.frontendOrigin },
+      });
+      expect(response.status).toBe(200);
+    }
+    expect(fetcher.mock.calls.map((call) => (call[0] as Request).url)).toEqual([
+      'https://ai.run.app/chat/threads',
+      'https://ai.run.app/chat/threads',
+      'https://ai.run.app/chat/threads/t-1',
+      'https://ai.run.app/chat/threads/t-1',
+      'https://ai.run.app/chat/threads/t-1',
+    ]);
+  });
+  it('keeps Mastra memory routes and unknown chat methods hidden', async () => {
+    const { app, fetcher } = setup();
+    for (const [path, method] of [
+      ['/ai/api/memory/threads', 'GET'],
+      ['/ai/chat/threads', 'POST'],
+      ['/ai/chat/threads', 'PUT'],
+      ['/ai/chat/threadsx', 'GET'],
+    ] as [string, string][])
+      expect(
+        (await app.request(path, { method, headers: { authorization } }))
+          .status,
+      ).toBe(404);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
   it('blocks internal AI surfaces, including encoded paths', async () => {
     const { app, fetcher } = setup();
     for (const path of [

@@ -38,7 +38,10 @@ The binding rules live in the docs; this section only names the red lines.
   without an explicit request in the current conversation.
 - Model new features after `ChatPage`, `ConversationDetailStore`,
   `ThreadSearchStore`, `ChatCoordinator` and `ThreadClient` under
-  `apps/web/src/app/domains/chat`.
+  `apps/web/src/app/domains/chat`. The conversation history lives in the AI
+  service (Mastra memory on Cloud SQL, scoped to the signed-in user), so
+  `ThreadClient` is an HTTP client against `/ai/chat/threads`; nothing in the
+  browser persists a conversation.
 - Add design-system components with the Zard CLI; never hand-edit
   `libs/ui` to add application logic.
 - The theme lives in `libs/ui/styles.css`: Ford blue for primary actions

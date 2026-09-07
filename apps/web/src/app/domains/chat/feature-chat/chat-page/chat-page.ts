@@ -247,6 +247,8 @@ export class ChatPage {
   protected readonly turns = this.store.turns;
   protected readonly streaming = this.store.isStreaming;
   protected readonly empty = this.store.isEmpty;
+  /** True while a stored conversation is read back from the AI service. */
+  protected readonly loadingThread = this.store.loading;
   protected readonly stopped = this.store.stopped;
   protected readonly title = this.store.title;
   protected readonly showActivity = this.preferences.showActivity;
@@ -557,9 +559,9 @@ export class ChatPage {
       this.animateReplies.set(false);
     }
     if (id) {
-      if (!this.coordinator.open(id)) {
-        void this.router.navigateByUrl('/', { replaceUrl: true });
-      }
+      void this.coordinator.open(id).then((opened) => {
+        if (!opened) void this.router.navigateByUrl('/', { replaceUrl: true });
+      });
     } else if (!this.empty()) {
       this.coordinator.startNew();
     }

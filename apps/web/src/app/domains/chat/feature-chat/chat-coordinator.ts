@@ -46,10 +46,10 @@ export class ChatCoordinator {
     this.threads.load();
   }
 
-  /** Opens a stored thread; false when the history has no thread with that id. */
-  open(id: string): boolean {
+  /** Opens a stored thread; false when the service has no thread with that id. */
+  open(id: string): Promise<boolean> {
     if (this.conversation.threadId() === id) {
-      return true;
+      return Promise.resolve(true);
     }
     return this.conversation.open(id);
   }
@@ -58,34 +58,34 @@ export class ChatCoordinator {
     this.conversation.reset();
   }
 
-  rename(id: string, title: string): void {
+  async rename(id: string, title: string): Promise<void> {
     const name = title.trim();
     if (!name) {
       return;
     }
-    this.threadDetail.rename(id, name);
-    this.threads.load();
     if (this.conversation.threadId() === id) {
       this.conversation.rename(name);
     }
+    await this.threadDetail.rename({ id, title: name });
+    this.threads.load();
   }
 
   /** Deletes a thread from the history. Returns true when it was the open one. */
-  remove(id: string): boolean {
-    this.threadDetail.remove(id);
-    this.threads.load();
+  async remove(id: string): Promise<boolean> {
     const wasOpen = this.conversation.threadId() === id;
     if (wasOpen) {
       this.conversation.reset();
     }
+    await this.threadDetail.remove(id);
+    this.threads.load();
     return wasOpen;
   }
 
   /** Deletes the whole history and starts a new conversation. */
-  clear(): void {
-    this.threadDetail.clear();
-    this.threads.load();
+  async clear(): Promise<void> {
     this.conversation.reset();
+    await this.threadDetail.clear();
+    this.threads.load();
   }
 
   /** What to run with: each preference while the catalog lists it, else the service default. */

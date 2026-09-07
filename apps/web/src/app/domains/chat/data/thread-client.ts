@@ -1,93 +1,68 @@
+import {
+  HttpClient,
+  HttpErrorResponse,
+  httpResource,
+} from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 
-import { CHAT_STORAGE_SCOPE } from '../util/storage-scope';
-import { ChatThread, ChatThreadSummary } from './thread';
-
-/** Storage key; bump the version when the stored shape changes. */
-const STORAGE_KEY = 'specsync.chat.threads.v1';
-/** Threads kept in storage; the oldest are dropped beyond this. */
-const MAX_THREADS = 200;
+import { SESSION } from '../../auth/api/session';
+import {
+  CHAT_THREADS_URL,
+  ChatThread,
+  ChatThreadSummary,
+  parseThread,
+  parseThreadList,
+  parseThreadSummary,
+} from './thread';
 
 /**
- * Data access for the conversation history. The AI service is stateless
- * (it receives the whole thread with every run), so the threads live in the
- * browser's local storage. The client is stateless itself: every call reads
- * or writes storage, and the stores mirror the result as signals.
- *
- * Storage may be unavailable (private mode, quota, disabled); every access is
- * guarded and a failed write is reported through the boolean result.
+ * Data access for the conversation history. Mastra memory in the AI service
+ * owns threads and messages, scoped to the user the gateway verified, so
+ * every call is an HTTP request through the `/ai` proxy. Reads go through
+ * `httpResource` and writes through `HttpClient`, which puts both under the
+ * auth interceptor's credentials and cancellation.
  */
 @Injectable({ providedIn: 'root' })
 export class ThreadClient {
-  private readonly scope = inject(CHAT_STORAGE_SCOPE);
-  private key(): string {
-    const scope = this.scope();
-    return scope ? `${STORAGE_KEY}.${encodeURIComponent(scope)}` : STORAGE_KEY;
+  private readonly http = inject(HttpClient);
+  private readonly session = inject(SESSION);
+
+  /** Every thread of the signed-in user without its messages, newest first. */
+  listResource() {
+    return httpResource(
+      () => (this.session.scope() ? { url: CHAT_THREADS_URL } : undefined),
+      { parse: parseThreadList, defaultValue: [] as ChatThreadSummary[] },
+    );
   }
 
-  /** Every stored thread without its messages, in storage order. */
-  list(): ChatThreadSummary[] {
-    return this.read().map(({ id, title, createdAt, updatedAt }) => ({
-      id,
-      title,
-      createdAt,
-      updatedAt,
-    }));
-  }
-
-  find(id: string): ChatThread | undefined {
-    return this.read().find((thread) => thread.id === id);
-  }
-
-  /** Inserts or replaces the thread. */
-  save(thread: ChatThread): boolean {
-    const others = this.read().filter((t) => t.id !== thread.id);
-    return this.write([...others, thread].slice(-MAX_THREADS));
-  }
-
-  rename(id: string, title: string): boolean {
-    return this.write(
-      this.read().map((thread) =>
-        thread.id === id ? { ...thread, title } : thread,
+  /** One thread with its messages; undefined when it is gone or not the user's. */
+  find(id: string): Observable<ChatThread | undefined> {
+    return this.http.get<unknown>(this.url(id)).pipe(
+      map(parseThread),
+      catchError((error: unknown) =>
+        error instanceof HttpErrorResponse && error.status === 404
+          ? of(undefined)
+          : throwError(() => error),
       ),
     );
   }
 
-  remove(id: string): boolean {
-    return this.write(this.read().filter((thread) => thread.id !== id));
+  rename(id: string, title: string): Observable<ChatThreadSummary> {
+    return this.http
+      .patch<unknown>(this.url(id), { title })
+      .pipe(map(parseThreadSummary));
   }
 
-  clear(): boolean {
-    return this.write([]);
+  remove(id: string): Observable<void> {
+    return this.http.delete<void>(this.url(id));
   }
 
-  private read(): ChatThread[] {
-    try {
-      const raw = globalThis.localStorage?.getItem(this.key());
-      const parsed: unknown = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed.filter(isThread) : [];
-    } catch {
-      return [];
-    }
+  clear(): Observable<void> {
+    return this.http.delete<void>(CHAT_THREADS_URL);
   }
 
-  private write(threads: ChatThread[]): boolean {
-    try {
-      globalThis.localStorage?.setItem(this.key(), JSON.stringify(threads));
-      return true;
-    } catch {
-      return false;
-    }
+  private url(id: string): string {
+    return `${CHAT_THREADS_URL}/${encodeURIComponent(id)}`;
   }
-}
-
-function isThread(value: unknown): value is ChatThread {
-  const thread = value as Partial<ChatThread> | null;
-  return (
-    typeof thread?.id === 'string' &&
-    typeof thread.title === 'string' &&
-    typeof thread.createdAt === 'number' &&
-    typeof thread.updatedAt === 'number' &&
-    Array.isArray(thread.messages)
-  );
 }

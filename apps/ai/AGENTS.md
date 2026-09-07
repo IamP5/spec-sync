@@ -21,15 +21,18 @@ below are relative to the workspace root.
 ```
 apps/ai/
   src/mastra/
-    index.ts          # Mastra registry: agents, storage (dev only), logger
+    index.ts          # Mastra registry: agents, storage, logger
     models.ts         # Vertex AI provider (AI SDK), the Gemini default, the chat model catalog
+    memory.ts         # Cloud SQL storage (@mastra/pg) and the chat agent's Memory
+    identity.ts       # verifies the gateway's x-specsync-token and derives the memory resource id
     chat-model-route.ts # GET /chat/models and the CopilotKit setContext hook for the picked model and effort
+    threads/          # /chat/threads routes for the sidebar and the Mastra <-> AG-UI message converter
     agents/           # one file per agent (<name>-agent.ts)
     tools/            # server tools (<name>-tool.ts), vehicle catalog, graph retrieval, content discovery, ingestion
     skills/           # code-defined agent skills (createSkill), e.g. the ingestion procedure
     ingestion/        # vehicleIngestion workflow: capture, identification, extraction, worker routes, source discovery (site-index, linked-documents)
     graph/            # Neo4j retrieval and projection
-  .env.example        # GOOGLE_VERTEX_PROJECT / GOOGLE_VERTEX_LOCATION
+  .env.example        # GOOGLE_VERTEX_* , GOOGLE_CLOUD_PROJECT, SPECSYNC_MEMORY_DATABASE_URL
   Dockerfile          # build with `nx build ai`, run .mastra/output on Cloud Run
   checks.mjs          # lint + typecheck (fast), test + build (full)
 ```
@@ -40,12 +43,23 @@ apps/ai/
   Default Credentials. Never add API keys, service-account JSON files or a
   `GOOGLE_APPLICATION_CREDENTIALS` path to code, `.env` files or Terraform.
   Mastra has no `vertex/...` router string; pass the AI SDK model instance.
-- The Cloud Run service is stateless. Attach storage or memory only for local
-  development (guarded by `NODE_ENV !== 'production'` in `src/mastra/index.ts`)
-  unless the user asks for persistent memory, which then goes to Cloud SQL via
-  `@mastra/pg`.
-- The HTTP surface is Mastra's own API plus one CopilotKit runtime route,
-  `/copilotkit` (`registerCopilotKit` from `@ag-ui/mastra/copilotkit`,
+- The service persists chat memory to Cloud SQL by decision of 2026-09-07:
+  Mastra owns the threads and messages of every signed-in user through
+  `@mastra/memory` and `@mastra/pg`, in the `mastra` schema
+  (`SPECSYNC_MEMORY_DATABASE_URL`, see `src/mastra/memory.ts`). Everything else
+  stays stateless: no in-memory or on-disk state, any instance serves any run,
+  scale to zero is unchanged. Without that variable a LibSQL file serves local
+  development. Never add another persistent store without asking.
+- Identity comes from the token, never from the network. `src/mastra/identity.ts`
+  verifies the `x-specsync-token` the gateway forwards with `firebase-admin`
+  and derives the memory resource id `user:<uid>` from it; the base64
+  `x-specsync-user` header is display context only. The CopilotKit route and
+  every `/chat/threads` route fail closed on an unverified run, and each thread
+  route filters by the verified resource id server-side. Mastra's own
+  `/api/memory` routes are never exposed; the gateway forwards only the browser
+  contract.
+- The HTTP surface is Mastra's own API, the `/chat/threads` routes and one
+  CopilotKit runtime route, `/copilotkit` (`registerCopilotKit` from `@ag-ui/mastra/copilotkit`,
   registered through the Mastra `server.apiRoutes` option). It speaks AG-UI:
   every Mastra agent is wrapped by `@ag-ui/mastra`, which streams text, tool
   calls and tool results as AG-UI events and hands the frontend tools the
@@ -55,7 +69,8 @@ apps/ai/
   never a second HTTP server.
 - Names are part of the contract with `apps/web`: agent id `chat`, route
   `/copilotkit`, the model catalog route `/chat/models` and the `model` and
-  `effort` properties (`chat-model-route.ts`), vehicle tool names in
+  `effort` properties (`chat-model-route.ts`), the thread routes under
+  `/chat/threads` (`threads/routes.ts`), vehicle tool names in
   `tools/vehicle-tools.ts`, ingestion tool names in `tools/ingestion-tools.ts`
   and the client tool `startVehicleIngestion` the agent instructions and skill
   refer to. The web client renders server tool results directly. Change names
@@ -97,7 +112,10 @@ such as `us-central1` only serves the 2.5 family and answers 404 otherwise.
 `VERTEX_MODELS` lists the Gemini models offered in the chat's selector and
 `OPENAI_MODELS` the OpenAI ones (see `.env.example`). `nx serve web`
 proxies `/ai` to the same server, so the chat page and Studio share one
-process. A stale ADC token shows up as `invalid_grant` in the stream; run the
+process. The chat routes need a verified token, so a run only works through
+the gateway; `docker compose up postgres` plus
+`SPECSYNC_MEMORY_DATABASE_URL` gives the same Cloud SQL layout locally.
+A stale ADC token shows up as `invalid_grant` in the stream; run the
 login command again. Mastra allows one dev server per directory (lock in
 `.mastra/dev.lock`); a stale one has to be stopped before `mastra dev` or
 `mastra build` run again.

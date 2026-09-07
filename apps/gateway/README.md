@@ -38,7 +38,10 @@ node apps/gateway/ops/set-user-roles.mjs PROJECT_ID UID reviewer
 
 - Public `GET /health` returns `ok`; `/` redirects to the frontend.
 - Authenticated `/api`, `/v3/api-docs` and `/swagger-ui` forward to Spring Boot.
-- Only `/ai/copilotkit` GET/POST and `/ai/chat/models` GET forward to AI.
+- Only `/ai/copilotkit` GET/POST, `/ai/chat/models` GET and `/ai/chat/threads`
+  (GET/PATCH/DELETE, with or without a thread id) forward to AI. The AI
+  service owns the chat history, so Mastra's own `/api/memory` routes stay
+  unreachable from the browser.
 - Unknown routes, frontend assets, AI Studio and internal workers are not exposed.
 - Hono's official `hono/proxy` helper handles forwarding with streaming and cancellation.
   The wrapper filters headers, forbids upstream redirects and prevents shared caching.

@@ -7,17 +7,8 @@ import { CopilotKit } from '@copilotkit/angular';
 
 import { AuthSession } from './domains/auth/api/bootstrap';
 import { SESSION } from './domains/auth/api/session';
-import {
-  BEFORE_CHAT_REQUEST,
-  CHAT_STORAGE_SCOPE,
-} from './domains/chat/api/bootstrap';
+import { BEFORE_CHAT_REQUEST } from './domains/chat/api/bootstrap';
 import { USER_STORAGE_SCOPE } from './domains/user/api/bootstrap';
-
-export function provideChatStorageScope(): EnvironmentProviders {
-  return makeEnvironmentProviders([
-    { provide: CHAT_STORAGE_SCOPE, useFactory: createSessionStorageScope },
-  ]);
-}
 
 export function provideUserStorageScope(): EnvironmentProviders {
   return makeEnvironmentProviders([
