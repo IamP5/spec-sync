@@ -26,8 +26,8 @@ The binding rules live in the docs; this section only names the red lines.
   behind the rules is recorded in `apps/web/docs/adr/`.
 - Domains live in `apps/web/src/app/domains/<domain>/<layer>`; layers are
   `feature → ui → data → util`, with acyclic composition through feature entry
-  points. `chat` accesses vehicles only through `vehicles/api/contracts` or
-  `vehicles/api/features`; vehicles never imports chat. UI is strictly dumb,
+  points. Cross-domain access uses typed public APIs under the same rules for
+  every domain; new domain names require no Sheriff edits. UI is strictly dumb,
   including feature-local UI: no stores, coordinators, clients, or chat actions.
 - Components never call a data access client (`-client.ts`). Data flows
   client → store (`-store.ts`) → smart component (`-page`, `-search`,
@@ -50,13 +50,13 @@ The binding rules live in the docs; this section only names the red lines.
 
 ## AI chat (AG-UI with CopilotKit)
 
-- The application is the chat: the shell (`app.html`) is a Zard sidebar
-  layout with the conversation history (`feature-chat/thread-search`) on the
-  left and the routed `ChatPage` on the right. `/` is a new conversation,
-  `/c/<id>` a stored one. Threads and preferences live in local storage
-  (`data/thread-client.ts`, `data/preferences-client.ts`); the AI service
-  stays stateless. `ChatCoordinator` keeps the open conversation and the
-  history in step; the settings dialog is `feature-chat/settings-edit`.
+- The application is the chat: `shell/app-layout` owns the responsive layout,
+  `shell/sidebar` composes history and account workflows, and `/` and `/c/<id>`
+  load the public `ChatPage`. Guests draft first and sign in before sending.
+  `ChatPage` renders for guests; runtime access and history wait for verification. Shell
+  owns settings-dialog composition; chat owns history deletion, user owns profile
+  and preferences, and auth owns session/login/logout. Follow the authentication
+  lifecycle section of the state-management doc for resets and account isolation.
 - The chat domain (`apps/web/src/app/domains/chat`) talks to the Mastra
   service of `apps/ai` over AG-UI with `@copilotkit/angular`, headless:
   Zard components render the transcript, `copilot-render-tool-calls`
@@ -94,7 +94,7 @@ The binding rules live in the docs; this section only names the red lines.
   summaries to the agent as context. `/ingestion` is the same feature as a
   page.
 - `ChatAgentClient` (`data/chat-agent-client.ts`) is the data access: it
-  connects the runtime URL lazily and wraps the AG-UI agent; the
+  wraps the AG-UI agent after `ChatConnectionCoordinator` connects the runtime; the
   conversation lives in that agent, `ConversationDetailStore` mirrors it.
 - The composer's run options follow ChatGPT: one pill
   (`feature-chat/ui/run-options-picker.ts`, a dumb component) names the

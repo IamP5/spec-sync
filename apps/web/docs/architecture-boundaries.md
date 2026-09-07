@@ -8,12 +8,15 @@ to enforce dependencies between workspace projects.
 
 The rationale is recorded in [ADR-0005](adr/0005-composable-features-and-pure-ui.md),
 which supersedes the locality exception and downward-only feature reuse in
-ADRs 0001, 0003, and 0004.
+ADRs 0001, 0003, and 0004. [ADR-0007](adr/0007-generic-domain-boundaries.md)
+replaces named-domain grants with the generic public API rules below.
 
 ## Domains and structure
 
-- `auth` owns the SDK session, gateway session verification, login page, logout component and authentication stores. SDK credentials stay outside application stores and devtools.
-- `user` owns the verified Google profile, role data, saved preferences and configuration. Its account and preferences components are exposed through `user/api/features`.
+- `auth` owns the SDK session, gateway session verification, login dialog content, logout component and authentication stores. SDK credentials stay outside application stores and devtools.
+- `user` owns the verified Google profile, role data, saved preferences including theme. Its profile and preferences components are exposed through `user/api/features`.
+- `shell` owns the responsive layout, sidebar frame, account menu and settings-dialog composition. It composes domain APIs; domains never import shell.
+- `shared` contains only runtime configuration and gateway URL matching utilities.
 - `chat` owns conversations, history, AG-UI state restoration,
   CopilotKit registration, and prompt/draft/send integration.
 - `vehicles` owns configurations, specifications, comparison semantics, related
@@ -23,9 +26,20 @@ ADRs 0001, 0003, and 0004.
 
 ```text
 src/app/
-  app.ts, app.html, app.routes.ts, app.config.ts
+  app.ts, app.routes.ts, app.config.ts
+  shell/
+    app-layout/, sidebar/, account-menu/, settings/
   domains/
+    shared/
+      util-config/, util-gateway/
+    auth/
+      api/features/, api/authentication/, api/session/, api/events/, api/bootstrap/
+      feature-auth/, state/, session/, transport/, data/
+    user/
+      api/features/, api/preferences/, api/contracts/, api/bootstrap/
+      feature-profile/, feature-preferences/, state/, data/, util/
     chat/
+      api/features/, api/connection/, api/bootstrap/, state/
       feature-chat/
         index.ts
         chat-page/, thread-search/, settings-edit/
@@ -69,16 +83,44 @@ is a workflow boundary, not one folder per component. Domain-level `ui/` or
 - Same-domain features may compose other features through those entries. The
   feature dependency graph must be acyclic, including dependencies through APIs.
 - Reusing a whole feature does not make its internal UI or state shared.
-- Cross-domain imports use explicitly allowed public APIs. The current grant is
-  `chat → vehicles/api`, `chat → user/api` and `user → auth/api/features`; auth does not depend on user, and vehicles cannot import chat. Direct cross-domain data,
-  UI, feature, or helper imports are forbidden.
-- `api/contracts/index.ts` exports selected types and schemas from data/util.
-  Its dependency closure contains no clients, stores, coordinators, UI, or
-  features. Chat data consumers may use this contract API for validating saved
-  tool results without depending on vehicle feature implementations.
-- `api/features/index.ts` exports feature entries only. Only feature/shell
-  consumers may use it; data, util, and UI cannot.
-- `user/api/preferences` exposes only `UserPreferencesCoordinator` for smart features that independently consume saved preferences. It coordinates the private stores under `user/state` and the active theme. Data, util, UI and auth cannot consume this API. Direct access to user state outside that owner is forbidden, including from the app shell. Preference model types remain in `user/api/contracts`.
+- Every domain follows the same permissions, derived from its directory and layer.
+  Cross-domain imports use a typed public API's `index.ts`; direct imports of
+  another domain's data, UI, features, state, or helpers are forbidden. New domain
+  names require no config changes. Feature composition must remain acyclic.
+- API entries expose only their own domain or shared technical dependencies. They
+  cannot re-export another domain's API or internals to bypass ownership.
+- Technical entry names (`contracts`, `features`, `events`, `session`, `bootstrap`)
+  have dedicated architectural rules. Other `api/<capability>` entries use a
+  generic public coordinator rule. Name them after their capability, such as
+  `auth/api/authentication`, `chat/api/connection` or `user/api/preferences`.
+  Adding `api/notifications` later requires no config change.
+- API purpose determines the allowed consumers and exports:
+
+  | API            | Consumers                                                | Exports / dependencies                                                                                                 |
+  | -------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+  | `contracts`    | Features, UI and data                                    | Selected data/util types and schemas; the dependency closure contains no clients, stores, coordinators, UI or features |
+  | `features`     | Features and shell                                       | Feature `index.ts` entries only; those entries export their own smart components or lazy loaders                       |
+  | `<capability>` | Smart feature components, feature coordinators and shell | Own domain's `state/*-coordinator.ts` facades; stores remain private                                                   |
+  | `events`       | Features, state, data and session runtime                | Typed event declarations, without application dependencies                                                             |
+  | `session`      | Features, state, data and shell                          | Read-only session facade backed by the owning session runtime                                                          |
+  | `bootstrap`    | Application configuration, providers and routes          | Technical SDK transport, interceptors, guards and storage/request tokens from data/transport/util                      |
+
+- `state/` internals stay within that domain's state layer. The only public export
+  is a coordinator through `api/<capability>/index.ts`. This applies to every current
+  and future domain and protects stores from shell and root composition too.
+- The application composition files also import domains through public entries.
+  Shell cannot use bootstrap APIs; domains cannot import shell or root composition.
+  Shared technical code cannot depend on business domains, including their APIs.
+- Unrecognized domain layers, loose files under a domain root and private helpers
+  inside API folders fail validation even if unreferenced. Capability entries
+  expose only their own domain's state coordinators; changing the capability name
+  cannot bypass that restriction. A new architectural layer or technical API role
+  requires an explicit rule. Adding a domain, capability, feature, coordinator or
+  entity inside the conventions does not.
+- Sheriff owns domain/layer permissions; the tests in `arch/` additionally check
+  public entry files, private state, transitive UI/contract purity, suffix-based
+  access and feature cycles. Regression fixtures run Sheriff's real parser and
+  matcher against this config with domain names absent from the application.
 - Sheriff enforces domain/layer permissions; barrels enforce module privacy;
   architecture tests additionally reject private paths even when barrel-less
   imports would otherwise be possible. Do not bypass an entry via another
@@ -141,7 +183,7 @@ transcript results and simultaneous instances do not share selection or loading.
 - `shared` is for demonstrated technical reuse across domains, not a fallback
   for domain coupling. Obtain explicit approval before moving domain-specific
   code there. Classify proposed shared moves and explain their consumers.
-- Adding domains or public domain grants, changing Sheriff/tsarch/Nx rules, or
+- Changing architectural permissions in Sheriff/tsarch/Nx rules, or
   moving code to shared requires an explicit request in the current conversation.
   Never weaken a boundary merely to silence a failing check.
 - `libs/ui` contains only the generic Zard design system. Add design-system

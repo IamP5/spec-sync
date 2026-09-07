@@ -6,7 +6,9 @@ import {
   withMethods,
   withProps,
 } from '@ngrx/signals';
+import { on, withReducer } from '@ngrx/signals/events';
 
+import { sessionEvents } from '../../../auth/api/events';
 import {
   type ChatEffortOption,
   type ChatModelOption,
@@ -48,5 +50,8 @@ export const ModelSearchStore = signalStore(
     },
   })),
 
+  withReducer(
+    on(sessionEvents.invalidated, () => ({ catalogValue: undefined })),
+  ),
   withDevtools('modelSearch'),
 );

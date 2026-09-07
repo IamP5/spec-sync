@@ -1,4 +1,8 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Events } from '@ngrx/signals/events';
+
+import { sessionEvents } from '../../auth/api/events';
 
 /**
  * Holds the curator key for this page load only. It never touches storage:
@@ -8,6 +12,13 @@ import { computed, Injectable, signal } from '@angular/core';
  */
 @Injectable({ providedIn: 'root' })
 export class CuratorSessionClient {
+  constructor() {
+    inject(Events)
+      .on(sessionEvents.invalidated)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.clear());
+  }
+
   private readonly _key = signal('');
   readonly key = this._key.asReadonly();
   readonly hasKey = computed(() => this._key().length > 0);

@@ -172,7 +172,7 @@ describe('architecture: public features, pure UI and domain contracts', () => {
       `Contract API reaches application workflow: ${source} -> ${target}`,
     );
   });
-  it('allows explicit auth composition and preference access while protecting private state', () => {
+  it('allows public composition and capabilities while protecting private state', () => {
     const user = 'src/app/domains/user/feature-user/user-account-overview.ts';
     const auth = 'src/app/domains/auth/api/features/index.ts';
     const preferences = 'src/app/domains/user/api/preferences/index.ts';
@@ -192,7 +192,7 @@ describe('architecture: public features, pure UI and domain contracts', () => {
     ]) {
       const target = 'src/app/domains/user/state/preferences-detail-store.ts';
       expect(boundaryViolations([], [{ source, target }])).toContain(
-        `Private user state import: ${source} -> ${target}`,
+        `Private domain state import: ${source} -> ${target}`,
       );
     }
     expect(
@@ -212,6 +212,153 @@ describe('architecture: public features, pure UI and domain contracts', () => {
         [{ source: `${chat}/data/chat-client.ts`, target: preferences }],
       ),
     ).not.toEqual([]);
+  });
+  it('enforces shell composition and credential-free auth APIs', () => {
+    const shell = 'src/app/shell/sidebar/sidebar-overview.ts';
+    const store = 'src/app/domains/user/state/preferences-detail-store.ts';
+    const authStore = 'src/app/domains/auth/state/auth-session-store.ts';
+    const eventApi = 'src/app/domains/auth/api/events/index.ts';
+    expect(
+      boundaryViolations([], [{ source: store, target: eventApi }]),
+    ).toEqual([]);
+    expect(
+      boundaryViolations(
+        [],
+        [
+          {
+            source: shell,
+            target: 'src/app/domains/user/api/features/index.ts',
+          },
+        ],
+      ),
+    ).toEqual([]);
+    expect(
+      boundaryViolations([], [{ source: shell, target: store }]),
+    ).not.toEqual([]);
+    expect(
+      boundaryViolations([], [{ source: shell, target: authStore }]),
+    ).not.toEqual([]);
+    expect(
+      boundaryViolations([], [{ source: store, target: shell }]),
+    ).not.toEqual([]);
+    expect(
+      boundaryViolations(
+        [],
+        [
+          {
+            source: 'src/app/domains/shared/util-config/index.ts',
+            target: eventApi,
+          },
+        ],
+      ),
+    ).not.toEqual([]);
+    expect(
+      boundaryViolations(
+        [],
+        [
+          {
+            source: 'src/app/domains/chat/feature-chat/ui/chat-card.ts',
+            target: eventApi,
+          },
+        ],
+      ),
+    ).not.toEqual([]);
+  });
+  it.each(['orders', 'billing', 'future-domain-42'])(
+    'protects private state and capability exports for %s',
+    (name) => {
+      const root = `src/app/domains/${name}`;
+      const coordinator = `${root}/state/summary-coordinator.ts`;
+      const store = `${root}/state/summary-detail-store.ts`;
+      const capability = `${root}/api/notifications/index.ts`;
+      expect(
+        boundaryViolations([], [{ source: capability, target: coordinator }]),
+      ).toEqual([]);
+      expect(
+        boundaryViolations([], [{ source: coordinator, target: store }]),
+      ).toEqual([]);
+      for (const source of [
+        `${root}/feature-list/list-page.ts`,
+        'src/app/app.providers.ts',
+        'src/app/shell/sidebar/sidebar-overview.ts',
+        'src/app/domains/another/state/summary-coordinator.ts',
+      ]) {
+        expect(boundaryViolations([], [{ source, target: store }])).toContain(
+          `Private domain state import: ${source} -> ${store}`,
+        );
+      }
+      expect(
+        boundaryViolations([], [{ source: capability, target: store }]),
+      ).toContain(
+        `Capability API must expose its coordinators: ${capability} -> ${store}`,
+      );
+      const foreign = 'src/app/domains/another/state/summary-coordinator.ts';
+      expect(
+        boundaryViolations([], [{ source: capability, target: foreign }]),
+      ).toContain(`API imports another domain: ${capability} -> ${foreign}`);
+    },
+  );
+  it('requires public entries for new domains even from root composition', () => {
+    const source = 'src/app/app.providers.ts';
+    const root = 'src/app/domains/future-domain-42';
+    expect(
+      boundaryViolations(
+        [],
+        [{ source, target: `${root}/api/bootstrap/index.ts` }],
+      ),
+    ).toEqual([]);
+    for (const target of [
+      `${root}/data/settings.ts`,
+      `${root}/api/bootstrap/private-helper.ts`,
+    ]) {
+      expect(boundaryViolations([], [{ source, target }])).toContain(
+        `Composition imports domain internals: ${source} -> ${target}`,
+      );
+    }
+  });
+  it('rejects unclassified domain code even when nothing imports it', () => {
+    for (const file of [
+      'src/app/domains/future-domain-42/orphan.ts',
+      'src/app/domains/future-domain-42/unknown-layer/helper.ts',
+      'src/app/domains/future-domain-42/api/notifications/private-helper.ts',
+    ]) {
+      expect(boundaryViolations([file], [])).toContain(
+        `Unclassified domain file: ${file}`,
+      );
+    }
+  });
+  it('detects cross-domain feature cycles through typed public APIs', () => {
+    const first = 'src/app/domains/orders';
+    const second = 'src/app/domains/billing';
+    const deps = [
+      {
+        source: `${first}/feature-list/list-page.ts`,
+        target: `${second}/api/features/index.ts`,
+      },
+      {
+        source: `${second}/api/features/index.ts`,
+        target: `${second}/feature-list/index.ts`,
+      },
+      {
+        source: `${second}/feature-list/index.ts`,
+        target: `${second}/feature-list/list-page.ts`,
+      },
+      {
+        source: `${second}/feature-list/list-page.ts`,
+        target: `${first}/api/features/index.ts`,
+      },
+      {
+        source: `${first}/api/features/index.ts`,
+        target: `${first}/feature-list/index.ts`,
+      },
+      {
+        source: `${first}/feature-list/index.ts`,
+        target: `${first}/feature-list/list-page.ts`,
+      },
+    ];
+    expect(boundaryViolations([], deps)).toContain(
+      `Feature dependency cycle: ${first}/feature-list`,
+    );
   });
   it('recognizes aliased form factories and application injections in UI', () => {
     const file = `${catalog}/ui/catalog-card.ts`;

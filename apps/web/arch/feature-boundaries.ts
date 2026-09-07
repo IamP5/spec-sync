@@ -9,7 +9,22 @@ const FEATURE = /((?:^|.*\/)domains\/[^/]+\/feature-[^/]+)(?:\/|$)/;
 const UI = /(?:^|\/)ui(?:-[^/]+)?\//;
 const SMART = /-(page|search|edit|detail|overview)\.ts$/;
 const STATE = /-(store|client|coordinator)\.ts$/;
-const API = /\/api\/(contracts|features|preferences)\/index\.ts$/;
+const DOMAIN_STATE = /((?:^|.*\/)domains\/[^/]+\/state)\//;
+const LAYER =
+  /(?:^|\/)domains\/[^/]+\/(feature-[^/]+|ui(?:-[^/]+)?|data(?:-[^/]+)?|util(?:-[^/]+)?|state|session|transport)\//;
+const API = /\/domains\/[^/]+\/api\/([^/]+)\/index\.ts$/;
+const TECHNICAL_APIS = new Set([
+  'contracts',
+  'features',
+  'events',
+  'session',
+  'bootstrap',
+]);
+
+function isCapabilityApi(file: string): boolean {
+  const name = file.match(API)?.[1];
+  return name !== undefined && !TECHNICAL_APIS.has(name);
+}
 
 function feature(file: string): string | undefined {
   return file.match(FEATURE)?.[1];
@@ -34,42 +49,74 @@ export function boundaryViolations(
     if (owner && feature(source) !== owner && target !== `${owner}/index.ts`) {
       violations.push(`Private feature import: ${source} -> ${target}`);
     }
+    const stateOwner = target.match(DOMAIN_STATE)?.[1];
+    const ownCapabilityEntry =
+      domain(source) === domain(target) &&
+      isCapabilityApi(source) &&
+      target.endsWith('-coordinator.ts');
     if (
-      /\/domains\/user\/state\//.test(target) &&
-      !/\/domains\/user\/state\//.test(source) &&
-      !(
-        /\/domains\/user\/api\/preferences\/index\.ts$/.test(source) &&
-        target.endsWith('/user-preferences-coordinator.ts')
-      )
+      stateOwner &&
+      source.match(DOMAIN_STATE)?.[1] !== stateOwner &&
+      !ownCapabilityEntry
     ) {
-      violations.push(`Private user state import: ${source} -> ${target}`);
+      violations.push(`Private domain state import: ${source} -> ${target}`);
     }
+    if (domain(source) && /\/shell\//.test(target))
+      violations.push(`Domain imports shell: ${source} -> ${target}`);
+    if (
+      /\/shell\//.test(source) &&
+      domain(target) &&
+      domain(target) !== 'shared' &&
+      !API.test(target)
+    )
+      violations.push(`Shell imports domain internals: ${source} -> ${target}`);
+    if (
+      domain(source) === 'shared' &&
+      domain(target) &&
+      domain(target) !== 'shared'
+    )
+      violations.push(`Shared imports a domain: ${source} -> ${target}`);
+    if (
+      !domain(source) &&
+      !/\/shell\//.test(source) &&
+      domain(target) &&
+      domain(target) !== 'shared' &&
+      !API.test(target)
+    )
+      violations.push(
+        `Composition imports domain internals: ${source} -> ${target}`,
+      );
     const from = domain(source);
     const to = domain(target);
     if (from && to && from !== to && to !== 'shared') {
       const api = target.match(API)?.[1];
-      const allowedConsumer =
-        (from === 'chat' && (to === 'vehicles' || to === 'user')) ||
-        (from === 'user' && to === 'auth' && api === 'features');
+      const layer = source.match(LAYER)?.[1];
       const allowedLayer =
-        api === 'contracts'
-          ? /\/domains\/chat\/(data(?:-[^/]+)?|feature-[^/]+|ui(?:-[^/]+)?)\//.test(
-              source,
-            )
-          : (api === 'features' ||
-              (api === 'preferences' &&
-                (SMART.test(source) || /-coordinator\.ts$/.test(source)))) &&
-            !!feature(source) &&
-            !isUi(source);
-      if (!allowedConsumer || !allowedLayer)
+        api === 'events' || api === 'session'
+          ? !!layer && !layer.startsWith('util') && !isUi(source)
+          : api === 'contracts'
+            ? !!layer && /^(feature-|data|ui)/.test(layer)
+            : api === 'features'
+              ? !!feature(source) && !isUi(source)
+              : isCapabilityApi(target) &&
+                !!feature(source) &&
+                !isUi(source) &&
+                (SMART.test(source) || source.endsWith('-coordinator.ts'));
+      if (!allowedLayer)
         violations.push(`Domain boundary: ${source} -> ${target}`);
     }
     if (
-      /\/api\/preferences\//.test(source) &&
-      !target.endsWith('/domains/user/state/user-preferences-coordinator.ts')
+      domain(source) &&
+      /\/api\//.test(source) &&
+      domain(target) &&
+      domain(target) !== domain(source) &&
+      domain(target) !== 'shared'
     ) {
+      violations.push(`API imports another domain: ${source} -> ${target}`);
+    }
+    if (isCapabilityApi(source) && (!stateOwner || !ownCapabilityEntry)) {
       violations.push(
-        `Preference API must expose its coordinator: ${source} -> ${target}`,
+        `Capability API must expose its coordinators: ${source} -> ${target}`,
       );
     }
     if (
@@ -91,6 +138,8 @@ export function boundaryViolations(
     }
   }
   for (const file of files) {
+    if (domain(file) && !LAYER.test(file) && !API.test(file))
+      violations.push(`Unclassified domain file: ${file}`);
     if (UI.test(file) && (STATE.test(file) || SMART.test(file)))
       violations.push(`Application building block in UI: ${file}`);
     if (isUi(file)) {

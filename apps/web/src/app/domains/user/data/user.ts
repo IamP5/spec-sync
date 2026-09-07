@@ -12,8 +12,3 @@ export const userSchema = z.object({
   roles: z.array(z.string().regex(/^[a-z][a-z0-9:_-]{0,63}$/)).max(32),
 });
 export type User = z.infer<typeof userSchema>;
-
-/** Browser preferences belong to a user; role claims are never editable here. */
-export interface UserConfiguration {
-  theme: 'light' | 'dark' | 'system';
-}

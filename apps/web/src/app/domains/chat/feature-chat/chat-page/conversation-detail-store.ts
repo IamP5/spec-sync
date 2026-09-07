@@ -9,7 +9,11 @@ import {
   withProps,
   withState,
 } from '@ngrx/signals';
+import { Events, withEventHandlers } from '@ngrx/signals/events';
+import { ignoreElements, tap } from 'rxjs';
 
+import { sessionEvents } from '../../../auth/api/events';
+import { SESSION } from '../../../auth/api/session';
 import {
   ChatAgentError,
   type ChatRunOptions,
@@ -52,6 +56,7 @@ export const ConversationDetailStore = signalStore(
   withProps(() => ({
     _chatAgentClient: inject(ChatAgentClient),
     _threadClient: inject(ThreadClient),
+    _session: inject(SESSION),
   })),
 
   withComputed((store) => ({
@@ -79,6 +84,7 @@ export const ConversationDetailStore = signalStore(
   withMethods((store) => {
     /** Writes the thread to the history; an empty thread is not worth keeping. */
     function persist(): void {
+      if (!store._session.authenticated()) return;
       const messages = store._chatAgentClient.snapshot();
       if (messages.length === 0) {
         return;
@@ -96,6 +102,8 @@ export const ConversationDetailStore = signalStore(
       if (store.status() === 'streaming') {
         return;
       }
+      const scope = store._session.scope();
+      if (!scope) return;
       patchState(store, {
         status: 'streaming',
         error: undefined,
@@ -104,10 +112,11 @@ export const ConversationDetailStore = signalStore(
       try {
         await work();
       } finally {
-        if (store.status() === 'streaming') {
-          patchState(store, { status: 'idle' });
+        if (store._session.isCurrent(scope)) {
+          if (store.status() === 'streaming')
+            patchState(store, { status: 'idle' });
+          persist();
         }
-        persist();
       }
     }
 
@@ -194,6 +203,12 @@ export const ConversationDetailStore = signalStore(
     };
   }),
 
+  withEventHandlers((store, events = inject(Events)) => ({
+    session: events.on(sessionEvents.invalidated).pipe(
+      tap(() => store.reset()),
+      ignoreElements(),
+    ),
+  })),
   withHooks({
     onInit(store) {
       // Run failures do not reject `send()`; the client reports them here.

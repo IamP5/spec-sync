@@ -1,5 +1,6 @@
 /** What the user can configure in the settings dialog. The theme is handled by the design system. */
 export interface Preferences {
+  theme: 'light' | 'dark' | 'system';
   /** Optional chat greeting name; the account name and avatar come from Google. */
   displayName: string;
   /** Show thinking summaries and tool activity in the transcript. */
@@ -17,6 +18,7 @@ export interface Preferences {
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
+  theme: 'system',
   displayName: '',
   showActivity: true,
   model: '',

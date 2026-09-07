@@ -12,6 +12,7 @@ import {
   CHAT_AGENT_ID,
   CONTINUATION_SUFFIX,
 } from '../domains/chat/data/chat-agent';
+import { provideFakeAuth } from './fake-auth';
 
 type Script = (input: RunAgentInput) => BaseEvent[];
 
@@ -43,7 +44,10 @@ export class FakeChatAgent extends AbstractAgent {
 
 /** Registers `agent` locally under the chat agent id, so no runtime is contacted. */
 export function provideFakeChatAgent(agent: FakeChatAgent): Provider[] {
-  return [provideCopilotKit({ agents: { [CHAT_AGENT_ID]: agent } })];
+  return [
+    ...provideFakeAuth(),
+    provideCopilotKit({ agents: { [CHAT_AGENT_ID]: agent } }),
+  ];
 }
 
 /** Events of a run that streams `chunks` as one assistant message. */

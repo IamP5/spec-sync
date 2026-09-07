@@ -1,68 +1,4 @@
 <z-sidebar-header class="gap-3 p-3">
-  <div class="flex h-8 items-center justify-between">
-    <a
-      class="sidebar-expanded flex h-8 items-center rounded-md text-lg font-semibold tracking-tight text-sidebar-foreground outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-      routerLink="/"
-      aria-label="SpecSync home"
-      (click)="onOpen()"
-    >
-      SpecSync
-    </a>
-    <button
-      z-sidebar-trigger
-      aria-label="Toggle sidebar"
-      [attr.aria-expanded]="sidebarOpen()"
-      title="Toggle sidebar (⌘/Ctrl B)"
-      class="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-    ></button>
-  </div>
-
-  <ul z-sidebar-menu>
-    <li z-sidebar-menu-item>
-      <button
-        z-sidebar-menu-button
-        type="button"
-        class="h-9 min-h-9 text-sidebar-foreground hover:bg-sidebar-accent"
-        aria-label="New chat"
-        zTooltip="New chat"
-        data-action="new-chat"
-        (click)="onNewChat()"
-      >
-        <ng-icon name="lucideSquarePen" aria-hidden="true" />
-        <span
-          class="sidebar-expanded flex-1 shrink-0 font-medium whitespace-nowrap"
-          >New chat</span
-        >
-        <span
-          class="sidebar-expanded hidden shrink-0 gap-0.5 opacity-0 transition-opacity group-hover/menu-item:opacity-100 group-focus-within/menu-item:opacity-100 md:flex"
-          aria-hidden="true"
-        >
-          <z-kbd
-            class="h-5 min-w-5 border-sidebar-border bg-transparent px-1 text-[10px] text-muted-foreground"
-            >⇧</z-kbd
-          >
-          <z-kbd
-            class="h-5 min-w-5 border-sidebar-border bg-transparent px-1 text-[10px] text-muted-foreground"
-            >⌘</z-kbd
-          >
-          <z-kbd
-            class="h-5 min-w-5 border-sidebar-border bg-transparent px-1 text-[10px] text-muted-foreground"
-            >O</z-kbd
-          >
-        </span>
-      </button>
-    </li>
-    <li z-sidebar-menu-item>
-      <a
-        z-sidebar-menu-button
-        routerLink="/ingestion"
-        aria-label="Vehicle ingestion"
-        (click)="onOpen()"
-        ><span class="sidebar-expanded">Vehicle ingestion</span></a
-      >
-    </li>
-  </ul>
-
   @if (!sidebarOpen()) {
   <button
     z-sidebar-menu-button
@@ -188,5 +124,3 @@
   </z-sidebar-group>
   }
 </z-sidebar-content>
-
-<app-user-account-overview (settings)="onSettings()" />

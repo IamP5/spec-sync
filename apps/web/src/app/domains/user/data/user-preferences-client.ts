@@ -11,7 +11,7 @@ const STORAGE_KEY = 'specsync.chat.preferences.v1';
  * to storage, the store mirrors the result.
  */
 @Injectable({ providedIn: 'root' })
-export class PreferencesClient {
+export class UserPreferencesClient {
   private readonly scope = inject(USER_STORAGE_SCOPE);
   private key(): string {
     const scope = this.scope();
@@ -22,7 +22,14 @@ export class PreferencesClient {
     try {
       const raw = globalThis.localStorage?.getItem(this.key());
       const stored = raw ? (JSON.parse(raw) as Partial<Preferences>) : {};
+      const legacy = this.legacyTheme();
+      const theme =
+        stored.theme ??
+        (typeof legacy === 'object' && legacy !== null && 'theme' in legacy
+          ? legacy.theme
+          : undefined);
       return {
+        theme: theme === 'light' || theme === 'dark' ? theme : 'system',
         displayName:
           typeof stored.displayName === 'string'
             ? stored.displayName
@@ -42,6 +49,18 @@ export class PreferencesClient {
       };
     } catch {
       return { ...DEFAULT_PREFERENCES };
+    }
+  }
+
+  private legacyTheme(): unknown {
+    try {
+      return JSON.parse(
+        globalThis.localStorage?.getItem(
+          `specsync.user.${this.scope()}.configuration`,
+        ) ?? '{}',
+      );
+    } catch {
+      return {};
     }
   }
 

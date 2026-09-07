@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { USER_STORAGE_SCOPE } from '../util/storage-scope';
 import { DEFAULT_PREFERENCES } from './preferences';
-import { PreferencesClient } from './preferences-client';
+import { UserPreferencesClient } from './user-preferences-client';
 
 describe('user preference persistence', () => {
   afterEach(() => localStorage.clear());
@@ -15,7 +15,7 @@ describe('user preference persistence', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: USER_STORAGE_SCOPE, useValue: () => uid }],
     });
-    const client = TestBed.inject(PreferencesClient);
+    const client = TestBed.inject(UserPreferencesClient);
     expect(client.load()).toEqual(DEFAULT_PREFERENCES);
     expect(
       client.save({
@@ -30,12 +30,27 @@ describe('user preference persistence', () => {
     expect(client.load().displayName).toBe('Alice');
     expect(client.load().model).toBe('model-a');
   });
+  it('migrates the old account theme while keeping new preferences authoritative', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: USER_STORAGE_SCOPE, useValue: () => 'alice' }],
+    });
+    const client = TestBed.inject(UserPreferencesClient);
+    localStorage.setItem(
+      'specsync.user.alice.configuration',
+      JSON.stringify({ theme: 'dark' }),
+    );
+    expect(client.load().theme).toBe('dark');
+    client.save({ ...client.load(), theme: 'light' });
+    expect(client.load().theme).toBe('light');
+    localStorage.setItem('specsync.user.alice.configuration', '{broken');
+    expect(client.load().theme).toBe('light');
+  });
   it('restores defaults for corrupt stored data', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: USER_STORAGE_SCOPE, useValue: () => 'alice' }],
     });
     localStorage.setItem('specsync.chat.preferences.v1.alice', '{broken');
-    expect(TestBed.inject(PreferencesClient).load()).toEqual(
+    expect(TestBed.inject(UserPreferencesClient).load()).toEqual(
       DEFAULT_PREFERENCES,
     );
   });

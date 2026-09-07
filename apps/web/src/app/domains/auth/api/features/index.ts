@@ -1,5 +1,1 @@
-export {
-  AuthLoginPage,
-  AuthLogoutOverview,
-  AuthSessionOverview,
-} from '../../feature-auth';
+export { AuthLoginOverview, AuthLogoutOverview } from '../../feature-auth';

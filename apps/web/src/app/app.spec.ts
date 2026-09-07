@@ -1,13 +1,13 @@
 import { BreakpointObserver, MediaMatcher } from '@angular/cdk/layout';
 import { provideHttpClient } from '@angular/common/http';
-import { TestBed } from '@angular/core/testing';
+import { DeferBlockBehavior, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject, map } from 'rxjs';
 
 import { provideZard } from '@/ui/core';
 import { EDarkModes, ZardDarkMode } from '@/ui/services';
 
-import { App } from './app';
+import { AppLayoutOverview as App } from './shell/app-layout/app-layout-overview';
 import { provideFakeAuth } from './testing/fake-auth';
 import { FakeChatAgent, provideFakeChatAgent } from './testing/fake-chat-agent';
 import { provideFakeUser } from './testing/fake-user';
@@ -18,6 +18,7 @@ describe('App', () => {
     localStorage.clear();
     viewport = new BehaviorSubject(1440);
     await TestBed.configureTestingModule({
+      deferBlockBehavior: DeferBlockBehavior.Playthrough,
       imports: [App],
       providers: [
         provideHttpClient(),
@@ -73,6 +74,10 @@ describe('App', () => {
       useValue: { matchMedia: () => systemTheme },
     });
     localStorage.setItem('theme', 'dark');
+    localStorage.setItem(
+      'specsync.chat.preferences.v1',
+      JSON.stringify({ theme: 'dark' }),
+    );
     const theme = TestBed.inject(ZardDarkMode);
     theme.init();
     const fixture = TestBed.createComponent(App);

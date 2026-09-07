@@ -4,4 +4,5 @@ export {
   VehicleIngestionLaunchEdit,
   VehicleIngestionRunDetail,
 } from '../../feature-ingestion';
+export { loadVehicleIngestionPage } from '../../feature-ingestion';
 export { VehicleReviewsSearch } from '../../feature-reviews';

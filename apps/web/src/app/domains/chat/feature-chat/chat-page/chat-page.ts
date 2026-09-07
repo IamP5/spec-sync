@@ -5,6 +5,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -13,6 +14,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   form,
   FormField,
@@ -43,6 +45,7 @@ import {
 
 import { ZardAlertComponent } from '@/ui/components/alert';
 import { ZardButtonComponent } from '@/ui/components/button';
+import { ZardDialogRef, ZardDialogService } from '@/ui/components/dialog';
 import { ZardKbdComponent } from '@/ui/components/kbd';
 import {
   ZardMarkerComponent,
@@ -61,7 +64,10 @@ import { ZardSpinnerComponent } from '@/ui/components/spinner';
 import { ZardTextareaComponent } from '@/ui/components/textarea';
 import { ZardTooltipDirective } from '@/ui/components/tooltip';
 
+import { AuthLoginOverview } from '../../../auth/api/features';
+import { SESSION } from '../../../auth/api/session';
 import { UserPreferencesCoordinator } from '../../../user/api/preferences';
+import { ChatConnectionCoordinator } from '../../api/connection';
 import {
   CHAT_AGENT_ID,
   ChatAgentError,
@@ -215,6 +221,12 @@ export class ChatPage {
 
   /** Route parameter of `/c/:threadId`; undefined on the root route. */
   readonly threadId = input<string>();
+  private readonly session = inject(SESSION);
+  private readonly connection = inject(ChatConnectionCoordinator);
+  private readonly dialogs = inject(ZardDialogService);
+  private loginDialog?: ZardDialogRef<AuthLoginOverview>;
+  private readonly pendingPrompt = signal<string | null>(null);
+  private previousUid: string | null = null;
 
   private readonly model = signal({ prompt: '' });
   private readonly animateReplies = signal(false);
@@ -299,10 +311,41 @@ export class ChatPage {
   constructor() {
     registerChatTools();
 
-    // The URL is the source of truth for the open conversation.
+    this.session.changes$.pipe(takeUntilDestroyed()).subscribe(({ scope }) => {
+      if (this.previousUid && scope?.uid !== this.previousUid) {
+        this.clearPrompt();
+        this.pendingPrompt.set(null);
+        void this.router.navigateByUrl('/', { replaceUrl: true });
+      }
+      this.previousUid = scope?.uid ?? null;
+    });
+    inject(DestroyRef).onDestroy(() => this.loginDialog?.close());
+
+    // One page and composer survive sign-in. Restore routes only when runtime is ready.
+    let wasReady = false;
     effect(() => {
       const id = this.threadId();
-      untracked(() => this.syncWithRoute(id));
+      const ready = this.connection.ready();
+      untracked(() => {
+        if (ready) {
+          const draft = this.model().prompt;
+          this.syncWithRoute(id);
+          if (!wasReady) this.model.set({ prompt: draft });
+        }
+        wasReady = ready;
+      });
+    });
+    effect(() => {
+      const ready = this.connection.ready();
+      const pending = this.pendingPrompt();
+      if (this.session.authenticated())
+        untracked(() => this.loginDialog?.close());
+      if (ready && pending)
+        untracked(() => {
+          this.pendingPrompt.set(null);
+          this.clearPrompt();
+          void this.send(pending);
+        });
     });
 
     // Reserve the actual composer height as multiline input and validation resize it.
@@ -382,8 +425,7 @@ export class ChatPage {
     }
     submit(this.promptForm, async () => {
       const prompt = this.model().prompt.trim();
-      this.clearPrompt();
-      await this.send(prompt);
+      await this.requestSend(prompt);
     });
   }
 
@@ -407,11 +449,11 @@ export class ChatPage {
   }
 
   sendFromCard(prompt: string): void {
-    if (!this.streaming()) void this.send(prompt);
+    if (!this.streaming()) void this.requestSend(prompt);
   }
 
   protected onSuggestion(prompt: string): void {
-    void this.send(prompt);
+    void this.requestSend(prompt);
   }
 
   protected async onCopy(turn: ChatTurn): Promise<void> {
@@ -534,6 +576,26 @@ export class ChatPage {
     // restarting a smooth-scroll animation on every token would lag behind it.
     element.scrollTop = element.scrollHeight;
     this.lastScrollTop = element.scrollTop;
+  }
+
+  private async requestSend(prompt: string): Promise<void> {
+    if (!this.connection.ready()) {
+      this.model.set({ prompt });
+      this.pendingPrompt.set(prompt);
+      if (!this.session.authenticated())
+        this.loginDialog = this.dialogs.create({
+          zTitle: 'Sign in to continue',
+          zContent: AuthLoginOverview,
+          zHideFooter: true,
+          zWidth: '24rem',
+          zOnCancel: () => {
+            this.pendingPrompt.set(null);
+          },
+        });
+      return;
+    }
+    this.clearPrompt();
+    await this.send(prompt);
   }
 
   private async send(prompt: string): Promise<void> {

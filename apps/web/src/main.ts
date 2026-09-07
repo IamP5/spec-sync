@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { App } from './app/app';
 import { appConfig } from './app/app.config';
-import { WEB_CONFIG } from './app/domains/auth/data/auth-session';
+import { WEB_CONFIG } from './app/domains/shared/util-config';
 
 const origin = z
   .string()

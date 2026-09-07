@@ -26,11 +26,18 @@ export const config: SheriffConfig = {
       ui: ['domain:<domain>', 'type:ui'],
       util: ['domain:<domain>', 'type:util'],
       state: ['domain:<domain>', 'type:state'],
+      session: ['domain:<domain>', 'type:session-runtime'],
+      transport: ['domain:<domain>', 'type:transport'],
 
-      // Explicit domain APIs separate model contracts from composed features.
+      // Technical entry names are architectural roles. All other entry names
+      // describe capabilities and follow the same public coordinator rules.
       'api/contracts': ['domain:<domain>/api', 'type:contracts-api'],
-      'api/preferences': ['domain:<domain>/api', 'type:preferences-api'],
       'api/features': ['domain:<domain>/api', 'type:features-api'],
+      'api/events': ['domain:<domain>/api', 'type:events-api'],
+      'api/session': ['domain:<domain>/api', 'type:session-api'],
+      'api/bootstrap': ['domain:<domain>/api', 'type:bootstrap-api'],
+      'api/<capability>': ['domain:<domain>/api', 'type:capability-api'],
+      '<layer>': ['domain:<domain>', 'type:unclassified'],
     },
 
     // The design-system library (Zard/shadcn components). It is technical,
@@ -42,30 +49,52 @@ export const config: SheriffConfig = {
     'libs/ui/utils': ['domain:shared', 'type:ui-kit'],
 
     'apps/web/src/app/testing': ['testing'],
+    'apps/web/src/app/shell': ['shell', 'type:shell'],
   },
   depRules: {
     // The app shell (apps/web/src/app/*.ts, routes, config) is the root module.
     root: '*',
 
-    'domain:chat': [
-      'domain:chat',
+    // All matching Sheriff rules are additive. Keep ownership and API access
+    // together so a wildcard cannot override the shared/API restrictions.
+    'domain:*': [
+      sameTag,
       'domain:shared',
-      'domain:vehicles/api',
-      'domain:user/api',
+      ({ from, to }) =>
+        from.endsWith('/api')
+          ? to === from.slice(0, -4)
+          : to === `${from}/api` ||
+            (from !== 'domain:shared' && /^domain:.+\/api$/.test(to)),
     ],
-    'domain:user': [
-      'domain:user',
-      'domain:user/api',
-      'domain:shared',
-      'domain:auth/api',
+    shell: ['shell', 'domain:shared', 'domain:*/api'],
+    'type:shell': [
+      'type:shell',
+      'type:ui-kit',
+      'type:features-api',
+      'type:session-api',
+      'type:capability-api',
     ],
-    'domain:*': [sameTag, 'domain:shared'],
 
-    'type:state': ['type:state', 'type:data', 'type:util', 'type:ui-kit'],
-    'type:preferences-api': ['type:state'],
+    'type:state': [
+      'type:state',
+      'type:data',
+      'type:util',
+      'type:ui-kit',
+      'type:events-api',
+      'type:session-api',
+      'type:session-runtime',
+    ],
+    'type:events-api': [],
+    'type:session-api': ['type:session-runtime'],
+    'type:capability-api': ['type:state'],
+    'type:bootstrap-api': ['type:data', 'type:transport', 'type:util'],
+    'type:session-runtime': ['type:events-api', 'type:util'],
+    'type:transport': ['type:data', 'type:session-runtime', 'type:util'],
     'type:feature': [
       'type:state',
-      'type:preferences-api',
+      'type:events-api',
+      'type:session-api',
+      'type:capability-api',
       'type:feature',
       'type:features-api',
       'type:contracts-api',
@@ -75,16 +104,19 @@ export const config: SheriffConfig = {
       'type:util',
     ],
     'type:ui': ['type:ui-kit', 'type:data', 'type:util', 'type:contracts-api'],
-    'type:data': ['type:util', 'type:contracts-api'],
+    'type:data': [
+      'type:util',
+      'type:contracts-api',
+      'type:events-api',
+      'type:session-api',
+      'type:session-runtime',
+    ],
     'type:util': [],
+    'type:unclassified': [],
 
-    // Separate contracts from component entry points; tsarch checks exports and privacy.
+    // API entry checks, private state, UI purity and cycles live in arch/.
     'type:features-api': ['type:feature'],
     'type:contracts-api': ['type:data', 'type:util'],
-    'domain:*/api': [
-      ({ from, to }) => to === from.replace('/api', ''),
-      'domain:shared',
-    ],
 
     'type:ui-kit': ['type:ui-kit'],
 

@@ -140,15 +140,45 @@ export const GreetingDetailStore = signalStore(
 
 ## Authentication lifecycle
 
-The auth domain owns `AuthSessionStore`, `AuthLoginPage`, `AuthLogoutOverview` and
-`AuthSessionOverview`. The store exposes verified session status and login/logout
-mutations through `AuthClient`; it never stores a profile or roles. Firebase SDK
-credentials belong to `AuthSession`, outside NgRx state and devtools. The HTTP
-interceptor and shell transport wiring may access this technical adapter directly.
+`auth/state/AuthSessionStore` owns login/logout mutations and verified session status.
+`AuthSessionCoordinator` is the public workflow facade. `AuthLoginOverview` is reusable
+Google sign-in dialog content; `AuthLogoutOverview` owns the logout action. Firebase
+SDK users and tokens remain in `AuthSession`, outside NgRx state and devtools.
+RxFire's `user()` stream drives gateway verification through `switchMap`.
 
-The user domain uses `UserDetailStore` for profile and roles. Its private state owner
-under `user/state` contains `PreferencesDetailStore` and `UserConfigurationStore`.
-`UserPreferencesCoordinator`, exposed through `user/api/preferences`, coordinates
-those stores and the design-system theme for the account menu, preferences form and
-chat's model/activity choices. Auth has no dependency on user state. Browser storage
-is scoped to the authenticated UID; conversation history remains owned by chat.
+`SessionContext` is the single session lifecycle writer. Its public `SESSION` token
+exposes a read-only snapshot (`restoring`, `signed-out`, `verifying`, `signed-in`,
+`error`), UID/generation scope, and observable transitions. A session becomes usable
+only after `/auth/session` verifies the same SDK UID. A token refresh re-verifies
+without changing the generation or resetting chat.
+
+Identity changes and logout invalidate synchronously, before new account requests
+can start. Typed NgRx `sessionEvents.invalidated` reducers clear each store's own
+state; established handlers load that account's data. Use `withEventHandlers` for
+side effects, `withReducer` for state, and `ignoreElements` for side-effect-only
+streams. Stores never inject other stores. Lazy consumers also read `SESSION` on
+initialization, since an event may have happened before they existed.
+
+Capture the session scope before asynchronous work and check `isCurrent(scope)`
+before applying or persisting results. The auth HTTP interceptor cancels gateway
+requests on invalidation and rejects credentials resolved for an obsolete session.
+Chat stops its AG-UI run, clears messages/selection/context, and disconnects runtime
+metadata on invalidation. Never reload the document for login/logout.
+
+The user domain owns profile/roles through `UserDetailStore`, and all browser
+preferences (including theme) through `PreferencesDetailStore`.
+`UserPreferencesCoordinator` connects that store to the design-system theme.
+Preferences migrate the former per-UID configuration theme when no new theme exists;
+subsequent writes use one preferences record. Roles are server-supplied data and
+never editable or used to expose privileged UI. Storage remains UID-scoped; chat
+owns conversation history and user owns preferences.
+
+`ChatPage` retains an anonymous draft while the auth dialog is open. Only an
+explicit Send intent resumes sending, once, after verification and runtime readiness.
+Sidebar sign-in restores the draft without sending; cancelling clears send intent
+while preserving text. Leaving a verified account clears the draft synchronously,
+even if logout and the next login occur before an Angular effect runs.
+
+Shell composes profile, auth, user preferences and chat history workflows. It closes
+account/settings overlays when their authenticated owner is destroyed. Shared code
+contains technical utilities, never this application composition.

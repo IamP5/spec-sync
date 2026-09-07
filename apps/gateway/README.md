@@ -55,21 +55,22 @@ node apps/gateway/ops/set-user-roles.mjs PROJECT_ID UID reviewer
 
 Angular uses a functional HTTP interceptor for gateway paths only. It gets a current
 SDK token for each request and never attaches it to external URLs. CopilotKit owns a
-separate streaming transport: the shell updates its headers on SDK token changes and
-refreshes credentials before each run. Writes are not automatically retried.
+separate streaming transport: chat connects the runtime only after verification and
+refreshes credentials before each run. Session invalidation aborts active runs and
+clears the runtime headers without reloading the page. Writes are not automatically retried.
 
 ## Auth and user domains
 
-`apps/web/src/app/domains/auth` owns the SDK session, session store, login page and
-logout component. The sign-in shell creates protected features after gateway session
-verification. Tokens remain outside application stores and devtools.
+`apps/web/src/app/domains/auth` owns the SDK session, session store, login dialog
+content and logout component. Public chat accepts guest drafts; sending requires
+verified sign-in. Tokens remain outside application stores and devtools.
 
-`apps/web/src/app/domains/user` owns profile, roles, preferences and configuration.
-Its account menu composes auth's logout component and renders the Google photo with
-an initials fallback. Chat consumes the public user preferences interface; the stores
-stay private. Preferences and conversation history use keys scoped to the signed-in
-user. Existing anonymous history is left intact; it is not assigned to an arbitrary
-Google account. Conversation history remains owned by chat.
+`apps/web/src/app/domains/user` owns profile, roles and preferences including theme.
+The application shell composes its Google profile photo, preferences and auth's
+logout component into the account menu. Chat consumes public user preferences;
+private stores reset their own data on typed session lifecycle events. Browser
+preferences and conversation history remain scoped to the signed-in UID, and
+anonymous history is never assigned to an arbitrary Google account.
 These local records do not synchronize between devices.
 
 ## Local development

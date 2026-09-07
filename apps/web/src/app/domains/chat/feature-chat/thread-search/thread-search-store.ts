@@ -9,7 +9,16 @@ import {
   withProps,
   withState,
 } from '@ngrx/signals';
+import {
+  Events,
+  on,
+  withEventHandlers,
+  withReducer,
+} from '@ngrx/signals/events';
+import { ignoreElements, tap } from 'rxjs';
 
+import { sessionEvents } from '../../../auth/api/events';
+import { SESSION } from '../../../auth/api/session';
 import {
   ChatThreadSummary,
   groupThreads,
@@ -35,6 +44,7 @@ export const ThreadSearchStore = signalStore(
 
   withProps(() => ({
     _threadClient: inject(ThreadClient),
+    _session: inject(SESSION),
   })),
 
   withComputed((store) => ({
@@ -51,7 +61,9 @@ export const ThreadSearchStore = signalStore(
     /** Reads the history again. */
     load(): void {
       patchState(store, {
-        threads: store._threadClient.list(),
+        threads: store._session.authenticated()
+          ? store._threadClient.list()
+          : [],
         loadedAt: Date.now(),
       });
     },
@@ -61,6 +73,19 @@ export const ThreadSearchStore = signalStore(
     },
   })),
 
+  withReducer(
+    on(sessionEvents.invalidated, () => ({
+      threads: [],
+      query: '',
+      loadedAt: 0,
+    })),
+  ),
+  withEventHandlers((store, events = inject(Events)) => ({
+    session: events.on(sessionEvents.established).pipe(
+      tap(() => store.load()),
+      ignoreElements(),
+    ),
+  })),
   withHooks({
     onInit(store) {
       store.load();

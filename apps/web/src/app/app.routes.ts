@@ -1,7 +1,8 @@
 import { Route, UrlSegment } from '@angular/router';
 
-import { loadChatPage } from './domains/chat/feature-chat';
-import { loadVehicleIngestionPage } from './domains/vehicles/feature-ingestion';
+import { authGuard } from './domains/auth/api/bootstrap';
+import { loadChatPage } from './domains/chat/api/features';
+import { loadVehicleIngestionPage } from './domains/vehicles/api/features';
 
 /**
  * The application is the assistant: the root is a new conversation and
@@ -18,6 +19,7 @@ export const appRoutes: Route[] = [
       if (segments[1]) posParams['runId'] = segments[1];
       return { consumed: segments, posParams };
     },
+    canActivate: [authGuard],
     loadComponent: loadVehicleIngestionPage,
   },
   { path: '**', redirectTo: '' },

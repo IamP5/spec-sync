@@ -9,18 +9,20 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideEllipsisVertical,
   lucidePencil,
   lucideSearch,
-  lucideSquarePen,
   lucideTrash2,
 } from '@ng-icons/lucide';
 
-import { ZardAlertDialogService } from '@/ui/components/alert-dialog';
-import { ZardDialogService } from '@/ui/components/dialog';
+import {
+  ZardAlertDialogRef,
+  ZardAlertDialogService,
+} from '@/ui/components/alert-dialog';
 import {
   ZardDropdownDirective,
   ZardDropdownMenuContentComponent,
@@ -28,7 +30,6 @@ import {
   ZardDropdownMenuSeparatorComponent,
 } from '@/ui/components/dropdown';
 import { ZardInputComponent } from '@/ui/components/input';
-import { ZardKbdComponent } from '@/ui/components/kbd';
 import {
   ZardSidebarContentComponent,
   ZardSidebarGroupComponent,
@@ -41,19 +42,16 @@ import {
   ZardSidebarMenuComponent,
   ZardSidebarMenuItemComponent,
   ZardSidebarService,
-  ZardSidebarTriggerComponent,
 } from '@/ui/components/sidebar';
 
-import { UserAccountOverview } from '../../../user/api/features';
+import { SESSION } from '../../../auth/api/session';
 import { ChatThreadSummary, MAX_TITLE_LENGTH } from '../../data/thread';
 import { ChatCoordinator } from '../chat-coordinator';
-import { SettingsEdit } from '../settings-edit/settings-edit';
 import { ThreadSearchStore } from './thread-search-store';
 
 /**
- * Sidebar of the application: new chat, the searchable conversation history
- * grouped by date (rename and delete per thread) and, in the footer, the user
- * menu with the theme switch and the settings dialog.
+ * Searchable conversation history grouped by date, with rename and delete
+ * actions. The application shell owns the surrounding navigation and account menu.
  *
  * Navigation goes through the router: a thread is a URL (`/c/<id>`), a new
  * chat is the root. The chat page reacts to the URL and opens the thread.
@@ -61,7 +59,6 @@ import { ThreadSearchStore } from './thread-search-store';
 @Component({
   selector: 'app-thread-search',
   imports: [
-    UserAccountOverview,
     NgIcon,
     RouterLink,
     ZardDropdownDirective,
@@ -69,7 +66,7 @@ import { ThreadSearchStore } from './thread-search-store';
     ZardDropdownMenuItemComponent,
     ZardDropdownMenuSeparatorComponent,
     ZardInputComponent,
-    ZardKbdComponent,
+
     ZardSidebarContentComponent,
     ZardSidebarGroupComponent,
     ZardSidebarGroupContentComponent,
@@ -80,14 +77,12 @@ import { ThreadSearchStore } from './thread-search-store';
     ZardSidebarMenuButtonComponent,
     ZardSidebarMenuComponent,
     ZardSidebarMenuItemComponent,
-    ZardSidebarTriggerComponent,
   ],
   viewProviders: [
     provideIcons({
       lucideEllipsisVertical,
       lucidePencil,
       lucideSearch,
-      lucideSquarePen,
       lucideTrash2,
     }),
   ],
@@ -95,8 +90,6 @@ import { ThreadSearchStore } from './thread-search-store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'contents',
-    '(document:keydown.meta.shift.o)': 'onNewChatShortcut($event)',
-    '(document:keydown.control.shift.o)': 'onNewChatShortcut($event)',
   },
 })
 export class ThreadSearch {
@@ -104,7 +97,9 @@ export class ThreadSearch {
   private readonly coordinator = inject(ChatCoordinator);
   private readonly router = inject(Router);
   private readonly sidebar = inject(ZardSidebarService);
-  private readonly dialog = inject(ZardDialogService);
+
+  private readonly session = inject(SESSION);
+  private confirmation?: ZardAlertDialogRef<unknown>;
   private readonly alertDialog = inject(ZardAlertDialogService);
   private readonly renameInput = viewChild('renameInput', {
     read: ElementRef<HTMLInputElement>,
@@ -132,6 +127,10 @@ export class ThreadSearch {
   );
 
   constructor() {
+    this.session.invalidated$.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.confirmation?.close();
+      this.renamingId.set(null);
+    });
     afterRenderEffect(() => {
       if (this.focusSearch() && this.sidebarOpen()) {
         this.searchInput()?.nativeElement.focus();
@@ -152,17 +151,6 @@ export class ThreadSearch {
 
   protected onQuery(event: Event): void {
     this.store.setQuery((event.target as HTMLInputElement).value);
-  }
-
-  protected onNewChat(): void {
-    this.closeOnMobile();
-    this.navigated.emit();
-    void this.router.navigateByUrl('/');
-  }
-
-  protected onNewChatShortcut(event: Event): void {
-    event.preventDefault();
-    this.onNewChat();
   }
 
   protected onOpen(): void {
@@ -191,27 +179,19 @@ export class ThreadSearch {
   }
 
   protected onDelete(thread: ChatThreadSummary): void {
-    this.alertDialog.confirm({
+    const scope = this.session.scope();
+    if (!scope) return;
+    this.confirmation = this.alertDialog.confirm({
       zTitle: 'Delete this conversation?',
       zDescription: `"${thread.title}" will be removed from your history. This cannot be undone.`,
       zOkText: 'Delete',
       zOkDestructive: true,
       zOnOk: () => {
+        if (!this.session.isCurrent(scope)) return;
         if (this.coordinator.remove(thread.id)) {
           void this.router.navigateByUrl('/');
         }
       },
-    });
-  }
-
-  protected onSettings(): void {
-    this.dialog.create({
-      zTitle: 'Settings',
-      zDescription:
-        'Personalise the assistant. Everything is stored in this browser.',
-      zContent: SettingsEdit,
-      zHideFooter: true,
-      zWidth: '32rem',
     });
   }
 

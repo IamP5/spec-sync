@@ -1,5 +1,8 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Events } from '@ngrx/signals/events';
 
+import { sessionEvents } from '../../auth/api/events';
 import type { IngestionRunSummary } from '../../vehicles/api/contracts';
 
 /**
@@ -10,6 +13,13 @@ import type { IngestionRunSummary } from '../../vehicles/api/contracts';
  */
 @Injectable({ providedIn: 'root' })
 export class IngestionActivity {
+  constructor() {
+    inject(Events)
+      .on(sessionEvents.invalidated)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.clear());
+  }
+
   private readonly _runs = signal<ReadonlyMap<string, IngestionRunSummary>>(
     new Map(),
   );

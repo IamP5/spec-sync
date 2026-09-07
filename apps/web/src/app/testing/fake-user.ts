@@ -1,7 +1,7 @@
 import { resource } from '@angular/core';
 
 import type { User } from '../domains/user/data/user';
-import { UserClient } from '../domains/user/data/user-client';
+import { UserProfileClient } from '../domains/user/data/user-profile-client';
 
 export const testUser: User = {
   uid: 'alice',
@@ -12,17 +12,13 @@ export const testUser: User = {
 };
 export function provideFakeUser(user: User | null = testUser) {
   return {
-    provide: UserClient,
+    provide: UserProfileClient,
     useValue: {
       profileResource: () =>
         resource({
           defaultValue: user ?? undefined,
           loader: async () => user ?? undefined,
         }),
-      configuration: () => ({
-        theme: localStorage.getItem('theme') ?? 'system',
-      }),
-      saveConfiguration: () => undefined,
     },
   };
 }

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { ZardDropdownMenuItemComponent } from '@/ui/components/dropdown';
 
-import { AuthSessionStore } from './auth-session-store';
+import { AuthSessionCoordinator } from '../api/authentication';
 
 @Component({
   selector: 'app-auth-logout-overview',
@@ -15,11 +15,11 @@ import { AuthSessionStore } from './auth-session-store';
       type="button"
       class="min-h-9 w-full rounded-md px-3"
       (click)="store.logout()"
-      [disabled]="store.logoutIsPending()"
+      [disabled]="store.logoutPending()"
     >
       Sign out
     </button>
-    @if (store.logoutError()) {
+    @if (store.error()) {
       <p role="alert" class="px-3 text-sm text-destructive">
         We couldn’t sign you out. Please try again.
       </p>
@@ -27,5 +27,5 @@ import { AuthSessionStore } from './auth-session-store';
   `,
 })
 export class AuthLogoutOverview {
-  protected readonly store = inject(AuthSessionStore);
+  protected readonly store = inject(AuthSessionCoordinator);
 }

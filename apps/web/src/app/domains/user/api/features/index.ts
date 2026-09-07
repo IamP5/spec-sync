@@ -1,2 +1,5 @@
-export { UserAccountOverview } from '../../feature-user';
-export { UserPreferencesEdit } from '../../feature-user';
+export {
+  UserAppearanceOverview,
+  UserPreferencesEdit,
+} from '../../feature-preferences';
+export { UserProfileOverview } from '../../feature-profile';

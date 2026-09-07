@@ -11,11 +11,14 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
-import { AuthSession, WEB_CONFIG } from './domains/auth/data/auth-session';
+import { AuthSession } from './domains/auth/data/auth-session';
+import { SessionContext } from './domains/auth/session/session-context';
+import { authInterceptor as gatewayInterceptor } from './domains/auth/transport/auth-interceptor';
 import { ChatModelClient } from './domains/chat/data/chat-model-client';
+import { WEB_CONFIG } from './domains/shared/util-config';
 import { VehicleCatalogClient } from './domains/vehicles/data/vehicle-catalog-client';
 import { VehicleReviewsClient } from './domains/vehicles/data/vehicle-reviews-client';
-import { gatewayInterceptor } from './gateway-interceptor';
+import { provideFakeAuth } from './testing/fake-auth';
 import { matrix } from './testing/vehicle-fixtures';
 
 describe('gateway credentials', () => {
@@ -24,6 +27,7 @@ describe('gateway credentials', () => {
     idToken.mockReset().mockResolvedValue('fresh-token');
     TestBed.configureTestingModule({
       providers: [
+        provideFakeAuth(),
         provideHttpClient(withInterceptors([gatewayInterceptor])),
         provideHttpClientTesting(),
         {
@@ -129,6 +133,39 @@ describe('gateway credentials', () => {
     );
     resource.destroy();
     expect(request.cancelled).toBe(true);
+  });
+  it('cancels in-flight requests before another account can receive their results', async () => {
+    const next = vi.fn();
+    const subscription = TestBed.inject(HttpClient)
+      .get('/api/data')
+      .subscribe(next);
+    await Promise.resolve();
+    const request = TestBed.inject(HttpTestingController).expectOne(
+      'https://gateway.example/api/data',
+    );
+    TestBed.inject(SessionContext).invalidate();
+    expect(request.cancelled).toBe(true);
+    expect(subscription.closed).toBe(true);
+    expect(next).not.toHaveBeenCalled();
+  });
+  it('discards a token that resolves after account invalidation', async () => {
+    let resolveToken: (value: string) => void = () => undefined;
+    idToken.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveToken = resolve;
+        }),
+    );
+    const subscription = TestBed.inject(HttpClient)
+      .get('/api/data')
+      .subscribe();
+    TestBed.inject(SessionContext).invalidate();
+    resolveToken('old-account-token');
+    await Promise.resolve();
+    expect(subscription.closed).toBe(true);
+    TestBed.inject(HttpTestingController).expectNone(
+      'https://gateway.example/api/data',
+    );
   });
   it('never attaches credentials to external, protocol-relative or lookalike URLs', async () => {
     for (const url of [
