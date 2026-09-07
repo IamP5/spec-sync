@@ -113,7 +113,9 @@ describe('gateway authentication and routing', () => {
   });
   it('requires the configured origin on cookie-authenticated mutations and logout', async () => {
     const { app, fetcher } = setup();
-    for (const origin of ['', 'https://evil.example']) {
+    const form = await app.request('/auth/logout');
+    expect(form.headers.get('referrer-policy')).toBe('same-origin');
+    for (const origin of ['', 'null', 'https://evil.example']) {
       expect(
         (
           await app.request('/ai/copilotkit', {

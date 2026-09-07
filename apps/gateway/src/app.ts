@@ -95,11 +95,13 @@ export function createGateway(
     deleteCookie(c, sessionName, cookieOptions);
     return c.body(null, 204);
   });
-  app.get('/auth/logout', (c) =>
-    c.html(
+  app.get('/auth/logout', (c) => {
+    // Form POSTs need their Origin preserved for the same-origin check.
+    c.header('Referrer-Policy', 'same-origin');
+    return c.html(
       '<!doctype html><html lang="en"><title>Sign out</title><form method="post" action="/auth/logout"><button>Sign out of SpecSync</button></form></html>',
-    ),
-  );
+    );
+  });
   app.all('*', async (c) => {
     let user;
     try {
