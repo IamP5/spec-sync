@@ -2,10 +2,14 @@ import { createHash } from 'node:crypto';
 import { lookup } from 'node:dns/promises';
 import { request } from 'node:https';
 
+import type { RequestContext } from '@mastra/core/request-context';
 import ipaddr from 'ipaddr.js';
 import { type DefaultTreeAdapterMap, parse } from 'parse5';
 
-import { transcribePdf } from './pdf-transcription';
+import {
+  transcribePdf,
+  type TranscriptionUsageSink,
+} from './pdf-transcription';
 
 export const sha256 = (bytes: string | Uint8Array) =>
   createHash('sha256').update(bytes).digest('hex');
@@ -244,6 +248,8 @@ export async function downloadSource(
 export async function captureSource(
   value: string,
   signal: AbortSignal,
+  onUsage?: TranscriptionUsageSink,
+  requestContext?: RequestContext,
 ): Promise<CapturedSource> {
   const { url, bytes, mime } = await downloadSource(value, signal);
   let text: string, title: string, parserVersion: string;
@@ -261,6 +267,8 @@ export async function captureSource(
       bytes.toString('base64'),
       pageCount,
       signal,
+      onUsage,
+      requestContext,
     );
     text = transcript.text;
     parserVersion = transcript.parserVersion;
@@ -303,15 +311,19 @@ const cache = new Map<string, { expires: number; source: CapturedSource }>();
  * download and, for PDFs, one visual transcription) and the run that follows
  * seconds later reuses the same capture instead of paying for it twice. The
  * cache is per process and bounded; nothing here is durable.
+ *
+ * A cache hit never calls `onUsage`: no model ran, so the wallet owes nothing.
  */
 export async function captureSourceCached(
   value: string,
   signal: AbortSignal,
+  onUsage?: TranscriptionUsageSink,
+  requestContext?: RequestContext,
 ): Promise<CapturedSource> {
   const now = Date.now();
   const hit = cache.get(value);
   if (hit && hit.expires > now) return hit.source;
-  const source = await captureSource(value, signal);
+  const source = await captureSource(value, signal, onUsage, requestContext);
   if (cache.size >= CACHE_ENTRIES) {
     const oldest = [...cache.entries()].sort(
       (a, b) => a[1].expires - b[1].expires,

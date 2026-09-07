@@ -7,6 +7,8 @@ import { PinoLogger } from '@mastra/loggers';
 
 import { CHAT_AGENT_ID, specSyncAgent } from './agents/spec-sync-agent';
 import { chatModelRoutes, setChatModelContext } from './chat-model-route';
+import { chatCreditsRoutes } from './credits/credits-route';
+import { setChatCreditsContext } from './credits/credits-run';
 import { requireVerifiedUser, setChatIdentityContext } from './identity';
 import { ingestionRoutes } from './ingestion/routes';
 import { vehicleIngestionWorkflow } from './ingestion/workflow';
@@ -64,6 +66,7 @@ export const mastra = new Mastra({
       ...ingestionRoutes,
       ...chatModelRoutes,
       ...chatThreadRoutes,
+      ...chatCreditsRoutes,
       {
         ...registerCopilotKit({
           path: COPILOTKIT_PATH,
@@ -73,6 +76,8 @@ export const mastra = new Mastra({
           setContext: async (c, requestContext) => {
             await setChatIdentityContext(c, requestContext);
             await setChatModelContext(c, requestContext);
+            // After the identity: the wallet is keyed by the verified uid.
+            await setChatCreditsContext(c, requestContext);
           },
         }),
         middleware: requireVerifiedUser,

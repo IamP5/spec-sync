@@ -1,4 +1,5 @@
 export {
+  CreditsOverview,
   HistorySettingsEdit,
   loadChatPage,
   ThreadSearch,

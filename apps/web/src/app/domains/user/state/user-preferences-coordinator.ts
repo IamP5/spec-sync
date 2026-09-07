@@ -12,7 +12,8 @@ export class UserPreferencesCoordinator {
   private readonly darkMode = inject(ZardDarkMode);
   readonly displayName = this.store.displayName;
   readonly showActivity = this.store.showActivity;
-  readonly model = this.store.model;
+  readonly mode = this.store.mode;
+  readonly roleModels = this.store.roleModels;
   readonly effort = this.store.effort;
   readonly hasName = this.store.hasName;
   readonly initials = this.store.initials;

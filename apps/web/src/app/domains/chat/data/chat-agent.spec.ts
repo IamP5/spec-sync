@@ -1,6 +1,11 @@
 import type { Message } from '@ag-ui/client';
 
-import { normalizeThread, textOf, toolActivities } from './chat-agent';
+import {
+  creditsErrorOf,
+  normalizeThread,
+  textOf,
+  toolActivities,
+} from './chat-agent';
 
 function call(id: string, name: string) {
   return { id, type: 'function' as const, function: { name, arguments: '{}' } };
@@ -157,5 +162,42 @@ describe('toolActivities', () => {
     expect(toolActivities(messages, true).get('a')?.[0].input).toBe(
       '{"requirement":',
     );
+  });
+});
+
+describe('creditsErrorOf', () => {
+  it('reads the code and the service text of a refused run', () => {
+    expect(
+      creditsErrorOf(
+        'INSUFFICIENT_CREDITS: Your AI credits (R$ 0,12) do not cover a reply on Gemini 2.5 Pro. Available cheaper models: Gemini 2.5 Flash.',
+      ),
+    ).toEqual({
+      code: 'INSUFFICIENT_CREDITS',
+      message:
+        'Your AI credits (R$ 0,12) do not cover a reply on Gemini 2.5 Pro. Available cheaper models: Gemini 2.5 Flash.',
+    });
+  });
+
+  it('reads the unavailable code', () => {
+    expect(
+      creditsErrorOf(
+        'CREDITS_UNAVAILABLE: The credits service is unavailable. Try again in a moment.',
+      )?.code,
+    ).toBe('CREDITS_UNAVAILABLE');
+  });
+
+  it('finds the code behind a wrapper the AG-UI client added', () => {
+    expect(
+      creditsErrorOf('Agent run failed: CREDITS_UNAVAILABLE: try later')
+        ?.message,
+    ).toBe('try later');
+  });
+
+  it('is nothing for any other failure', () => {
+    expect(creditsErrorOf('boom')).toBeUndefined();
+    expect(creditsErrorOf(undefined)).toBeUndefined();
+    expect(
+      creditsErrorOf('INSUFFICIENT_CREDITS without a colon'),
+    ).toBeUndefined();
   });
 });

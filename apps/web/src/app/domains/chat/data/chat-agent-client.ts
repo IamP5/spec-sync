@@ -10,10 +10,15 @@ import {
   ChatAgentError,
   type ChatRunOptions,
   CONTINUATION_SUFFIX,
+  creditsErrorOf,
   normalizeThread,
   ToolCallPlacements,
 } from './chat-agent';
-import { CHAT_EFFORT_PROPERTY, CHAT_MODEL_PROPERTY } from './chat-model';
+import {
+  CHAT_EFFORT_PROPERTY,
+  CHAT_MODE_PROPERTY,
+  CHAT_ROLE_MODELS_PROPERTY,
+} from './chat-model';
 import { comparisonSelection } from './comparison-selection';
 import { IngestionActivity } from './ingestion-activity';
 
@@ -84,7 +89,8 @@ export class ChatAgentClient {
   /**
    * Runs the agent on the current thread. Resolves when the run ends, also
    * after a failure: errors are reported through {@link onError}. `options`
-   * name the model and reasoning effort the service should answer with.
+   * name the mode, the per-role overrides and the reasoning effort the
+   * service should answer with.
    */
   send(options: ChatRunOptions = {}): Promise<void> {
     return this.run(this.agentStore().agent, options);
@@ -137,15 +143,17 @@ export class ChatAgentClient {
   onError(handler: (error: ChatAgentError) => void): () => void {
     const subscription = this.copilotKit.core.subscribe({
       onError: ({ code, error }) => {
-        if (this.available()) handler({ code, error });
+        if (this.available())
+          handler({ code, error, credits: creditsErrorOf(error?.message) });
       },
     });
     return () => subscription.unsubscribe();
   }
 
   /**
-   * Runs the agent on its current thread. The model and effort choices
-   * travel as AG-UI forwarded properties (see `CHAT_MODEL_PROPERTY` and
+   * Runs the agent on its current thread. The mode, the advanced per-role
+   * overrides and the effort travel as AG-UI forwarded properties (see
+   * `CHAT_MODE_PROPERTY`, `CHAT_ROLE_MODELS_PROPERTY` and
    * `CHAT_EFFORT_PROPERTY`). The thread is
    * normalised afterwards (see `normalizeThread`) so the next run sends the
    * model the sequence in which things happened.
@@ -246,9 +254,11 @@ export class ChatAgentClient {
 /** The run options as forwarded properties; nothing when nothing was picked. */
 function forwardedPropsOf(
   options: ChatRunOptions,
-): Record<string, string> | undefined {
-  const props: Record<string, string> = {};
-  if (options.model) props[CHAT_MODEL_PROPERTY] = options.model;
+): Record<string, unknown> | undefined {
+  const props: Record<string, unknown> = {};
+  if (options.mode) props[CHAT_MODE_PROPERTY] = options.mode;
+  if (options.roleModels && Object.keys(options.roleModels).length)
+    props[CHAT_ROLE_MODELS_PROPERTY] = options.roleModels;
   if (options.effort) props[CHAT_EFFORT_PROPERTY] = options.effort;
   return Object.keys(props).length ? props : undefined;
 }

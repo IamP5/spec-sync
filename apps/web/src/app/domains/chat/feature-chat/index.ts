@@ -1,3 +1,4 @@
+export { CreditsOverview } from './credits/credits-overview';
 export { ThreadSearch } from './thread-search/thread-search';
 
 /** Keep the routed page lazy when the shell imports the thread sidebar. */

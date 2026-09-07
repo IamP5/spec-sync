@@ -1,0 +1,223 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DOCUMENT,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+
+import {
+  ZardPopoverComponent,
+  ZardPopoverDirective,
+} from '@/ui/components/popover';
+import { ZardProgressComponent } from '@/ui/components/progress';
+
+import {
+  type CreditsModelPrice,
+  type CreditsRunCharge,
+  formatCredits,
+} from '../../data/credits';
+
+/** How many of the recent runs the panel lists. */
+const RECENT_RUNS_SHOWN = 5;
+
+/**
+ * The AI credits of the signed-in user as a composer pill, in the style of
+ * the run options next to it: the credits left, a thin bar for the share of
+ * the promotional grant already spent, and a panel with where they went —
+ * the prices of the models the service offers and the last runs.
+ *
+ * Dumb component: the chat page reads the wallet and hands it over field by
+ * field. Formatting an amount is presentation and stays here (through the
+ * shared `formatCredits`), as does the open/closed state of the panel.
+ */
+@Component({
+  selector: 'app-credits-pill',
+  imports: [ZardPopoverComponent, ZardPopoverDirective, ZardProgressComponent],
+  template: `
+    <button
+      type="button"
+      data-role="credits"
+      class="chat-credits inline-flex min-h-8 max-w-40 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-foreground/80 transition-[background-color,color,transform] duration-150 ease-out hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.97] motion-reduce:transition-none aria-expanded:bg-accent aria-expanded:text-foreground"
+      zPopover
+      [zContent]="panel"
+      zPlacement="top"
+      zAlign="start"
+      zSideOffset="10"
+      [attr.aria-label]="triggerDescription()"
+      (zVisibleChange)="onVisible($event)"
+    >
+      <span
+        class="tabular-nums"
+        data-role="credits-balance"
+        [class.text-destructive]="exhausted()"
+        >{{ balanceLabel() }} credits</span
+      >
+      <span
+        class="block h-1 w-8 shrink-0 rounded-full bg-foreground/10"
+        aria-hidden="true"
+      >
+        <span
+          class="block h-full rounded-full transition-[width] duration-300 ease-out motion-reduce:transition-none"
+          [class]="exhausted() ? 'bg-destructive' : 'bg-primary'"
+          [style.width.%]="usedPercent()"
+        ></span>
+      </span>
+    </button>
+
+    <ng-template #panel>
+      <z-popover
+        data-role="credits-panel"
+        tabindex="-1"
+        aria-label="AI Credits"
+        class="w-80 max-w-[calc(100vw-2rem)] gap-3 rounded-2xl p-4"
+      >
+        <div class="flex flex-col gap-1">
+          <h2 class="text-sm font-semibold">AI Credits</h2>
+          <p class="text-sm text-foreground" data-role="credits-summary">
+            {{ balanceLabel() }} of {{ grantedLabel() }}
+          </p>
+          <z-progress
+            class="mt-1 h-1.5"
+            [value]="usedPercent()"
+            [attr.aria-label]="progressDescription()"
+          />
+          <p class="text-xs text-muted-foreground" data-role="credits-spent">
+            Used {{ spentLabel() }}
+          </p>
+        </div>
+
+        @if (models().length) {
+          <div class="flex flex-col gap-1">
+            <h3 class="text-xs font-medium text-muted-foreground">
+              Credits per 1M tokens
+            </h3>
+            <table class="w-full text-xs" data-role="credits-models">
+              <caption class="sr-only">
+                Model prices in credits per one million tokens
+              </caption>
+              <thead>
+                <tr class="text-muted-foreground">
+                  <th scope="col" class="py-1 text-left font-normal">Model</th>
+                  <th scope="col" class="py-1 text-right font-normal">In</th>
+                  <th scope="col" class="py-1 text-right font-normal">Out</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (model of models(); track model.modelId) {
+                  <tr
+                    data-role="credits-model"
+                    [attr.data-affordable]="model.affordable"
+                    [class]="
+                      model.affordable ? 'text-foreground' : 'text-destructive'
+                    "
+                  >
+                    <th
+                      scope="row"
+                      class="max-w-36 truncate py-1 text-left font-normal"
+                    >
+                      {{ model.modelId }}
+                      @if (!model.affordable) {
+                        <span class="sr-only">(not affordable)</span>
+                      }
+                    </th>
+                    <td class="py-1 text-right tabular-nums">
+                      {{ price(model.inputPerMillion) }}
+                    </td>
+                    <td class="py-1 text-right tabular-nums">
+                      {{ price(model.outputPerMillion) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (runs().length) {
+          <div class="flex flex-col gap-1">
+            <h3 class="text-xs font-medium text-muted-foreground">
+              Recent replies
+            </h3>
+            <ul class="flex flex-col" data-role="credits-runs">
+              @for (run of runs(); track run.runId) {
+                <li
+                  class="flex items-center justify-between gap-2 py-1 text-xs"
+                >
+                  <span class="min-w-0 truncate">{{ run.modelId }}</span>
+                  <span class="shrink-0 tabular-nums text-muted-foreground">{{
+                    price(run.charge)
+                  }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </z-popover>
+    </ng-template>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'inline-flex min-w-0' },
+})
+export class CreditsPill {
+  private readonly document = inject(DOCUMENT);
+
+  /** Ledger balance in micro-credits; a negative one shows as nothing left. */
+  readonly balance = input(0);
+  /** The promotional grant the balance is measured against. */
+  readonly granted = input(0);
+  /** What has been spent so far; drives the bar. */
+  readonly spent = input(0);
+  readonly exhausted = input(false);
+  readonly models = input<readonly CreditsModelPrice[]>([]);
+  readonly recentRuns = input<readonly CreditsRunCharge[]>([]);
+
+  /** Mirrors the popover, so the trigger can report its state. */
+  protected readonly open = signal(false);
+
+  protected readonly balanceLabel = computed(() =>
+    formatCredits(this.balance()),
+  );
+  protected readonly grantedLabel = computed(() =>
+    formatCredits(this.granted()),
+  );
+  protected readonly spentLabel = computed(() => formatCredits(this.spent()));
+  protected readonly runs = computed(() =>
+    this.recentRuns().slice(0, RECENT_RUNS_SHOWN),
+  );
+  protected readonly usedPercent = computed(() => {
+    const granted = this.granted();
+    if (granted <= 0) {
+      return this.exhausted() ? 100 : 0;
+    }
+    return Math.round(Math.min(Math.max(this.spent() / granted, 0), 1) * 100);
+  });
+  protected readonly triggerDescription = computed(
+    () => `AI Credits: ${this.balanceLabel()} of ${this.grantedLabel()} left`,
+  );
+  protected readonly progressDescription = computed(
+    () => `${this.usedPercent()}% of your AI credits used`,
+  );
+
+  protected price(micro: number): string {
+    return formatCredits(micro);
+  }
+
+  protected onVisible(visible: boolean): void {
+    this.open.set(visible);
+    if (visible) {
+      this.focusPanel();
+    }
+  }
+
+  /** Move focus into the open panel so the keyboard reaches its content. */
+  private focusPanel(): void {
+    setTimeout(() => {
+      this.document
+        .querySelector<HTMLElement>('[data-role="credits-panel"]')
+        ?.focus();
+    });
+  }
+}

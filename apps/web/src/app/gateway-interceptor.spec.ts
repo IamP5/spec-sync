@@ -107,8 +107,8 @@ describe('gateway credentials', () => {
       request.flush(
         request.request.url.includes('/chat/models')
           ? {
-              defaultModelId: 'test',
-              models: [],
+              defaultModeId: 'normal',
+              modes: [],
               defaultEffortId: 'auto',
               efforts: [],
             }

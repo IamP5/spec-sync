@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
+  disabled,
   form,
   FormField,
   maxLength,
@@ -76,11 +77,18 @@ import {
   ChatTurn,
   textOf,
 } from '../../data/chat-agent';
-import { effectiveEffort, effectiveModel } from '../../data/chat-model';
+import {
+  type ChatMode,
+  effectiveEffort,
+  effectiveMode,
+  type ModelRole,
+  modeOfRunModel,
+} from '../../data/chat-model';
 import { MarkdownPipe } from '../../util/markdown-pipe';
 import { revealText } from '../../util/text-reveal';
 import { ChatCoordinator } from '../chat-coordinator';
 import { CHAT_CARD_ACTIONS } from '../tool-adapters/chat-card-actions';
+import { CreditsPill } from '../ui/credits-pill';
 import { RunOptionsPicker } from '../ui/run-options-picker';
 import { registerChatTools } from './chat-tools';
 import { ConversationDetailStore } from './conversation-detail-store';
@@ -91,6 +99,14 @@ const OFFLINE_MESSAGE =
   'The assistant is unavailable. Make sure the AI service is running.';
 const FAILURE_MESSAGE = 'The assistant could not answer. Please try again.';
 const MAX_PROMPT_LENGTH = 4000;
+const EXHAUSTED_MESSAGE =
+  'Your AI credits are used up. You can keep reading your conversations.';
+const STOPPED_BY_CREDITS_PREFIX =
+  'The reply was stopped because your credits ran out. ';
+/** The cheapest mode; the way out of a run refused for lack of credits. */
+const VELOCITY_MODE = 'velocity' as const;
+const CREDITS_UNAVAILABLE_MESSAGE =
+  'The credits service is unavailable. Try again in a moment.';
 const COPIED_FEEDBACK_MS = 1500;
 /** Distance from the end of the transcript that still counts as "at the bottom". */
 const AT_BOTTOM_THRESHOLD_PX = 32;
@@ -140,9 +156,10 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
  * streams; tool calls render through the cards registered in
  * `chat-tools.ts` (generative UI).
  *
- * The composer offers the models and reasoning efforts the AI service reports
- * (`ModelSearchStore`) through `RunOptionsPicker`; the picks are preferences
- * and travel with every run through the coordinator.
+ * The composer offers the modes, the advanced per-role model overrides and
+ * the reasoning efforts the AI service reports (`ModelSearchStore`) through
+ * `RunOptionsPicker`; the picks are preferences and travel with every run
+ * through the coordinator.
  */
 @Component({
   selector: 'app-chat-page',
@@ -153,6 +170,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     NgIcon,
     NgTemplateOutlet,
     NgOptimizedImage,
+    CreditsPill,
     RenderToolCalls,
     RunOptionsPicker,
     ZardAlertComponent,
@@ -232,10 +250,76 @@ export class ChatPage {
   private readonly pendingPrompt = signal<string | null>(null);
   private previousUid: string | null = null;
 
+  /** Credits are only shown once the AI service reported an actual wallet. */
+  protected readonly creditsEnabled = this.coordinator.creditsEnabled;
+  protected readonly creditsBalance = this.coordinator.creditsBalance;
+  protected readonly creditsGranted = this.coordinator.creditsGranted;
+  protected readonly creditsSpent = this.coordinator.creditsSpent;
+  /** What the wallet still covers; the picker confirms an expensive switch with it. */
+  protected readonly creditsAvailable = computed(() =>
+    this.creditsEnabled() ? this.coordinator.creditsAvailable() : undefined,
+  );
+  protected readonly creditsModels = this.coordinator.creditsModels;
+  protected readonly creditsRecentRuns = this.coordinator.creditsRecentRuns;
+  /** No credits left: the conversation stays readable, but nothing can be sent. */
+  protected readonly creditsExhausted = computed(
+    () => this.creditsEnabled() && this.coordinator.creditsExhausted(),
+  );
+  /** The credits code of the last run failure, when it had one. */
+  private readonly creditsError = computed(() =>
+    this.store.status() === 'error' ? this.store.error()?.credits : undefined,
+  );
+  /**
+   * The run was refused before the first model call. The service's own
+   * sentence is shown; the browser adds only the way out.
+   */
+  protected readonly insufficientCredits = computed(() => {
+    const error = this.creditsError();
+    return error?.code === 'INSUFFICIENT_CREDITS' ? error.message : '';
+  });
+  /** The wallet could not be consulted, so the service refused to start a run. */
+  protected readonly creditsUnavailable = computed(
+    () => this.creditsError()?.code === 'CREDITS_UNAVAILABLE',
+  );
+  /**
+   * What the exhausted banner says. The run that used the last credits ends
+   * without an error, so the reason for the missing end of the reply is added
+   * to the banner instead.
+   */
+  protected readonly exhaustedMessage = computed(() =>
+    this.runEnded()
+      ? `${STOPPED_BY_CREDITS_PREFIX}${EXHAUSTED_MESSAGE}`
+      : EXHAUSTED_MESSAGE,
+  );
+  protected readonly creditsUnavailableMessage = CREDITS_UNAVAILABLE_MESSAGE;
+  /**
+   * Velocity is the cheapest mode, so it is the way out of a refused run.
+   * Offered only while the service still has it and the user is not in it.
+   */
+  protected readonly canSwitchToVelocity = computed(
+    () =>
+      this.selectedMode() !== VELOCITY_MODE &&
+      this.modes().some((mode) => mode.id === VELOCITY_MODE),
+  );
+  /** Sending is blocked while the wallet cannot pay for a reply. */
+  protected readonly composerBlocked = computed(() => this.creditsExhausted());
+
   private readonly model = signal({ prompt: '' });
   private readonly animateReplies = signal(false);
+  /**
+   * True once a run of this conversation streamed and then ended. It tells the
+   * exhausted banner whether the credits ran out during a reply the user was
+   * waiting for, or were already gone when the conversation was opened. A run
+   * the service refused (`INSUFFICIENT_CREDITS`) never streamed, so it does
+   * not count.
+   */
+  private readonly runEnded = signal(false);
 
   protected readonly promptForm = form(this.model, (path) => {
+    // No credits left: the transcript stays readable, the composer does not
+    // accept anything new. Signal Forms owns the disabled state of the
+    // control, so it is declared here rather than bound in the template.
+    disabled(path.prompt, () => this.composerBlocked());
     required(path.prompt, { message: PROMPT_REQUIRED_MESSAGE });
     maxLength(path.prompt, MAX_PROMPT_LENGTH);
     validate(path.prompt, ({ value }) =>
@@ -276,21 +360,37 @@ export class ChatPage {
   protected readonly displayName = this.preferences.displayName;
   protected readonly hasName = this.preferences.hasName;
   protected readonly copyError = signal('');
-  /** Models the service offers; the picker shows the model row only when there is a choice. */
+  /** Modes the service offers; the picker lists them only when there is a choice. */
+  protected readonly modes = this.modelSearch.modes;
+  /** Roles and models the advanced selector may override. */
+  protected readonly roles = this.modelSearch.roles;
   protected readonly models = this.modelSearch.models;
-  /** The model the next run uses: the preference if still offered, else the service default. */
-  protected readonly selectedModel = computed(
-    () =>
-      effectiveModel(
-        this.preferences.model(),
-        this.modelSearch.catalogValue(),
-      ) || this.modelSearch.defaultModelId(),
+  protected readonly roleModels = this.preferences.roleModels;
+  /**
+   * The mode auto settled on for the last run; the pill reads `Auto · Normal`.
+   * Derived from the model the last run was charged at, because the catalog
+   * route is shared between users and cannot carry a per-run value
+   * (`modeOfRunModel`). Only meaningful while the preference is `auto`.
+   */
+  protected readonly resolvedMode = computed((): ChatMode | null =>
+    this.selectedMode() === 'auto'
+      ? modeOfRunModel(
+          this.modelSearch.catalogValue(),
+          this.creditsRecentRuns()[0]?.modelId,
+        )
+      : null,
+  );
+  /** The mode the next run uses: the preference if still offered, else the service default. */
+  protected readonly selectedMode = computed(
+    (): ChatMode =>
+      effectiveMode(this.preferences.mode(), this.modelSearch.catalogValue()) ||
+      this.modelSearch.defaultModeId(),
   );
   /** Reasoning efforts the service offers; the picker shows the track only when there are any. */
   protected readonly efforts = this.modelSearch.efforts;
   /** The picker shows as soon as there is anything to pick. */
   protected readonly hasRunOptions = computed(
-    () => this.models().length > 1 || this.efforts().length > 0,
+    () => this.modes().length > 1 || this.efforts().length > 0,
   );
   /** The effort the next run uses: the preference if still offered, else the service default. */
   protected readonly selectedEffort = computed(
@@ -317,9 +417,15 @@ export class ChatPage {
 
   protected readonly activityStatus = computed(() => runStatus(this.turns()));
 
-  protected readonly error = computed(() =>
-    this.store.status() === 'error' ? toErrorMessage(this.store.error()) : '',
-  );
+  /**
+   * The generic run failure. A credits rejection has its own banner with the
+   * service's wording and its own way out, so it is not repeated here.
+   */
+  protected readonly error = computed(() => {
+    const error =
+      this.store.status() === 'error' ? this.store.error() : undefined;
+    return !error || error.credits ? '' : toErrorMessage(error);
+  });
 
   /** Text of the last assistant turn, the only one that changes while it streams. */
   private readonly liveText = computed(() => {
@@ -443,7 +549,12 @@ export class ChatPage {
 
   protected onSubmit(event: Event): void {
     event.preventDefault();
-    if (this.streaming() || this.promptInvalid() || this.loading()) {
+    if (
+      this.streaming() ||
+      this.promptInvalid() ||
+      this.loading() ||
+      this.composerBlocked()
+    ) {
       return;
     }
     submit(this.promptForm, async () => {
@@ -500,7 +611,7 @@ export class ChatPage {
   protected onRegenerate(): void {
     this.animateReplies.set(true);
     this.atBottom.set(true);
-    void this.coordinator.regenerate();
+    void this.coordinator.regenerate().then(() => this.markRunEnded());
   }
 
   protected onStop(): void {
@@ -515,10 +626,34 @@ export class ChatPage {
     this.preferences.update({ showActivity: !this.showActivity() });
   }
 
-  protected onModel(model: string): void {
-    if (model && model !== this.preferences.model()) {
-      this.preferences.update({ model });
+  /** Retries the refused run in Velocity, the cheapest mode the service has. */
+  protected onSwitchToVelocity(): void {
+    if (!this.canSwitchToVelocity()) return;
+    this.onMode(VELOCITY_MODE);
+    this.onRegenerate();
+  }
+
+  /** Reads the wallet again and retries, after a `CREDITS_UNAVAILABLE`. */
+  protected onCreditsRetry(): void {
+    this.coordinator.reloadCredits();
+    this.onRegenerate();
+  }
+
+  protected onMode(mode: ChatMode): void {
+    if (mode !== this.preferences.mode()) {
+      this.preferences.update({ mode });
     }
+  }
+
+  /** Sets or clears one advanced override; an empty id follows the mode again. */
+  protected onRoleModel(change: { role: ModelRole; modelId: string }): void {
+    const roleModels = { ...this.preferences.roleModels() };
+    if (change.modelId) {
+      roleModels[change.role] = change.modelId;
+    } else {
+      delete roleModels[change.role];
+    }
+    this.preferences.update({ roleModels });
   }
 
   protected onEffort(effort: string): void {
@@ -589,6 +724,7 @@ export class ChatPage {
     this.clearPrompt();
     this.copyError.set('');
     this.atBottom.set(true);
+    this.runEnded.set(false);
     this.focusForTyping();
   }
 
@@ -635,6 +771,16 @@ export class ChatPage {
     }
     this.focusForTyping();
     await sending;
+    this.markRunEnded();
+  }
+
+  /**
+   * Records the end of a run that actually produced a reply. A run rejected
+   * before the first token leaves the store in `error`; the exhausted banner
+   * must not claim a reply was stopped when nothing streamed.
+   */
+  private markRunEnded(): void {
+    this.runEnded.set(this.store.status() !== 'error');
   }
 
   private touchKeyboard(): boolean {

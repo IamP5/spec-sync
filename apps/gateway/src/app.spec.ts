@@ -210,6 +210,28 @@ describe('gateway authentication and routing', () => {
       'https://ai.run.app/chat/threads/t-1',
     ]);
   });
+  it('forwards the credits read model of the AI service', async () => {
+    const { app, fetcher } = setup();
+    const response = await app.request('/ai/chat/credits', {
+      headers: { authorization, origin: config.frontendOrigin },
+    });
+    expect(response.status).toBe(200);
+    expect((fetcher.mock.calls[0]?.[0] as Request).url).toBe(
+      'https://ai.run.app/chat/credits',
+    );
+  });
+
+  it('forwards the mode and model catalog of the AI service', async () => {
+    const { app, fetcher } = setup();
+    const response = await app.request('/ai/chat/models', {
+      headers: { authorization, origin: config.frontendOrigin },
+    });
+    expect(response.status).toBe(200);
+    expect((fetcher.mock.calls[0]?.[0] as Request).url).toBe(
+      'https://ai.run.app/chat/models',
+    );
+  });
+
   it('keeps Mastra memory routes and unknown chat methods hidden', async () => {
     const { app, fetcher } = setup();
     for (const [path, method] of [
@@ -217,6 +239,8 @@ describe('gateway authentication and routing', () => {
       ['/ai/chat/threads', 'POST'],
       ['/ai/chat/threads', 'PUT'],
       ['/ai/chat/threadsx', 'GET'],
+      ['/ai/chat/credits', 'POST'],
+      ['/ai/chat/creditsx', 'GET'],
     ] as [string, string][])
       expect(
         (await app.request(path, { method, headers: { authorization } }))

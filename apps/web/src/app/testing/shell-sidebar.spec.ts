@@ -8,6 +8,7 @@ import { PhotoClient } from '../domains/user/data/photo-client';
 import { SidebarOverview } from '../shell/sidebar/sidebar-overview';
 import { provideFakeAuth, testSession } from './fake-auth';
 import { FakeChatAgent, provideFakeChatAgent } from './fake-chat-agent';
+import { provideFakeCredits } from './fake-credits';
 import { provideFakeUser } from './fake-user';
 
 describe('SidebarOverview', () => {
@@ -22,6 +23,7 @@ describe('SidebarOverview', () => {
         provideFakeUser(),
         provideFakeAuth(),
         ...provideFakeChatAgent(agent),
+        ...provideFakeCredits(),
         provideRouter([]),
         provideZard(),
         ZardSidebarService,
@@ -108,6 +110,23 @@ describe('SidebarOverview', () => {
     appearance?.click();
     await fixture.whenStable();
     expect(document.querySelectorAll('[role="menuitemradio"]')).toHaveLength(3);
+  });
+
+  it('shows the AI credits balance in the account menu', async () => {
+    const fixture = TestBed.createComponent(SidebarOverview);
+    await fixture.whenStable();
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('[data-action="user-menu"]')
+      ?.click();
+    await fixture.whenStable();
+    await fixture.whenStable();
+
+    const usage = document.querySelector('[data-role="credits-usage"]');
+    expect(usage?.textContent).toContain('AI Credits');
+    // The label already says credits, so the amount is a bare number.
+    expect(usage?.textContent).toContain('146');
+    expect(usage?.textContent).toContain('of 200 left');
   });
 
   it('navigates to the root for a new chat', async () => {

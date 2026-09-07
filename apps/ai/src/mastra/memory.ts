@@ -1,9 +1,7 @@
 import { Memory } from '@mastra/memory';
 import { PostgresStore } from '@mastra/pg';
 
-import { vertex } from './models';
-
-const DEFAULT_TITLE_MODEL = 'gemini-2.5-flash-lite';
+import { modelForRole } from './models';
 
 const TITLE_INSTRUCTIONS = `Write a title for this conversation from the user's first message.
 Reply with the title only: at most seven words, no quotes, no trailing punctuation, in the language of the message.`;
@@ -28,7 +26,9 @@ export const chatMemory = new Memory({
   options: {
     lastMessages: 40,
     generateTitle: {
-      model: vertex(process.env['VERTEX_TITLE_MODEL'] ?? DEFAULT_TITLE_MODEL),
+      // No request context: titles never follow a user's mode and stay on
+      // SpecSync's own budget (SPECSYNC_TITLE_MODEL).
+      model: modelForRole('title'),
       instructions: TITLE_INSTRUCTIONS,
     },
   },

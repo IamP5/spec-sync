@@ -80,6 +80,7 @@ export function createGateway(
           (path === '/ai/copilotkit' &&
             ['GET', 'POST'].includes(c.req.method)) ||
           (path === '/ai/chat/models' && c.req.method === 'GET') ||
+          (path === '/ai/chat/credits' && c.req.method === 'GET') ||
           (isChatThreadPath(path) &&
             ['GET', 'PATCH', 'DELETE'].includes(c.req.method))
         )

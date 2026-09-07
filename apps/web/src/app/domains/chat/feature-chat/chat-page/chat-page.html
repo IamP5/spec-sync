@@ -50,7 +50,57 @@
 
 <ng-template #composer>
   <div class="w-full">
-    @if (error()) {
+    @if (creditsExhausted()) {
+    <z-alert
+      zType="destructive"
+      zRole="alert"
+      [zDescription]="exhaustedMessage()"
+      class="chat-credits-alert mb-3"
+      data-role="credits-exhausted"
+    />
+    } @else if (insufficientCredits()) {
+    <z-alert
+      zType="destructive"
+      zRole="alert"
+      [zDescription]="insufficientCredits()"
+      [zAction]="canSwitchToVelocity() ? switchMode : undefined"
+      class="chat-credits-alert mb-3"
+      data-role="credits-insufficient"
+    />
+    <ng-template #switchMode
+      ><button
+        z-button
+        zType="outline"
+        zSize="sm"
+        type="button"
+        data-action="switch-mode"
+        (click)="onSwitchToVelocity()"
+      >
+        Switch to Velocity mode
+      </button></ng-template
+    >
+    } @else if (creditsUnavailable()) {
+    <z-alert
+      zType="destructive"
+      zRole="alert"
+      [zDescription]="creditsUnavailableMessage"
+      [zAction]="creditsRetry"
+      class="chat-credits-alert mb-3"
+      data-role="credits-unavailable"
+    />
+    <ng-template #creditsRetry
+      ><button
+        z-button
+        zType="outline"
+        zSize="sm"
+        type="button"
+        data-action="credits-retry"
+        (click)="onCreditsRetry()"
+      >
+        <ng-icon name="lucideRefreshCw" aria-hidden="true" />Try again
+      </button></ng-template
+    >
+    } @if (error()) {
     <z-alert
       zType="destructive"
       zRole="alert"
@@ -96,13 +146,28 @@
           <div class="flex min-w-0 items-center gap-1">
             @if (hasRunOptions()) {
             <app-run-options-picker
-              [models]="models()"
-              [selectedModel]="selectedModel()"
+              [modes]="modes()"
+              [selectedMode]="selectedMode()"
+              [resolvedMode]="resolvedMode()"
               [efforts]="efforts()"
               [selectedEffort]="selectedEffort()"
-              [disabled]="streaming()"
-              (modelChange)="onModel($event)"
+              [roles]="roles()"
+              [models]="models()"
+              [roleModels]="roleModels()"
+              [availableCredits]="creditsAvailable()"
+              [disabled]="streaming() || composerBlocked()"
+              (modeChange)="onMode($event)"
               (effortChange)="onEffort($event)"
+              (roleModelChange)="onRoleModel($event)"
+            />
+            } @if (creditsEnabled()) {
+            <app-credits-pill
+              [balance]="creditsBalance()"
+              [granted]="creditsGranted()"
+              [spent]="creditsSpent()"
+              [exhausted]="creditsExhausted()"
+              [models]="creditsModels()"
+              [recentRuns]="creditsRecentRuns()"
             />
             }
           </div>
@@ -146,7 +211,7 @@
             zSize="icon"
             type="submit"
             class="ml-auto rounded-full bg-primary text-primary-foreground hover:bg-primary-hover"
-            [zDisabled]="promptInvalid() || loading()"
+            [zDisabled]="promptInvalid() || loading() || composerBlocked()"
             aria-label="Send message"
           >
             <ng-icon name="lucideArrowUp" aria-hidden="true" />

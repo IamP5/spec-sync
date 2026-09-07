@@ -150,11 +150,15 @@ module "api" {
 
   secret_env = {
     SPRING_DATASOURCE_PASSWORD = { secret = module.database.password_secret_id }
+    # Relaxed binding maps this to specsync.credits.service-key; it also enables
+    # the AI-credits wallet on the API side (see ai-credits.tf).
+    SPECSYNC_CREDITS_SERVICE_KEY = { secret = google_secret_manager_secret.credits_service_key.secret_id }
   }
 
   depends_on = [
     module.services,
     google_secret_manager_secret_iam_member.api_db_password,
+    google_secret_manager_secret_iam_member.api_credits_service_key,
   ]
 }
 
@@ -210,17 +214,20 @@ module "ai" {
       for name, secret in data.google_secret_manager_secret.neo4j :
       name => { secret = secret.secret_id }
     },
-    # Enables the OpenAI entries of the chat's model selector (see openai.tf).
-    { OPENAI_API_KEY = { secret = data.google_secret_manager_secret.openai_api_key.secret_id } },
+    # Authenticates every routed model call (see openrouter.tf).
+    { OPENROUTER_API_KEY = { secret = data.google_secret_manager_secret.openrouter_api_key.secret_id } },
     # Mastra-owned chat history in the `mastra` schema (see ai-memory.tf).
     { SPECSYNC_MEMORY_DATABASE_URL = { secret = google_secret_manager_secret.ai_memory_url.secret_id } },
+    # Enables the AI-credits wallet and authenticates against it (see ai-credits.tf).
+    { SPECSYNC_CREDITS_SERVICE_KEY = { secret = google_secret_manager_secret.credits_service_key.secret_id } },
   )
 
   depends_on = [
     module.services,
     google_secret_manager_secret_iam_member.ai_neo4j,
-    google_secret_manager_secret_iam_member.ai_openai_api_key,
+    google_secret_manager_secret_iam_member.ai_openrouter_api_key,
     google_secret_manager_secret_iam_member.ai_memory_url,
+    google_secret_manager_secret_iam_member.ai_credits_service_key,
   ]
 }
 

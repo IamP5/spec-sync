@@ -9,12 +9,20 @@ import { provideZard } from '@/ui/core';
 
 import { testSession } from '../../../../testing/fake-auth';
 import {
+  failedRun,
   FakeChatAgent,
   provideFakeChatAgent,
   settled,
   textReply,
   toolCallReply,
 } from '../../../../testing/fake-chat-agent';
+import {
+  disabledWallet,
+  exhaustedWallet,
+  FakeCreditsClient,
+  lowWallet,
+  provideFakeCredits,
+} from '../../../../testing/fake-credits';
 import {
   FakeThreadClient,
   provideFakeThreads,
@@ -28,10 +36,71 @@ import { ChatPage } from './chat-page';
 import { ConversationDetailStore } from './conversation-detail-store';
 
 const MODEL_CATALOG = {
-  defaultModelId: 'gemini-2.5-flash',
+  defaultModeId: 'normal',
+  resolvedMode: null,
+  modes: [
+    {
+      id: 'velocity',
+      label: 'Velocity',
+      description: 'Fastest answers, lowest cost.',
+      chatModelId: 'google/gemini-3.5-flash-lite',
+      estimatedCredits: 200_000,
+      relativeCost: 0.2,
+      affordable: true,
+    },
+    {
+      id: 'normal',
+      label: 'Normal',
+      description: 'The everyday balance.',
+      chatModelId: 'google/gemini-3.8-flash',
+      estimatedCredits: 1_000_000,
+      relativeCost: 1,
+      affordable: true,
+    },
+    {
+      id: 'intelligent',
+      label: 'Intelligent',
+      description: 'A better reasoner.',
+      chatModelId: 'anthropic/claude-sonnet-5',
+      estimatedCredits: 3_200_000,
+      relativeCost: 3.2,
+      affordable: true,
+    },
+    {
+      id: 'auto',
+      label: 'Auto',
+      description: 'Picks a mode from your message.',
+      chatModelId: null,
+      estimatedCredits: null,
+      relativeCost: null,
+      affordable: true,
+    },
+  ],
+  roles: [
+    {
+      id: 'chat',
+      label: 'Chat',
+      models: ['google/gemini-3.8-flash', 'anthropic/claude-sonnet-5'],
+    },
+    {
+      id: 'vision',
+      label: 'Document reading',
+      models: ['google/gemini-3.8-flash'],
+    },
+  ],
   models: [
-    { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'vertex' },
-    { id: 'gpt-5.6-luna', label: 'GPT 5.6 Luna', provider: 'openai' },
+    {
+      id: 'google/gemini-3.8-flash',
+      label: 'Gemini 3.5 Flash',
+      vendor: 'google',
+      provider: 'openrouter',
+    },
+    {
+      id: 'anthropic/claude-sonnet-5',
+      label: 'Claude Sonnet 5',
+      vendor: 'anthropic',
+      provider: 'openrouter',
+    },
   ],
   defaultEffortId: 'auto',
   efforts: [
@@ -53,6 +122,7 @@ describe('ChatPage', () => {
         provideHttpClient(),
         ...provideFakeChatAgent(agent),
         ...provideFakeThreads(),
+        ...provideFakeCredits(),
         provideRouter([
           { path: '', children: [] },
           { path: 'c/:threadId', children: [] },
@@ -727,7 +797,7 @@ describe('ChatPage', () => {
     }
   });
 
-  it('offers the models the service reports and sends the picked one with the run', async () => {
+  it('offers the modes the service reports and sends the picked one with the run', async () => {
     stubCatalog(MODEL_CATALOG);
     try {
       agent.replyWith((input) => textReply(input, 'Hello'));
@@ -739,48 +809,48 @@ describe('ChatPage', () => {
         '[data-role="run-options"]',
       );
       expect(trigger).not.toBeNull();
-      // The pill names the effort; the model sits one level in.
-      expect(trigger?.getAttribute('aria-label')).toContain(
-        'Model: Gemini 2.5 Flash',
-      );
+      // Nothing picked yet: the mode the service answers in by default.
+      expect(trigger?.textContent).toContain('Normal');
+      expect(trigger?.getAttribute('aria-label')).toContain('Mode: Normal');
 
       trigger?.click();
       await fixture.whenStable();
-      const modelRow = document.querySelector<HTMLElement>(
-        '[data-role="model-select"]',
+      const velocity = document.querySelector<HTMLElement>(
+        '[data-role="mode-option"][data-value="velocity"]',
       );
-      expect(modelRow?.textContent).toContain('Gemini 2.5 Flash');
-      modelRow?.click();
-      await fixture.whenStable();
-      const option = document.querySelector<HTMLElement>(
-        '[data-role="model-option"][data-value="gpt-5.6-luna"]',
-      );
-      expect(option?.textContent).toContain('GPT 5.6 Luna');
-      // Options are grouped by provider.
-      expect(option?.previousElementSibling?.getAttribute('data-role')).toBe(
-        'model-group',
-      );
-      expect(option?.previousElementSibling?.textContent).toContain('OpenAI');
-      option?.click();
-      await fixture.whenStable();
-      expect(TestBed.inject(UserPreferencesCoordinator).model()).toBe(
-        'gpt-5.6-luna',
-      );
-      // Picking a model returns to the effort view, now naming the new model.
+      // Every row names what it costs per message, cheapest mode first.
+      expect(velocity?.textContent).toContain('0.20 credits per message');
+      expect(velocity?.textContent).toContain('Fastest answers, lowest cost.');
+      // Only what costs more than Normal carries a multiplier.
       expect(
-        document.querySelector('[data-role="model-select"]')?.textContent,
-      ).toContain('GPT 5.6 Luna');
-      expect(trigger?.getAttribute('aria-label')).toContain(
-        'Model: GPT 5.6 Luna',
+        velocity?.querySelector('[data-role="mode-multiplier"]'),
+      ).toBeNull();
+      expect(
+        document
+          .querySelector('[data-role="mode-option"][data-value="intelligent"]')
+          ?.querySelector('[data-role="mode-multiplier"]')?.textContent,
+      ).toContain('3.2×');
+      // Auto has no estimate of its own.
+      expect(
+        document.querySelector(
+          '[data-role="mode-option"][data-value="auto"] [data-role="mode-detail"]',
+        )?.textContent,
+      ).toContain('Picks a mode from your message.');
+
+      velocity?.click();
+      await fixture.whenStable();
+      expect(TestBed.inject(UserPreferencesCoordinator).mode()).toBe(
+        'velocity',
       );
+      expect(trigger?.textContent).toContain('Velocity');
       expect(localStorage.getItem('specsync.chat.preferences.v1')).toContain(
-        'gpt-5.6-luna',
+        '"mode":"velocity"',
       );
 
       await sendPrompt(element, 'Hi');
       await settled(TestBed.inject(ConversationDetailStore));
       expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
-        model: 'gpt-5.6-luna',
+        mode: 'velocity',
       });
       expect(
         (
@@ -790,6 +860,167 @@ describe('ChatPage', () => {
           >
         )['effort'],
       ).toBeUndefined();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('names the mode auto resolved to on the pill', async () => {
+    stubCatalog({ ...MODEL_CATALOG, resolvedMode: 'normal' });
+    try {
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      element.querySelector<HTMLElement>('[data-role="run-options"]')?.click();
+      await fixture.whenStable();
+      document
+        .querySelector<HTMLElement>(
+          '[data-role="mode-option"][data-value="auto"]',
+        )
+        ?.click();
+      await fixture.whenStable();
+
+      const trigger = element.querySelector<HTMLElement>(
+        '[data-role="run-options"]',
+      );
+      expect(trigger?.textContent).toContain('Auto');
+      expect(
+        trigger?.querySelector('[data-role="run-options-resolved"]')
+          ?.textContent,
+      ).toContain('Normal');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('overrides one role behind Advanced and sends it with the run', async () => {
+    stubCatalog(MODEL_CATALOG);
+    try {
+      agent.replyWith((input) => textReply(input, 'Hello'));
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      element.querySelector<HTMLElement>('[data-role="run-options"]')?.click();
+      await fixture.whenStable();
+
+      document
+        .querySelector<HTMLElement>('[data-role="advanced-open"]')
+        ?.click();
+      await fixture.whenStable();
+      const role = document.querySelector<HTMLElement>(
+        '[data-role="role-row"][data-value="chat"]',
+      );
+      // Every role follows the mode until it is given a model of its own.
+      expect(role?.textContent).toContain('Follow mode');
+      expect(role?.getAttribute('aria-expanded')).toBe('false');
+      role?.click();
+      await fixture.whenStable();
+      expect(role?.getAttribute('aria-expanded')).toBe('true');
+      // "Follow mode" is the first radio and is the one checked.
+      const options = document.querySelectorAll(
+        '[data-role="role-model-option"]',
+      );
+      expect(options[0].getAttribute('data-value')).toBe('');
+      expect(options[0].getAttribute('aria-checked')).toBe('true');
+
+      document
+        .querySelector<HTMLElement>(
+          '[data-role="role-model-option"][data-value="anthropic/claude-sonnet-5"]',
+        )
+        ?.click();
+      await fixture.whenStable();
+      expect(TestBed.inject(UserPreferencesCoordinator).roleModels()).toEqual({
+        chat: 'anthropic/claude-sonnet-5',
+      });
+      expect(
+        document.querySelector('[data-role="role-row"][data-value="chat"]')
+          ?.textContent,
+      ).toContain('Claude Sonnet 5');
+
+      await sendPrompt(element, 'Hi');
+      await settled(TestBed.inject(ConversationDetailStore));
+      expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
+        roleModels: { chat: 'anthropic/claude-sonnet-5' },
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('asks before an expensive mode the wallet barely covers, and keeps the mode on cancel', async () => {
+    stubCatalog(MODEL_CATALOG);
+    try {
+      TestBed.inject(FakeCreditsClient).answerWith(lowWallet());
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      element.querySelector<HTMLElement>('[data-role="run-options"]')?.click();
+      await fixture.whenStable();
+
+      document
+        .querySelector<HTMLElement>(
+          '[data-role="mode-option"][data-value="intelligent"]',
+        )
+        ?.click();
+      await fixture.whenStable();
+
+      const confirm = document.querySelector('[data-role="mode-confirm"]');
+      expect(confirm?.textContent).toContain('Switch to Intelligent?');
+      expect(confirm?.textContent).toContain('3 credits per message');
+      // 0.60 credits left is not one reply in that mode.
+      expect(confirm?.textContent).toContain('cover about 0 messages');
+      // Nothing changed while the question is open.
+      expect(TestBed.inject(UserPreferencesCoordinator).mode()).toBe('normal');
+
+      document
+        .querySelector<HTMLElement>('[data-action="mode-cancel"]')
+        ?.click();
+      await fixture.whenStable();
+      expect(document.querySelector('[data-role="mode-confirm"]')).toBeNull();
+      expect(TestBed.inject(UserPreferencesCoordinator).mode()).toBe('normal');
+
+      document
+        .querySelector<HTMLElement>(
+          '[data-role="mode-option"][data-value="intelligent"]',
+        )
+        ?.click();
+      await fixture.whenStable();
+      document
+        .querySelector<HTMLElement>('[data-action="mode-confirm"]')
+        ?.click();
+      await fixture.whenStable();
+      expect(TestBed.inject(UserPreferencesCoordinator).mode()).toBe(
+        'intelligent',
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('switches to an expensive mode without asking while the wallet covers it', async () => {
+    stubCatalog(MODEL_CATALOG);
+    try {
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      (fixture.nativeElement as HTMLElement)
+        .querySelector<HTMLElement>('[data-role="run-options"]')
+        ?.click();
+      await fixture.whenStable();
+      document
+        .querySelector<HTMLElement>(
+          '[data-role="mode-option"][data-value="intelligent"]',
+        )
+        ?.click();
+      await fixture.whenStable();
+
+      expect(document.querySelector('[data-role="mode-confirm"]')).toBeNull();
+      expect(TestBed.inject(UserPreferencesCoordinator).mode()).toBe(
+        'intelligent',
+      );
     } finally {
       vi.unstubAllGlobals();
     }
@@ -807,15 +1038,18 @@ describe('ChatPage', () => {
         '[data-role="run-options"]',
       );
       expect(trigger).not.toBeNull();
-      // Nothing picked yet: the service default is shown.
-      expect(trigger?.textContent).toContain('Auto');
+      // The pill names the mode; the effort sits inside the panel.
+      expect(trigger?.getAttribute('aria-label')).toContain(
+        'Reasoning effort: Auto',
+      );
 
       trigger?.click();
       await fixture.whenStable();
       const track = document.querySelector<HTMLElement>(
         '[data-role="effort-select"]',
       );
-      expect(track?.textContent).toContain('Auto');
+      // Nothing picked yet: the effort the service applies by default.
+      expect(track?.textContent).toContain('Reasoning effort: Auto');
       const option = track?.querySelector<HTMLElement>(
         '[data-role="effort-option"][data-value="high"]',
       );
@@ -825,8 +1059,10 @@ describe('ChatPage', () => {
       expect(TestBed.inject(UserPreferencesCoordinator).effort()).toBe('high');
       expect(option?.getAttribute('aria-checked')).toBe('true');
       expect(track?.textContent).toContain('High');
-      // The panel stays open, like a slider; the pill follows the pick.
-      expect(trigger?.textContent).toContain('High');
+      // The panel stays open, like a slider.
+      expect(trigger?.getAttribute('aria-label')).toContain(
+        'Reasoning effort: High',
+      );
       expect(localStorage.getItem('specsync.chat.preferences.v1')).toContain(
         '"effort":"high"',
       );
@@ -848,7 +1084,7 @@ describe('ChatPage', () => {
     }
   });
 
-  it('names the model on the pill while the service offers no efforts', async () => {
+  it('shows the modes alone while the service offers no efforts', async () => {
     stubCatalog({ ...MODEL_CATALOG, efforts: [] });
     try {
       const fixture = TestBed.createComponent(ChatPage);
@@ -857,23 +1093,40 @@ describe('ChatPage', () => {
       const trigger = (
         fixture.nativeElement as HTMLElement
       ).querySelector<HTMLElement>('[data-role="run-options"]');
-      expect(trigger?.textContent).toContain('Gemini 2.5 Flash');
+      expect(trigger?.textContent).toContain('Normal');
+      expect(trigger?.getAttribute('aria-label')).not.toContain('effort');
       trigger?.click();
       await fixture.whenStable();
       expect(document.querySelector('[data-role="effort-select"]')).toBeNull();
-      // The panel opens straight on the model list.
       expect(
-        document.querySelector(
-          '[data-role="model-option"][data-value="gpt-5.6-luna"]',
-        ),
+        document.querySelector('[data-role="mode-select"]'),
       ).not.toBeNull();
     } finally {
       vi.unstubAllGlobals();
     }
   });
 
-  it('hides the model row while the service offers a single model', async () => {
-    stubCatalog({ ...MODEL_CATALOG, models: MODEL_CATALOG.models.slice(0, 1) });
+  it('hides the advanced row while the service offers no per-role choice', async () => {
+    stubCatalog({ ...MODEL_CATALOG, roles: [], models: [] });
+    try {
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      (fixture.nativeElement as HTMLElement)
+        .querySelector<HTMLElement>('[data-role="run-options"]')
+        ?.click();
+      await fixture.whenStable();
+      expect(document.querySelector('[data-role="advanced-open"]')).toBeNull();
+      expect(
+        document.querySelector('[data-role="effort-select"]'),
+      ).not.toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('hides the mode list while the service offers a single mode', async () => {
+    stubCatalog({ ...MODEL_CATALOG, modes: MODEL_CATALOG.modes.slice(1, 2) });
     try {
       const fixture = TestBed.createComponent(ChatPage);
       await fixture.whenStable();
@@ -881,10 +1134,9 @@ describe('ChatPage', () => {
       const trigger = (
         fixture.nativeElement as HTMLElement
       ).querySelector<HTMLElement>('[data-role="run-options"]');
-      expect(trigger?.getAttribute('aria-label')).not.toContain('Model');
       trigger?.click();
       await fixture.whenStable();
-      expect(document.querySelector('[data-role="model-select"]')).toBeNull();
+      expect(document.querySelector('[data-role="mode-select"]')).toBeNull();
       expect(
         document.querySelector('[data-role="effort-select"]'),
       ).not.toBeNull();
@@ -896,7 +1148,7 @@ describe('ChatPage', () => {
   it('hides the picker while the service offers nothing to pick', async () => {
     stubCatalog({
       ...MODEL_CATALOG,
-      models: MODEL_CATALOG.models.slice(0, 1),
+      modes: MODEL_CATALOG.modes.slice(1, 2),
       efforts: [],
     });
     try {
@@ -909,6 +1161,209 @@ describe('ChatPage', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('shows the credits pill with the balance left', async () => {
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await fixture.whenStable();
+
+    const pill = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-role="credits"]',
+    );
+    expect(pill?.textContent).toContain('146 credits');
+    expect(pill?.getAttribute('aria-label')).toContain('146 of 200');
+  });
+
+  it('lists the model prices and the recent replies in the credits panel', async () => {
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await fixture.whenStable();
+
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLElement>('[data-role="credits"]')
+      ?.click();
+    await fixture.whenStable();
+
+    const panel = document.querySelector('[data-role="credits-panel"]');
+    expect(panel?.textContent).toContain('AI Credits');
+    expect(panel?.textContent).toContain('146 of 200');
+    expect(panel?.textContent).toContain('Used 54');
+    // Money never reaches the surface.
+    expect(panel?.textContent).not.toContain('R$');
+    expect(
+      panel?.querySelectorAll('[data-role="credits-model"]').length,
+    ).toBeGreaterThan(0);
+    expect(
+      panel?.querySelectorAll('[data-role="credits-runs"] li').length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('blocks the composer and explains it when the credits are used up', async () => {
+    TestBed.inject(FakeCreditsClient).answerWith(exhaustedWallet());
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const alert = element.querySelector('[data-role="credits-exhausted"]');
+    expect(alert?.textContent).toContain('Your AI credits are used up');
+    expect(alert?.textContent).toContain('keep reading your conversations');
+    expect(
+      element.querySelector<HTMLTextAreaElement>('textarea#prompt')?.disabled,
+    ).toBe(true);
+    expect(
+      element.querySelector<HTMLButtonElement>('[aria-label="Send message"]')
+        ?.disabled,
+    ).toBe(true);
+    expect(
+      element.querySelector('[data-role="credits"]')?.textContent,
+    ).toContain('0 credits');
+  });
+
+  it('offers Velocity mode when the service refuses the run for lack of credits', async () => {
+    stubCatalog(MODEL_CATALOG);
+    try {
+      TestBed.inject(FakeCreditsClient).answerWith(lowWallet());
+      agent.replyWith((input) =>
+        failedRun(
+          input,
+          'INSUFFICIENT_CREDITS: Your AI credits (0.60) do not cover a reply in Intelligent mode.',
+        ),
+      );
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await sendPrompt(fixture.nativeElement, 'hello');
+      await settled(TestBed.inject(ConversationDetailStore));
+      await fixture.whenStable();
+      await fixture.whenStable();
+
+      const element = fixture.nativeElement as HTMLElement;
+      const alert = element.querySelector('[data-role="credits-insufficient"]');
+      expect(alert?.textContent).toContain('do not cover a reply');
+      // The generic failure banner stays away; this one says what happened.
+      expect(element.querySelector('[data-action="retry"]')).toBeNull();
+      const button = element.querySelector<HTMLButtonElement>(
+        '[data-action="switch-mode"]',
+      );
+      expect(button?.textContent).toContain('Switch to Velocity mode');
+
+      button?.click();
+      await fixture.whenStable();
+      expect(TestBed.inject(UserPreferencesCoordinator).mode()).toBe(
+        'velocity',
+      );
+      expect(agent.runs.length).toBeGreaterThan(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('offers no way out while the service reports no cheaper mode', async () => {
+    stubCatalog({ ...MODEL_CATALOG, modes: MODEL_CATALOG.modes.slice(1) });
+    try {
+      TestBed.inject(FakeCreditsClient).answerWith(lowWallet());
+      agent.replyWith((input) =>
+        failedRun(
+          input,
+          'INSUFFICIENT_CREDITS: Your AI credits (0.60) do not cover a reply in Normal mode.',
+        ),
+      );
+      const fixture = TestBed.createComponent(ChatPage);
+      await fixture.whenStable();
+      await sendPrompt(fixture.nativeElement, 'hello');
+      await settled(TestBed.inject(ConversationDetailStore));
+      await fixture.whenStable();
+      await fixture.whenStable();
+
+      const element = fixture.nativeElement as HTMLElement;
+      expect(
+        element.querySelector('[data-role="credits-insufficient"]'),
+      ).not.toBeNull();
+      expect(element.querySelector('[data-action="switch-mode"]')).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('does not claim a reply was stopped when the run was refused outright', async () => {
+    TestBed.inject(FakeCreditsClient).answerWith(lowWallet());
+    agent.replyWith((input) =>
+      failedRun(
+        input,
+        'INSUFFICIENT_CREDITS: Your AI credits (0.60) do not cover a reply in Intelligent mode.',
+      ),
+    );
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'hello');
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+
+    // Nothing streamed, and the reload after the refusal reports an empty wallet.
+    TestBed.inject(FakeCreditsClient).answerWith(exhaustedWallet());
+    await fixture.whenStable();
+    await fixture.whenStable();
+
+    const banner = (fixture.nativeElement as HTMLElement).querySelector(
+      '[data-role="credits-exhausted"]',
+    );
+    expect(banner?.textContent).toContain('Your AI credits are used up');
+    expect(banner?.textContent).not.toContain('The reply was stopped');
+  });
+
+  it('says the reply was cut short when the credits ran out during it', async () => {
+    agent.replyWith((input) => textReply(input, 'partial'));
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'hello');
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+
+    // What the reload after the run brings back: the last step used the rest.
+    TestBed.inject(FakeCreditsClient).answerWith(exhaustedWallet());
+    await fixture.whenStable();
+    await fixture.whenStable();
+
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-role="credits-exhausted"]',
+      )?.textContent,
+    ).toContain('The reply was stopped because your credits ran out.');
+  });
+
+  it('offers to try again when the credits service cannot be reached', async () => {
+    agent.replyWith((input) =>
+      failedRun(input, 'CREDITS_UNAVAILABLE: The wallet did not answer.'),
+    );
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'hello');
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const alert = element.querySelector('[data-role="credits-unavailable"]');
+    expect(alert?.textContent).toContain(
+      'The credits service is unavailable. Try again in a moment.',
+    );
+    expect(
+      element.querySelector('[data-action="credits-retry"]'),
+    ).not.toBeNull();
+  });
+
+  it('shows nothing about credits while the service reports them as disabled', async () => {
+    TestBed.inject(FakeCreditsClient).answerWith(disabledWallet());
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('[data-role="credits"]')).toBeNull();
+    expect(element.querySelector('[data-role="credits-exhausted"]')).toBeNull();
+    expect(
+      element.querySelector<HTMLTextAreaElement>('textarea#prompt')?.disabled,
+    ).toBe(false);
   });
 
   it('prevents sending an empty prompt', async () => {

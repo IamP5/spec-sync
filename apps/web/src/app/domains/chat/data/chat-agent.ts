@@ -7,20 +7,64 @@ import type {
 import { InjectionToken } from '@angular/core';
 import type { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
+import type { ChatMode, RoleModels } from './chat-model';
+
 /**
- * How the service should answer a run. Both are ids from the model catalog
- * (`chat-model.ts`); an empty or missing value leaves the choice to the
- * service.
+ * How the service should answer a run: the mode it answers in, the advanced
+ * per-role overrides and the reasoning effort, all from the model catalog
+ * (`chat-model.ts`). An empty or missing value leaves the choice to the
+ * service, which answers in its default mode.
  */
 export interface ChatRunOptions {
-  model?: string;
+  mode?: ChatMode | '';
+  roleModels?: RoleModels;
   effort?: string;
+}
+
+/**
+ * Why a run was rejected before it started, taken from the AG-UI `RUN_ERROR`
+ * message. Part of the contract with `apps/ai`: the credits module throws
+ * `<CODE>: <human text>` from the model resolver, so the code is the leading
+ * token of the message and the rest is shown to the user unchanged.
+ */
+export type ChatCreditsErrorCode =
+  | 'INSUFFICIENT_CREDITS'
+  | 'CREDITS_UNAVAILABLE';
+
+export interface ChatCreditsError {
+  code: ChatCreditsErrorCode;
+  /** The service's own sentence; the browser adds no wording of its own. */
+  message: string;
+}
+
+const CREDITS_ERROR =
+  /\b(INSUFFICIENT_CREDITS|CREDITS_UNAVAILABLE):[ \t]*([\s\S]*)$/;
+
+/**
+ * The credits rejection carried by a run failure, or nothing when the failure
+ * has another cause. The AG-UI client wraps the streamed message in an
+ * `Error`, sometimes behind a prefix of its own, so the code is looked for as
+ * a token rather than only at position zero.
+ */
+export function creditsErrorOf(
+  message: string | undefined,
+): ChatCreditsError | undefined {
+  const match = message?.match(CREDITS_ERROR);
+  if (!match) {
+    return undefined;
+  }
+  return {
+    code: match[1] as ChatCreditsErrorCode,
+    message: match[2].trim(),
+  };
 }
 
 /** A failure reported by the AG-UI client while connecting or running. */
 export interface ChatAgentError {
   code: CopilotKitCoreErrorCode;
   error: Error;
+  /** Set when the AI service refused the run for lack of credits. */
+  credits?: ChatCreditsError;
 }
 
 /**

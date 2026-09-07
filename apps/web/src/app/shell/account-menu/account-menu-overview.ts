@@ -21,6 +21,7 @@ import {
 
 import { AuthLogoutOverview } from '../../domains/auth/api/features';
 import { SESSION } from '../../domains/auth/api/session';
+import { CreditsOverview } from '../../domains/chat/api/features';
 import {
   UserAppearanceOverview,
   UserProfileOverview,
@@ -39,6 +40,7 @@ import type { SettingsEdit } from '../settings/settings-edit';
     ZardDropdownMenuLabelComponent,
     ZardDropdownMenuSeparatorComponent,
     AuthLogoutOverview,
+    CreditsOverview,
     UserProfileOverview,
     UserAppearanceOverview,
   ],
@@ -69,6 +71,7 @@ import type { SettingsEdit } from '../settings/settings-edit';
         ><app-user-profile-overview
       /></z-dropdown-menu-label>
       <z-dropdown-menu-separator />
+      <app-credits-overview />
       <app-user-appearance-overview />
       <button
         z-dropdown-menu-item

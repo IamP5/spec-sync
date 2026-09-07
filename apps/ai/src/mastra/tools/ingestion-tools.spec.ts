@@ -8,17 +8,34 @@ vi.mock('@mastra/core/agent', () => ({
   },
 }));
 
-const { downloadSource, wellKnownModelPages } = vi.hoisted(() => ({
-  downloadSource: vi.fn(),
-  wellKnownModelPages: vi.fn(),
-}));
+const { downloadSource, wellKnownModelPages, captureSourceCached } = vi.hoisted(
+  () => ({
+    downloadSource: vi.fn(),
+    wellKnownModelPages: vi.fn(),
+    captureSourceCached: vi.fn(),
+  }),
+);
 vi.mock('../ingestion/source', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../ingestion/source')>()),
   downloadSource,
+  captureSourceCached,
 }));
 vi.mock('../ingestion/site-index', () => ({ wellKnownModelPages }));
 
-import { discoverVehicleSpecificationSources } from './ingestion-tools';
+const { identifyConfigurations, recordToolUsage } = vi.hoisted(() => ({
+  identifyConfigurations: vi.fn(),
+  recordToolUsage: vi.fn(),
+}));
+vi.mock('../ingestion/identification', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../ingestion/identification')>()),
+  identifyConfigurations,
+}));
+vi.mock('../credits/credits-run', () => ({ recordToolUsage }));
+
+import {
+  discoverVehicleSpecificationSources,
+  previewVehicleSource,
+} from './ingestion-tools';
 
 const redirect = (id: string) =>
   `https://vertexaisearch.cloud.google.com/grounding-api-redirect/${id}`;
@@ -32,6 +49,9 @@ afterEach(() => {
   generate.mockReset();
   downloadSource.mockReset();
   wellKnownModelPages.mockReset();
+  captureSourceCached.mockReset();
+  identifyConfigurations.mockReset();
+  recordToolUsage.mockReset();
 });
 beforeEach(() => wellKnownModelPages.mockResolvedValue([]));
 
@@ -249,4 +269,87 @@ it('lists the sitemap pages and their brochures even when web search fails', asy
     'Ranger',
     expect.any(AbortSignal),
   );
+});
+
+it('charges a PDF preview for the pages it transcribed and for the identification', async () => {
+  // Two transcription batches, then the identification call.
+  captureSourceCached.mockImplementation(
+    async (
+      _url: string,
+      _signal: AbortSignal,
+      onUsage?: (usage: unknown) => void,
+    ) => {
+      onUsage?.({ inputTokens: 4_000, outputTokens: 900 });
+      onUsage?.({ inputTokens: 3_000, outputTokens: 600 });
+      return {
+        url: 'https://ford.com.br/ranger.pdf',
+        title: 'ranger.pdf',
+        mimeType: 'application/pdf',
+        text: 'Page 1\nRanger XLT',
+        pageCount: 2,
+      };
+    },
+  );
+  identifyConfigurations.mockResolvedValue({
+    configurations: [],
+    usage: { inputTokens: 500, outputTokens: 50 },
+  });
+
+  await previewVehicleSource.execute?.(
+    {
+      brand: 'Ford',
+      model: 'Ranger',
+      modelYear: 2026,
+      sourceUrl: 'https://ford.com.br/ranger.pdf',
+    },
+    context,
+  );
+
+  // Each call charges under its own role, so the transcription is priced at
+  // the vision tariff and the identification at its own.
+  expect(recordToolUsage.mock.calls.map((call) => call[2])).toEqual([
+    'vision',
+    'identification',
+  ]);
+  expect(recordToolUsage.mock.calls.map((call) => call[3])).toEqual([
+    {
+      inputTokens: 7_000,
+      cachedInputTokens: 0,
+      outputTokens: 1_500,
+      reasoningTokens: 0,
+      estimated: false,
+    },
+    { inputTokens: 500, outputTokens: 50 },
+  ]);
+});
+
+it('charges nothing for a transcription the capture cache served', async () => {
+  captureSourceCached.mockResolvedValue({
+    url: 'https://ford.com.br/ranger.pdf',
+    title: 'ranger.pdf',
+    mimeType: 'application/pdf',
+    text: 'Page 1\nRanger XLT',
+    pageCount: 2,
+  });
+  identifyConfigurations.mockResolvedValue({
+    configurations: [],
+    usage: { inputTokens: 500, outputTokens: 50 },
+  });
+
+  await previewVehicleSource.execute?.(
+    {
+      brand: 'Ford',
+      model: 'Ranger',
+      modelYear: 2026,
+      sourceUrl: 'https://ford.com.br/ranger.pdf',
+    },
+    context,
+  );
+
+  // No pages were transcribed for this run, so the transcription reports
+  // undefined usage, which the wallet skips; only the identification is charged.
+  expect(recordToolUsage.mock.calls.map((call) => call[3])).toEqual([
+    undefined,
+    { inputTokens: 500, outputTokens: 50 },
+  ]);
 });

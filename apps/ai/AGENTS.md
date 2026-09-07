@@ -12,9 +12,10 @@ deprecation notices.
 # SpecSync AI service (Mastra)
 
 Node/TypeScript service built with [Mastra](https://mastra.ai) inside the Nx
-workspace. It serves one chat agent backed by Gemini on Vertex AI and exposes
-it to the Angular app over AG-UI through a CopilotKit runtime route. Paths
-below are relative to the workspace root.
+workspace. It serves one chat agent routed through OpenRouter — Vertex AI is
+kept only for Google Search grounding — and exposes it to the Angular app over
+AG-UI through a CopilotKit runtime route. Paths below are relative to the
+workspace root.
 
 ## Layout
 
@@ -22,27 +23,37 @@ below are relative to the workspace root.
 apps/ai/
   src/mastra/
     index.ts          # Mastra registry: agents, storage, logger
-    models.ts         # Vertex AI provider (AI SDK), the Gemini default, the chat model catalog
+    models.ts         # role registry: roles, modes, the auto heuristic, the OpenRouter router strings and the Vertex provider
     memory.ts         # Cloud SQL storage (@mastra/pg) and the chat agent's Memory
     identity.ts       # verifies the gateway's x-specsync-token and derives the memory resource id
-    chat-model-route.ts # GET /chat/models and the CopilotKit setContext hook for the picked model and effort
+    chat-model-route.ts # GET /chat/models (modes, roles, models, efforts) and the CopilotKit setContext hook
     threads/          # /chat/threads routes for the sidebar and the Mastra <-> AG-UI message converter
+    credits/          # AI credits: wallet client, per-run admission and metering, GET /chat/credits
     agents/           # one file per agent (<name>-agent.ts)
     tools/            # server tools (<name>-tool.ts), vehicle catalog, graph retrieval, content discovery, ingestion
     skills/           # code-defined agent skills (createSkill), e.g. the ingestion procedure
     ingestion/        # vehicleIngestion workflow: capture, identification, extraction, worker routes, source discovery (site-index, linked-documents)
     graph/            # Neo4j retrieval and projection
-  .env.example        # GOOGLE_VERTEX_* , GOOGLE_CLOUD_PROJECT, SPECSYNC_MEMORY_DATABASE_URL
+  .env.example        # OPENROUTER_API_KEY, GOOGLE_VERTEX_*, GOOGLE_CLOUD_PROJECT, SPECSYNC_MEMORY_DATABASE_URL
   Dockerfile          # build with `nx build ai`, run .mastra/output on Cloud Run
   checks.mjs          # lint + typecheck (fast), test + build (full)
 ```
 
 ## Rules (red lines)
 
+- Every model call goes through OpenRouter (`openrouter/<vendor>/<model>`,
+  key from `OPENROUTER_API_KEY`) **except Google Search grounding**, which
+  stays on Vertex AI because `vertex.tools.googleSearch({})` has no OpenRouter
+  equivalent. That exception is deliberate and temporary; when grounding can
+  be routed the Vertex provider leaves the codebase entirely. Model ids are
+  the full OpenRouter path everywhere: tariffs, request context, preferences,
+  UI.
 - Vertex AI is reached through `@ai-sdk/google-vertex` with Application
   Default Credentials. Never add API keys, service-account JSON files or a
   `GOOGLE_APPLICATION_CREDENTIALS` path to code, `.env` files or Terraform.
   Mastra has no `vertex/...` router string; pass the AI SDK model instance.
+  `OPENROUTER_API_KEY` is a normal secret: Secret Manager in the cloud,
+  `apps/ai/.env` locally, never committed.
 - The service persists chat memory to Cloud SQL by decision of 2026-09-07:
   Mastra owns the threads and messages of every signed-in user through
   `@mastra/memory` and `@mastra/pg`, in the `mastra` schema
@@ -68,25 +79,60 @@ apps/ai/
   prefix. Register custom routes only through the Mastra `server` option,
   never a second HTTP server.
 - Names are part of the contract with `apps/web`: agent id `chat`, route
-  `/copilotkit`, the model catalog route `/chat/models` and the `model` and
-  `effort` properties (`chat-model-route.ts`), the thread routes under
-  `/chat/threads` (`threads/routes.ts`), vehicle tool names in
+  `/copilotkit`, the catalog route `/chat/models` and the `mode`,
+  `roleModels` and `effort` properties — plus `model`, kept for one release
+  (`chat-model-route.ts`), the thread routes under
+  `/chat/threads` (`threads/routes.ts`), the credits route `/chat/credits`
+  (`credits/credits-route.ts`) and its error message format, vehicle tool names in
   `tools/vehicle-tools.ts`, ingestion tool names in `tools/ingestion-tools.ts`
   and the client tool `startVehicleIngestion` the agent instructions and skill
   refer to. The web client renders server tool results directly. Change names
   only together with the client.
-- The chat agent's `model` is resolved per run (`chatModelFor` in
-  `models.ts`): the browser sends the picked model id as a CopilotKit property
-  (AG-UI `forwardedProps.model`), `setChatModelContext` stores it in the
-  request context and the agent resolves it against `chatModels()`. Gemini ids
-  run on the Vertex provider instance (ADC, see above); OpenAI ids run through
-  Mastra's model router (`openai/<id>`, key from `OPENAI_API_KEY`) and are only
-  offered while that variable is set. Unknown ids fall back to `VERTEX_MODEL`.
-  The agent's `defaultOptions` are resolved the same way: the picked
-  reasoning effort (`forwardedProps.effort`, `auto`/`low`/`medium`/`high`
-  from `chatEfforts()`) becomes a Gemini thinking level (3.x) or thinking
-  budget (2.5) or an OpenAI `reasoningEffort` (`chatProviderOptionsFor`);
-  Gemini thought summaries stay on regardless.
+- `models.ts` is the single role registry (see
+  `docs/openrouter-model-routing.md`). Eight roles — `chat`, `discovery`,
+  `vision`, `identification`, `contentDiscovery`, `extraction`, `title`,
+  `router` — each resolve through `modelForRole(role, requestContext)`.
+  `discovery` returns the Vertex provider instance; every other role returns
+  an `openrouter/<id>` router string. A role resolved **without** a request
+  context falls back to its default, which is what keeps the curator ingestion
+  workflow and the thread titles on SpecSync's own budget rather than on a
+  user's mode. A sub-agent therefore only follows the user's mode when its
+  caller passes `requestContext` into `generate()`.
+- The browser picks a **mode**, not a model: `velocity` / `normal` /
+  `intelligent` / `auto`, sent as the CopilotKit property
+  (AG-UI `forwardedProps`) `mode`, with optional per-role overrides in
+  `roleModels`. `setChatModelContext` stores both in the request context.
+  `auto` is resolved by a heuristic there — before admission — and pinned, so
+  every role of the run agrees on one decision. The older `model` property is
+  accepted for one release as a synonym for `roleModels.chat`. An override is
+  ignored (never fatal) when it names a model outside `SPECSYNC_CHAT_MODELS`,
+  one that cannot do the role's job, or one the wallet cannot price.
+- The picked reasoning effort (`forwardedProps.effort`,
+  `auto`/`low`/`medium`/`high` from `chatEfforts()`) becomes a Gemini thinking
+  level (3.x) or thinking budget (2.5) or an OpenAI/Anthropic
+  `reasoningEffort` (`chatProviderOptionsFor`); Gemini thought summaries stay
+  on regardless. Mastra 1.64's OpenRouter model forwards only
+  `providerOptions.openrouter` to the wire, so the same effort is emitted
+  there as OpenRouter's own `reasoning` field as well — dropping that key
+  silently disables reasoning control on every routed model.
+- AI credits are on exactly while `SPECSYNC_CREDITS_SERVICE_KEY` (>= 32
+  characters) is set; with it unset nothing in `src/mastra/credits/` runs and
+  the chat behaves as before. When it is set the module **fails closed**: a run
+  is admitted against the wallet the API owns before the first model call, and
+  an unreachable wallet rejects the run rather than letting it run for free.
+  The rejection is thrown from the agent's `model` resolver, the only point
+  Mastra propagates unwrapped to the browser (`INSUFFICIENT_CREDITS: …` /
+  `CREDITS_UNAVAILABLE: …`, parsed by apps/web). Each agent step is charged from
+  `stopWhen`, the one hook Mastra 1.64 awaits between steps, and the loop stops
+  after the step that exhausts the wallet — no error, the streamed text stays.
+  Charged: the chat agent's own steps and the model calls of
+  `discoverVehicleContent`, `discoverVehicleSpecificationSources` and
+  `previewVehicleSource` — each at the tariff of **its own role**
+  (`recordToolUsage` takes the role), so a PDF preview is priced as `vision`
+  and grounding as the Vertex `discovery` model, not as the chat model. Not charged: thread titles, the curator ingestion
+  workflow and Google Search grounding fees. A failed settlement is logged and
+  swallowed; it must never abort a generation or repeat a step. The AI service
+  stores no wallet state: the API owns the ledger.
 - Keep `zod` on the same line as the workspace root (currently 3.25.x, the
   line `@ag-ui/mastra` and `@copilotkit/runtime` use). Two zod copies in one
   process break Mastra's OpenAPI generation at startup
@@ -109,8 +155,9 @@ npm exec -- nx dev ai                  # Studio + API on http://localhost:4111
 The user account needs `roles/aiplatform.user` on the project. Keep
 `GOOGLE_VERTEX_LOCATION=global` for Gemini 3.x models; a regional location
 such as `us-central1` only serves the 2.5 family and answers 404 otherwise.
-`VERTEX_MODELS` lists the Gemini models offered in the chat's selector and
-`OPENAI_MODELS` the OpenAI ones (see `.env.example`). `nx serve web`
+`OPENROUTER_API_KEY` is needed for every role but `discovery`; without it only
+grounding and the catalog route work. `SPECSYNC_CHAT_MODELS` lists the models
+the advanced per-role selector may offer (see `.env.example`). `nx serve web`
 proxies `/ai` to the same server, so the chat page and Studio share one
 process. The chat routes need a verified token, so a run only works through
 the gateway; `docker compose up postgres` plus

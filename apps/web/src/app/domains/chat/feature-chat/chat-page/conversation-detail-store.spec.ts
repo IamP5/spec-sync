@@ -148,23 +148,30 @@ describe('ConversationDetailStore', () => {
     expect(store.title()).toBe('Greeting');
   });
 
-  it('forwards the picked model and effort with a run and omits what was not picked', async () => {
+  it('forwards the picked mode, overrides and effort with a run and omits what was not picked', async () => {
     agent.replyWith((input) => textReply(input, 'Hello'));
     const store = TestBed.inject(ConversationDetailStore);
-    await store.send('Hi', { model: 'gpt-5.6-luna', effort: 'high' });
-    expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
-      model: 'gpt-5.6-luna',
+    await store.send('Hi', {
+      mode: 'intelligent',
+      roleModels: { chat: 'anthropic/claude-sonnet-5' },
       effort: 'high',
     });
-    await store.regenerate({ model: 'gemini-2.5-pro' });
+    expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
+      mode: 'intelligent',
+      roleModels: { chat: 'anthropic/claude-sonnet-5' },
+      effort: 'high',
+    });
+    await store.regenerate({ mode: 'velocity' });
     const forwarded = () =>
       agent.runs[agent.runs.length - 1]?.forwardedProps as
         | Record<string, unknown>
         | undefined;
-    expect(forwarded()).toMatchObject({ model: 'gemini-2.5-pro' });
+    expect(forwarded()).toMatchObject({ mode: 'velocity' });
     expect(forwarded()?.['effort']).toBeUndefined();
-    await store.regenerate({ model: '', effort: '' });
-    expect(forwarded()?.['model']).toBeUndefined();
+    expect(forwarded()?.['roleModels']).toBeUndefined();
+    await store.regenerate({ mode: '', roleModels: {}, effort: '' });
+    expect(forwarded()?.['mode']).toBeUndefined();
+    expect(forwarded()?.['roleModels']).toBeUndefined();
     expect(forwarded()?.['effort']).toBeUndefined();
   });
 
