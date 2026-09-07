@@ -147,7 +147,7 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
                     [attr.data-value]="model.id"
                     [attr.aria-checked]="checked"
                     [tabIndex]="checked ? 0 : -1"
-                    class="flex min-h-10 w-full items-center justify-between gap-2 rounded-lg px-2.5 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none aria-checked:font-medium"
+                    class="flex min-h-10 w-full items-center justify-between gap-2 rounded-md px-2.5 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none aria-checked:font-medium"
                     (click)="pickModel(model.id)"
                   >
                     <span class="truncate">{{ model.label }}</span>
@@ -171,7 +171,7 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
               <button
                 type="button"
                 data-role="model-select"
-                class="mx-auto flex max-w-full flex-col items-center rounded-xl px-3 py-1 transition-[background-color,transform] duration-150 ease-out hover:bg-accent focus-visible:bg-accent focus-visible:outline-none active:scale-[0.97] motion-reduce:transition-none"
+                class="mx-auto flex max-w-full flex-col items-center rounded-lg px-3 py-1 transition-[background-color,transform] duration-150 ease-out hover:bg-accent focus-visible:bg-accent focus-visible:outline-none active:scale-[0.97] motion-reduce:transition-none"
                 aria-haspopup="true"
                 (click)="openModels()"
               >

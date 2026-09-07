@@ -22,7 +22,7 @@
       <button
         z-sidebar-menu-button
         type="button"
-        class="h-9 min-h-9 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent"
+        class="h-9 min-h-9 text-sidebar-foreground hover:bg-sidebar-accent"
         aria-label="New chat"
         zTooltip="New chat"
         data-action="new-chat"
@@ -88,7 +88,7 @@
       #searchInput
       type="search"
       placeholder="Search conversations"
-      class="h-9 rounded-lg border-transparent bg-sidebar-accent! pl-8 text-sidebar-foreground placeholder:text-muted-foreground focus-visible:border-sidebar-ring focus-visible:ring-sidebar-ring dark:bg-sidebar-accent!"
+      class="h-9 border-transparent bg-sidebar-accent! pl-8 text-sidebar-foreground placeholder:text-muted-foreground focus-visible:border-sidebar-ring focus-visible:ring-sidebar-ring dark:bg-sidebar-accent!"
       [value]="query()"
       (input)="onQuery($event)"
     />
@@ -131,7 +131,7 @@
           } @else {
           <a
             z-sidebar-menu-button
-            class="h-9 rounded-lg"
+            class="h-9"
             [routerLink]="['/c', thread.id]"
             [zActive]="activeId() === thread.id"
             [attr.aria-current]="activeId() === thread.id ? 'page' : null"
@@ -159,7 +159,7 @@
           >
             <button
               z-dropdown-menu-item
-              class="min-h-9 w-full rounded-lg px-3"
+              class="min-h-9 w-full rounded-md px-3"
               type="button"
               data-action="rename"
               (click)="onRename(thread)"
@@ -170,7 +170,7 @@
             <z-dropdown-menu-separator />
             <button
               z-dropdown-menu-item
-              class="min-h-9 w-full rounded-lg px-3"
+              class="min-h-9 w-full rounded-md px-3"
               type="button"
               zType="destructive"
               data-action="delete"
@@ -251,7 +251,7 @@
         <button
           z-dropdown-menu-sub-trigger
           type="button"
-          class="min-h-9 w-full rounded-lg px-3"
+          class="min-h-9 w-full rounded-md px-3"
           [zSubMenu]="appearanceMenu"
         >
           <ng-icon name="lucideMonitor" aria-hidden="true" />
@@ -263,7 +263,7 @@
         >
           <button
             z-dropdown-menu-item
-            class="min-h-9 w-full rounded-lg px-3"
+            class="min-h-9 w-full rounded-md px-3"
             type="button"
             role="menuitemradio"
             [attr.aria-checked]="theme() === themes.LIGHT"
@@ -278,7 +278,7 @@
           </button>
           <button
             z-dropdown-menu-item
-            class="min-h-9 w-full rounded-lg px-3"
+            class="min-h-9 w-full rounded-md px-3"
             type="button"
             role="menuitemradio"
             [attr.aria-checked]="theme() === themes.DARK"
@@ -293,7 +293,7 @@
           </button>
           <button
             z-dropdown-menu-item
-            class="min-h-9 w-full rounded-lg px-3"
+            class="min-h-9 w-full rounded-md px-3"
             type="button"
             role="menuitemradio"
             [attr.aria-checked]="theme() === themes.SYSTEM"
@@ -310,7 +310,7 @@
         <z-dropdown-menu-separator />
         <button
           z-dropdown-menu-item
-          class="min-h-9 w-full rounded-lg px-3"
+          class="min-h-9 w-full rounded-md px-3"
           type="button"
           data-action="settings"
           (click)="onSettings()"

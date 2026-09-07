@@ -26,19 +26,26 @@
  *   Warning        caution2 #ba4e00 (5.03:1 on white)
  *   Error          #d93025 (ford.com)
  *
- * Subtle surfaces mix the logo's Ford Action blue into neutral backgrounds.
+ * Surfaces, hover fills and borders stay neutral gray, in the manner of
+ * ChatGPT's chrome (measured on chatgpt.com on 2026-09-07: #fcfcfc sidebar,
+ * #ececec hover / tertiary surface, rgb(0 0 0 / 10%) borders; #212121 /
+ * #303030 / #414141 and rgb(255 255 255 / 15%) in dark mode), so the brand
+ * blue only appears on primary actions and focus indicators.
  * Shared components retain their original variants and consume these tokens.
- * Saturated blue is reserved for primary actions and focus indicators.
  *
- * Dark mode is derived from those values: ford.com's own dark surfaces
- * (#0f0f0f, #1a1a1a) with neutral grays lifted for contrast, while the brand
- * blues stay put so they still read as CTAs on dark surfaces.
+ * Dark mode keeps ford.com's #0f0f0f page and uses ChatGPT's charcoal steps
+ * (#212121 panels, #303030 muted fills) with neutral grays lifted for
+ * contrast, while the brand blues stay put so they still read as CTAs.
+ *
+ * Shape: `--radius` is 0.75rem, so controls (`rounded-lg`) are 12px, small
+ * controls and menu items (`rounded-md`) 10px, panels (`rounded-xl`) 16px
+ * and pills `rounded-full`, matching the composer of the chat.
  *
  * Mode-dependent tokens live in :root/.dark and are mirrored into
  * `@theme inline` via var() so Tailwind utilities flip with the cascade.
  */
 :root {
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 
   /* Ford brand colors — invariant across light/dark, exposed for raw CSS */
   --ford-blue: oklch(0.519 0.189 258); /* #0562d2 accent */
@@ -64,7 +71,7 @@
   --primary-foreground: oklch(1 0 0);
   --secondary: var(--muted);
   --secondary-foreground: oklch(0.321 0 0); /* #333333 */
-  --muted: color-mix(in srgb, var(--ford-action) 7%, #f7f7f7);
+  --muted: oklch(0.955 0 0); /* #f0f0f0 — ford.com footer, ChatGPT #ececec */
   --muted-foreground: oklch(0.51 0 0); /* #666666 */
   --accent: var(--muted);
   --accent-foreground: var(--foreground);
@@ -81,23 +88,23 @@
   --chart-4: oklch(0.7 0.181 135.3);
   --chart-5: oklch(0.844 0.172 84.9);
 
-  /* Navigation uses a slightly stronger tint for hover and selection. */
-  --sidebar: oklch(1 0 0);
+  /* Navigation sits on a barely-off-white surface with neutral hover fills. */
+  --sidebar: oklch(0.99 0 0); /* #fcfcfc */
   --sidebar-foreground: oklch(0.205 0 0);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: color-mix(in srgb, var(--ford-action) 10%, #f7f7f7);
+  --sidebar-accent: oklch(0.935 0 0); /* #ececec */
   --sidebar-accent-foreground: var(--sidebar-foreground);
-  --sidebar-border: var(--border);
+  --sidebar-border: oklch(0 0 0 / 6%);
   --sidebar-ring: var(--ring);
 }
 
 .dark {
   --background: oklch(0.168 0 0); /* #0f0f0f — ford.com secondary background */
   --foreground: oklch(0.955 0 0); /* #f0f0f0 — ford.com on-dark text */
-  --card: oklch(0.218 0 0); /* #1a1a1a */
+  --card: oklch(0.235 0 0); /* #212121 */
   --card-foreground: oklch(0.955 0 0);
-  --popover: oklch(0.218 0 0);
+  --popover: oklch(0.235 0 0);
   --popover-foreground: oklch(0.955 0 0);
 
   /* Brand blues do not flip */
@@ -107,7 +114,7 @@
 
   --secondary: var(--muted);
   --secondary-foreground: oklch(0.922 0 0); /* #e5e5e5 */
-  --muted: color-mix(in srgb, var(--ford-action) 12%, #262626);
+  --muted: oklch(0.29 0 0); /* #303030 */
   --muted-foreground: oklch(0.764 0 0); /* #b2b2b2 */
   --accent: var(--muted);
   --accent-foreground: var(--foreground);
@@ -126,13 +133,13 @@
   --chart-4: oklch(0.76 0.18 135);
   --chart-5: oklch(0.86 0.17 85);
 
-  --sidebar: oklch(0.195 0 0);
+  --sidebar: oklch(0.205 0 0); /* #171717 */
   --sidebar-foreground: oklch(0.955 0 0);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: color-mix(in srgb, var(--ford-action) 16%, #262626);
+  --sidebar-accent: oklch(0.29 0 0); /* #303030 */
   --sidebar-accent-foreground: var(--sidebar-foreground);
-  --sidebar-border: var(--border);
+  --sidebar-border: oklch(1 0 0 / 6%);
   --sidebar-ring: var(--ring);
 }
 

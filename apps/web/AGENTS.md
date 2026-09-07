@@ -41,6 +41,12 @@ The binding rules live in the docs; this section only names the red lines.
   `apps/web/src/app/domains/chat`.
 - Add design-system components with the Zard CLI; never hand-edit
   `libs/ui` to add application logic.
+- The theme lives in `libs/ui/styles.css`: Ford blue for primary actions
+  and focus only, neutral gray surfaces, hover fills and borders, and a
+  `--radius` of 0.75rem (controls `rounded-lg` 12px, menu items and small
+  controls `rounded-md` 10px, panels `rounded-xl` 16px, pills
+  `rounded-full`). Its header records the ChatGPT measurements the values
+  follow; keep new surfaces on the tokens instead of ad-hoc colours or radii.
 
 ## AI chat (AG-UI with CopilotKit)
 

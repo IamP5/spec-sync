@@ -126,7 +126,7 @@
             zType="default"
             zSize="icon"
             type="button"
-            class="ml-auto rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover"
+            class="ml-auto rounded-full bg-primary text-primary-foreground hover:bg-primary-hover"
             data-action="stop"
             (click)="onStop()"
             aria-label="Stop generating"
@@ -138,7 +138,7 @@
             z-button
             zSize="icon"
             type="submit"
-            class="ml-auto rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover"
+            class="ml-auto rounded-full bg-primary text-primary-foreground hover:bg-primary-hover"
             [zDisabled]="promptInvalid()"
             aria-label="Send message"
           >
@@ -233,7 +233,7 @@
           zType="outline"
           zSize="sm"
           type="button"
-          class="h-9 rounded-lg border-border/70 font-normal text-muted-foreground shadow-none hover:text-foreground"
+          class="h-9 rounded-full border-border/70 font-normal text-muted-foreground shadow-none hover:text-foreground"
           [title]="suggestion.prompt"
           (click)="onSuggestion(suggestion.prompt)"
         >
@@ -342,7 +342,7 @@
                     <h3 class="mb-1 text-xs font-semibold">Input</h3>
                     <pre
                       tabindex="0"
-                      class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs wrap-break-word whitespace-pre-wrap"
+                      class="max-h-60 overflow-auto rounded-lg bg-muted p-3 text-xs wrap-break-word whitespace-pre-wrap"
                     >
 {{ call.input || 'Receiving input…' }}</pre
                     >
@@ -351,7 +351,7 @@
                     <h3 class="mb-1 text-xs font-semibold">Result</h3>
                     <pre
                       tabindex="0"
-                      class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs wrap-break-word whitespace-pre-wrap"
+                      class="max-h-60 overflow-auto rounded-lg bg-muted p-3 text-xs wrap-break-word whitespace-pre-wrap"
                     >
 {{ call.result || (call.status === 'Running' ? 'Waiting for the tool…' : 'No result received.') }}</pre
                     >

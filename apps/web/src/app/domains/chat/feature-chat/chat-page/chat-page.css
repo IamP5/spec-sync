@@ -79,7 +79,7 @@
 
 :host ::ng-deep .chat-markdown pre {
   overflow-x: auto;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   background: color-mix(in oklab, var(--foreground) 6%, transparent);
   padding: 0.75rem;
 }
@@ -113,7 +113,7 @@
 /* User prompts have a compact surface; assistant output uses the full column. */
 :host ::ng-deep [data-role='user'] [data-slot='bubble'] {
   max-width: min(85%, 38rem);
-  border-radius: 1.25rem;
+  border-radius: 1.5rem;
   padding: 0.75rem 1rem;
 }
 
