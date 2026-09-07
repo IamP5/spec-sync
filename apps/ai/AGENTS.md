@@ -72,13 +72,6 @@ apps/ai/
   from `chatEfforts()`) becomes a Gemini thinking level (3.x) or thinking
   budget (2.5) or an OpenAI `reasoningEffort` (`chatProviderOptionsFor`);
   Gemini thought summaries stay on regardless.
-- Read `docs/conversational-vehicles.md` for retrieval boundaries and startup
-  and `docs/vehicle-ingestion.md` for the ingestion workflow. Chat tools never
-  publish catalog data: `previewVehicleSource` reads a source, the browser's
-  `startVehicleIngestion` client tool starts an API-owned run with the curator
-  key that never reaches this service, and publication is a human decision in
-  the web app. External discovery links must never be represented as verified
-  quotes or stored review evidence.
 - Keep `zod` on the same line as the workspace root (currently 3.25.x, the
   line `@ag-ui/mastra` and `@copilotkit/runtime` use). Two zod copies in one
   process break Mastra's OpenAPI generation at startup
