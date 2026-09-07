@@ -9,7 +9,13 @@ import {
   withProps,
   withState,
 } from '@ngrx/signals';
-import { Events, withEventHandlers } from '@ngrx/signals/events';
+import {
+  Events,
+  injectDispatch,
+  on,
+  withEventHandlers,
+  withReducer,
+} from '@ngrx/signals/events';
 import { firstValueFrom, ignoreElements, tap } from 'rxjs';
 
 import { sessionEvents } from '../../../auth/api/events';
@@ -22,8 +28,9 @@ import {
   toolActivities,
 } from '../../data/chat-agent';
 import { ChatAgentClient } from '../../data/chat-agent-client';
-import { threadTitleOf } from '../../data/thread';
+import { ChatThread, threadTitleOf } from '../../data/thread';
 import { ThreadClient } from '../../data/thread-client';
+import { threadEvents } from '../../data/thread-events';
 
 export type ConversationStatus = 'idle' | 'streaming' | 'error';
 
@@ -35,9 +42,16 @@ export type ConversationStatus = 'idle' | 'streaming' | 'error';
  * status, the last error, whether the last reply was cut short and the turns
  * worth showing.
  *
- * Reopening a thread reads it back from the service (`ThreadClient`). A run
+ * Reopening a thread reads it back from the service (`ThreadClient`) the
+ * first time; the threads opened in this session are kept (`_threads`) so
+ * switching back to one is instant. The conversation left behind is put
+ * there with the messages the agent held, which the service holds too. A run
  * is a stream of AG-UI events rather than a request/response pair, so it is
  * driven by `send()` instead of `withResource` / `withMutations`.
+ *
+ * The store announces what it knows about the history (`threadEvents`): the
+ * first message starts a thread, and every run makes its thread the most
+ * recent one. The thread list updates itself from these events.
  */
 export const ConversationDetailStore = signalStore(
   { providedIn: 'root' },
@@ -53,12 +67,15 @@ export const ConversationDetailStore = signalStore(
     createdAt: 0,
     /** True while a stored thread is being read back from the service. */
     loading: false,
+    /** Threads opened in this session, by id; the open one is in the agent. */
+    _threads: {} as Record<string, ChatThread>,
   }),
 
   withProps(() => ({
     _chatAgentClient: inject(ChatAgentClient),
     _threadClient: inject(ThreadClient),
     _session: inject(SESSION),
+    _dispatch: injectDispatch(threadEvents),
   })),
 
   withComputed((store) => ({
@@ -90,6 +107,7 @@ export const ConversationDetailStore = signalStore(
       }
       const scope = store._session.scope();
       if (!scope) return;
+      const id = store.threadId();
       patchState(store, {
         status: 'streaming',
         error: undefined,
@@ -98,10 +116,60 @@ export const ConversationDetailStore = signalStore(
       try {
         await work();
       } finally {
-        if (store._session.isCurrent(scope) && store.status() === 'streaming') {
-          patchState(store, { status: 'idle' });
+        if (store._session.isCurrent(scope)) {
+          if (store.status() === 'streaming') {
+            patchState(store, { status: 'idle' });
+          }
+          store._dispatch.touched({ id, updatedAt: Date.now() });
         }
       }
+    }
+
+    /** Keeps the open conversation for a later `open`; nothing when it is empty. */
+    function keep(): void {
+      const messages = store.messages();
+      if (!messages.length) return;
+      const id = store.threadId();
+      patchState(store, ({ _threads }) => ({
+        _threads: {
+          ..._threads,
+          [id]: {
+            id,
+            title: store.title(),
+            createdAt: store.createdAt(),
+            updatedAt: Date.now(),
+            messages,
+          },
+        },
+      }));
+    }
+
+    /** Drops the open conversation without keeping it. */
+    function discard(): void {
+      store._chatAgentClient.stop();
+      store._chatAgentClient.reset();
+      patchState(store, {
+        status: 'idle',
+        error: undefined,
+        stopped: false,
+        title: '',
+        createdAt: 0,
+        loading: false,
+      });
+    }
+
+    /** Replaces the open conversation with `thread`, keeping the one left behind. */
+    function show(thread: ChatThread): void {
+      store._chatAgentClient.stop();
+      keep();
+      store._chatAgentClient.load(thread.id, thread.messages);
+      patchState(store, {
+        status: 'idle',
+        error: undefined,
+        stopped: false,
+        title: thread.title,
+        createdAt: thread.createdAt,
+      });
     }
 
     return {
@@ -114,10 +182,10 @@ export const ConversationDetailStore = signalStore(
       send(content: string, options: ChatRunOptions = {}): Promise<void> {
         return run(async () => {
           if (store.isEmpty()) {
-            patchState(store, {
-              title: threadTitleOf(content),
-              createdAt: Date.now(),
-            });
+            const title = threadTitleOf(content);
+            const createdAt = Date.now();
+            patchState(store, { title, createdAt });
+            store._dispatch.started({ id: store.threadId(), title, createdAt });
           }
           store._chatAgentClient.append(content);
           await store._chatAgentClient.send(options);
@@ -149,14 +217,20 @@ export const ConversationDetailStore = signalStore(
       },
 
       /**
-       * Replaces the conversation with a stored thread read back from the AI
-       * service. Returns false, and changes nothing, when the service has no
-       * thread with that id for this user.
+       * Replaces the conversation with a stored thread: the one kept from
+       * this session, or else the one the AI service returns. Returns false,
+       * and changes nothing, when the service has no thread with that id for
+       * this user.
        */
       async open(id: string): Promise<boolean> {
         const scope = store._session.scope();
         if (!scope) {
           return false;
+        }
+        const kept = store._threads()[id];
+        if (kept) {
+          show(kept);
+          return true;
         }
         patchState(store, { loading: true });
         try {
@@ -164,15 +238,7 @@ export const ConversationDetailStore = signalStore(
           if (!thread || !store._session.isCurrent(scope)) {
             return false;
           }
-          store._chatAgentClient.stop();
-          store._chatAgentClient.load(thread.id, thread.messages);
-          patchState(store, {
-            status: 'idle',
-            error: undefined,
-            stopped: false,
-            title: thread.title,
-            createdAt: thread.createdAt,
-          });
+          show(thread);
           return true;
         } catch {
           return false;
@@ -186,22 +252,33 @@ export const ConversationDetailStore = signalStore(
       /** Starts a new, empty conversation. The previous one stays in the history. */
       reset(): void {
         store._chatAgentClient.stop();
-        store._chatAgentClient.reset();
-        patchState(store, {
-          status: 'idle',
-          error: undefined,
-          stopped: false,
-          title: '',
-          createdAt: 0,
-          loading: false,
-        });
+        keep();
+        discard();
       },
+
+      _discard: discard,
     };
   }),
 
+  withReducer(
+    on(sessionEvents.invalidated, () => ({ _threads: {} })),
+    on(threadEvents.renamed, ({ payload }) => ({ _threads }) => {
+      const kept = _threads[payload.id];
+      return kept
+        ? { _threads: { ..._threads, [payload.id]: { ...kept, ...payload } } }
+        : {};
+    }),
+    on(threadEvents.removed, ({ payload }) => ({ _threads }) => {
+      const rest = { ..._threads };
+      delete rest[payload];
+      return { _threads: rest };
+    }),
+    on(threadEvents.cleared, () => ({ _threads: {} })),
+  ),
   withEventHandlers((store, events = inject(Events)) => ({
+    // The reducer above has already dropped the kept threads of that account.
     session: events.on(sessionEvents.invalidated).pipe(
-      tap(() => store.reset()),
+      tap(() => store._discard()),
       ignoreElements(),
     ),
   })),

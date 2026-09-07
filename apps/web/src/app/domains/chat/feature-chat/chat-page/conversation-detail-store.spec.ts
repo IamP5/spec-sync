@@ -1,5 +1,6 @@
 import { BaseEvent, EventType } from '@ag-ui/client';
 import { TestBed } from '@angular/core/testing';
+import { Dispatcher } from '@ngrx/signals/events';
 
 import {
   failedRun,
@@ -15,6 +16,7 @@ import {
   storedThread,
 } from '../../../../testing/fake-threads';
 import { matrix } from '../../../../testing/vehicle-fixtures';
+import { threadEvents } from '../../data/thread-events';
 import { ConversationDetailStore } from './conversation-detail-store';
 
 describe('ConversationDetailStore', () => {
@@ -99,6 +101,41 @@ describe('ConversationDetailStore', () => {
     ]);
     await expect(store.open('missing')).resolves.toBe(false);
     expect(store.threadId()).toBe(first);
+  });
+
+  it('reopens a thread of this session without asking the service again', async () => {
+    agent.replyWith((input) => textReply(input, 'first reply'));
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('first');
+    const first = store.threadId();
+    const find = vi.spyOn(threads, 'find');
+
+    store.reset();
+    await store.send('second');
+    await expect(store.open(first)).resolves.toBe(true);
+
+    expect(find).not.toHaveBeenCalled();
+    expect(store.loading()).toBe(false);
+    expect(store.threadId()).toBe(first);
+    expect(store.title()).toBe('first');
+    expect(store.turns().map((turn) => turn.content)).toEqual([
+      'first',
+      'first reply',
+    ]);
+  });
+
+  it('forgets a kept thread once the service deleted it', async () => {
+    agent.replyWith((input) => textReply(input, 'ok'));
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('first');
+    const first = store.threadId();
+    store.reset();
+
+    TestBed.inject(Dispatcher).dispatch(threadEvents.removed(first));
+
+    const find = vi.spyOn(threads, 'find');
+    await expect(store.open(first)).resolves.toBe(false);
+    expect(find).toHaveBeenCalledWith(first);
   });
 
   it('rename shows the new title while the service stores it', async () => {

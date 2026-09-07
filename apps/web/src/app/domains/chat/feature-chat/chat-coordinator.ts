@@ -9,9 +9,12 @@ import { ThreadDetailStore } from './thread-search/thread-detail-store';
 import { ThreadSearchStore } from './thread-search/thread-search-store';
 
 /**
- * Combines the open conversation with the conversation history: every
- * change to the conversation is followed by a reload of the thread list,
- * and removing the open thread from the history starts a new conversation.
+ * Combines the open conversation with the conversation history. The thread
+ * list keeps itself in step with the conversation and the history writes
+ * (`threadEvents`); the coordinator reads it again only once per new
+ * conversation, after the first reply, for the title the AI service
+ * generates. Removing the open thread from the history starts a new
+ * conversation.
  * Each run carries the model and reasoning effort picked in the preferences,
  * as long as the AI service still offers them.
  * Navigation stays with the components; the coordinator reports whether the
@@ -28,22 +31,25 @@ export class ChatCoordinator {
   /** Id of the open thread; the sidebar highlights it. */
   readonly activeThreadId = this.conversation.threadId;
 
-  /** Sends the prompt. The thread appears in the sidebar before the reply starts. */
+  /**
+   * Sends the prompt. The thread appears in the sidebar before the reply
+   * starts; after the first reply the list is read again for the title the
+   * service generated for it.
+   */
   async send(prompt: string): Promise<void> {
-    const sending = this.conversation.send(prompt, this.runOptions());
-    this.threads.load();
-    await sending;
-    this.threads.load();
+    const first = this.conversation.isEmpty();
+    await this.conversation.send(prompt, this.runOptions());
+    if (first) {
+      this.threads.load();
+    }
   }
 
-  async regenerate(): Promise<void> {
-    await this.conversation.regenerate(this.runOptions());
-    this.threads.load();
+  regenerate(): Promise<void> {
+    return this.conversation.regenerate(this.runOptions());
   }
 
   stop(): void {
     this.conversation.stop();
-    this.threads.load();
   }
 
   /** Opens a stored thread; false when the service has no thread with that id. */
@@ -67,7 +73,6 @@ export class ChatCoordinator {
       this.conversation.rename(name);
     }
     await this.threadDetail.rename({ id, title: name });
-    this.threads.load();
   }
 
   /** Deletes a thread from the history. Returns true when it was the open one. */
@@ -77,7 +82,6 @@ export class ChatCoordinator {
       this.conversation.reset();
     }
     await this.threadDetail.remove(id);
-    this.threads.load();
     return wasOpen;
   }
 
@@ -85,7 +89,6 @@ export class ChatCoordinator {
   async clear(): Promise<void> {
     this.conversation.reset();
     await this.threadDetail.clear();
-    this.threads.load();
   }
 
   /** What to run with: each preference while the catalog lists it, else the service default. */

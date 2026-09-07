@@ -108,6 +108,42 @@ export const GreetingDetailStore = signalStore(
   ordinary HTTP state: `ThreadSearchStore` wraps the list in `withResource`
   and `ThreadDetailStore` writes through `withMutations`.
 
+## Cached lists and local synchronization
+
+- Do not patch a `withResource` value slice (`<name>Value`) to cache local
+  changes. The toolkit puts the resource's own value signal into the store
+  state, so a `patchState` on it writes into the resource (`status: 'local'`)
+  and aborts a read in flight; the list would be lost until the next reload.
+- Keep the cache in a `withLinkedState` slice instead: a `linkedSignal` whose
+  `source` is the resource value. Local patches land in the slice; every new
+  answer of the service (a reload, or a change of the request parameters)
+  replaces it. Read the list once per session, apply every change the
+  browser makes to the slice, and reload only for data the browser cannot
+  know.
+- Stores never patch each other. A store announces what it did through an
+  `eventGroup` (`@ngrx/signals/events`) and the store that owns the cached
+  list applies the event with `withReducer`; `injectDispatch` in `withProps`
+  keeps the dispatcher private. Reducers stay pure: timestamps travel in the
+  event payload.
+- Reference: `threadEvents` (`apps/web/src/app/domains/chat/data/thread-events.ts`).
+  `ConversationDetailStore` dispatches `started` and `touched`,
+  `ThreadDetailStore` dispatches `renamed`, `removed` and `cleared` from the
+  `onSuccess` hooks of its mutations, and `ThreadSearchStore` reduces them
+  into its `threads` slice. `ChatCoordinator` reloads the list once per new
+  conversation, after the first reply, for the title the AI service generates.
+- A detail store may keep the entities it showed in this session for instant
+  switching (`ConversationDetailStore._threads`): the conversation left
+  behind is kept with the messages the agent held, `open` prefers a kept
+  thread over a read, and the same `threadEvents` (and session invalidation)
+  drop what the service no longer has.
+- `withMutations` offers only `onSuccess` and `onError`; there are no
+  optimistic-update or invalidation hooks. Dispatch from `onSuccess` so the
+  cache reflects what the service confirmed.
+- Persist a cached list to storage only through a data access client with a
+  user-scoped key (see `UserPreferencesClient`), never by persisting a
+  resource value slice with `withStorageSync`: the stored value would write
+  into the resource on init and be replaced by its first answer.
+
 ## Smart and Dumb Components and Stores
 
 - Only smart components and coordinators are permitted to use stores.
@@ -136,10 +172,10 @@ export const GreetingDetailStore = signalStore(
   controls. Importing `FormField` is allowed; constructing `form()` belongs in
   the smart component.
 - Thread history mutations live in `ThreadDetailStore`; `ThreadSearchStore`
-  owns reads/filtering. `ChatCoordinator` refreshes the list after mutations and
-  synchronizes the open conversation. The AI service owns the history, so the
-  browser never writes it: a run persists itself server-side and reopening a
-  thread reads it back.
+  owns reads/filtering and keeps the list as a cache that follows
+  `threadEvents`. `ChatCoordinator` synchronizes the open conversation. The AI
+  service owns the history, so the browser never writes it: a run persists
+  itself server-side and reopening a thread reads it back.
 
 ## Authentication lifecycle
 
