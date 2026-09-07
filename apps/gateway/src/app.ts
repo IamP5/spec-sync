@@ -36,7 +36,7 @@ export function createGateway(
       return c.json({ error: 'Invalid request origin' }, 403);
     return next();
   });
-  app.get('/healthz', (c) => c.text('ok'));
+  app.get('/health', (c) => c.text('ok'));
   app.get('/auth/login', (c) => {
     // Keep state and callback cookies on the configured browser origin, including
     // when the user arrives through Cloud Run's alternate default hostname.

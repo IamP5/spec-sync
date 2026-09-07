@@ -37,7 +37,7 @@ worker requests. The static web identity has no backend invocation permissions.
   Studio, workflow APIs and `/internal/ingestion/*` are never browser routes.
 - Other GET/HEAD requests: private web container; HTML navigation without a valid
   session redirects to Google login. Unauthenticated data requests return 401.
-- `GET /healthz`: public liveness endpoint.
+- `GET /health`: public liveness endpoint.
 
 Session cookies are HTTP-only, Secure, SameSite=Lax, host-only and use the
 `__Host-` prefix on HTTPS. Every authenticated request checks revocation/disabled
@@ -113,8 +113,8 @@ WebSocket is not proxied; reload the gateway page after frontend edits.
 
 ## Provisioning and rollout
 
-This change contains deployment configuration; it does not apply Terraform or
-publish images automatically from a local coding session.
+Terraform provisions the infrastructure; the Deploy workflow builds and publishes
+service images. The initial dev migration was applied on 2026-09-07.
 
 ### Configured dev project
 
@@ -130,9 +130,16 @@ The console setup for `fiap-challenge-ford` was completed on 2026-09-07:
 - OAuth remains in testing mode. Public publishing still requires completion of
   the branding requirements shown by Google Auth Platform.
 
-The gateway container and the private-service migration still require the rollout
-below. The import blocks adopt the console-created Identity Platform resources
-when Terraform is next applied; they have not yet imported live state.
+The gateway and private-service migration are deployed. Terraform imported the
+console-created Identity Platform resources. API, AI and web require Cloud Run
+IAM authentication and internal ingress. The public entry point is
+https://specsync-dev-gateway-492443755274.southamerica-east1.run.app.
+
+Google sign-in, authenticated SPA loading, streamed AI responses, and the AI
+catalog tool calling the private API were verified in Chrome. Direct anonymous
+requests to API, AI and web are rejected with HTTP 404 by internal ingress. The
+`/health` endpoint avoids Cloud Run reserved URL paths ending in `z`; see
+[Cloud Run known issues](https://cloud.google.com/run/docs/known-issues#reserved-url-paths).
 
 ### Rollout steps
 
@@ -153,6 +160,8 @@ when Terraform is next applied; they have not yet imported live state.
    remove the two import blocks so Terraform creates these resources.
    Terraform references the OAuth secret while configuring the provider; its
    sensitive value is consequently stored in Terraform state. Protect state access.
+   Local Application Default Credentials may require `USER_PROJECT_OVERRIDE=true`
+   and `GOOGLE_BILLING_PROJECT=fiap-challenge-ford` for the Identity Platform API.
 4. Existing deployers need the newly declared `iam.roleAdmin`,
    `identityplatform.admin`, and `serviceusage.apiKeysAdmin` permissions before the
    first CI apply (an administrator can apply the IAM update). The gateway itself

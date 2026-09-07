@@ -39,7 +39,7 @@ const cookie = '__Host-specsync-session=valid';
 describe('gateway authentication and routing', () => {
   it('keeps health public but rejects missing, forged and revoked sessions before proxying', async () => {
     const { app, fetcher } = setup();
-    expect((await app.request('/healthz')).status).toBe(200);
+    expect((await app.request('/health')).status).toBe(200);
     for (const supplied of ['', '__Host-specsync-session=forged']) {
       const response = await app.request('/api/vehicles', {
         headers: { cookie: supplied, 'x-specsync-user': 'admin' },
