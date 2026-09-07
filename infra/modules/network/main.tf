@@ -30,3 +30,32 @@ resource "google_service_networking_connection" "services" {
   reserved_peering_ranges = [google_compute_global_address.services.name]
   deletion_policy         = "ABANDON"
 }
+
+# Private Google Access routes run.app requests through the VPC, satisfying internal
+# Cloud Run ingress while PRIVATE_RANGES_ONLY retains direct Internet egress for AI.
+resource "google_dns_managed_zone" "run" {
+  name       = "${var.name}-run"
+  dns_name   = "run.app."
+  visibility = "private"
+  private_visibility_config {
+    networks {
+      network_url = google_compute_network.this.id
+    }
+  }
+}
+
+resource "google_dns_record_set" "run" {
+  name         = "run.app."
+  managed_zone = google_dns_managed_zone.run.name
+  type         = "A"
+  ttl          = 300
+  rrdatas      = ["199.36.153.8", "199.36.153.9", "199.36.153.10", "199.36.153.11"]
+}
+
+resource "google_dns_record_set" "run_wildcard" {
+  name         = "*.run.app."
+  managed_zone = google_dns_managed_zone.run.name
+  type         = "CNAME"
+  ttl          = 300
+  rrdatas      = ["run.app."]
+}

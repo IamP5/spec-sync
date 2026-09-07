@@ -6,6 +6,10 @@ module "services" {
 
   services = [
     "aiplatform.googleapis.com",
+    "apikeys.googleapis.com",
+    "dns.googleapis.com",
+    "identitytoolkit.googleapis.com",
+    "securetoken.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "cloudscheduler.googleapis.com",
@@ -116,7 +120,8 @@ module "api" {
   max_instances             = 2
   startup_cpu_boost         = true
   startup_failure_threshold = 24
-  allow_unauthenticated     = true # the web proxy calls it anonymously; Spring Security is the auth layer
+  allow_unauthenticated     = false
+  ingress                   = "INGRESS_TRAFFIC_INTERNAL_ONLY"
   deletion_protection       = false
 
   cloud_sql_instances = [module.database.connection_name]
@@ -130,6 +135,7 @@ module "api" {
   # Spring Boot relaxed binding: these map to application-cloud.properties / spring-cloud-gcp.
   env = {
     SPRING_PROFILES_ACTIVE                        = "cloud"
+    SPECSYNC_INGESTION_WORKER_URL                 = "https://${local.name}-ai-${data.google_project.current.number}.${var.region}.run.app"
     SPRING_CLOUD_GCP_PROJECT_ID                   = var.project_id
     SPRING_CLOUD_GCP_SQL_INSTANCE_CONNECTION_NAME = module.database.connection_name
     SPRING_CLOUD_GCP_SQL_DATABASE_NAME            = module.database.database_name
@@ -152,14 +158,14 @@ module "api" {
   ]
 }
 
-# Sizing note for the ai and web services: every chat turn is a Server-Sent Events
+# Sizing note for the ai and gateway services: every chat turn is a Server-Sent Events
 # response that stays open for the whole generation, so instances must serve many
 # requests at once. Cloud Run only allows less than 1 vCPU with max concurrency 1, which
 # would cap the chat at two users per service (max_instances = 2). CPU therefore stays
 # at 1 for both; with `cpu_idle = true` and min_instances = 0 it is only billed while a
 # request is in flight. Memory is the cheaper knob and is set to what each runtime needs.
 
-# --- AI (Mastra server: Gemini on Vertex AI, streamed to the browser via web /ai) -------
+# --- AI (Mastra server: Gemini on Vertex AI, streamed to the browser via gateway /ai) -------
 module "ai" {
   source = "../../modules/cloud-run-service"
 
@@ -174,14 +180,21 @@ module "ai" {
   memory                = "512Mi" # Node + Mastra bundle + CopilotKit runtime, several open streams
   min_instances         = 0
   max_instances         = 2
-  allow_unauthenticated = true # the web proxy calls it anonymously, like the API
+  allow_unauthenticated = false
+  ingress               = "INGRESS_TRAFFIC_INTERNAL_ONLY"
   deletion_protection   = false
+
+  vpc_access = {
+    network    = module.network.network_name
+    subnetwork = module.network.run_subnetwork_name
+  }
 
   # Read by @ai-sdk/google-vertex; credentials are the service account above.
   # MASTRA_HOST/PORT are set by the image (apps/ai/Dockerfile) and Cloud Run.
   env = {
     NODE_ENV               = "production"
     SPECSYNC_API_URL       = module.api.uri
+    CLOUD_RUN_AUTH         = "true"
     GOOGLE_VERTEX_PROJECT  = var.project_id
     GOOGLE_VERTEX_LOCATION = var.vertex_location
     NEO4J_DATABASE         = "neo4j"
@@ -203,7 +216,7 @@ module "ai" {
   ]
 }
 
-# --- Web (nginx serving the Angular build, proxying /api to the API and /ai to the AI) ---
+# --- Web (public Angular assets; browser calls the gateway directly) ---
 module "web" {
   source = "../../modules/cloud-run-service"
 
@@ -219,15 +232,17 @@ module "web" {
   min_instances         = 0
   max_instances         = 2
   allow_unauthenticated = true
+  ingress               = "INGRESS_TRAFFIC_ALL"
   domain                = var.domain
+  env = {
+    GATEWAY_URL          = local.gateway_origin
+    IDENTITY_API_KEY     = google_apikeys_key.identity.key_string
+    IDENTITY_AUTH_DOMAIN = "${var.project_id}.firebaseapp.com"
+    IDENTITY_PROJECT_ID  = var.project_id
+  }
   # nginx accepts cleartext HTTP/2 (h2c), so the front-end -> container hop runs over
   # HTTP/2 too. Browsers already get HTTP/2 + HTTP/3 from Cloud Run's front end regardless.
   http2 = true
-
-  env = {
-    API_URL = module.api.uri # split into upstreams by apps/web/nginx/10-api-upstream.envsh
-    AI_URL  = module.ai.uri
-  }
 
   depends_on = [module.services]
 }
@@ -242,9 +257,10 @@ module "deployer" {
   pool_id           = "github-${local.env}"
 
   impersonable_service_accounts = {
-    api = google_service_account.api.name
-    web = google_service_account.web.name
-    ai  = google_service_account.ai.name
+    gateway = google_service_account.gateway.name
+    api     = google_service_account.api.name
+    web     = google_service_account.web.name
+    ai      = google_service_account.ai.name
   }
 
   depends_on = [module.services]

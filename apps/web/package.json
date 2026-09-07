@@ -13,6 +13,7 @@
     "@angular/router": "~22.1.0",
     "@copilotkit/angular": "^0.5.1",
     "@copilotkit/core": "^1.70.1",
+    "firebase": "^12.18.0",
     "marked": "^12.0.2",
     "rxjs": "7.8.1",
     "zod": "^3.25.76"

@@ -1,4 +1,6 @@
-import { Injectable, resource, type Signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable, resource, type Signal } from '@angular/core';
+import { firstValueFrom, fromEvent, takeUntil } from 'rxjs';
 
 import {
   mergeReviewResults,
@@ -8,6 +10,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class VehicleReviewsClient {
+  private readonly http = inject(HttpClient);
   relatedResource(query: Signal<ReviewQuery | undefined>) {
     return resource({
       params: query,
@@ -20,20 +23,17 @@ export class VehicleReviewsClient {
                 attributeCode: params.attributeCode,
                 limit: '30',
               });
-              const response = await fetch(
-                `/api/knowledge/related-reviews?${search}`,
-                {
-                  signal: AbortSignal.any([
-                    abortSignal,
-                    AbortSignal.timeout(15000),
-                  ]),
-                  headers: { Accept: 'application/json' },
-                },
+              abortSignal.throwIfAborted();
+              const response = await firstValueFrom(
+                this.http
+                  .get<unknown>(`/api/knowledge/related-reviews?${search}`, {
+                    timeout: 15000,
+                  })
+                  .pipe(takeUntil(fromEvent(abortSignal, 'abort'))),
               );
-              if (!response.ok) throw new Error('Review request failed');
               return {
                 configurationId,
-                response: reviewResponseSchema.parse(await response.json()),
+                response: reviewResponseSchema.parse(response),
               };
             } catch (error) {
               if (abortSignal.aborted) throw error;

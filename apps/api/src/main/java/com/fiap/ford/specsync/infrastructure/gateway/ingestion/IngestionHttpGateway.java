@@ -16,8 +16,10 @@ import org.springframework.web.client.RestClient;
 public class IngestionHttpGateway implements IngestionExtractionGateway {
     private final RestClient client;
     private final IngestionProperties properties;
+    private final GoogleCloudRunClient cloudRun;
 
-    public IngestionHttpGateway(IngestionProperties properties) {
+    public IngestionHttpGateway(IngestionProperties properties, GoogleCloudRunClient cloudRun) {
+        this.cloudRun = Objects.requireNonNull(cloudRun);
         this.properties = Objects.requireNonNull(properties);
         var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
@@ -33,6 +35,7 @@ public class IngestionHttpGateway implements IngestionExtractionGateway {
         return client.post()
                 .uri(properties.workerUrl() + path)
                 .header("Authorization", "Bearer " + properties.workerKey())
+                .headers(headers -> cloudRun.authorize(headers, properties.workerUrl()))
                 .contentType(MediaType.APPLICATION_JSON);
     }
 

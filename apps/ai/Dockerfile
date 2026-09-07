@@ -20,6 +20,7 @@ ENV CI=true NX_DAEMON=false NX_NO_CLOUD=true
 COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
 COPY apps/ai/package.json ./apps/ai/
+COPY apps/gateway/package.json ./apps/gateway/
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --no-audit --no-fund --ignore-scripts
 

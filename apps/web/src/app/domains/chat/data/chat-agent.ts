@@ -4,6 +4,7 @@ import type {
   ReasoningMessage,
   UserMessage,
 } from '@ag-ui/client';
+import { InjectionToken } from '@angular/core';
 import type { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
 /**
@@ -27,6 +28,12 @@ export interface ChatAgentError {
  * `apps/ai` (`CHAT_AGENT_ID` in `src/mastra/agents/spec-sync-agent.ts`).
  */
 export const CHAT_AGENT_ID = 'chat';
+
+/** The shell supplies authentication before each remote run; local test agents need none. */
+export const BEFORE_CHAT_REQUEST = new InjectionToken<() => Promise<void>>(
+  'beforeChatRequest',
+  { providedIn: 'root', factory: () => async () => undefined },
+);
 
 /**
  * CopilotKit runtime route of the AI service, reached through the `/ai`

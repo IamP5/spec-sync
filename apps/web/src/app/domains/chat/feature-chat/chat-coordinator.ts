@@ -1,10 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 
+import { UserPreferencesCoordinator } from '../../user/api/preferences';
 import type { ChatRunOptions } from '../data/chat-agent';
 import { effectiveEffort, effectiveModel } from '../data/chat-model';
 import { ConversationDetailStore } from './chat-page/conversation-detail-store';
 import { ModelSearchStore } from './chat-page/model-search-store';
-import { PreferencesDetailStore } from './settings-edit/preferences-detail-store';
 import { ThreadDetailStore } from './thread-search/thread-detail-store';
 import { ThreadSearchStore } from './thread-search/thread-search-store';
 
@@ -22,7 +22,7 @@ export class ChatCoordinator {
   private readonly conversation = inject(ConversationDetailStore);
   private readonly threads = inject(ThreadSearchStore);
   private readonly threadDetail = inject(ThreadDetailStore);
-  private readonly preferences = inject(PreferencesDetailStore);
+  private readonly preferences = inject(UserPreferencesCoordinator);
   private readonly models = inject(ModelSearchStore);
 
   /** Id of the open thread; the sidebar highlights it. */

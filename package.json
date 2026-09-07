@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "apps/web",
-    "apps/ai"
+    "apps/ai",
+    "apps/gateway"
   ],
   "engines": {
     "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
@@ -43,8 +44,10 @@
     "@softarc/sheriff-core": "^0.19.6",
     "@swc/helpers": "~0.5.18",
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^24.10.0",
     "@typescript-eslint/utils": "^8.58.0",
     "angular-eslint": "^22.1.0",
+    "esbuild": "^0.28.2",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-simple-import-sort": "^14.0.0",

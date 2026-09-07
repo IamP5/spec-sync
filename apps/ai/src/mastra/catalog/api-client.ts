@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { cloudRunHeaders } from './cloud-run-auth';
+
 /** User text never controls the API origin or endpoint. */
 export async function catalogRequest<T>(
   path: string,
@@ -18,8 +20,10 @@ export async function catalogRequest<T>(
   const timeout = AbortSignal.timeout(15000);
   const response = await fetch(url, {
     method: 'GET',
+    redirect: 'error',
     headers: {
       accept: 'application/json',
+      ...(await cloudRunHeaders(origin)),
     },
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });

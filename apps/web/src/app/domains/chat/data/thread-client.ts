@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 
+import { CHAT_STORAGE_SCOPE } from '../util/storage-scope';
 import { ChatThread, ChatThreadSummary } from './thread';
 
 /** Storage key; bump the version when the stored shape changes. */
@@ -18,6 +19,12 @@ const MAX_THREADS = 200;
  */
 @Injectable({ providedIn: 'root' })
 export class ThreadClient {
+  private readonly scope = inject(CHAT_STORAGE_SCOPE);
+  private key(): string {
+    const scope = this.scope();
+    return scope ? `${STORAGE_KEY}.${encodeURIComponent(scope)}` : STORAGE_KEY;
+  }
+
   /** Every stored thread without its messages, in storage order. */
   list(): ChatThreadSummary[] {
     return this.read().map(({ id, title, createdAt, updatedAt }) => ({
@@ -56,7 +63,7 @@ export class ThreadClient {
 
   private read(): ChatThread[] {
     try {
-      const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
+      const raw = globalThis.localStorage?.getItem(this.key());
       const parsed: unknown = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed.filter(isThread) : [];
     } catch {
@@ -66,7 +73,7 @@ export class ThreadClient {
 
   private write(threads: ChatThread[]): boolean {
     try {
-      globalThis.localStorage?.setItem(STORAGE_KEY, JSON.stringify(threads));
+      globalThis.localStorage?.setItem(this.key(), JSON.stringify(threads));
       return true;
     } catch {
       return false;

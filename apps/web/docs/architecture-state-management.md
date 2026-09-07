@@ -137,3 +137,18 @@ export const GreetingDetailStore = signalStore(
 - Thread history mutations live in `ThreadDetailStore`; `ThreadSearchStore`
   owns reads/filtering. `ChatCoordinator` refreshes the list after mutations and
   synchronizes the open conversation.
+
+## Authentication lifecycle
+
+The auth domain owns `AuthSessionStore`, `AuthLoginPage`, `AuthLogoutOverview` and
+`AuthSessionOverview`. The store exposes verified session status and login/logout
+mutations through `AuthClient`; it never stores a profile or roles. Firebase SDK
+credentials belong to `AuthSession`, outside NgRx state and devtools. The HTTP
+interceptor and shell transport wiring may access this technical adapter directly.
+
+The user domain uses `UserDetailStore` for profile and roles. Its private state owner
+under `user/state` contains `PreferencesDetailStore` and `UserConfigurationStore`.
+`UserPreferencesCoordinator`, exposed through `user/api/preferences`, coordinates
+those stores and the design-system theme for the account menu, preferences form and
+chat's model/activity choices. Auth has no dependency on user state. Browser storage
+is scoped to the authenticated UID; conversation history remains owned by chat.

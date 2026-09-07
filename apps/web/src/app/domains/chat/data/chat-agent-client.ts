@@ -4,6 +4,7 @@ import { CopilotKit, injectAgentStore } from '@copilotkit/angular';
 
 import { createId } from '../util/create-id';
 import {
+  BEFORE_CHAT_REQUEST,
   CHAT_AGENT_ID,
   CHAT_RUNTIME_URL,
   ChatAgentError,
@@ -29,6 +30,7 @@ import { IngestionActivity } from './ingestion-activity';
  */
 @Injectable({ providedIn: 'root' })
 export class ChatAgentClient {
+  private readonly authenticate = inject(BEFORE_CHAT_REQUEST);
   private readonly copilotKit = inject(CopilotKit);
   private readonly ingestion = inject(IngestionActivity);
   private readonly agentStore = connectChatAgent(this.copilotKit);
@@ -143,6 +145,7 @@ export class ChatAgentClient {
     agent: AbstractAgent,
     options: ChatRunOptions,
   ): Promise<void> {
+    await this.authenticate();
     this.track(agent);
     const selection = comparisonSelection(agent.messages);
     agent.setState(selection ? { comparison: selection } : {});

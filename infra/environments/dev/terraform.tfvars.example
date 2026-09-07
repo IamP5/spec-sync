@@ -2,3 +2,5 @@
 project_id        = "my-gcp-project"
 github_repository = "my-org/fiap-ford-spec-sync"
 # domain          = "app.example.com"
+
+google_oauth_client_id = "your-web-client.apps.googleusercontent.com"

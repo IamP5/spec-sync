@@ -1,10 +1,3 @@
-# Rendered into /etc/nginx/conf.d/default.conf by the image entrypoint (envsubst replaces
-# only defined env vars, so nginx's own $uri / $host variables stay intact).
-#   PORT                          injected by Cloud Run
-#   API_URL, AI_URL               set by Terraform (infra/environments/dev/main.tf)
-#   API_SCHEME/API_HOST/API_PORT  derived from API_URL by 10-api-upstream.envsh
-#   AI_SCHEME/AI_HOST/AI_PORT     derived from AI_URL by the same script
-#
 # Cloud Run terminates TLS and speaks HTTP/2 + HTTP/3 to browsers on its own. `http2 on`
 # below lets this container accept cleartext HTTP/2 (h2c) as well, which is what Cloud Run
 # uses for the front-end -> container hop when the service port is named "h2c". HTTP/1.1 is
@@ -17,18 +10,6 @@ map $uri $cache_control {
     default                                                              "no-cache";
     "~-[A-Z0-9]{8}\.[a-z0-9]+$"                                          "public, max-age=31536000, immutable";
     "~\.(?:svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|json|txt|webmanifest|xml)$" "public, max-age=3600, must-revalidate";
-}
-
-upstream api {
-    server ${API_HOST}:${API_PORT};
-    keepalive 16;
-    keepalive_timeout 60s;
-}
-
-upstream ai {
-    server ${AI_HOST}:${AI_PORT};
-    keepalive 8;
-    keepalive_timeout 60s;
 }
 
 server {
@@ -70,51 +51,18 @@ server {
         return 200 "ok\n";
     }
 
-    # API + OpenAPI paths go to the Spring Boot service over a keep-alive upstream.
-    location ~ ^/(api|v3/api-docs|swagger-ui)(/|$) {
-        proxy_pass ${API_SCHEME}://api;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_set_header Host ${API_HOST};
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_ssl_server_name on;
-        proxy_ssl_name ${API_HOST};
-        proxy_ssl_session_reuse on;
-        proxy_ssl_protocols TLSv1.2 TLSv1.3;
-        proxy_connect_timeout 10s;
-        proxy_read_timeout 60s;
-    }
-
-    # Mastra AI service under /ai: the prefix is stripped, so the CopilotKit runtime route
-    # /ai/copilotkit reaches the service as /copilotkit and Mastra's own API as /api/...
-    # (which would otherwise collide with the Spring API above). Chat replies are
-    # Server-Sent Events, so buffering is off and the read timeout covers a long generation.
-    location /ai/ {
-        rewrite ^/ai/(.*)$ /$1 break;
-        proxy_pass ${AI_SCHEME}://ai;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_set_header Host ${AI_HOST};
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_ssl_server_name on;
-        proxy_ssl_name ${AI_HOST};
-        proxy_ssl_session_reuse on;
-        proxy_ssl_protocols TLSv1.2 TLSv1.3;
-        proxy_buffering off;
-        proxy_cache off;
-        proxy_connect_timeout 10s;
-        proxy_read_timeout 300s;
-    }
-
     # Static files: a missing asset is a 404, never index.html, so a browser holding an old
     # index.html after a deploy fails fast and reloads instead of parsing HTML as JS.
     location ~* \.(?:js|mjs|css|map|json|svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|txt|webmanifest|xml)$ {
         try_files $uri =404;
         include /etc/nginx/snippets/headers.conf;
+    }
+
+    # Public SDK configuration; the API key identifies the project, not a user.
+    location = /app-config.json {
+        default_type application/json;
+        add_header Cache-Control "no-store" always;
+        return 200 '{"gatewayUrl":"${GATEWAY_URL}","firebase":{"apiKey":"${IDENTITY_API_KEY}","authDomain":"${IDENTITY_AUTH_DOMAIN}","projectId":"${IDENTITY_PROJECT_ID}"}}';
     }
 
     # SPA fallback: deep links render index.html with a real 200.

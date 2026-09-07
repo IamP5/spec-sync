@@ -1,0 +1,12 @@
+{
+  "name": "@specsync/gateway",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@hono/node-server": "^1.19.17",
+    "firebase-admin": "^14.3.0",
+    "google-auth-library": "^10.9.1",
+    "hono": "^4.13.7"
+  }
+}

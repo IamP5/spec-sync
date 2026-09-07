@@ -172,6 +172,47 @@ describe('architecture: public features, pure UI and domain contracts', () => {
       `Contract API reaches application workflow: ${source} -> ${target}`,
     );
   });
+  it('allows explicit auth composition and preference access while protecting private state', () => {
+    const user = 'src/app/domains/user/feature-user/user-account-overview.ts';
+    const auth = 'src/app/domains/auth/api/features/index.ts';
+    const preferences = 'src/app/domains/user/api/preferences/index.ts';
+    expect(boundaryViolations([], [{ source: user, target: auth }])).toEqual(
+      [],
+    );
+    expect(
+      boundaryViolations(
+        [],
+        [{ source: `${chat}/chat-page.ts`, target: preferences }],
+      ),
+    ).toEqual([]);
+    for (const source of [
+      user,
+      `${chat}/chat-page.ts`,
+      'src/app/app-coordinator.ts',
+    ]) {
+      const target = 'src/app/domains/user/state/preferences-detail-store.ts';
+      expect(boundaryViolations([], [{ source, target }])).toContain(
+        `Private user state import: ${source} -> ${target}`,
+      );
+    }
+    expect(
+      boundaryViolations(
+        [],
+        [
+          {
+            source: 'src/app/domains/auth/data/auth-client.ts',
+            target: preferences,
+          },
+        ],
+      ),
+    ).not.toEqual([]);
+    expect(
+      boundaryViolations(
+        [],
+        [{ source: `${chat}/data/chat-client.ts`, target: preferences }],
+      ),
+    ).not.toEqual([]);
+  });
   it('recognizes aliased form factories and application injections in UI', () => {
     const file = `${catalog}/ui/catalog-card.ts`;
     const source = ts.createSourceFile(

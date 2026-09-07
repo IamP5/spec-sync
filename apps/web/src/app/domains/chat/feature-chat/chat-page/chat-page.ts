@@ -61,6 +61,7 @@ import { ZardSpinnerComponent } from '@/ui/components/spinner';
 import { ZardTextareaComponent } from '@/ui/components/textarea';
 import { ZardTooltipDirective } from '@/ui/components/tooltip';
 
+import { UserPreferencesCoordinator } from '../../../user/api/preferences';
 import {
   CHAT_AGENT_ID,
   ChatAgentError,
@@ -71,7 +72,6 @@ import { effectiveEffort, effectiveModel } from '../../data/chat-model';
 import { MarkdownPipe } from '../../util/markdown-pipe';
 import { revealText } from '../../util/text-reveal';
 import { ChatCoordinator } from '../chat-coordinator';
-import { PreferencesDetailStore } from '../settings-edit/preferences-detail-store';
 import { CHAT_CARD_ACTIONS } from '../tool-adapters/chat-card-actions';
 import { RunOptionsPicker } from '../ui/run-options-picker';
 import { registerChatTools } from './chat-tools';
@@ -199,7 +199,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
 })
 export class ChatPage {
   private readonly store = inject(ConversationDetailStore);
-  private readonly preferences = inject(PreferencesDetailStore);
+  private readonly preferences = inject(UserPreferencesCoordinator);
   private readonly modelSearch = inject(ModelSearchStore);
   private readonly coordinator = inject(ChatCoordinator);
   private readonly router = inject(Router);

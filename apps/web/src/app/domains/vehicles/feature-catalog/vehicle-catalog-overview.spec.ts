@@ -1,4 +1,5 @@
 import { BreakpointObserver, type BreakpointState } from '@angular/cdk/layout';
+import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 
@@ -37,6 +38,7 @@ describe('VehicleCatalogOverview', () => {
     await TestBed.configureTestingModule({
       imports: [VehicleCatalogOverview],
       providers: [
+        provideHttpClient(),
         { provide: BreakpointObserver, useValue: { observe: () => screen } },
       ],
     }).compileComponents();

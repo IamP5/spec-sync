@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 
+import { USER_STORAGE_SCOPE } from '../util/storage-scope';
 import { DEFAULT_PREFERENCES, Preferences } from './preferences';
 
 const STORAGE_KEY = 'specsync.chat.preferences.v1';
@@ -11,9 +12,15 @@ const STORAGE_KEY = 'specsync.chat.preferences.v1';
  */
 @Injectable({ providedIn: 'root' })
 export class PreferencesClient {
+  private readonly scope = inject(USER_STORAGE_SCOPE);
+  private key(): string {
+    const scope = this.scope();
+    return scope ? `${STORAGE_KEY}.${encodeURIComponent(scope)}` : STORAGE_KEY;
+  }
+
   load(): Preferences {
     try {
-      const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
+      const raw = globalThis.localStorage?.getItem(this.key());
       const stored = raw ? (JSON.parse(raw) as Partial<Preferences>) : {};
       return {
         displayName:
@@ -40,10 +47,7 @@ export class PreferencesClient {
 
   save(preferences: Preferences): boolean {
     try {
-      globalThis.localStorage?.setItem(
-        STORAGE_KEY,
-        JSON.stringify(preferences),
-      );
+      globalThis.localStorage?.setItem(this.key(), JSON.stringify(preferences));
       return true;
     } catch {
       return false;

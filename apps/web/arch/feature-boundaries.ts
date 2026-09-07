@@ -9,7 +9,7 @@ const FEATURE = /((?:^|.*\/)domains\/[^/]+\/feature-[^/]+)(?:\/|$)/;
 const UI = /(?:^|\/)ui(?:-[^/]+)?\//;
 const SMART = /-(page|search|edit|detail|overview)\.ts$/;
 const STATE = /-(store|client|coordinator)\.ts$/;
-const API = /\/api\/(contracts|features)\/index\.ts$/;
+const API = /\/api\/(contracts|features|preferences)\/index\.ts$/;
 
 function feature(file: string): string | undefined {
   return file.match(FEATURE)?.[1];
@@ -34,19 +34,43 @@ export function boundaryViolations(
     if (owner && feature(source) !== owner && target !== `${owner}/index.ts`) {
       violations.push(`Private feature import: ${source} -> ${target}`);
     }
+    if (
+      /\/domains\/user\/state\//.test(target) &&
+      !/\/domains\/user\/state\//.test(source) &&
+      !(
+        /\/domains\/user\/api\/preferences\/index\.ts$/.test(source) &&
+        target.endsWith('/user-preferences-coordinator.ts')
+      )
+    ) {
+      violations.push(`Private user state import: ${source} -> ${target}`);
+    }
     const from = domain(source);
     const to = domain(target);
     if (from && to && from !== to && to !== 'shared') {
       const api = target.match(API)?.[1];
-      const allowedConsumer = from === 'chat' && to === 'vehicles';
+      const allowedConsumer =
+        (from === 'chat' && (to === 'vehicles' || to === 'user')) ||
+        (from === 'user' && to === 'auth' && api === 'features');
       const allowedLayer =
         api === 'contracts'
           ? /\/domains\/chat\/(data(?:-[^/]+)?|feature-[^/]+|ui(?:-[^/]+)?)\//.test(
               source,
             )
-          : api === 'features' && !!feature(source) && !isUi(source);
+          : (api === 'features' ||
+              (api === 'preferences' &&
+                (SMART.test(source) || /-coordinator\.ts$/.test(source)))) &&
+            !!feature(source) &&
+            !isUi(source);
       if (!allowedConsumer || !allowedLayer)
         violations.push(`Domain boundary: ${source} -> ${target}`);
+    }
+    if (
+      /\/api\/preferences\//.test(source) &&
+      !target.endsWith('/domains/user/state/user-preferences-coordinator.ts')
+    ) {
+      violations.push(
+        `Preference API must expose its coordinator: ${source} -> ${target}`,
+      );
     }
     if (
       /\/api\/features\//.test(source) &&

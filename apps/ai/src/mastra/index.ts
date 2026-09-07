@@ -14,8 +14,7 @@ const production = process.env['NODE_ENV'] === 'production';
 
 /**
  * Path of the CopilotKit runtime route. The web app reaches it as
- * `/ai/copilotkit` (nginx and `apps/web/proxy.conf.json` strip the `/ai`
- * prefix). Rename only together with `ChatAgentClient` in apps/web.
+ * `/ai/copilotkit` (the Hono gateway strips the `/ai` prefix). Rename only together with `ChatAgentClient` in apps/web.
  */
 export const COPILOTKIT_PATH = '/copilotkit';
 

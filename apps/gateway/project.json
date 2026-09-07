@@ -1,0 +1,46 @@
+{
+  "name": "gateway",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/gateway/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": ["typecheck"],
+      "outputs": ["{workspaceRoot}/dist/apps/gateway"],
+      "options": {
+        "command": "esbuild apps/gateway/src/main.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/apps/gateway/main.js"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node --env-file=apps/gateway/.env dist/apps/gateway/main.js"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "tsc -p apps/gateway/tsconfig.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "vitest run --config apps/gateway/vitest.config.mts"
+      }
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tools/deploy/gateway.sh"
+      }
+    }
+  },
+  "tags": ["type:app", "scope:gateway"]
+}

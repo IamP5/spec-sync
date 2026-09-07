@@ -17,7 +17,7 @@
       "options": {
         "targetName": "lint"
       },
-      "include": ["apps/web/**/*", "apps/ai/**/*"]
+      "include": ["apps/web/**/*", "apps/ai/**/*", "apps/gateway/**/*"]
     },
     "@nx-extend/terraform"
   ],

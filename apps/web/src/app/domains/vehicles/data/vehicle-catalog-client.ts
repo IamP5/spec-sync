@@ -1,4 +1,6 @@
-import { Injectable, resource, type Signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable, resource, type Signal } from '@angular/core';
+import { firstValueFrom, fromEvent, takeUntil } from 'rxjs';
 
 import { type Comparison, comparisonSchema } from './vehicle-contracts';
 
@@ -15,11 +17,12 @@ const COMPARISON_LIMIT = 5;
 
 @Injectable({ providedIn: 'root' })
 export class VehicleCatalogClient {
+  private readonly http = inject(HttpClient);
   summariesResource(configurationIds: Signal<readonly string[]>) {
     return resource({
       params: () => joinedIds(configurationIds()),
       loader: ({ params, abortSignal }) =>
-        loadSummaries(params.split(','), abortSignal),
+        loadSummaries(this.http, params.split(','), abortSignal),
     });
   }
 
@@ -28,6 +31,7 @@ export class VehicleCatalogClient {
       params: configurationId,
       loader: ({ params, abortSignal }) =>
         requestComparison(
+          this.http,
           '/api/vehicle-specifications',
           [params],
           [],
@@ -38,6 +42,7 @@ export class VehicleCatalogClient {
 }
 
 async function loadSummaries(
+  http: HttpClient,
   configurationIds: string[],
   abortSignal: AbortSignal,
 ): Promise<Comparison> {
@@ -45,6 +50,7 @@ async function loadSummaries(
   const comparisons = await Promise.all(
     chunks.map((ids) =>
       requestComparison(
+        http,
         ids.length === 1 ? '/api/vehicle-specifications' : '/api/comparisons',
         ids,
         [...CATALOG_HIGHLIGHT_CODES],
@@ -56,6 +62,7 @@ async function loadSummaries(
 }
 
 async function requestComparison(
+  http: HttpClient,
   path: string,
   configurationIds: string[],
   attributes: string[],
@@ -69,12 +76,13 @@ async function requestComparison(
     search.set('configurationIds', configurationIds.join(','));
   }
   if (attributes.length) search.set('attributes', attributes.join(','));
-  const response = await fetch(`${path}?${search}`, {
-    signal: abortSignal,
-    headers: { Accept: 'application/json' },
-  });
-  if (!response.ok) throw new Error('Vehicle specifications request failed');
-  return comparisonSchema.parse(await response.json());
+  abortSignal.throwIfAborted();
+  const response = await firstValueFrom(
+    http
+      .get<unknown>(`${path}?${search}`)
+      .pipe(takeUntil(fromEvent(abortSignal, 'abort'))),
+  );
+  return comparisonSchema.parse(response);
 }
 
 function joinedIds(ids: readonly string[]): string | undefined {

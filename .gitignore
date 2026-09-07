@@ -62,3 +62,6 @@ __screenshots__/
 crash.log
 *.tfvars
 !*.tfvars.example
+
+# Runtime browser configuration for local development
+apps/web/public/app-config.json
