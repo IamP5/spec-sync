@@ -1,13 +1,17 @@
 {
   "/api": {
-    "target": "http://localhost:8080",
+    "target": "http://localhost:3000",
     "secure": false,
-    "changeOrigin": true
+    "changeOrigin": false
   },
   "/ai": {
-    "target": "http://localhost:4111",
+    "target": "http://localhost:3000",
     "secure": false,
-    "changeOrigin": true,
-    "pathRewrite": { "^/ai": "" }
+    "changeOrigin": false
+  },
+  "/auth": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": false
   }
 }

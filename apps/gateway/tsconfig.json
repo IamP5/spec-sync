@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2023", "dom"],
+    "types": ["node"],
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": false,
+    "noEmit": true,
+    "outDir": "../../dist/out-tsc/apps/gateway"
+  },
+  "include": ["src/**/*.ts", "vitest.config.mts"]
+}

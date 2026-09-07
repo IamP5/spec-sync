@@ -20,7 +20,7 @@ variable "vertex_location" {
 }
 
 variable "domain" {
-  description = "Optional custom domain for the web service (region support is limited, see modules/cloud-run-service)."
+  description = "Optional custom domain for the gateway service (region support is limited, see modules/cloud-run-service)."
   type        = string
   default     = ""
 }
@@ -29,4 +29,19 @@ variable "placeholder_image" {
   description = "Image used when a Cloud Run service is first created; CI rolls out the real images."
   type        = string
   default     = "us-docker.pkg.dev/cloudrun/container/hello"
+}
+
+variable "google_oauth_client_id" {
+  description = "Google Web OAuth client ID, shared by the gateway and Identity Platform Google provider."
+  type        = string
+  validation {
+    condition     = endswith(var.google_oauth_client_id, ".apps.googleusercontent.com")
+    error_message = "Set a Google Web OAuth client ID."
+  }
+}
+
+variable "google_oauth_secret_id" {
+  description = "Existing Secret Manager secret containing the Google OAuth client secret."
+  type        = string
+  default     = "GOOGLE_OAUTH_CLIENT_SECRET"
 }

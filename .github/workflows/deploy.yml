@@ -1,12 +1,12 @@
 name: Deploy
 
 # Provisions infrastructure (Terraform, `infra` project) and deploys the apps
-# (api, web and ai -> Cloud Run) for every push to main. Only projects that changed since the
+# (gateway, api, web and ai -> Cloud Run) for every push to main. Only projects that changed since the
 # last successful Deploy run are touched; use "Run workflow" with all=true to force everything.
 #
 # Required GitHub repository *variables* (Settings > Secrets and variables > Actions > Variables).
 # Their values are printed by `nx run infra:output` under `github_actions` after the first apply:
-#   GCP_PROJECT_ID, GCP_REGION, GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_DEPLOYER_SERVICE_ACCOUNT, APP_DOMAIN (optional)
+#   GCP_PROJECT_ID, GCP_REGION, GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_DEPLOYER_SERVICE_ACCOUNT, GOOGLE_OAUTH_CLIENT_ID, APP_DOMAIN (optional)
 # GCP auth uses Workload Identity Federation; Aura API credentials come from Secret Manager.
 
 on:
@@ -37,6 +37,7 @@ env:
   TF_VAR_region: ${{ vars.GCP_REGION }}
   TF_VAR_github_repository: ${{ github.repository }}
   TF_VAR_domain: ${{ vars.APP_DOMAIN }}
+  TF_VAR_google_oauth_client_id: ${{ vars.GOOGLE_OAUTH_CLIENT_ID }}
 
 jobs:
   affected:
@@ -93,7 +94,7 @@ jobs:
   apps:
     needs: [affected, infra]
     # `always()` keeps this job eligible when `infra` was skipped; it still bails if infra failed.
-    if: always() && needs.affected.result == 'success' && needs.infra.result != 'failure' && needs.infra.result != 'cancelled' && (needs.affected.outputs.api == 'true' || needs.affected.outputs.web == 'true' || needs.affected.outputs.ai == 'true')
+    if: always() && needs.affected.result == 'success' && needs.infra.result != 'failure' && needs.infra.result != 'cancelled' && (needs.affected.outputs.api == 'true' || needs.affected.outputs.web == 'true' || needs.affected.outputs.ai == 'true' || needs.affected.outputs.gateway == 'true')
     runs-on: ubuntu-latest
     environment: dev
     env:

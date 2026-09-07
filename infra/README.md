@@ -17,7 +17,7 @@ infra/
 │   ├── cloud-sql-schedule/ # Cloud Scheduler jobs that start/stop the instance (dev cost control)
 │   ├── pubsub/           # topic + subscriptions
 │   ├── storage-bucket/
-│   ├── cloud-run-service/# generic Cloud Run v2 service (used for api, ai and web)
+│   ├── cloud-run-service/# generic Cloud Run v2 service (used for gateway, api, ai and web)
 │   └── github-deployer/  # deployer SA + Workload Identity Federation for GitHub Actions
 └── environments/
     └── dev/              # one root module per environment: backend, sizing, composition
@@ -31,29 +31,29 @@ environment".
 ## Topology
 
 ```
-  users ──► Cloud Run "web" (nginx: Angular SPA, proxies /api, /v3/api-docs, /swagger-ui and /ai)
-                 │
-                 ├──► Cloud Run "api" (Spring Boot)
-                 │        ├──► Cloud SQL Postgres 17 (private IP on the env VPC, reached via Direct VPC egress + Auth connector)
-                 │        ├──► Pub/Sub topic + subscription
-                 │        ├──► GCS files bucket
-                 │        └──► Vertex AI (Gemini, via service account)
-                 │
-                 └──► Cloud Run "ai" (Mastra, Node)
-                          ├──► Neo4j AuraDB (GCP us-central1; credentials from Secret Manager)
-                          └──► Vertex AI (Gemini, via service account; location = var.vertex_location)
+  users ──► Cloud Run "gateway" (Hono: Google Identity Platform, sessions, role claims)
+                 ├──► private Cloud Run "web" (nginx: Angular SPA)
+                 ├──► private Cloud Run "api" (Spring Boot)
+                 │        ├──► Cloud SQL (private IP, Direct VPC egress + Auth connector)
+                 │        ├──► Pub/Sub + GCS + Vertex AI
+                 │        └──► private AI ingestion worker (Cloud Run IAM)
+                 └──► private Cloud Run "ai" (Mastra, streamed chat)
+                          ├──► API catalog (Cloud Run IAM)
+                          └──► AuraDB + Vertex AI
   GitHub Actions ──► Workload Identity Federation ──► deployer service account (no keys)
 ```
 
-The browser only talks to the `web` service, which proxies API paths to the `api` service
-and `/ai/*` (prefix stripped, Server-Sent Events unbuffered) to the `ai` service. SPA, API
-and AI therefore share one origin: the `/api` and `/ai` proxies used by `nx serve web` behave
-the same in the cloud and there is no CORS configuration. No load balancer; idle cost is
-Cloud SQL and AuraDB. The `ai` service keeps no local state; AuraDB stores the shared
-vehicle graph. This infrastructure supplies its connection; moving graph tools from the
-Spring API into Mastra is a separate application change. Gemini is not served from every
-region, so its Vertex location is a separate variable (`vertex_location`, default `global`,
-which is the only location serving Gemini 3.x; regional endpoints stop at the 2.5 family).
+The browser talks only to the gateway. It serves the SPA through private web,
+proxies `/api` to Spring Boot and exposes the AI chat/model routes under `/ai`.
+All three upstream services require Cloud Run IAM and internal ingress. Private
+`run.app` DNS plus Direct VPC egress keeps their calls on the environment VPC.
+External AI providers remain reachable without Cloud NAT. Gateway Google sign-in,
+role claims, local startup and the required first deployment steps are documented
+in [the gateway guide](../apps/gateway/README.md).
+
+There is no load balancer or CORS configuration. AI remains stateless; AuraDB
+stores the vehicle graph. The Vertex location is independent of the Cloud Run
+region (`vertex_location`, default `global`).
 
 ## Targets
 
@@ -71,6 +71,7 @@ which is the only location serving Gemini 3.x; regional endpoints stop at the 2.
 | `nx run infra:db-stop -c dev`    | stop it now; `db-status` shows state and activation policy                 |
 | `nx run api:deploy`              | multi-stage Docker build (Gradle + AOT cache), push, `gcloud run deploy`   |
 | `nx run web:deploy`              | multi-stage Docker build (Angular + nginx), push, `gcloud run deploy`      |
+| `nx run gateway:deploy`          | build the Hono gateway image, push and deploy                              |
 | `nx run ai:deploy`               | multi-stage Docker build (Mastra bundle + Node), push, `gcloud run deploy` |
 
 `-c <env>` selects the environment (the Nx configuration sets the Terraform working directory).
@@ -246,10 +247,10 @@ changes never fight each other.
 - The SPA is served by nginx on Cloud Run instead of GCS + Cloud CDN. That avoids the flat
   cost of a global load balancer and gives real 200 responses for deep links, at the price of
   no CDN and a short cold start after idle periods.
-- The `api` and `ai` services must accept public ingress because `web` reaches them over
-  their `run.app` URLs. Spring Security remains the authentication layer for API requests;
-  the `ai` service has no authentication of its own yet (Mastra middleware checking a header
-  that only nginx adds is the intended next step if that becomes a concern).
+- Gateway is the only public service. API, AI and web require internal ingress and
+  service-specific invoker grants. Existing curator authorization stays in Spring;
+  the gateway requires a verified Google session for browser access. See the
+  [gateway deployment guide](../apps/gateway/README.md) before the first rollout.
 - `bootstrap/` keeps its state locally (`terraform.tfstate` is git-ignored). Losing it only
   means importing one bucket again; it is deliberately not stored in the bucket it creates.
 - `@nx-extend/terraform` 10.4.1 passes `planFile`, `varFile` and `fmt --check` as a single

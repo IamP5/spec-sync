@@ -2,7 +2,7 @@
 #
 # Angular SPA for Cloud Run.
 #   build   - installs workspace deps and runs `nx build web` (production), pre-compresses assets
-#   runtime - unprivileged nginx serving the static bundle and proxying /api to the API service
+#   runtime - private unprivileged nginx serving the static bundle through the gateway
 #
 # Build context: the workspace root (see tools/deploy/web.sh and the root .dockerignore).
 
@@ -24,6 +24,7 @@ ENV CI=true NX_DAEMON=false NX_NO_CLOUD=true
 COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
 COPY apps/ai/package.json ./apps/ai/
+COPY apps/gateway/package.json ./apps/gateway/
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --no-audit --no-fund --ignore-scripts
 
@@ -37,17 +38,11 @@ RUN npx nx build web --configuration=production \
 # -------------------------------------------------------------------------- runtime
 FROM ${NGINX_IMAGE} AS runtime
 
-# Rendered into /etc/nginx/conf.d/default.conf by the image entrypoint (envsubst) after
-# 10-api-upstream.envsh derives the upstream host/port from API_URL and AI_URL.
-# PORT is injected by Cloud Run, API_URL and AI_URL by Terraform
-# (infra/environments/dev/main.tf).
+# nginx serves private static assets; the Hono gateway owns routing and authentication.
 ENV PORT=8080
-ENV API_URL=http://localhost:8080
-ENV AI_URL=http://localhost:4111
 
 COPY apps/web/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY apps/web/nginx/headers.conf /etc/nginx/snippets/headers.conf
-COPY apps/web/nginx/10-api-upstream.envsh /docker-entrypoint.d/10-api-upstream.envsh
 COPY --from=build /workspace/dist/apps/web/browser/ /usr/share/nginx/html/
 
 EXPOSE 8080
