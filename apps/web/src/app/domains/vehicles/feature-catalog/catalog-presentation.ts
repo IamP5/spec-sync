@@ -5,12 +5,13 @@ import type {
 } from '../data/vehicle-contracts';
 import { displayValue } from '../util/vehicle-display';
 
-export type CatalogView = 'catalog' | 'competitors';
 export type SortMode =
   | 'catalog-order'
   | 'price-asc'
   | 'power-desc'
   | 'torque-desc';
+/** How the loaded page reads in the transcript: a strip of cards or a flush list. */
+export type CatalogLayout = 'strip' | 'list';
 type FactStatus = 'known' | 'not-reported' | 'conflicting';
 
 interface CatalogFact {
@@ -26,6 +27,23 @@ export interface ModelSummary {
 }
 
 export const MAX_SHORTLIST = 5;
+/** Configurations revealed per "show more" step, so a result stays short in the transcript. */
+export const CATALOG_PAGE_STEP = 4;
+/** Pages above this size open as a list: that many cards would scroll far past the reply column. */
+export const LARGE_CATALOG_PAGE = 8;
+
+export function defaultCatalogLayout(pageSize: number): CatalogLayout {
+  return pageSize > LARGE_CATALOG_PAGE ? 'list' : 'strip';
+}
+
+/** Short badge text for an unconfirmed catalog identity; empty when confirmed. */
+export function identityLabel(vehicle: VehicleConfiguration): string {
+  return vehicle.identityStatus === 'CONFIRMED'
+    ? ''
+    : vehicle.identityStatus === 'PROVISIONAL'
+      ? 'Provisional'
+      : 'From notes';
+}
 
 export function modelSummaries(
   configurations: VehicleConfiguration[],
@@ -45,7 +63,6 @@ export function modelSummaries(
 export function filterAndSortConfigurations(
   configurations: VehicleConfiguration[],
   query: string,
-  brand: string,
   model: string,
   sort: SortMode,
   summary: Comparison | undefined,
@@ -57,7 +74,6 @@ export function filterAndSortConfigurations(
         `${vehicle.brand} ${vehicle.model} ${vehicle.name}`
           .toLocaleLowerCase()
           .includes(literal)) &&
-      (brand === 'all' || vehicle.brand === brand) &&
       (model === 'all' || vehicle.model === model),
   );
   if (sort === 'catalog-order') return filtered;

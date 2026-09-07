@@ -55,10 +55,8 @@ describe('ChatVehicleCatalogOverview', () => {
   it('filters the loaded page and sorts known highlights before unknowns', async () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(rows(element)).toHaveLength(3);
-    expect(element.textContent).toContain(
-      '3 configurations shown on this page',
-    );
-    expect(element.textContent).toContain('more are available');
+    expect(element.textContent).toContain('showing 3 of 3 on this page');
+    expect(element.textContent).toContain('more in the catalog');
 
     const search = element.querySelector<HTMLInputElement>(
       '[data-catalog-search]',
@@ -95,22 +93,27 @@ describe('ChatVehicleCatalogOverview', () => {
     ).toBe(HILUX_ID);
   });
 
-  it('selecting a model narrows its make and selecting it again clears the model', async () => {
+  it('selecting a model family narrows the page and selecting it again clears it', async () => {
     const element = fixture.nativeElement as HTMLElement;
     const ranger = buttonNamed(element, 'Ranger');
     ranger.click();
     await fixture.whenStable();
     expect(rows(element)).toHaveLength(2);
-    expect(buttonNamed(element, 'Ford').getAttribute('aria-pressed')).toBe(
-      'true',
-    );
+    expect(ranger.getAttribute('aria-pressed')).toBe('true');
 
-    buttonNamed(element, 'Ranger').click();
+    ranger.click();
     await fixture.whenStable();
-    expect(rows(element)).toHaveLength(2);
-    expect(buttonNamed(element, 'Ranger').getAttribute('aria-pressed')).toBe(
-      'false',
-    );
+    expect(rows(element)).toHaveLength(3);
+    expect(ranger.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('sends the next catalog page with the original search arguments', async () => {
+    const element = fixture.nativeElement as HTMLElement;
+    buttonNamed(element, 'Load next 20 from the catalog').click();
+    expect(send).toHaveBeenCalledOnce();
+    expect(send.mock.calls[0]?.[0]).toContain('from offset 3');
+    expect(send.mock.calls[0]?.[0]).toContain('searchVehicleConfigurations');
+    expect(draft).not.toHaveBeenCalled();
   });
 
   it('compares only the explicit shortlist through the current conversation', async () => {
@@ -125,8 +128,6 @@ describe('ChatVehicleCatalogOverview', () => {
       ?.click();
     await fixture.whenStable();
 
-    buttonNamed(element, 'Competitors').click();
-    await fixture.whenStable();
     element
       .querySelector<HTMLButtonElement>('[data-action="compare-shortlist"]')
       ?.click();
@@ -134,7 +135,6 @@ describe('ChatVehicleCatalogOverview', () => {
     expect(send).toHaveBeenCalledOnce();
     expect(send.mock.calls[0]?.[0]).toContain(BLACK_ID);
     expect(send.mock.calls[0]?.[0]).toContain(LIMITED_ID);
-    expect(element.textContent).toContain('No segment label is claimed');
   });
 
   it('opens sourced specifications in a motion drawer and returns an editable draft to the composer', async () => {

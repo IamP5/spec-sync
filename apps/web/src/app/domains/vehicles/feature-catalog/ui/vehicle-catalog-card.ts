@@ -1,32 +1,26 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
+  linkedSignal,
   output,
   signal,
 } from '@angular/core';
 import { type FieldTree, FormField } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucideArrowDownUp,
+  lucideArrowRight,
   lucideCarFront,
-  lucideCheck,
-  lucideChevronRight,
-  lucideGitCompareArrows,
-  lucideInfo,
-  lucideLayoutList,
+  lucideChevronDown,
+  lucideChevronUp,
+  lucideGalleryHorizontal,
+  lucideList,
   lucideSearch,
-  lucideSlidersHorizontal,
-  lucideUsers,
   lucideX,
 } from '@ng-icons/lucide';
 
-import { ZardBadgeComponent } from '@/ui/components/badge';
-import { ZardButtonComponent } from '@/ui/components/button';
-import { ZardCardComponent } from '@/ui/components/card';
-import { ZardInputComponent } from '@/ui/components/input';
-import { ZardSeparatorComponent } from '@/ui/components/separator';
 import { ZardSkeletonComponent } from '@/ui/components/skeleton';
 import { ZardIdDirective } from '@/ui/core';
 
@@ -36,36 +30,39 @@ import type {
   VehicleConfiguration,
 } from '../../data/vehicle-contracts';
 import {
-  catalogFact,
-  type CatalogView,
+  CATALOG_PAGE_STEP,
+  defaultCatalogLayout,
   type ModelSummary,
 } from '../catalog-presentation';
+import { VehicleCatalogList } from './vehicle-catalog-list';
+import { VehicleCatalogStrip } from './vehicle-catalog-strip';
 
+/**
+ * A catalog page attached to the reply instead of boxed in a card: a caption
+ * with the counts, one hairline filter row, the configurations as a card
+ * strip or a flush list (the reader can switch; large pages open as the
+ * list), and a footer with the paging and the shortlist. Only a step of the
+ * page is rendered at first so a large catalog never floods the transcript.
+ */
 @Component({
   selector: 'app-vehicle-catalog-card',
   hostDirectives: [ZardIdDirective],
   imports: [
-    NgIcon,
     FormField,
-    ZardBadgeComponent,
-    ZardButtonComponent,
-    ZardCardComponent,
-    ZardInputComponent,
-    ZardSeparatorComponent,
+    NgIcon,
+    VehicleCatalogList,
+    VehicleCatalogStrip,
     ZardSkeletonComponent,
   ],
   viewProviders: [
     provideIcons({
-      lucideArrowDownUp,
+      lucideArrowRight,
       lucideCarFront,
-      lucideCheck,
-      lucideChevronRight,
-      lucideGitCompareArrows,
-      lucideInfo,
-      lucideLayoutList,
+      lucideChevronDown,
+      lucideChevronUp,
+      lucideGalleryHorizontal,
+      lucideList,
       lucideSearch,
-      lucideSlidersHorizontal,
-      lucideUsers,
       lucideX,
     }),
   ],
@@ -77,9 +74,6 @@ export class VehicleCatalogCard {
   private readonly uniqueId = inject(ZardIdDirective);
   protected readonly searchId = `${this.uniqueId.id()}-search`;
   protected readonly sortId = `${this.uniqueId.id()}-sort`;
-  protected readonly sortPanelId = `${this.uniqueId.id()}-sort-panel`;
-  protected readonly modelsPanelId = `${this.uniqueId.id()}-models-panel`;
-  protected readonly filtersExpanded = signal(false);
   readonly page = input<CatalogPage>();
   readonly failure = input<string>();
   readonly complete = input(false);
@@ -89,45 +83,60 @@ export class VehicleCatalogCard {
   readonly searchField = input.required<FieldTree<string>>();
   readonly sortField = input.required<FieldTree<string>>();
   readonly searchQuery = input('');
-  readonly brandFilter = input('all');
   readonly modelFilter = input('all');
   readonly shortlistedConfigurations = input<VehicleConfiguration[]>([]);
   readonly visibleConfigurations = input<VehicleConfiguration[]>([]);
-  readonly brands = input<string[]>([]);
   readonly modelSummaries = input<ModelSummary[]>([]);
   readonly activeFilterCount = input(0);
   readonly shortlistMessage = input('');
-  readonly catalogView = signal<CatalogView>('catalog');
   readonly vehicleSelected = output<VehicleConfiguration>();
   readonly shortlistToggled = output<VehicleConfiguration>();
   readonly shortlistCompared = output<void>();
   readonly summariesRetried = output<void>();
-  readonly brandChanged = output<string>();
   readonly modelChanged = output<string>();
   readonly filtersCleared = output<void>();
   readonly searchCleared = output<void>();
+  readonly nextPageRequested = output<void>();
 
-  protected isShortlisted(vehicle: VehicleConfiguration): boolean {
-    return this.shortlistedConfigurations().some(({ id }) => id === vehicle.id);
+  /**
+   * Presentation choice; follows the page size until the reader switches it.
+   * Derived through a primitive computed so that a page object replaced by
+   * the host (a re-parsed tool result) with the same size does not reset it.
+   */
+  private readonly pageSize = computed(() => this.page()?.items.length ?? 0);
+  protected readonly layout = linkedSignal(() =>
+    defaultCatalogLayout(this.pageSize()),
+  );
+  /** How many of the filtered configurations are rendered. */
+  protected readonly limit = signal(CATALOG_PAGE_STEP);
+  protected readonly shown = computed(() =>
+    this.visibleConfigurations().slice(0, this.limit()),
+  );
+  protected readonly hidden = computed(() =>
+    Math.max(0, this.visibleConfigurations().length - this.limit()),
+  );
+  protected readonly expanded = computed(
+    () => this.limit() > CATALOG_PAGE_STEP,
+  );
+  /** How many more configurations the next "show more" reveals. */
+  protected readonly step = computed(() =>
+    Math.min(CATALOG_PAGE_STEP, this.hidden()),
+  );
+  /** Size of the next catalog page, offered once the loaded page is exhausted. */
+  protected readonly nextPageSize = computed(() => {
+    const page = this.page();
+    return page?.hasMore && !this.hidden() ? page.limit : 0;
+  });
+
+  protected showMore(): void {
+    this.limit.update((limit) => limit + this.step());
   }
-  protected toggleShortlist(event: Event, vehicle: VehicleConfiguration): void {
-    event.stopPropagation();
-    this.shortlistToggled.emit(vehicle);
+  protected showLess(): void {
+    this.limit.set(CATALOG_PAGE_STEP);
   }
-  protected fact(vehicle: VehicleConfiguration, code: string) {
-    return catalogFact(this.summaries(), vehicle.id, code);
-  }
-  protected metricPercent(
-    vehicle: VehicleConfiguration,
-    code: 'power_max' | 'torque_max',
-  ): number {
-    const values = this.shortlistedConfigurations()
-      .map((item) => this.fact(item, code).numeric)
-      .filter((value) => value !== undefined);
-    const value = this.fact(vehicle, code).numeric;
-    const maximum = Math.max(...values, 0);
-    return value === undefined || maximum === 0
-      ? 0
-      : Math.round((value / maximum) * 100);
+  protected shortlistNames(): string {
+    return this.shortlistedConfigurations()
+      .map((vehicle) => `${vehicle.model} ${vehicle.name}`)
+      .join(', ');
   }
 }

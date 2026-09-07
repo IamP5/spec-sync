@@ -75,15 +75,11 @@ export class VehicleCatalogOverview implements OnChanges {
   protected readonly filters = signal({ query: '', sort: 'catalog-order' });
   protected readonly filterForm = form(this.filters);
   protected readonly searchQuery = computed(() => this.filters().query);
-  protected readonly brandFilter = signal('all');
   protected readonly modelFilter = signal('all');
   protected readonly sortMode = computed(() => sortMode(this.filters().sort));
   protected readonly shortlistedIds = signal<ReadonlySet<string>>(new Set());
   protected readonly shortlistMessage = signal('');
   protected readonly configurations = computed(() => this.page()?.items ?? []);
-  protected readonly brands = computed(() => [
-    ...new Set(this.configurations().map((vehicle) => vehicle.brand)),
-  ]);
   protected readonly modelSummaries = computed(() =>
     modelSummaries(this.configurations()),
   );
@@ -91,7 +87,6 @@ export class VehicleCatalogOverview implements OnChanges {
     filterAndSortConfigurations(
       this.configurations(),
       this.searchQuery(),
-      this.brandFilter(),
       this.modelFilter(),
       this.sortMode(),
       this.summaries(),
@@ -105,35 +100,16 @@ export class VehicleCatalogOverview implements OnChanges {
   protected readonly activeFilterCount = computed(
     () =>
       Number(this.searchQuery().trim().length > 0) +
-      Number(this.brandFilter() !== 'all') +
       Number(this.modelFilter() !== 'all'),
   );
-  protected setBrandFilter(brand: string): void {
-    this.brandFilter.set(brand);
-    if (
-      brand !== 'all' &&
-      !this.configurations().some(
-        (vehicle) =>
-          vehicle.brand === brand && vehicle.model === this.modelFilter(),
-      )
-    )
-      this.modelFilter.set('all');
-  }
 
+  /** Selecting the active model family again shows every family. */
   protected setModelFilter(model: string): void {
-    const next = this.modelFilter() === model ? 'all' : model;
-    this.modelFilter.set(next);
-    if (next !== 'all') {
-      const vehicle = this.configurations().find(
-        (configuration) => configuration.model === next,
-      );
-      if (vehicle) this.brandFilter.set(vehicle.brand);
-    }
+    this.modelFilter.set(this.modelFilter() === model ? 'all' : model);
   }
 
   protected clearFilters(): void {
     this.clearSearch();
-    this.brandFilter.set('all');
     this.modelFilter.set('all');
   }
 
@@ -189,6 +165,17 @@ export class VehicleCatalogOverview implements OnChanges {
   protected compareShortlist(): void {
     const vehicles = this.shortlistedConfigurations();
     if (vehicles.length >= 2) this.comparisonRequested.emit(vehicles);
+  }
+
+  /** Asks the host for the page after the loaded one, with the same search. */
+  protected requestNextPage(): void {
+    const page = this.page();
+    if (page?.hasMore)
+      this.questionRequested.emit({
+        kind: 'catalog-page',
+        offset: page.offset + page.items.length,
+        limit: page.limit,
+      });
   }
 
   protected retrySummaries(): void {

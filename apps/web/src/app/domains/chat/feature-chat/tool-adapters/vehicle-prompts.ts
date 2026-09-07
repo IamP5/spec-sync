@@ -10,6 +10,21 @@ export function vehicleComparisonPrompt(
   return `Compare these exact catalog configurations: ${vehicles.map((vehicle) => `${vehicle.brand} ${vehicle.model} ${vehicle.name} (${vehicle.id})`).join('; ')}. Use their configuration IDs and preserve missing, conflicting, optional, provisional, qualified, and dated facts.`;
 }
 
+/**
+ * Asks for the next page of the catalog search that produced a rendered page.
+ * `args` are the arguments of that search tool call, so the page keeps the
+ * same query, market and model year.
+ */
+export function catalogPagePrompt(
+  question: Extract<VehicleQuestion, { kind: 'catalog-page' }>,
+  args: Record<string, unknown> = {},
+): string {
+  const scope = ['q', 'market', 'modelYear']
+    .filter((key) => args[key] !== undefined && args[key] !== '')
+    .map((key) => `${key} ${JSON.stringify(args[key])}`);
+  return `Show the next page of the vehicle catalog: up to ${question.limit} configurations from offset ${question.offset}${scope.length ? `, keeping the same search (${scope.join(', ')})` : ''}. Call searchVehicleConfigurations with exactly this offset and limit and render the result as the catalog.`;
+}
+
 export function vehicleQuestionPrompt(question: VehicleQuestion): string {
   switch (question.kind) {
     case 'vehicle': {
@@ -23,6 +38,8 @@ export function vehicleQuestionPrompt(question: VehicleQuestion): string {
       return `Analise os relatos selecionados sobre ${question.attributeCode} para as configurações ${question.configurationIds.join(', ')}. Consulte os trechos pelos IDs de evidência: ${question.evidenceIds.join(', ')}. Observações selecionadas: ${question.observationIds.join(', ')}. Explique concordâncias, divergências e limites de aplicação a cada versão. Separe opiniões de especificações técnicas.`;
     case 'discover':
       return `Busque artigos, blogs e vídeos sobre ${question.attributeLabel} de ${question.configurations.map((c) => `${c.brand} ${c.model} ${c.name}, ${c.market} ${c.modelYear} (ID ${c.id})`).join('; ')}. Distinga links descobertos de avaliações já verificadas.`;
+    case 'catalog-page':
+      return catalogPagePrompt(question);
   }
 }
 

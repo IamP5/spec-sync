@@ -36,11 +36,15 @@ export class ChatVehicleComparisonOverview
   readonly toolCall =
     input.required<AngularToolCall<Record<string, unknown>>>();
   protected readonly actions = inject(CHAT_CARD_ACTIONS, { optional: true });
+  // CopilotKit replaces the tool call object on every transcript update;
+  // parsing only when the result text changes keeps the parsed objects
+  // stable, so the vehicle feature keeps its local state and reloads nothing.
+  private readonly resultText = computed(() => this.toolCall().result);
   protected readonly result = computed(() =>
-    parseResult(this.toolCall().result, comparisonSchema),
+    parseResult(this.resultText(), comparisonSchema),
   );
   protected readonly failure = computed(() =>
-    parseResult(this.toolCall().result, failureSchema),
+    parseResult(this.resultText(), failureSchema),
   );
   protected ask(question: VehicleQuestion): void {
     this.actions?.draft(vehicleQuestionPrompt(question));

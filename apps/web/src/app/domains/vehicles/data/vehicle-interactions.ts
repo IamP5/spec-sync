@@ -25,4 +25,6 @@ export type VehicleQuestion =
       kind: 'discover';
       configurations: VehicleConfiguration[];
       attributeLabel: string;
-    };
+    }
+  /** The next page of the catalog search that produced the rendered page. */
+  | { kind: 'catalog-page'; offset: number; limit: number };

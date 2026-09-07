@@ -35,7 +35,8 @@ src/app/
       feature-catalog/
         index.ts, vehicle-catalog-overview.ts
         vehicle-catalog-search-store.ts, vehicle-catalog-detail-store.ts
-        ui/vehicle-catalog-card.ts, ui/vehicle-detail-pane.ts
+        ui/vehicle-catalog-card.ts, ui/vehicle-catalog-strip.ts, ui/vehicle-catalog-list.ts
+        ui/vehicle-detail-pane.ts
       feature-comparison/
         index.ts, vehicle-comparison-overview.ts
         ui/vehicle-comparison-card.ts

@@ -77,7 +77,7 @@ describe('ChatPage', () => {
     );
     expect(card?.textContent).toContain('Opcional');
     expect(card?.textContent).toContain('Black');
-    expect(card?.querySelectorAll('thead th').length).toBe(3);
+    expect(card?.querySelectorAll('.comparison-legend li').length).toBe(2);
   });
 
   it('renders the empty conversation and the prompt', async () => {
@@ -172,7 +172,7 @@ describe('ChatPage', () => {
         element.querySelector('[data-role="user"]')?.textContent,
       ).toContain('Show me the current vehicle catalog');
       expect(element.querySelector('app-vehicle-catalog-card')).not.toBeNull();
-      expect(element.textContent).toContain('Explore available configurations');
+      expect(element.textContent).toContain('showing 2 of 2 on this page');
     } finally {
       vi.unstubAllGlobals();
     }

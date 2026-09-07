@@ -58,33 +58,70 @@ describe('VehicleCatalogOverview', () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
-  it('keeps a selected model active when mobile filters are collapsed', async () => {
+  it('opens a small page as a card strip and lets the reader switch to the list', async () => {
     const element = fixture.nativeElement as HTMLElement;
-    const toggle = buttonNamed(element, 'Filters');
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    const controlledIds =
-      toggle.getAttribute('aria-controls')?.split(' ') ?? [];
-    expect(controlledIds).toHaveLength(2);
-    for (const id of controlledIds) {
-      expect(element.querySelector(`[id="${id}"]`)).not.toBeNull();
-    }
+    expect(element.querySelector('app-vehicle-catalog-strip')).not.toBeNull();
+    expect(element.querySelector('app-vehicle-catalog-list')).toBeNull();
+    expect(rows(element)).toHaveLength(3);
 
-    toggle.click();
+    const list = element.querySelector<HTMLButtonElement>(
+      '[aria-label="Show as list"]',
+    )!;
+    list.click();
     await fixture.whenStable();
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    buttonNamed(element, 'Hilux').click();
-    await fixture.whenStable();
-    toggle.click();
-    await fixture.whenStable();
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(list.getAttribute('aria-pressed')).toBe('true');
+    expect(element.querySelector('app-vehicle-catalog-strip')).toBeNull();
+    expect(element.querySelector('app-vehicle-catalog-list')).not.toBeNull();
     expect(rows(element).map((row) => row.dataset['configurationId'])).toEqual([
+      BLACK_ID,
+      LIMITED_ID,
       HILUX_ID,
     ]);
-    expect(toggle.textContent).toContain('(2)');
+  });
 
-    buttonNamed(element, 'Clear filters').click();
-    await fixture.whenStable();
-    expect(rows(element)).toHaveLength(3);
+  it('opens a large page as a list, reveals it in steps and asks for the next page', async () => {
+    const large = TestBed.createComponent(VehicleCatalogOverview);
+    const items = Array.from({ length: 9 }, (_, index) =>
+      configuration(crypto.randomUUID(), 'Ford', 'Ranger', `Trim ${index}`),
+    );
+    large.componentRef.setInput('page', {
+      items,
+      limit: 20,
+      offset: 0,
+      hasMore: true,
+    });
+    const questions = vi.fn();
+    large.componentInstance.questionRequested.subscribe(questions);
+    await large.whenStable();
+    const element = large.nativeElement as HTMLElement;
+    expect(element.querySelector('app-vehicle-catalog-list')).not.toBeNull();
+    expect(rows(element)).toHaveLength(4);
+    expect(element.textContent).toContain('showing 4 of 9 on this page');
+    expect(element.textContent).toContain('more in the catalog');
+    expect(element.textContent).not.toContain('Load next');
+
+    buttonNamed(element, 'Show 4 more').click();
+    await large.whenStable();
+    expect(rows(element)).toHaveLength(8);
+    expect(element.textContent).not.toContain('Load next');
+    buttonNamed(element, 'Show 1 more').click();
+    await large.whenStable();
+    expect(rows(element)).toHaveLength(9);
+    expect(rows(element).map((row) => row.dataset['configurationId'])).toEqual(
+      items.map(({ id }) => id),
+    );
+
+    buttonNamed(element, 'Load next 20 from the catalog').click();
+    expect(questions).toHaveBeenCalledWith({
+      kind: 'catalog-page',
+      offset: 9,
+      limit: 20,
+    });
+
+    buttonNamed(element, 'Show less').click();
+    await large.whenStable();
+    expect(rows(element)).toHaveLength(4);
+    large.destroy();
   });
 
   it('isolates filters and shortlists for multiple rendered catalogs', async () => {
@@ -162,10 +199,8 @@ describe('VehicleCatalogOverview', () => {
   it('filters the loaded page and sorts known highlights before unknowns', async () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(rows(element)).toHaveLength(3);
-    expect(element.textContent).toContain(
-      '3 configurations shown on this page',
-    );
-    expect(element.textContent).toContain('more are available');
+    expect(element.textContent).toContain('showing 3 of 3 on this page');
+    expect(element.textContent).toContain('more in the catalog');
 
     const search = element.querySelector<HTMLInputElement>(
       '[data-catalog-search]',
@@ -177,6 +212,7 @@ describe('VehicleCatalogOverview', () => {
     expect(rows(element).map((row) => row.dataset['configurationId'])).toEqual([
       HILUX_ID,
     ]);
+    expect(element.textContent).toContain('showing 1 of 1 on this page');
 
     search.value = '';
     search.dispatchEvent(new Event('input', { bubbles: true }));
@@ -202,50 +238,51 @@ describe('VehicleCatalogOverview', () => {
     ).toBe(HILUX_ID);
   });
 
-  it('selecting a model narrows its make and selecting it again clears the model', async () => {
+  it('selecting a model family narrows the page and selecting it again clears it', async () => {
     const element = fixture.nativeElement as HTMLElement;
     const ranger = buttonNamed(element, 'Ranger');
     ranger.click();
     await fixture.whenStable();
     expect(rows(element)).toHaveLength(2);
-    expect(buttonNamed(element, 'Ford').getAttribute('aria-pressed')).toBe(
-      'true',
+    expect(ranger.getAttribute('aria-pressed')).toBe('true');
+    expect(buttonNamed(element, 'All').getAttribute('aria-pressed')).toBe(
+      'false',
     );
 
-    buttonNamed(element, 'Ranger').click();
+    ranger.click();
     await fixture.whenStable();
-    expect(rows(element)).toHaveLength(2);
-    expect(buttonNamed(element, 'Ranger').getAttribute('aria-pressed')).toBe(
-      'false',
+    expect(rows(element)).toHaveLength(3);
+    expect(ranger.getAttribute('aria-pressed')).toBe('false');
+    expect(buttonNamed(element, 'All').getAttribute('aria-pressed')).toBe(
+      'true',
     );
   });
 
   it('compares only the explicit shortlist through the current conversation', async () => {
     const element = fixture.nativeElement as HTMLElement;
-    const shortlistButtons = element.querySelectorAll<HTMLButtonElement>(
-      '[data-action="add-shortlist"]',
-    );
-    shortlistButtons[0]?.click();
-    await fixture.whenStable();
+    expect(element.textContent).toContain('Add two or more to compare');
     element
       .querySelector<HTMLButtonElement>('[data-action="add-shortlist"]')
       ?.click();
     await fixture.whenStable();
-
-    buttonNamed(element, 'Competitors').click();
-    await fixture.whenStable();
+    const compare = element.querySelector<HTMLButtonElement>(
+      '[data-action="compare-shortlist"]',
+    )!;
+    expect(compare.disabled).toBe(true);
     element
-      .querySelector<HTMLButtonElement>('[data-action="compare-shortlist"]')
+      .querySelector<HTMLButtonElement>('[data-action="add-shortlist"]')
       ?.click();
+    await fixture.whenStable();
+    expect(element.textContent).toContain(
+      '2 selected · Ranger Black, Ranger Limited',
+    );
+    expect(compare.disabled).toBe(false);
+    compare.click();
 
     expect(send).toHaveBeenCalledOnce();
     expect(
       send.mock.calls[0]?.[0].map((vehicle: { id: string }) => vehicle.id),
-    ).toContain(BLACK_ID);
-    expect(
-      send.mock.calls[0]?.[0].map((vehicle: { id: string }) => vehicle.id),
-    ).toContain(LIMITED_ID);
-    expect(element.textContent).toContain('No segment label is claimed');
+    ).toEqual([BLACK_ID, LIMITED_ID]);
   });
 
   it.each([false, true])(
