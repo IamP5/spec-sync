@@ -13,8 +13,14 @@ output "ai_url" {
   value       = module.ai.uri
 }
 
-output "domain_dns_records" {
-  value = module.web.domain_dns_records
+output "web_origin_url" {
+  description = "Cloud Run origin fetched by the Cloudflare Worker."
+  value       = module.web.uri
+}
+
+output "web_domain" {
+  description = "Cloudflare custom domain; DNS and HTTPS are provisioned automatically."
+  value       = var.domain != "" ? module.web_domain[0].hostname : null
 }
 
 output "artifact_registry" {
@@ -37,7 +43,6 @@ output "github_actions" {
     GCP_REGION                     = var.region
     GCP_WORKLOAD_IDENTITY_PROVIDER = module.deployer.workload_identity_provider
     GCP_DEPLOYER_SERVICE_ACCOUNT   = module.deployer.service_account_email
-    APP_DOMAIN                     = var.domain
     GOOGLE_OAUTH_CLIENT_ID         = var.google_oauth_client_id
   }
 }

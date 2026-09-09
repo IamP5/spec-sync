@@ -14,6 +14,10 @@ terraform {
       source  = "neo4j-labs/neo4jaura"
       version = "1.1.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.24.0"
+    }
   }
 }
 
@@ -24,3 +28,6 @@ provider "google" {
 
 # AURA_CLIENT_ID and AURA_CLIENT_SECRET are supplied by the runner environment.
 provider "neo4jaura" {}
+
+# CLOUDFLARE_API_TOKEN is supplied by the runner, never stored in Terraform variables.
+provider "cloudflare" {}

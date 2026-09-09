@@ -20,9 +20,14 @@ variable "vertex_location" {
 }
 
 variable "domain" {
-  description = "Optional custom domain for the gateway service (region support is limited, see modules/cloud-run-service)."
+  description = "Optional frontend hostname in the tubadev.com Cloudflare zone; empty uses the Cloud Run URL."
   type        = string
-  default     = ""
+  default     = "specsync.tubadev.com"
+
+  validation {
+    condition     = var.domain == "" || can(regex("^([a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)*tubadev\\.com$", var.domain))
+    error_message = "domain must be a hostname in tubadev.com, without a scheme, port or path."
+  }
 }
 
 variable "placeholder_image" {

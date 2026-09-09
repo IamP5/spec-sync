@@ -3,13 +3,21 @@
 # uses for the front-end -> container hop when the service port is named "h2c". HTTP/1.1 is
 # still accepted on the same port, so the image works either way.
 
-# Cache policy by URL. Angular fingerprints bundles and media (`-XXXXXXXX.ext`, outputHashing
+# Cache policy by URL. Angular fingerprints bundles and media (eight-character hashes, outputHashing
 # "all"), so those are immutable; unhashed files from apps/web/public get a short TTL with
-# ETag revalidation; index.html (and every SPA route that falls back to it) is never cached.
-map $uri $cache_control {
+# ETag revalidation; index.html (and every SPA route that falls back to it) must revalidate.
+map $uri $asset_cache_control {
     default                                                              "no-cache";
-    "~-[A-Z0-9]{8}\.[a-z0-9]+$"                                          "public, max-age=31536000, immutable";
+    "~-[A-Za-z0-9_-]{8}\.[a-z0-9]+$"                                          "public, max-age=31536000, immutable";
     "~\.(?:svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|json|txt|webmanifest|xml)$" "public, max-age=3600, must-revalidate";
+}
+
+# Never retain missing chunks or transient failures, regardless of their filename.
+# Keep the asset policy for successful responses and conditional 304 responses.
+map $status $cache_control {
+    default "no-store";
+    ~^2     $asset_cache_control;
+    304     $asset_cache_control;
 }
 
 server {
@@ -52,7 +60,7 @@ server {
     }
 
     # Static files: a missing asset is a 404, never index.html, so a browser holding an old
-    # index.html after a deploy fails fast and reloads instead of parsing HTML as JS.
+    # index.html after a deploy receives an error instead of parsing HTML as JS.
     location ~* \.(?:js|mjs|css|map|json|svg|png|jpe?g|gif|webp|avif|ico|woff2?|ttf|txt|webmanifest|xml)$ {
         try_files $uri =404;
         include /etc/nginx/snippets/headers.conf;

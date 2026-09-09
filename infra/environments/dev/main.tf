@@ -248,7 +248,6 @@ module "web" {
   max_instances         = 2
   allow_unauthenticated = true
   ingress               = "INGRESS_TRAFFIC_ALL"
-  domain                = var.domain
   env = {
     GATEWAY_URL          = local.gateway_origin
     IDENTITY_API_KEY     = google_apikeys_key.identity.key_string

@@ -1,6 +1,6 @@
 # infra
 
-Terraform for the Google Cloud and Neo4j AuraDB environments of SpecSync, managed through Nx with
+Terraform for the Google Cloud, Cloudflare and Neo4j AuraDB environments of SpecSync, managed through Nx with
 [`@nx-extend/terraform`](https://github.com/tripss/nx-extend/tree/master/packages/terraform).
 
 ## Layout
@@ -18,6 +18,7 @@ infra/
 │   ├── pubsub/           # topic + subscriptions
 │   ├── storage-bucket/
 │   ├── cloud-run-service/# generic Cloud Run v2 service (used for gateway, api, ai and web)
+│   ├── cloudflare-web-proxy/ # Worker + custom hostname, DNS and managed HTTPS
 │   └── github-deployer/  # deployer SA + Workload Identity Federation for GitHub Actions
 └── environments/
     └── dev/              # one root module per environment: backend, sizing, composition
@@ -31,7 +32,8 @@ environment".
 ## Topology
 
 ```
-  users ──► public Cloud Run "web" (nginx: Angular SPA + Google login)
+  users ──► specsync.tubadev.com (Cloudflare Worker) ──► public Cloud Run "web"
+                                                          (nginx: Angular SPA + Google login)
   users ──► public Cloud Run "gateway" (Hono: verified ID tokens and role claims)
                  ├──► private Cloud Run "api" (Spring Boot)
                  │        ├──► Cloud SQL (private IP, Direct VPC egress + Auth connector)
@@ -78,7 +80,7 @@ Variables come from `TF_VAR_*` environment variables or a git-ignored
 `environments/<env>/terraform.tfvars` (see `terraform.tfvars.example`). Deploy scripts read
 `GCP_PROJECT_ID`, `GCP_REGION` and `DEPLOY_ENV`.
 
-`npm exec -- nx run infra:test` verifies the guarded Aura import metadata repair.
+`npm exec -- nx run infra:test` verifies the guarded Aura import metadata repair and the web proxy.
 
 ## First-time setup
 
@@ -99,14 +101,81 @@ Variables come from `TF_VAR_*` environment variables or a git-ignored
 
 4. Copy the `github_actions` output (`nx run infra:output -c dev`) into the repository's
    Actions **variables**: `GCP_PROJECT_ID`, `GCP_REGION`, `GCP_WORKLOAD_IDENTITY_PROVIDER`,
-   `GCP_DEPLOYER_SERVICE_ACCOUNT`, `APP_DOMAIN`. Credentials live in GCP Secret Manager;
+   `GCP_DEPLOYER_SERVICE_ACCOUNT`, `GOOGLE_OAUTH_CLIENT_ID`. Credentials live in GCP Secret Manager;
    no GitHub repository secrets or GCP service-account keys are needed.
-5. If you set a domain, create the records listed in the `domain_dns_records` output. Cloud Run
-   domain mappings only exist in a few regions (see
-   [`modules/cloud-run-service/main.tf`](modules/cloud-run-service/main.tf)); elsewhere put
-   Cloudflare or similar in front of the `app_url`.
+5. Configure the Cloudflare API token described below before applying the dev environment.
+   Terraform creates the Worker custom domain, DNS record and certificate automatically.
 6. Push to `main`. The first `Deploy` run replaces the placeholder images of the three Cloud
    Run services. Use "Run workflow" with `all=true` if the first run picks up nothing.
+
+## Cloudflare frontend domain
+
+The dev frontend uses **https://specsync.tubadev.com**. The existing `tubadev.com` zone
+and account are referenced in [`environments/dev/cloudflare.tf`](environments/dev/cloudflare.tf).
+Terraform manages only the new Worker and its custom domain; the zone's other DNS records
+stay outside this state. No Google load balancer, Cloud Run domain mapping, Cloudflare paid
+subscription, or separate DNS record resource is needed.
+
+The Worker sends requests over HTTPS to `module.web.uri`, with the Cloud Run hostname in
+the `Host` header. Cloud Run distributes requests across the service's instances. Paths,
+queries and streaming responses are preserved. HTTP redirects to HTTPS; redirects back to
+the origin are rewritten to the public hostname. External redirects are returned to the
+browser. Successful responses keep the origin's cache policy. Fingerprinted Angular
+assets use one-year immutable caching; HTML must revalidate and `app-config.json` uses
+`no-store`. Both nginx and the Worker mark errors `no-store`; the Worker's
+`cacheTtlByStatus` also prevents Cloudflare from storing upstream 4xx/5xx responses.
+
+### WAF coverage
+
+The Free plan's Cloudflare Free Managed Ruleset and HTTP DDoS protection are automatically
+active for the zone, including the Worker's custom domain. The dashboard under
+**Security → Settings** shows these protections as **Always active**. There is no paid
+ruleset or Terraform enablement resource needed for this baseline. Keep these
+Cloudflare-managed defaults in place; do not add a zone-wide skip rule. The broader
+Cloudflare Managed Ruleset and OWASP ruleset require a paid plan. See
+[WAF availability](https://developers.cloudflare.com/waf/managed-rules/) and
+[Free plan defaults](https://developers.cloudflare.com/waf/get-started/).
+
+This WAF protects requests arriving at `specsync.tubadev.com`. The direct Cloud Run web
+origin and the gateway's public `run.app` URL do not pass through Cloudflare. The gateway
+still enforces its own authentication and origin checks. Extending Cloudflare
+protection to the API requires routing the gateway through Cloudflare as a separate change.
+
+### Runtime configuration and credentials
+
+The browser continues calling the gateway at its public `run.app` URL. The same `domain`
+variable configures the gateway's `FRONTEND_ORIGIN`, Identity Platform authorized domains,
+and the Identity API key's allowed referrers. This keeps Google login and gateway CORS
+aligned. The gateway OAuth callback and `IDENTITY_AUTH_DOMAIN` do not move.
+
+The hostname default lives in [`environments/dev/variables.tf`](environments/dev/variables.tf).
+CI uses that default; it no longer reads the `APP_DOMAIN` GitHub variable. For a local
+override use `TF_VAR_domain` or `terraform.tfvars`. Setting `domain = ""` removes the Worker
+and custom domain and restores the direct frontend origin. The `web_origin_url` output
+always exposes the underlying Cloud Run service URL; `app_url` is the browser URL.
+
+Create a dedicated Cloudflare API token with **Account → Workers Scripts → Edit** for
+the account in `cloudflare.tf`.
+Cloudflare custom domains manage their DNS and certificate through the Workers API;
+do not use the global API key or grant unrelated permissions. Store the token
+as `CLOUDFLARE_API_TOKEN` in GCP Secret Manager in `fiap-challenge-ford`. The plan and deploy
+workflows load it with the existing federated deployer identity and pass it only to
+Terraform. No token value is committed, passed to the Worker, or read into Terraform state.
+
+For local operations, alongside the GCP and Aura environment variables below:
+
+```bash
+export CLOUDFLARE_API_TOKEN="$(gcloud secrets versions access latest --secret=CLOUDFLARE_API_TOKEN --project="$TF_VAR_project_id")"
+npm exec -- nx run infra:plan -c dev
+npm exec -- nx run infra:apply -c dev
+unset CLOUDFLARE_API_TOKEN
+```
+
+Wait for Cloudflare to finish certificate issuance, then verify the homepage, an Angular
+deep link, Google login and an authenticated gateway call. The Workers Free plan allows
+100,000 requests per day across the account; each proxied asset request counts toward that
+limit. Existing Cloud Run usage charges still apply. See [Workers limits](https://developers.cloudflare.com/workers/platform/limits/)
+and [custom domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
 
 ## Neo4j AuraDB
 
@@ -158,6 +227,8 @@ GCP ADC configured, load the same secrets into the environment without printing 
 ```bash
 export TF_VAR_project_id=fiap-challenge-ford
 export TF_VAR_github_repository=IamP5/spec-sync
+export USER_PROJECT_OVERRIDE=true
+export GOOGLE_BILLING_PROJECT="$TF_VAR_project_id"
 export AURA_CLIENT_ID="$(gcloud secrets versions access latest --secret=AURA_CLIENT_ID --project="$TF_VAR_project_id")"
 export AURA_CLIENT_SECRET="$(gcloud secrets versions access latest --secret=AURA_CLIENT_SECRET --project="$TF_VAR_project_id")"
 npm exec -- nx run infra:plan -c dev

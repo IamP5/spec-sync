@@ -39,6 +39,12 @@ resource "google_sql_database_instance" "this" {
       hour = 4
     }
   }
+
+  lifecycle {
+    # Cloud Scheduler and the manual db-start/db-stop targets own the power state.
+    # An unrelated infrastructure apply must not restart a stopped instance.
+    ignore_changes = [settings[0].activation_policy]
+  }
 }
 
 resource "google_sql_database" "app" {
