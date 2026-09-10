@@ -10,6 +10,7 @@ import { ChatVehicleCatalogOverview } from '../tool-adapters/chat-vehicle-catalo
 import { ChatVehicleComparisonOverview } from '../tool-adapters/chat-vehicle-comparison-overview';
 import { ChatVehicleIngestionEdit } from '../tool-adapters/chat-vehicle-ingestion-edit';
 import { ChatVehicleIngestionPlanEdit } from '../tool-adapters/chat-vehicle-ingestion-plan-edit';
+import { ChatVehicleResearchDetail } from '../tool-adapters/chat-vehicle-research-detail';
 import { ChatVehicleSourceOverview } from '../tool-adapters/chat-vehicle-source-overview';
 import { KnowledgeResultCard } from '../ui/knowledge-result-card';
 import { ToolCallCard } from '../ui/tool-call-card';
@@ -24,6 +25,17 @@ export const START_INGESTION_TOOL = 'startVehicleIngestion';
 
 /** Render server-owned results directly; no second model-authored presentation payload. */
 export function registerChatTools(): void {
+  for (const name of [
+    'researchVehicleSpecifications',
+    'getVehicleResearch',
+    'replayVehicleResearch',
+  ])
+    registerRenderToolCall({
+      name,
+      args: z.record(z.unknown()),
+      component: ChatVehicleResearchDetail,
+      agentId: CHAT_AGENT_ID,
+    });
   registerRenderToolCall({
     name: 'searchVehicleConfigurations',
     args: z.record(z.unknown()),

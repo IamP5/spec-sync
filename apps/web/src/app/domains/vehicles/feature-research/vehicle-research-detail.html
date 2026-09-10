@@ -1,0 +1,228 @@
+@if (!store.authenticated()) {
+<p class="py-4 text-sm text-muted-foreground" role="status">
+  Sign in to view your research request.
+</p>
+} @else if (store.view(); as research) {
+<app-research-comparison-pane
+  [research]="research"
+  [updating]="store.researchIsLoading()"
+  [error]="store.researchError() ? 'Não foi possível atualizar o progresso. A pesquisa continua; tentaremos novamente.' : ''"
+  (evidenceRequested)="openEvidence($event)"
+  (peopleRequested)="openDetails('people')"
+  (refreshRequested)="store.reload()"
+/>
+<z-drawer
+  [(zVisible)]="detailsOpen"
+  [zPlacement]="mobileScreen().matches ? 'bottom' : 'right'"
+  [zHandle]="mobileScreen().matches"
+  class="specsync-research-drawer overflow-hidden md:w-[min(42rem,calc(100vw-3rem))]!"
+>
+  <div
+    class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4"
+  >
+    <z-drawer-title
+      >{{ detailsKind() === 'evidence' ? 'Evidências da pesquisa' : 'Pessoas
+      interessadas' }}</z-drawer-title
+    >
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon-sm"
+      type="button"
+      aria-label="Fechar detalhes da pesquisa"
+      (click)="closeDetails()"
+    >
+      <ng-icon name="lucideX" />
+    </button>
+  </div>
+  <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5">
+    @if (detailsKind() === 'evidence') {
+    <p class="mb-4 text-xs text-muted-foreground">
+      Fonte, versões, valores originais e observações preservadas. Os dados
+      acompanham o progresso sem uma nova busca.
+    </p>
+    @if (evidenceFocus()) {
+    <button
+      z-button
+      zType="outline"
+      zSize="sm"
+      type="button"
+      class="mb-4"
+      (click)="evidenceFocus.set(null)"
+    >
+      Ver todas as evidências
+    </button>
+    }
+    <app-research-result-pane
+      [focus]="evidenceFocus()"
+      [research]="research"
+      [busy]="store.cancelIsPending()"
+      [replaying]="store.replayIsPending()"
+      [updating]="store.researchIsLoading()"
+      [error]="store.cancellationError() || store.reinterpretationError()"
+      (cancelRequested)="store.detach()"
+      (refreshRequested)="store.reload()"
+      (replayRequested)="store.reinterpret()"
+    />
+    } @else {
+    <p class="text-sm font-medium">
+      {{ research.request.brand }} {{ research.request.model }} · {{
+      research.request.modelYear }}
+    </p>
+    <p class="mt-2 text-sm text-muted-foreground">
+      Conheça quem também pesquisa este veículo. Apenas quem escolheu
+      compartilhar aparece aqui; o contato acontece fora do SpecSync.
+    </p>
+    @if (people.peopleIsLoading()) {
+    <p class="py-6 text-sm text-muted-foreground" role="status">
+      Carregando pessoas interessadas…
+    </p>
+    } @else if (people.peopleError()) {
+    <p class="mt-5 text-sm" role="alert">
+      Não foi possível carregar os perfis.
+    </p>
+    <button
+      z-button
+      zType="outline"
+      zSize="sm"
+      class="mt-2"
+      (click)="people.reload()"
+    >
+      Tentar novamente
+    </button>
+    } @else if (people.view(); as page) {
+    <div class="mt-6 divide-y divide-border">
+      @for (person of page.people; track $index) {
+      <div class="flex items-center justify-between gap-4 py-4">
+        <div class="min-w-0">
+          <p class="truncate text-sm font-semibold">
+            {{ person.name }} @if (person.isYou) {
+            <span class="font-normal text-muted-foreground">· você</span> }
+          </p>
+          <p class="text-xs text-muted-foreground">
+            Perfil compartilhado voluntariamente
+          </p>
+        </div>
+        <a
+          z-button
+          zType="outline"
+          zSize="sm"
+          [href]="person.contactUrl"
+          target="_blank"
+          rel="noopener noreferrer nofollow ugc"
+          [attr.aria-label]="'Abrir contato de ' + person.name + ' em outra aba'"
+          >Abrir contato ↗</a
+        >
+      </div>
+      } @empty {
+      <p class="py-5 text-sm text-muted-foreground">
+        Ninguém compartilhou um perfil nesta pesquisa ainda. Você pode ser a
+        primeira pessoa.
+      </p>
+      }
+    </div>
+    @if (page.hasMore) {
+    <p class="text-xs text-muted-foreground">
+      Exibindo os primeiros 100 perfis compartilhados.
+    </p>
+    }
+    <form
+      class="mt-6 border-t border-border pt-5"
+      (submit)="$event.preventDefault(); shareProfile()"
+    >
+      <h3 class="text-base font-semibold">
+        {{ page.mine ? 'Seu perfil nesta pesquisa' : 'Participar da conversa' }}
+      </h3>
+      <p class="mt-1 text-xs text-muted-foreground">
+        Seu nome e link ficam visíveis para outras pessoas com acesso à mesma
+        pesquisa, inclusive novas interpretações da fonte. Você pode removê-los
+        aqui a qualquer momento.
+      </p>
+      <label class="mt-4 block text-sm font-medium"
+        >Nome para exibição<input
+          z-input
+          class="mt-1 w-full"
+          autocomplete="nickname"
+          maxlength="80"
+          [formField]="profileForm.name"
+      /></label>
+      <label class="mt-4 block text-sm font-medium"
+        >Link de contato externo<input
+          z-input
+          class="mt-1 w-full"
+          type="url"
+          placeholder="https://…"
+          maxlength="500"
+          [formField]="profileForm.contactUrl"
+      /></label>
+      <p class="mt-1 text-xs text-muted-foreground">
+        Use um perfil público ou link de contato que você queira compartilhar.
+      </p>
+      @if (profileForm.contactUrl().touched() &&
+      profileForm.contactUrl().invalid()) {
+      <p class="mt-1 text-xs text-destructive">Use um link HTTPS completo.</p>
+      }
+      <label class="mt-4 flex items-start gap-2 text-sm"
+        ><input
+          type="checkbox"
+          class="mt-1 accent-primary"
+          [formField]="profileForm.consent"
+        />Quero compartilhar este nome e link com as pessoas desta
+        pesquisa.</label
+      >
+      @if (participation.error()) {
+      <p class="mt-3 text-sm text-destructive" role="alert">
+        {{ participation.error() }}
+      </p>
+      } @if (participation.saved()) {
+      <p class="mt-3 text-sm" role="status">
+        {{ page.mine ? 'Perfil compartilhado.' : 'Seu perfil foi removido.' }}
+      </p>
+      }
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button
+          z-button
+          type="submit"
+          [zDisabled]="profileForm().invalid() || !profileModel().consent || participation.saveIsPending()"
+        >
+          {{ participation.saveIsPending() ? 'Salvando…' : page.mine ? 'Salvar
+          perfil' : 'Compartilhar meu perfil' }}
+        </button>
+        @if (page.mine) {
+        <button
+          z-button
+          zType="outline"
+          type="button"
+          [zDisabled]="participation.saveIsPending()"
+          (click)="participation.submit({ visible: false })"
+        >
+          Remover meu perfil
+        </button>
+        }
+      </div>
+    </form>
+    } }
+  </div>
+</z-drawer>
+} @else if (store.researchError()) {
+<div class="py-4 text-sm">
+  <p role="alert">
+    This research request could not be loaded. It may be unavailable to your
+    account.
+  </p>
+  <button
+    z-button
+    zType="outline"
+    zSize="sm"
+    class="mt-2"
+    type="button"
+    (click)="store.reload()"
+  >
+    Try again
+  </button>
+</div>
+} @else {
+<p class="py-4 text-sm text-muted-foreground" role="status">
+  Loading your research request…
+</p>
+}

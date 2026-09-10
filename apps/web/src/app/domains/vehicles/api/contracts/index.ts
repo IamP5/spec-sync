@@ -13,6 +13,10 @@ export {
   sourcePreviewSchema,
 } from '../../data/ingestion-contracts';
 export {
+  type ResearchSnapshot,
+  researchSnapshotSchema,
+} from '../../data/research-contracts';
+export {
   type CatalogPage,
   catalogPageSchema,
   type Comparison,

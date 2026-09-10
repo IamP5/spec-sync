@@ -18,6 +18,7 @@ export type IngestionRequest = z.infer<typeof ingestionRequestSchema>;
 export const ingestionClaimSchema = z.object({
   attributeCode: z.string(),
   label: z.string(),
+  originalTerm: z.string().nullable().optional(),
   unit: z.string().nullable(),
   rawValue: z.string(),
   rawUnit: z.string().nullable(),
@@ -33,12 +34,49 @@ export const ingestionClaimSchema = z.object({
 });
 export type IngestionClaim = z.infer<typeof ingestionClaimSchema>;
 
+/** Evidence retained when the source describes a concept outside this interpretation's vocabulary. */
+export const ingestionUnmappedObservationSchema = z.object({
+  originalTerm: z.string(),
+  termOrigin: z
+    .enum(['SOURCE_TEXT', 'VISUAL_LABEL', 'DERIVED_TEXT'])
+    .optional(),
+  rawValue: z.string(),
+  sourceUnit: z.string().nullable(),
+  qualifiers: z.record(z.string()),
+  lineStart: z.number(),
+  lineEnd: z.number(),
+  excerpt: z.string(),
+  locator: z.string(),
+  proposal: z
+    .object({
+      kind: z.enum([
+        'ADD_ATTRIBUTE',
+        'ADD_ALIAS',
+        'EXTEND_VOCABULARY',
+        'REVIEW_SEMANTICS',
+      ]),
+      attributeCode: z.string().nullable(),
+      proposedCode: z.string().nullable(),
+      label: z.string().nullable(),
+      definition: z.string(),
+      valueType: z.enum(['NUMBER', 'TEXT', 'LIST', 'AVAILABILITY']),
+      unit: z.string().nullable(),
+      dimension: z.string().nullable(),
+      alternatives: z.array(z.string()),
+    })
+    .nullable(),
+});
+export type IngestionUnmappedObservation = z.infer<
+  typeof ingestionUnmappedObservationSchema
+>;
+
 export const ingestionConfigurationDraftSchema = z.object({
   name: z.string(),
   identityLineStart: z.number(),
   identityLineEnd: z.number(),
   identityExcerpt: z.string(),
   claims: z.array(ingestionClaimSchema),
+  unmappedObservations: z.array(ingestionUnmappedObservationSchema).optional(),
   warnings: z.array(z.string()),
 });
 export type IngestionConfigurationDraft = z.infer<

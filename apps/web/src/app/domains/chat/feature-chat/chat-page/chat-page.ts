@@ -70,6 +70,7 @@ import { AuthSessionCoordinator } from '../../../auth/api/authentication';
 import { AuthLoginOverview } from '../../../auth/api/features';
 import { SESSION } from '../../../auth/api/session';
 import { UserPreferencesCoordinator } from '../../../user/api/preferences';
+import { VehicleResearchSearch } from '../../../vehicles/api/features';
 import { ChatConnectionCoordinator } from '../../api/connection';
 import {
   CHAT_AGENT_ID,
@@ -172,6 +173,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     NgOptimizedImage,
     CreditsPill,
     RenderToolCalls,
+    VehicleResearchSearch,
     RunOptionsPicker,
     ZardAlertComponent,
     ZardButtonComponent,
