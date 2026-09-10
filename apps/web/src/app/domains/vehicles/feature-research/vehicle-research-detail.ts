@@ -26,8 +26,10 @@ import {
 } from '@/ui/components/drawer';
 import { ZardInputComponent } from '@/ui/components/input';
 
+import type { IngestionRunSummary } from '../data/ingestion-contracts';
 import { researchContactUrlSchema } from '../data/research-contracts';
 import type { ResearchEvidenceFocus } from '../data/research-presentation';
+import { VehicleIngestionRunDetail } from '../feature-ingestion';
 import { ResearchDetailStore } from './research-detail-store';
 import { ResearchInterestDetailStore } from './research-interest-detail-store';
 import { ResearchInterestSearchStore } from './research-interest-search-store';
@@ -37,6 +39,7 @@ import { ResearchResultPane } from './ui/research-result-pane';
 @Component({
   selector: 'app-vehicle-research-detail',
   imports: [
+    VehicleIngestionRunDetail,
     FormField,
     ZardInputComponent,
     ResearchComparisonPane,
@@ -88,6 +91,15 @@ export class VehicleResearchDetail {
     });
   }
   readonly requestId = input.required<string>();
+  readonly reviewInitiallyOpen = input(false);
+  protected readonly reviewOpen = linkedSignal({
+    source: () => `${this.requestId()}:${this.reviewInitiallyOpen()}`,
+    computation: () => this.reviewInitiallyOpen(),
+  });
+  protected reviewed(run: IngestionRunSummary): void {
+    if (run.status === 'PUBLISHED' && this.store.view()?.status !== 'PUBLISHED')
+      this.store.reload();
+  }
   protected readonly store = inject(ResearchDetailStore);
   protected readonly mobileScreen = toSignal(
     inject(BreakpointObserver).observe('(max-width: 767px)'),

@@ -1,6 +1,7 @@
 package com.fiap.ford.specsync.web.api;
 
 import com.fiap.ford.specsync.web.dto.request.CreateResearchRequest;
+import com.fiap.ford.specsync.web.dto.request.PublishIngestionRequest;
 import com.fiap.ford.specsync.web.dto.request.ReplayResearchRequest;
 import com.fiap.ford.specsync.web.dto.request.SaveResearchInterestRequest;
 import com.fiap.ford.specsync.web.dto.response.*;
@@ -24,6 +25,18 @@ public interface ResearchApi {
     @GetMapping("/{id}")
     @Operation(summary = "Read this user's persisted research progress")
     ResearchResponse get(@PathVariable String uid, @PathVariable UUID id);
+
+    @GetMapping("/{id}/review")
+    @Operation(summary = "Open the existing research draft for authenticated review")
+    IngestionResponse review(@PathVariable String uid, @PathVariable UUID id);
+
+    @GetMapping("/{id}/review/source")
+    ResearchSourceResponse reviewSource(@PathVariable String uid, @PathVariable UUID id);
+
+    @PostMapping("/{id}/review/publish")
+    @Operation(summary = "Publish selected claims from the existing research draft")
+    IngestionResponse publishReview(
+            @PathVariable String uid, @PathVariable UUID id, @Valid @RequestBody PublishIngestionRequest input);
 
     @PostMapping("/{id}/replay")
     @Operation(summary = "Reinterpret an immutable capture under the current ontology")

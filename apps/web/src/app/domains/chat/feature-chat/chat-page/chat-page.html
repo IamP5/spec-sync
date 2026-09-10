@@ -439,7 +439,10 @@
             ></div>
           </div>
         </details>
-        } } @else if (textOf(turn) || turn.toolCalls?.length) {
+        } } @else if (textOf(turn) ||
+        presentationFor(turn)?.message?.toolCalls?.length ||
+        presentationFor(turn)?.notes?.length || (showActivity() &&
+        turn.toolCalls?.length)) {
         <z-message
           zAlign="start"
           zAlt="Assistant"
@@ -499,10 +502,50 @@
               </details>
               }
             </div>
-            }
+            } @for (note of presentationFor(turn)?.notes ?? []; track note.id) {
+            @if (note.sources?.length) {
+            <details
+              class="mx-auto w-full max-w-3xl text-sm text-muted-foreground"
+              data-role="tool-summary"
+            >
+              <summary class="cursor-pointer py-2">{{ note.text }}</summary>
+              <p>
+                Source candidates only. Vehicle and model-year applicability
+                must be checked in the documents.
+              </p>
+              <ul class="mt-2 space-y-2">
+                @for (source of note.sources; track $index) {
+                <li>
+                  <a
+                    class="underline"
+                    [href]="source.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >{{ source.title }}<span class="sr-only">
+                      (opens in a new tab)</span
+                    ></a
+                  >
+                </li>
+                }
+              </ul>
+              @for (warning of note.warnings ?? []; track $index) {
+              <p class="mt-2">{{ warning }}</p>
+              }
+            </details>
+            } @else {
+            <div
+              class="mx-auto w-full max-w-3xl text-sm text-muted-foreground"
+              data-role="tool-summary"
+            >
+              <p>{{ note.text }}</p>
+              @for (warning of note.warnings ?? []; track $index) {
+              <p class="mt-2">{{ warning }}</p>
+              }
+            </div>
+            } }
             <copilot-render-tool-calls
               class="flex flex-col gap-3"
-              [message]="turn"
+              [message]="presentationFor(turn)?.message || turn"
               [messages]="messages()"
               [isLoading]="streaming()"
               [agentId]="agentId"

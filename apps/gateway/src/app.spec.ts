@@ -258,6 +258,10 @@ describe('gateway authentication and routing', () => {
       [`/ai/chat/research/${id}`, 'GET'],
       [`/ai/chat/research/${id}/interests`, 'GET'],
       [`/ai/chat/research/${id}/interests`, 'POST'],
+      [`/ai/chat/research/${id}/review`, 'GET'],
+      [`/ai/chat/research/${id}/review/source`, 'GET'],
+      [`/ai/chat/research/${id}/review/publish`, 'POST'],
+      [`/ai/chat/threads/${id}/research-updates`, 'POST'],
       [`/ai/chat/research/${id}`, 'DELETE'],
     ]) {
       const { app, fetcher } = setup();
@@ -278,6 +282,8 @@ describe('gateway authentication and routing', () => {
       [`/ai/chat/research/${id}`, 'POST'],
       [`/ai/chat/research/${id}/interests`, 'DELETE'],
       [`/ai/chat/research/${id}/interests`, 'PUT'],
+      [`/ai/chat/research/${id}/review`, 'POST'],
+      [`/ai/chat/research/${id}/review/publish`, 'GET'],
       [`/ai/chat/research/${id}/checkpoints`, 'GET'],
       ['/ai/chat/research/not-a-uuid', 'GET'],
       ['/ai/internal/research/extract', 'POST'],

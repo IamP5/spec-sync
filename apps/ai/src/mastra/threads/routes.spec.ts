@@ -75,6 +75,7 @@ function route(path: string, method: string) {
 
 function context(params: Record<string, string> = {}, body?: unknown) {
   return {
+    header: vi.fn(),
     req: {
       raw: { headers: new Headers() },
       param: (name: string) => params[name],
@@ -107,6 +108,21 @@ describe('chat thread routes', () => {
     stored.clear();
     messages.clear();
     verified = { uid: 'u-1', resourceId: 'user:u-1' };
+  });
+
+  it('refuses completion delivery for another account or an anonymous caller', async () => {
+    seed('theirs-notification', 'user:u-2');
+    const handler = route('/chat/threads/:threadId/research-updates', 'POST');
+    expect(
+      (await handler(context({ threadId: 'theirs-notification' }))).status,
+    ).toBe(404);
+    expect(memory.recall).not.toHaveBeenCalledWith(
+      expect.objectContaining({ threadId: 'theirs-notification' }),
+    );
+    verified = undefined;
+    expect(
+      (await handler(context({ threadId: 'theirs-notification' }))).status,
+    ).toBe(401);
   });
 
   it('lists only the threads of the signed-in user', async () => {

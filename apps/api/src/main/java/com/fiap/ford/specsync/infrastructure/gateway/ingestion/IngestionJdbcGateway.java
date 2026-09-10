@@ -533,6 +533,13 @@ public class IngestionJdbcGateway implements IngestionGateway {
     @Override
     @Transactional
     public Ingestion.Run publish(UUID id, String owner, Ingestion.Review review) {
+        return publish(id, owner, review, owner);
+    }
+
+    @Override
+    @Transactional
+    public Ingestion.Run publish(UUID id, String owner, Ingestion.Review review, String reviewer) {
+        require(reviewer != null && !reviewer.isBlank(), "Reviewer identity is required");
         long revision =
                 jdbc.queryForObject("SELECT revision FROM ingestion.catalog_version FOR UPDATE", Map.of(), Long.class);
         var saved = row(id, owner, true);
@@ -592,7 +599,7 @@ public class IngestionJdbcGateway implements IngestionGateway {
             for (var claim : selected)
                 changed |= publishClaim(
                         id,
-                        owner,
+                        reviewer,
                         review,
                         sourceId,
                         config,

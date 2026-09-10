@@ -50,16 +50,14 @@ it('probes GET headers without consuming an oversized PDF body', async () => {
   expect(callback).toHaveBeenCalledWith(null, '8.8.8.8', 4);
 });
 
-it('checks redirect hosts and private DNS before issuing requests', async () => {
-  serve(
-    response(302, { location: 'https://ram.com.br.evil.test/catalogo.pdf' }),
-  );
+it('blocks private redirect addresses and private DNS before issuing requests', async () => {
+  serve(response(302, { location: 'https://169.254.169.254/catalogo.pdf' }));
   await expect(
     probeSourceMetadata(
       'https://www.ram.com.br/catalogo.pdf',
       new AbortController().signal,
     ),
-  ).rejects.toThrow('approved manufacturer');
+  ).rejects.toThrow('public HTTPS');
   expect(request).toHaveBeenCalledOnce();
   request.mockClear();
   lookup.mockResolvedValue([{ address: '127.0.0.1', family: 4 }]);
@@ -90,4 +88,29 @@ it('preserves unknown length and refuses pre-cancelled work without network acce
     ),
   ).rejects.toThrow('cancelled');
   expect(lookup).not.toHaveBeenCalled();
+});
+
+it('follows a public redirect onto shared hosting and checks DNS again', async () => {
+  serve(
+    response(302, {
+      location: 'https://static.autoforce.com/new-client/spec.pdf',
+    }),
+    response(200, {
+      'content-type': 'application/pdf',
+      'content-length': '2048',
+    }),
+  );
+  const result = await probeSourceMetadata(
+    'https://www.geelybrasil.com.br/spec.pdf',
+    new AbortController().signal,
+  );
+  expect(result.url).toBe('https://static.autoforce.com/new-client/spec.pdf');
+  expect(request).toHaveBeenCalledTimes(2);
+  expect(
+    lookup.mock.calls
+      .map((call) => call[0])
+      .filter((host) =>
+        ['www.geelybrasil.com.br', 'static.autoforce.com'].includes(host),
+      ),
+  ).toEqual(['www.geelybrasil.com.br', 'static.autoforce.com']);
 });

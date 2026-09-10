@@ -161,6 +161,36 @@ describe('ChatPage', () => {
     expect(card?.querySelectorAll('.comparison-legend li').length).toBe(2);
   });
 
+  it('renders compact empty results through real CopilotKit while retaining inspectable activity', async () => {
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'searchVehicleConfigurations',
+        { q: 'Ford F-150', modelYear: 2026 },
+        { items: [], limit: 20, offset: 0, hasMore: false },
+        'The catalog has no matching configurations.',
+      ),
+    );
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'Find Ford F-150');
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('app-vehicle-catalog-card')).toBeNull();
+    expect(
+      element.querySelector('[data-role="tool-summary"]')?.textContent,
+    ).toContain('Ford F-150 · 2026');
+    expect(
+      element.querySelector('[data-role="tool-activity"]')?.textContent,
+    ).toContain('searchVehicleConfigurations');
+    expect(
+      TestBed.inject(ConversationDetailStore)
+        .messages()
+        .some((message) => message.role === 'tool'),
+    ).toBe(true);
+  });
+
   it('renders the empty conversation and the prompt', async () => {
     const fixture = TestBed.createComponent(ChatPage);
     await fixture.whenStable();

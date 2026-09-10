@@ -201,3 +201,33 @@ describe('creditsErrorOf', () => {
     ).toBeUndefined();
   });
 });
+
+it('distinguishes empty and failed business results from successful execution', () => {
+  for (const [status, expected] of [
+    ['EMPTY', 'No matches'],
+    ['UNAVAILABLE', 'Failed'],
+    ['FAILED', 'Failed'],
+    ['QUEUED', 'Completed'],
+  ]) {
+    const messages: Message[] = [
+      {
+        id: 'a',
+        role: 'assistant',
+        toolCalls: [
+          {
+            id: 'c',
+            type: 'function',
+            function: { name: 'getVehicleResearch', arguments: '{}' },
+          },
+        ],
+      },
+      {
+        id: 'r',
+        role: 'tool',
+        toolCallId: 'c',
+        content: JSON.stringify({ status }),
+      },
+    ];
+    expect(toolActivities(messages, false).get('a')?.[0].status).toBe(expected);
+  }
+});

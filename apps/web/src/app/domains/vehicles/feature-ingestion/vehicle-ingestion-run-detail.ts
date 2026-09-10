@@ -79,7 +79,8 @@ interface ConfigurationReviewState {
   host: { class: 'block min-w-0 w-full' },
 })
 export class VehicleIngestionRunDetail {
-  readonly runId = input.required<string>();
+  readonly runId = input('');
+  readonly researchId = input('');
   /** Compact chrome for the chat transcript. */
   readonly compact = input(false, { transform: booleanAttribute });
   /** Credential-free summary, emitted whenever the persisted run changes. */
@@ -153,14 +154,20 @@ export class VehicleIngestionRunDetail {
       this.store.publishError()?.message ??
       this.store.rejectError()?.message ??
       (this.store.runError()
-        ? 'Could not load this import. Check the curator key and refresh.'
+        ? 'Não foi possível carregar a revisão. Entre na sua conta e atualize.'
         : ''),
   );
 
   constructor() {
     effect(() => {
       const id = this.runId();
-      untracked(() => this.store.load(id));
+      const researchId = this.researchId();
+      const scope = this.store.sessionScope?.();
+      untracked(() =>
+        researchId
+          ? this.store.load(id, scope ? researchId : '')
+          : this.store.load(id),
+      );
     });
     effect(() => {
       const run = this.run();

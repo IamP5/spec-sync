@@ -3,25 +3,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { htmlText, publicAddress, sha256, validateSourceUrl } from './source';
 describe('source capture boundaries', () => {
   afterEach(() => vi.unstubAllEnvs());
-  it('allows official RAM hosts while respecting deployment overrides and rejecting lookalikes', () => {
-    expect(
-      validateSourceUrl('https://www.ram.com.br/picapes/1500.html').hostname,
-    ).toBe('www.ram.com.br');
-    expect(() =>
-      validateSourceUrl('https://ram.com.br.evil.test/1500.pdf'),
-    ).toThrow();
-    expect(() =>
-      validateSourceUrl('https://unapproved-stellantis-cdn.test/1500.pdf'),
-    ).toThrow();
+  it('allows public sources independently from the preferred-domain environment setting', () => {
     vi.stubEnv('SPECSYNC_INGESTION_SOURCE_DOMAINS', 'ford.com.br');
-    expect(() =>
-      validateSourceUrl('https://www.ram.com.br/picapes/1500.html'),
-    ).toThrow();
+    for (const url of [
+      'https://www.ram.com.br/picapes/1500.html',
+      'https://www.webmotors.com.br/catalogo',
+      'https://files.example.com/brochure.pdf',
+    ])
+      expect(() => validateSourceUrl(url)).not.toThrow();
   });
-  it('rejects credentials, lookalike domains, non-HTTPS and private sources', () => {
+  it('rejects credentials, non-HTTPS and private sources', () => {
     for (const url of [
       'http://www.ford.com.br/specs',
-      'https://ford.com.br.evil.test/a',
       'https://user:pass@ford.com.br/a',
       'https://localhost/a',
       'https://127.0.0.1/a',

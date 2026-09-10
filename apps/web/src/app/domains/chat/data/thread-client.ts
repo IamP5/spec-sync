@@ -48,6 +48,12 @@ export class ThreadClient {
     );
   }
 
+  researchUpdates(id: string): Observable<ChatThread> {
+    return this.http
+      .post<unknown>(`${this.url(id)}/research-updates`, {})
+      .pipe(map(parseThread));
+  }
+
   rename(id: string, title: string): Observable<ChatThreadSummary> {
     return this.http
       .patch<unknown>(this.url(id), { title })

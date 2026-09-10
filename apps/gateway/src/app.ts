@@ -11,6 +11,11 @@ export function isChatThreadPath(path: string): boolean {
 }
 
 function isResearchRoute(path: string, method: string): boolean {
+  const review =
+    /^\/ai\/chat\/research\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/review(\/source|\/publish)?$/i.exec(
+      path,
+    );
+  if (review) return method === (review[1] === '/publish' ? 'POST' : 'GET');
   if (
     /^\/ai\/chat\/research\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/interests$/i.test(
       path,
@@ -103,6 +108,8 @@ export function createGateway(
           (path === '/ai/chat/models' && c.req.method === 'GET') ||
           (path === '/ai/chat/credits' && c.req.method === 'GET') ||
           isResearchRoute(path, c.req.method) ||
+          (/^\/ai\/chat\/threads\/[^/]+\/research-updates$/.test(path) &&
+            c.req.method === 'POST') ||
           (isChatThreadPath(path) &&
             ['GET', 'PATCH', 'DELETE'].includes(c.req.method))
         )

@@ -125,7 +125,7 @@ const assembleStep = createStep({
 export const vehicleIngestionWorkflow = createWorkflow({
   id: VEHICLE_INGESTION_WORKFLOW_ID,
   description:
-    'Reviewed vehicle specification import: capture an official source, identify its configurations and extract evidenced claims',
+    'Reviewed vehicle specification import: capture a source document, identify its configurations and extract evidenced claims',
   inputSchema: extractionInput,
   outputSchema: draftSchema,
 })

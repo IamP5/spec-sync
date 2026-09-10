@@ -2,7 +2,9 @@
 <p class="py-4 text-sm text-muted-foreground" role="status">
   Sign in to view your research request.
 </p>
-} @else if (store.view(); as research) {
+} @else if (store.view(); as research) { @if (!reviewOpen() ||
+research.requestStatus !== 'ACTIVE' || (research.status !== 'REVIEW' &&
+research.status !== 'PUBLISHED')) {
 <app-research-comparison-pane
   [research]="research"
   [updating]="store.researchIsLoading()"
@@ -11,6 +13,32 @@
   (peopleRequested)="openDetails('people')"
   (refreshRequested)="store.reload()"
 />
+} @if (research.requestStatus === 'ACTIVE' && (research.status === 'REVIEW' ||
+research.status === 'PUBLISHED')) {
+<div class="mt-3 space-y-3">
+  <button
+    z-button
+    type="button"
+    (click)="reviewOpen.set(!reviewOpen())"
+    [attr.aria-expanded]="reviewOpen()"
+  >
+    {{ reviewOpen() ? 'Voltar aos resultados da pesquisa' : research.status ===
+    'PUBLISHED' ? 'Ver publicação no catálogo' : 'Revisar e importar para o
+    catálogo' }}
+  </button>
+  @if (reviewOpen()) {
+  <p class="text-sm text-muted-foreground">
+    Revise os dados já extraídos e escolha o que publicar. Nenhuma nova pesquisa
+    será iniciada.
+  </p>
+  <app-vehicle-ingestion-run-detail
+    [researchId]="research.id"
+    compact
+    (runChanged)="reviewed($event)"
+  />
+  }
+</div>
+}
 <z-drawer
   [(zVisible)]="detailsOpen"
   [zPlacement]="mobileScreen().matches ? 'bottom' : 'right'"

@@ -521,6 +521,10 @@ export class ChatPage {
     });
   }
 
+  protected presentationFor(turn: ChatTurn) {
+    return this.store.toolPresentation().get(turn.id);
+  }
+
   protected activityFor(turn: ChatTurn) {
     return this.store.toolActivities().get(turn.id) ?? [];
   }

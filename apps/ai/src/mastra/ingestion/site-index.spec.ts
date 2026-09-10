@@ -162,16 +162,16 @@ it('recognizes F150 aliases, deep paths and duplicated RAM model names without m
 
 it('validates sitemap leaves and does not cache temporary empty results', async () => {
   downloadSource.mockRejectedValue(new Error('temporary'));
-  expect(await sitemapUrls('ford.com.br', signal, domains)).toEqual([]);
+  expect(await sitemapUrls('ford.com.br', signal)).toEqual([]);
   downloadSource.mockImplementation(async (url: string) =>
     url.endsWith('robots.txt')
       ? xml('text/plain', '')(url)
       : xml(
           'application/xml',
-          '<urlset><url><loc>https://ford.com.br.evil.test/picapes/f-150/</loc></url><url><loc>https://www.ford.com.br/picapes/f-150/</loc></url><url><loc>https://user:pass@www.ford.com.br/picapes/f-150/</loc></url></urlset>',
+          '<urlset><url><loc>https://127.0.0.1/picapes/f-150/</loc></url><url><loc>https://www.ford.com.br/picapes/f-150/</loc></url><url><loc>https://user:pass@www.ford.com.br/picapes/f-150/</loc></url></urlset>',
         )(url),
   );
-  expect(await sitemapUrls('ford.com.br', signal, domains)).toEqual([
+  expect(await sitemapUrls('ford.com.br', signal)).toEqual([
     'https://www.ford.com.br/picapes/f-150/',
   ]);
 });

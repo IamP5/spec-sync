@@ -120,7 +120,7 @@ export function linkedSpecificationPages(
   const result: Array<{ title: string; url: string }> = [];
   for (const link of anchors(html, includeNavigation)) {
     try {
-      const url = validateSourceUrl(new URL(link.href, base).href, domains);
+      const url = validateSourceUrl(new URL(link.href, base).href);
       const key = sourceKey(url.href);
       const words = `${url.pathname} ${link.title}`;
       if (
@@ -143,14 +143,16 @@ export function linkedSpecificationPages(
       seen.add(key);
       result.push({ title: link.title, url: url.href });
     } catch {
-      // Unsupported schemes and hosts are never returned or fetched.
+      // Unsupported schemes and local addresses are never returned or fetched.
     }
   }
   return result
     .sort(
       (a, b) =>
         Number(specificationHint(`${b.title} ${b.url}`)) -
-        Number(specificationHint(`${a.title} ${a.url}`)),
+          Number(specificationHint(`${a.title} ${a.url}`)) ||
+        Number(preferredHost(b.url, domains)) -
+          Number(preferredHost(a.url, domains)),
     )
     .slice(0, 6);
 }
@@ -186,7 +188,7 @@ function labelFor(html: string, reference: string, index: number): string {
 }
 
 /**
- * PDF documents one manufacturer page links, on approved domains only.
+ * PDF documents linked by a source page, including external document hosting.
  * Manufacturer pages reference their brochures from markup and from embedded
  * JSON, so the raw HTML is scanned rather than only anchor elements.
  * Specification brochures come first; nothing here is downloaded.
@@ -212,10 +214,7 @@ export function linkedPdfs(
     if (!raw) continue;
     let url: URL;
     try {
-      url = validateSourceUrl(
-        new URL(raw.replace(/\\\//g, '/'), base).href,
-        domains,
-      );
+      url = validateSourceUrl(new URL(raw.replace(/\\\//g, '/'), base).href);
     } catch {
       continue;
     }
@@ -238,6 +237,16 @@ export function linkedPdfs(
     if (documents.length >= MAX_LINKS) break;
   }
   return documents.sort(
-    (a, b) => Number(b.specification) - Number(a.specification),
+    (a, b) =>
+      Number(b.specification) - Number(a.specification) ||
+      Number(preferredHost(b.url, domains)) -
+        Number(preferredHost(a.url, domains)),
+  );
+}
+
+function preferredHost(value: string, domains: string[]): boolean {
+  const host = new URL(value).hostname;
+  return domains.some(
+    (domain) => host === domain || host.endsWith(`.${domain}`),
   );
 }

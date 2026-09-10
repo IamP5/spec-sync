@@ -29,6 +29,7 @@ export function registerChatTools(): void {
     'researchVehicleSpecifications',
     'getVehicleResearch',
     'replayVehicleResearch',
+    'reviewVehicleResearch',
   ])
     registerRenderToolCall({
       name,
@@ -83,7 +84,7 @@ export function registerChatTools(): void {
   registerHumanInTheLoop({
     name: START_INGESTION_TOOL,
     description:
-      'Start a reviewed vehicle specification import in the browser. The curator confirms the scope and enters the curator key there; you receive the run id and status. Call it after the source and configurations are agreed. Arguments: sourceUrl (official manufacturer HTML page or PDF), brand, model, modelYear, configurations (names to import; empty imports every configuration the source presents, up to 8).',
+      'Legacy standalone ingestion only. Never use for existing or new chat research: use researchVehicleSpecifications followed by reviewVehicleResearch, which requires no curator key. The curator confirms the scope and enters the curator key there; you receive the run id and status. Call it after the source and configurations are agreed. Arguments: sourceUrl (official manufacturer HTML page or PDF), brand, model, modelYear, configurations (names to import; empty imports every configuration the source presents, up to 8).',
     parameters: ingestionStartArgsSchema,
     component: ChatVehicleIngestionEdit,
     agentId: CHAT_AGENT_ID,

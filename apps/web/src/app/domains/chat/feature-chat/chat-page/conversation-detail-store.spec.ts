@@ -1,6 +1,7 @@
 import { BaseEvent, EventType } from '@ag-ui/client';
 import { TestBed } from '@angular/core/testing';
 import { Dispatcher } from '@ngrx/signals/events';
+import { of, Subject } from 'rxjs';
 
 import {
   failedRun,
@@ -30,6 +31,71 @@ describe('ConversationDetailStore', () => {
       providers: [...provideFakeChatAgent(agent), ...provideFakeThreads()],
     });
     threads = TestBed.inject(FakeThreadClient);
+  });
+
+  it('appends persisted completion without another model run or duplicate messages', async () => {
+    const update = {
+      id: 'research-ready-test',
+      role: 'assistant' as const,
+      content: 'Pesquisa concluída. Revise os dados.',
+    };
+    const client = vi
+      .spyOn(threads, 'researchUpdates')
+      .mockImplementation((id) => of(storedThread(id, '', 1, [update])));
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'researchVehicleSpecifications',
+        {},
+        { id: 'private-request' },
+        'Pesquisando',
+      ),
+    );
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Pesquisar Ranger');
+    TestBed.tick();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(client).toHaveBeenCalled();
+    expect(
+      store.messages().filter((message) => message.id === update.id),
+    ).toHaveLength(1);
+    expect(agent.runs).toHaveLength(1);
+    const id = store.threadId();
+    store.reset();
+    await store.open(id);
+    TestBed.tick();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(
+      store.messages().filter((message) => message.id === update.id),
+    ).toHaveLength(1);
+    expect(agent.runs).toHaveLength(1);
+  });
+
+  it('ignores a completion response after switching conversations', async () => {
+    const pending = new Subject<ReturnType<typeof storedThread>>();
+    vi.spyOn(threads, 'researchUpdates').mockReturnValue(pending);
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'researchVehicleSpecifications',
+        {},
+        { id: 'private-request' },
+        'Pesquisando',
+      ),
+    );
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Pesquisar Ranger');
+    TestBed.tick();
+    const old = store.threadId();
+    store.reset();
+    pending.next(
+      storedThread(old, '', 1, [
+        { id: 'research-ready-old', role: 'assistant', content: 'Ready' },
+      ]),
+    );
+    pending.complete();
+    await Promise.resolve();
+    expect(store.messages()).toEqual([]);
   });
 
   it('restores explicit comparison selection and keeps it isolated between threads', async () => {

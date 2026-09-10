@@ -29,7 +29,11 @@ const schema = z.object({
         <strong>{{ title() }}</strong>
         @if (result(); as data) {
           <p class="my-2 text-muted-foreground" role="status">
-            {{ data.message }}
+            {{
+              emptyContent()
+                ? 'No external links found for this search.'
+                : data.message
+            }}
           </p>
           @if (specificationDiscovery()) {
             @if (data.items?.length) {
@@ -53,6 +57,11 @@ const schema = z.object({
             <ul class="space-y-4">
               @for (item of data.items; track $index) {
                 <li class="border-l-2 pl-3">
+                  @if (specificationDiscovery() && item['sourceType']) {
+                    <p class="mb-1 text-xs text-muted-foreground">
+                      {{ sourceTypeLabel(item['sourceType']) }}
+                    </p>
+                  }
                   @if (link(item); as href) {
                     <a
                       class="font-medium underline"
@@ -199,8 +208,15 @@ export class KnowledgeResultCard
       ['ERROR', 'UNAVAILABLE'].includes(this.result()?.status ?? '') ||
       (this.toolCall().status === 'complete' && !this.result()),
   );
+  protected readonly emptyContent = computed(
+    () =>
+      this.toolCall().name === 'discoverVehicleContent' &&
+      this.result()?.status === 'EMPTY',
+  );
   protected readonly title = computed(() =>
-    toolTitle(this.toolCall().name ?? ''),
+    this.emptyContent()
+      ? 'External content search'
+      : toolTitle(this.toolCall().name ?? ''),
   );
   protected readonly format = displayValue;
   protected yearHint(item: Record<string, unknown>): number | undefined {
@@ -209,6 +225,14 @@ export class KnowledgeResultCard
       ? value
       : undefined;
   }
+  protected sourceTypeLabel(value: unknown): string {
+    return value === 'MANUFACTURER_WEBSITE'
+      ? 'Site da montadora'
+      : value === 'LINKED_FROM_MANUFACTURER'
+        ? 'Documento vinculado pelo site da montadora'
+        : 'Site externo — confirme autoria e evidências';
+  }
+
   protected label(item: Record<string, unknown>) {
     return displayValue(
       item['title'] ??
@@ -248,8 +272,7 @@ function toolTitle(name: string): string {
         getRelatedReviews: 'Avaliações relacionadas',
         getEvidenceExcerpt: 'Trecho e contexto da fonte',
         discoverVehicleContent: 'Artigos, blogs e vídeos encontrados',
-        discoverVehicleSpecificationSources:
-          'Fontes oficiais de especificações',
+        discoverVehicleSpecificationSources: 'Fontes de especificações',
       } as Record<string, string>
     )[name] ?? 'Resultado da consulta'
   );

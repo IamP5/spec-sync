@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { inject } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import {
   rxMutation,
   withDevtools,
@@ -14,7 +14,10 @@ import {
   withProps,
   withState,
 } from '@ngrx/signals';
+import { on, withReducer } from '@ngrx/signals/events';
 
+import { sessionEvents } from '../../auth/api/events';
+import { SESSION } from '../../auth/api/session';
 import { CuratorSessionClient } from '../data/curator-session-client';
 import { IngestionClient } from '../data/ingestion-client';
 import {
@@ -29,20 +32,36 @@ import {
  * a chat card alike.
  */
 export const IngestionDetailStore = signalStore(
-  withState({ id: '' }),
+  withState({ id: '', researchId: '' }),
   withProps(() => ({
     _client: inject(IngestionClient),
     _session: inject(CuratorSessionClient),
+    _auth: inject(SESSION),
     _document: inject(DOCUMENT),
   })),
-  withComputed((store) => ({ hasKey: store._session.hasKey })),
+  withComputed((store) => ({
+    hasKey: computed(() =>
+      store.researchId()
+        ? store._auth.authenticated()
+        : store._session.hasKey(),
+    ),
+    sessionScope: store._auth.scope,
+  })),
   withResource((store) => ({
-    run: store._client.detailResource(store.id, store._session.key),
+    run: store._client.detailResource(
+      store.id,
+      store._session.key,
+      store.researchId,
+    ),
   })),
   withMutations((store) => ({
     downloadSource: rxMutation({
       operation: (_: void) =>
-        store._client.source(store.id(), store._session.key()),
+        store._client.source(
+          store.id(),
+          store._session.key(),
+          store.researchId(),
+        ),
       onSuccess: (response) => {
         if (!response.body) return;
         const url = URL.createObjectURL(response.body);
@@ -63,7 +82,12 @@ export const IngestionDetailStore = signalStore(
     }),
     publish: rxMutation({
       operation: (review: IngestionReview) =>
-        store._client.publish(store.id(), review, store._session.key()),
+        store._client.publish(
+          store.id(),
+          review,
+          store._session.key(),
+          store.researchId(),
+        ),
       onSuccess: () => store._runReload(),
     }),
     reject: rxMutation({
@@ -74,8 +98,8 @@ export const IngestionDetailStore = signalStore(
   })),
   withMethods((store) => ({
     /** Points the store at a run; an empty id detaches it. */
-    load(id: string) {
-      patchState(store, { id });
+    load(id: string, researchId = '') {
+      patchState(store, { id, researchId });
     },
     reload() {
       store._runReload();
@@ -84,5 +108,8 @@ export const IngestionDetailStore = signalStore(
       store._session.set(key);
     },
   })),
+  withReducer(
+    on(sessionEvents.invalidated, () => ({ id: '', researchId: '' })),
+  ),
   withDevtools('ingestionDetail'),
 );

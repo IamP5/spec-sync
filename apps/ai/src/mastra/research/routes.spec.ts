@@ -85,6 +85,9 @@ it('guards research browser routes and keeps the internal endpoint separate', ()
     ['/internal/research/extract', 'POST'],
     ['/chat/research/:id/interests', 'GET'],
     ['/chat/research/:id/interests', 'POST'],
+    ['/chat/research/:id/review', 'GET'],
+    ['/chat/research/:id/review/publish', 'POST'],
+    ['/chat/research/:id/review/source', 'GET'],
   ]);
   expect(
     researchRoutes.slice(0, 5).every((route) => 'middleware' in route),
@@ -127,7 +130,7 @@ it('replays only for the verified owner and refuses malformed replay ids', async
   expect((await handler(4)(context({ id: 'invalid' }))).status).toBe(400);
   expect(mocks.replay).toHaveBeenCalledOnce();
 });
-it('requires an explicit year and honors configured manufacturer domains', async () => {
+it('requires an explicit year and permits public secondary sources despite search hints', async () => {
   expect(
     (
       await handler(1)(
@@ -139,7 +142,7 @@ it('requires an explicit year and honors configured manufacturer domains', async
     ).status,
   ).toBe(400);
   vi.stubEnv('SPECSYNC_INGESTION_SOURCE_DOMAINS', 'honda.com.br');
-  expect((await handler(1)(context())).status).toBe(400);
+  expect((await handler(1)(context())).status).toBe(200);
   expect(
     (
       await handler(1)(
@@ -147,7 +150,7 @@ it('requires an explicit year and honors configured manufacturer domains', async
           ...body,
           request: {
             ...body.request,
-            sourceUrl: 'https://www.honda.com.br/manual.pdf',
+            sourceUrl: 'https://www.webmotors.com.br/catalogo/ford/ranger',
           },
         }),
       )

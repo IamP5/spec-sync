@@ -1,7 +1,7 @@
 /**
  * Google Search grounding cites pages through
  * `https://vertexaisearch.cloud.google.com/grounding-api-redirect/...` links
- * that redirect once to the real page. Approved-domain checks and the links
+ * that redirect once to the real page. Source attribution and the links
  * shown to users need that real URL, so it is read from the redirect's
  * `Location` header. A bounded GET fallback handles HEAD responses without a
  * redirect. Only that Google host is requested; redirects are never followed.

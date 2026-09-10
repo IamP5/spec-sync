@@ -38,6 +38,18 @@ class ResearchControllerWebMvcTest {
     @MockitoBean(answers = Answers.CALLS_REAL_METHODS)
     SaveResearchInterest saveInterest;
 
+    @MockitoBean(answers = Answers.CALLS_REAL_METHODS)
+    ResolveResearchReview resolveReview;
+
+    @MockitoBean(answers = Answers.CALLS_REAL_METHODS)
+    com.fiap.ford.specsync.application.ingestion.GetIngestion review;
+
+    @MockitoBean(answers = Answers.CALLS_REAL_METHODS)
+    com.fiap.ford.specsync.application.ingestion.PublishIngestion publish;
+
+    @MockitoBean(answers = Answers.CALLS_REAL_METHODS)
+    com.fiap.ford.specsync.application.ingestion.GetIngestionSource reviewSource;
+
     @Autowired
     MockMvc mvc;
 
@@ -67,6 +79,9 @@ class ResearchControllerWebMvcTest {
 
     @Test
     void rejectsEveryPrivateSurfaceWithoutTheServiceKey() throws Exception {
+        mvc.perform(get(BASE + "/" + ID + "/review")).andExpect(status().isUnauthorized());
+        mvc.perform(get(BASE + "/" + ID + "/review/source")).andExpect(status().isUnauthorized());
+        mvc.perform(post(BASE + "/" + ID + "/review/publish")).andExpect(status().isUnauthorized());
         mvc.perform(get(BASE)).andExpect(status().isUnauthorized());
         mvc.perform(post(BASE)).andExpect(status().isUnauthorized());
         mvc.perform(delete(BASE + "/" + ID)).andExpect(status().isUnauthorized());

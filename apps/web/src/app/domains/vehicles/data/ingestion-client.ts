@@ -3,9 +3,11 @@ import {
   HttpErrorResponse,
   httpResource,
 } from '@angular/common/http';
-import { inject, Injectable, type Signal } from '@angular/core';
+import { DestroyRef, inject, Injectable, type Signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, map, throwError } from 'rxjs';
 
+import { SESSION } from '../../auth/api/session';
 import {
   type IngestionRequest,
   type IngestionReview,
@@ -18,19 +20,32 @@ const KEY_HEADER = 'X-Ingestion-Key';
 @Injectable({ providedIn: 'root' })
 export class IngestionClient {
   private readonly http = inject(HttpClient);
+  private readonly session = inject(SESSION);
 
   /** One run; undefined request while there is no id or no key. */
-  detailResource(id: Signal<string>, key: Signal<string>) {
-    return httpResource(
+  detailResource(
+    id: Signal<string>,
+    key: Signal<string>,
+    researchId: () => string = () => '',
+  ) {
+    const resource = httpResource(
       () =>
-        id() && key()
-          ? {
-              url: `/api/ingestions/${encodeURIComponent(id())}`,
-              headers: { [KEY_HEADER]: key() },
-            }
-          : undefined,
+        researchId()
+          ? this.session.scope()
+            ? { url: this.reviewUrl(researchId()) }
+            : undefined
+          : id() && key()
+            ? {
+                url: `/api/ingestions/${encodeURIComponent(id())}`,
+                headers: { [KEY_HEADER]: key() },
+              }
+            : undefined,
       { parse: parseIngestion },
     );
+    this.session.invalidated$
+      .pipe(takeUntilDestroyed(inject(DestroyRef)))
+      .subscribe(() => resource.value.set(undefined));
+    return resource;
   }
 
   /** The curator's runs, newest first. `version` changes force a reload. */
@@ -47,24 +62,50 @@ export class IngestionClient {
     );
   }
 
-  source(id: string, key: string) {
-    return this.http.get(`/api/ingestions/${encodeURIComponent(id)}/source`, {
-      headers: { [KEY_HEADER]: key },
-      responseType: 'blob',
-      observe: 'response',
-    });
+  source(id: string, key: string, researchId = '') {
+    return this.http.get(
+      researchId
+        ? `${this.reviewUrl(researchId)}/source`
+        : `/api/ingestions/${encodeURIComponent(id)}/source`,
+      {
+        headers: researchId ? {} : { [KEY_HEADER]: key },
+        responseType: 'blob',
+        observe: 'response',
+      },
+    );
   }
 
   create(id: string, request: IngestionRequest, key: string) {
     return this.write('', { id, request }, key);
   }
 
-  publish(id: string, review: IngestionReview, key: string) {
+  publish(id: string, review: IngestionReview, key: string, researchId = '') {
+    if (researchId)
+      return this.http
+        .post<unknown>(`${this.reviewUrl(researchId)}/publish`, { review })
+        .pipe(
+          map(parseIngestion),
+          catchError((error: unknown) =>
+            throwError(
+              () =>
+                new Error(
+                  error instanceof HttpErrorResponse &&
+                  typeof error.error?.error === 'string'
+                    ? error.error.error
+                    : 'Não foi possível publicar. Atualize a revisão e tente novamente.',
+                ),
+            ),
+          ),
+        );
     return this.write(`/${encodeURIComponent(id)}/publish`, { review }, key);
   }
 
   reject(id: string, key: string) {
     return this.write(`/${encodeURIComponent(id)}/reject`, {}, key);
+  }
+
+  private reviewUrl(id: string): string {
+    return `/ai/chat/research/${encodeURIComponent(id)}/review`;
   }
 
   private write(path: string, body: unknown, key: string) {

@@ -139,6 +139,19 @@ export class ChatAgentClient {
     agent.setState(selection ? { comparison: selection } : {});
   }
 
+  /** Appends server-persisted completion messages without restarting the model or replacing the transcript. */
+  appendPersisted(messages: Message[]): void {
+    if (!this.available() || this.isRunning()) return;
+    const agent = this.agentStore().agent;
+    const ids = new Set(agent.messages.map((message) => message.id));
+    for (const message of messages) {
+      if (!ids.has(message.id)) {
+        agent.addMessage(message);
+        ids.add(message.id);
+      }
+    }
+  }
+
   /** Subscribes to client failures. Returns the function that unsubscribes. */
   onError(handler: (error: ChatAgentError) => void): () => void {
     const subscription = this.copilotKit.core.subscribe({

@@ -17,22 +17,22 @@ export const sha256 = (bytes: string | Uint8Array) =>
   createHash('sha256').update(bytes).digest('hex');
 export const MAX_BYTES = 5_000_000;
 const MAX_TEXT = 150_000;
-export function validateSourceUrl(
-  value: string,
-  domains = sourceDomains(),
-): URL {
+export function validateSourceUrl(value: string): URL {
   const url = new URL(value);
   if (
     url.protocol !== 'https:' ||
     url.username ||
     url.password ||
     (url.port && url.port !== '443') ||
-    !domains.some(
-      (domain) =>
-        url.hostname === domain || url.hostname.endsWith(`.${domain}`),
-    )
+    url.hostname === 'localhost' ||
+    url.hostname.endsWith('.localhost') ||
+    !url.hostname.includes('.') ||
+    (ipaddr.isValid(url.hostname.replace(/^\[|\]$/g, '')) &&
+      !publicAddress(url.hostname.replace(/^\[|\]$/g, '')))
   )
-    throw new Error('Use an HTTPS URL on an approved manufacturer domain.');
+    throw new Error(
+      'Use a public HTTPS source URL without credentials or a custom port.',
+    );
   return url;
 }
 export function publicAddress(address: string): boolean {
@@ -224,7 +224,7 @@ export interface CapturedSource {
   pageCount: number;
 }
 
-/** Approved source domains, overridable per deployment. */
+/** Preferred discovery seeds only. They never restrict source URLs or redirects. */
 export function sourceDomains(): string[] {
   return (
     process.env['SPECSYNC_INGESTION_SOURCE_DOMAINS'] ??
@@ -245,14 +245,13 @@ export interface DownloadedSource {
 export async function probeSourceMetadata(
   value: string,
   signal: AbortSignal,
-  domains = sourceDomains(),
 ): Promise<{ url: string; mime: string; byteLength: number | null }> {
-  let url = validateSourceUrl(value, domains);
+  let url = validateSourceUrl(value);
   const deadline = AbortSignal.any([signal, AbortSignal.timeout(6000)]);
   for (let redirects = 0; redirects <= 4; redirects++) {
     const response = await download(url, deadline, true);
     if (response.redirect) {
-      url = validateSourceUrl(new URL(response.redirect, url).href, domains);
+      url = validateSourceUrl(new URL(response.redirect, url).href);
       continue;
     }
     return {
@@ -265,20 +264,19 @@ export async function probeSourceMetadata(
 }
 
 /**
- * Downloads one approved manufacturer document, following at most four
- * redirects and checking every hop against the approved domains.
+ * Downloads a public document, following at most four redirects. Every hop
+ * retains HTTPS validation, public-address checks and pinned DNS resolution.
  */
 export async function downloadSource(
   value: string,
   signal: AbortSignal,
-  domains = sourceDomains(),
 ): Promise<DownloadedSource> {
-  let url = validateSourceUrl(value, domains);
+  let url = validateSourceUrl(value);
   const deadline = AbortSignal.any([signal, AbortSignal.timeout(45000)]);
   for (let redirects = 0; redirects <= 4; redirects++) {
     const response = await download(url, deadline);
     if (response.redirect) {
-      url = validateSourceUrl(new URL(response.redirect, url).href, domains);
+      url = validateSourceUrl(new URL(response.redirect, url).href);
       continue;
     }
     return { url, bytes: response.bytes, mime: response.mime };
@@ -287,7 +285,7 @@ export async function downloadSource(
 }
 
 /**
- * Downloads one approved manufacturer document and turns it into line-based
+ * Downloads a public source document and turns it into line-based
  * evidence text: HTML keeps table separators, headings and footnotes; PDFs are
  * rendered for visual extraction of vehicle facts (embedded text alone can
  * miss image-based tables or contain text hidden by later document artwork).
@@ -334,8 +332,7 @@ export async function captureSource(
       throw new Error(
         'No usable source text. Scanned PDFs require manual review.',
       );
-  } else
-    throw new Error('Only manufacturer HTML pages and PDFs are supported.');
+  } else throw new Error('Only HTML pages and PDFs are supported.');
   if (text.length > MAX_TEXT)
     throw new Error(
       'Source text exceeds 150,000 characters. Use a smaller document.',

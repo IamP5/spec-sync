@@ -1,56 +1,43 @@
-/** Explicitly supported official hosts; deployments can replace this policy. */
-const manufacturers = [
-  {
-    domain: 'ford.com.br',
-    aliases: ['ford'],
-    paths: [
-      '/picapes/{model}/',
-      '/suvs/{model}/',
-      '/carros/{model}/',
-      '/utilitarios/{model}/',
-    ],
-  },
-  { domain: 'toyota.com.br', aliases: ['toyota'], paths: ['/modelos/{model}'] },
-  {
-    domain: 'nissan.com.br',
-    aliases: ['nissan'],
-    paths: [
-      '/veiculos/modelos/{model}.html',
-      '/veiculos/modelos/novo-{model}.html',
-      '/veiculos/modelos/nova-{model}.html',
-    ],
-  },
-  {
-    domain: 'ram.com.br',
-    aliases: ['ram', 'ram-trucks', 'dodge-ram'],
-    paths: ['/{model}.html', '/picapes/{model}.html'],
-  },
+import { OFFICIAL_MANUFACTURERS } from './manufacturer-registry';
+
+/** Preferred official discovery seeds; these never restrict downloads. */
+export const DEFAULT_MANUFACTURER_DOMAINS = [
+  ...new Set(
+    OFFICIAL_MANUFACTURERS.flatMap((entry) => [
+      ...entry.sites.map((site) => domainOf(site.url)),
+      ...(entry.documentDomains ?? []),
+    ]),
+  ),
 ];
 
-export const DEFAULT_MANUFACTURER_DOMAINS = manufacturers.map(
-  ({ domain }) => domain,
-);
+function domainOf(url: string): string {
+  return new URL(url).hostname.replace(/^www\./, '');
+}
+
+function manufacturer(brand: string) {
+  const slug = slugOf(brand);
+  return OFFICIAL_MANUFACTURERS.find((entry) =>
+    [entry.name, ...entry.aliases].some((alias) => slugOf(alias) === slug),
+  );
+}
+
+function matchingDomains(preferred: string[], official: string[]): string[] {
+  return preferred.filter((domain) =>
+    official.some((host) => domain === host || domain.endsWith(`.${host}`)),
+  );
+}
 
 export function canonicalScope(
   brand: string,
   model: string,
   modelYear: number,
 ) {
-  const entry = manufacturers.find(({ aliases }) =>
-    aliases.includes(slugOf(brand)),
-  );
-  const canonicalBrand = entry
-    ? ({
-        'ford.com.br': 'Ford',
-        'toyota.com.br': 'Toyota',
-        'nissan.com.br': 'Nissan',
-        'ram.com.br': 'RAM',
-      }[entry.domain] ?? brand)
-    : brand;
+  const entry = manufacturer(brand);
+  const canonicalBrand = entry?.name ?? brand;
   let canonicalModel = model.trim();
-  if (entry?.domain === 'ford.com.br' && /^f-?\d{3}$/i.test(slugOf(model)))
+  if (entry?.name === 'Ford' && /^f-?\d{3}$/i.test(slugOf(model)))
     canonicalModel = slugOf(model).replace(/^f-?/, 'F-');
-  if (entry?.domain === 'ram.com.br' && /^ram[- ]?\d/i.test(canonicalModel))
+  if (entry?.name === 'RAM' && /^ram[- ]?\d/i.test(canonicalModel))
     canonicalModel = canonicalModel.replace(/^ram[- ]?/i, '').trim();
   return {
     brand: canonicalBrand,
@@ -69,27 +56,48 @@ export function slugOf(value: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-/** Aliases select only hosts that the deployment already approves. */
+/** Resolve manufacturer aliases to the preferred website hints for this deployment. */
 export function manufacturerDomains(
   brand: string,
   domains: string[],
 ): string[] {
-  const slug = slugOf(brand);
-  const entry = manufacturers.find(({ aliases }) => aliases.includes(slug));
-  return domains.filter((domain) =>
-    entry
-      ? domain === entry.domain || domain.endsWith(`.${entry.domain}`)
-      : domain.split('.')[0] === slug,
+  const entry = manufacturer(brand);
+  return entry
+    ? matchingDomains(domains, [
+        ...entry.sites.map((site) => domainOf(site.url)),
+        ...(entry.documentDomains ?? []),
+      ])
+    : domains.filter((domain) => domain.split('.')[0] === slugOf(brand));
+}
+
+/** Document CDNs are download targets, never website/sitemap crawl roots. */
+export function manufacturerSiteDomains(
+  brand: string,
+  domains: string[],
+): string[] {
+  const entry = manufacturer(brand);
+  return entry
+    ? matchingDomains(
+        domains,
+        entry.sites.map((site) => domainOf(site.url)),
+      )
+    : manufacturerDomains(brand, domains);
+}
+
+/** Preserve the official hostname and Brazil landing path from the researched registry. */
+export function officialSiteRoot(domain: string): string {
+  const site = OFFICIAL_MANUFACTURERS.flatMap((entry) => entry.sites).find(
+    (site) =>
+      domainOf(site.url) === domain || new URL(site.url).hostname === domain,
   );
+  return site?.url ?? `https://www.${domain.replace(/^www\./, '')}/`;
 }
 
 export function modelSlugs(model: string, brand = ''): string[] {
   let slug = slugOf(model);
   const brandSlug = slugOf(brand);
-  const entry = manufacturers.find(({ aliases }) =>
-    aliases.includes(brandSlug),
-  );
-  const prefix = entry?.aliases[0] ?? brandSlug;
+  const entry = manufacturer(brand);
+  const prefix = slugOf(entry?.name ?? brandSlug);
   if (
     prefix &&
     slug.startsWith(prefix) &&
@@ -103,10 +111,12 @@ export function modelSlugs(model: string, brand = ''): string[] {
   return [...new Set(aliases)].filter(Boolean);
 }
 
-export function modelPathTemplates(domain: string): string[] {
+export function modelPathTemplates(domain: string): readonly string[] {
   return (
-    manufacturers.find(
-      (entry) => domain === entry.domain || domain.endsWith(`.${entry.domain}`),
+    OFFICIAL_MANUFACTURERS.flatMap((entry) => entry.sites).find(
+      (site) =>
+        domainOf(site.url) === domain ||
+        domain.endsWith(`.${domainOf(site.url)}`),
     )?.paths ?? []
   );
 }

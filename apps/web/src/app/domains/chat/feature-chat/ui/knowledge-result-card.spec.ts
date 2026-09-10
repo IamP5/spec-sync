@@ -3,6 +3,28 @@ import { TestBed } from '@angular/core/testing';
 import { KnowledgeResultCard } from './knowledge-result-card';
 
 describe('KnowledgeResultCard specification discovery', () => {
+  it('does not describe a historical EMPTY payload as discovered links', async () => {
+    const fixture = TestBed.createComponent(KnowledgeResultCard);
+    fixture.componentRef.setInput('toolCall', {
+      name: 'discoverVehicleContent',
+      status: 'complete',
+      args: {},
+      result: JSON.stringify({
+        status: 'EMPTY',
+        items: [],
+        message: 'External links discovered through Google grounding.',
+      }),
+    });
+    await fixture.whenStable();
+    expect(fixture.nativeElement.textContent).toContain(
+      'No external links found',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'External links discovered',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('encontrados');
+  });
+
   it('shows source warnings and title/URL year clues without presenting a verified model-year identity', async () => {
     const fixture = TestBed.createComponent(KnowledgeResultCard);
     fixture.componentRef.setInput('toolCall', {
@@ -47,7 +69,7 @@ describe('KnowledgeResultCard specification discovery', () => {
     });
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Fontes oficiais de especificações');
+    expect(element.textContent).toContain('Fontes de especificações');
     expect(
       element.querySelector('[aria-label="Source discovery warnings"]')
         ?.textContent,
@@ -173,4 +195,31 @@ describe('KnowledgeResultCard specification discovery', () => {
     expect(element.textContent).not.toContain('READABLE');
     expect(element.textContent).not.toContain('5000');
   });
+});
+
+it('labels external specification sources without presenting them as manufacturer evidence', async () => {
+  const fixture = TestBed.createComponent(KnowledgeResultCard);
+  fixture.componentRef.setInput('toolCall', {
+    name: 'discoverVehicleSpecificationSources',
+    status: 'complete',
+    args: {},
+    result: JSON.stringify({
+      status: 'OK',
+      items: [
+        {
+          title: 'Shark ficha técnica',
+          url: 'https://www.webmotors.com.br/catalogo/byd/shark',
+          sourceType: 'EXTERNAL_WEBSITE',
+          applicability: 'UNVERIFIED',
+        },
+      ],
+    }),
+  });
+  await fixture.whenStable();
+  const element = fixture.nativeElement as HTMLElement;
+  expect(element.textContent).toContain('Site externo');
+  expect(element.textContent).not.toContain('Fontes oficiais');
+  expect(element.querySelector('a')?.href).toBe(
+    'https://www.webmotors.com.br/catalogo/byd/shark',
+  );
 });

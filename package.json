@@ -12,6 +12,7 @@
   },
   "scripts": {
     "nx": "nx",
+    "predev": "docker compose up -d --wait postgres neo4j",
     "dev": "nx serve web --batch=false",
     "build": "nx run-many --target=build",
     "test": "nx run-many --target=test",

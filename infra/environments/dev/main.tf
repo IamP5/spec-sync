@@ -114,9 +114,11 @@ module "api" {
   service_account_email = google_service_account.api.email
   labels                = local.labels
 
-  cpu                       = "1"
-  memory                    = "1Gi"
-  min_instances             = 0
+  cpu    = "1"
+  memory = "1Gi"
+  # The durable queue is consumed by a scheduled API worker, outside HTTP requests.
+  min_instances             = 1
+  cpu_idle                  = false
   max_instances             = 2
   startup_cpu_boost         = true
   startup_failure_threshold = 24
@@ -135,6 +137,8 @@ module "api" {
   # Spring Boot relaxed binding: these map to application-cloud.properties / spring-cloud-gcp.
   env = {
     SPRING_PROFILES_ACTIVE                        = "cloud"
+    SPECSYNC_INGESTION_ENABLED                    = "true"
+    SPECSYNC_RESEARCH_POLICY_VERSION              = "br-v1"
     SPECSYNC_INGESTION_WORKER_URL                 = "https://${local.name}-ai-${data.google_project.current.number}.${var.region}.run.app"
     SPRING_CLOUD_GCP_PROJECT_ID                   = var.project_id
     SPRING_CLOUD_GCP_SQL_INSTANCE_CONNECTION_NAME = module.database.connection_name
@@ -149,7 +153,9 @@ module "api" {
   }
 
   secret_env = {
-    SPRING_DATASOURCE_PASSWORD = { secret = module.database.password_secret_id }
+    SPECSYNC_RESEARCH_SERVICE_KEY = { secret = google_secret_manager_secret.research_keys["research-service-key"].secret_id }
+    SPECSYNC_INGESTION_WORKER_KEY = { secret = google_secret_manager_secret.research_keys["ingestion-worker-key"].secret_id }
+    SPRING_DATASOURCE_PASSWORD    = { secret = module.database.password_secret_id }
     # Relaxed binding maps this to specsync.credits.service-key; it also enables
     # the AI-credits wallet on the API side (see ai-credits.tf).
     SPECSYNC_CREDITS_SERVICE_KEY = { secret = google_secret_manager_secret.credits_service_key.secret_id }
@@ -159,6 +165,7 @@ module "api" {
     module.services,
     google_secret_manager_secret_iam_member.api_db_password,
     google_secret_manager_secret_iam_member.api_credits_service_key,
+    google_secret_manager_secret_iam_member.research_keys,
   ]
 }
 
@@ -181,7 +188,8 @@ module "ai" {
   labels                = local.labels
 
   cpu                   = "1"
-  memory                = "512Mi" # Node + Mastra bundle + CopilotKit runtime, several open streams
+  memory                = "1Gi"   # Includes bounded PDF rendering during research.
+  request_timeout       = "1260s" # Worker has a 20-minute attempt deadline.
   min_instances         = 0
   max_instances         = 2
   allow_unauthenticated = false
@@ -200,19 +208,29 @@ module "ai" {
   # verify (apps/ai/src/mastra/identity.ts).
   # MASTRA_HOST/PORT are set by the image (apps/ai/Dockerfile) and Cloud Run.
   env = {
-    NODE_ENV               = "production"
-    SPECSYNC_API_URL       = module.api.uri
-    CLOUD_RUN_AUTH         = "true"
-    GOOGLE_CLOUD_PROJECT   = var.project_id
-    GOOGLE_VERTEX_PROJECT  = var.project_id
-    GOOGLE_VERTEX_LOCATION = var.vertex_location
-    NEO4J_DATABASE         = "neo4j"
+    NODE_ENV                          = "production"
+    SPECSYNC_API_URL                  = module.api.uri
+    CLOUD_RUN_AUTH                    = "true"
+    GOOGLE_CLOUD_PROJECT              = var.project_id
+    GOOGLE_VERTEX_PROJECT             = var.project_id
+    GOOGLE_VERTEX_LOCATION            = var.vertex_location
+    NEO4J_DATABASE                    = "neo4j"
+    SPECSYNC_RESEARCH_POLICY_VERSION  = "br-v1"
+    SPECSYNC_INGESTION_NEO4J_DATABASE = "neo4j"
   }
 
   secret_env = merge(
     {
       for name, secret in data.google_secret_manager_secret.neo4j :
       name => { secret = secret.secret_id }
+    },
+    {
+      for name, secret in data.google_secret_manager_secret.neo4j :
+      "SPECSYNC_INGESTION_${name}" => { secret = secret.secret_id }
+    },
+    {
+      SPECSYNC_RESEARCH_SERVICE_KEY = { secret = google_secret_manager_secret.research_keys["research-service-key"].secret_id }
+      SPECSYNC_INGESTION_WORKER_KEY = { secret = google_secret_manager_secret.research_keys["ingestion-worker-key"].secret_id }
     },
     # Authenticates every routed model call (see openrouter.tf).
     { OPENROUTER_API_KEY = { secret = data.google_secret_manager_secret.openrouter_api_key.secret_id } },
@@ -228,6 +246,7 @@ module "ai" {
     google_secret_manager_secret_iam_member.ai_openrouter_api_key,
     google_secret_manager_secret_iam_member.ai_memory_url,
     google_secret_manager_secret_iam_member.ai_credits_service_key,
+    google_secret_manager_secret_iam_member.research_keys,
   ]
 }
 

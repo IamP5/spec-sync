@@ -41,6 +41,10 @@ export class FakeThreadClient {
     return of(this.threads().find((thread) => thread.id === id));
   }
 
+  researchUpdates(id: string): Observable<ChatThread> {
+    return of(blank(id, ''));
+  }
+
   rename(id: string, title: string): Observable<ChatThreadSummary> {
     this.threads.update((current) =>
       current.map((thread) =>

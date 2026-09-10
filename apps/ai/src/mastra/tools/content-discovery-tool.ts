@@ -92,8 +92,9 @@ export const discoverVehicleContent = createTool({
         .slice(0, 10);
       return {
         status: items.length ? ('OK' as const) : ('EMPTY' as const),
-        message:
-          'External links discovered through Google grounding. Content and quotations have not been verified or ingested.',
+        message: items.length
+          ? 'External links discovered through Google grounding. Content and quotations have not been verified or ingested.'
+          : 'No external links found for this search. An empty result does not establish that no relevant content exists.',
         items,
       };
     }),

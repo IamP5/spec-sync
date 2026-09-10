@@ -16,6 +16,7 @@ import {
 } from './client';
 import { researchCreateSchema } from './contracts';
 import { researchInterestsRoutes } from './interests-route';
+import { researchReviewRoutes } from './review-routes';
 import { runSharedResearch } from './workflow';
 
 export const CHAT_RESEARCH_PATH = '/chat/research';
@@ -79,7 +80,7 @@ const browserRoute = (method: 'GET' | 'POST' | 'DELETE', detail = false) =>
           return c.json(
             {
               error:
-                'Provide an approved source, vehicle and explicit Brazilian model year',
+                'Provide a public HTTPS source, vehicle and explicit Brazilian model year',
             },
             400,
           );
@@ -160,4 +161,5 @@ export const researchRoutes = [
     },
   }),
   ...researchInterestsRoutes,
+  ...researchReviewRoutes,
 ];

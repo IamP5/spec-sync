@@ -1,4 +1,4 @@
-import { computed, DestroyRef, inject } from '@angular/core';
+import { computed, DestroyRef, effect, inject, untracked } from '@angular/core';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import {
   patchState,
@@ -31,6 +31,7 @@ import { ChatAgentClient } from '../../data/chat-agent-client';
 import { ChatThread, threadTitleOf } from '../../data/thread';
 import { ThreadClient } from '../../data/thread-client';
 import { threadEvents } from '../../data/thread-events';
+import { toolPresentation } from '../tool-presentation';
 
 export type ConversationStatus = 'idle' | 'streaming' | 'error';
 
@@ -90,6 +91,14 @@ export const ConversationDetailStore = signalStore(
         store._chatAgentClient.placements(),
       ).filter(isChatTurn),
     ),
+    toolPresentation: computed(() =>
+      toolPresentation(
+        normalizeThread(
+          store._chatAgentClient.messages(),
+          store._chatAgentClient.placements(),
+        ),
+      ),
+    ),
     toolActivities: computed(() =>
       toolActivities(
         store._chatAgentClient.messages(),
@@ -101,6 +110,50 @@ export const ConversationDetailStore = signalStore(
   })),
 
   withMethods((store) => {
+    let checkingResearch = false;
+    async function refreshResearch(): Promise<void> {
+      const scope = store._session.scope();
+      if (checkingResearch || !scope || store.loading() || store.isStreaming())
+        return;
+      if (
+        !store
+          .messages()
+          .some(
+            (message) =>
+              message.role === 'assistant' &&
+              message.toolCalls?.some((call) =>
+                [
+                  'researchVehicleSpecifications',
+                  'getVehicleResearch',
+                  'replayVehicleResearch',
+                  'reviewVehicleResearch',
+                ].includes(call.function.name),
+              ),
+          )
+      )
+        return;
+      const id = store.threadId();
+      const before = store.messages();
+      checkingResearch = true;
+      try {
+        const updates = await firstValueFrom(
+          store._threadClient.researchUpdates(id),
+        );
+        if (
+          store._session.isCurrent(scope) &&
+          store.threadId() === id &&
+          !store.isStreaming() &&
+          store.messages() === before
+        ) {
+          store._chatAgentClient.appendPersisted(updates.messages);
+        }
+      } catch {
+        /* A later refresh retries transient completion delivery failures. */
+      } finally {
+        checkingResearch = false;
+      }
+    }
+
     async function run(work: () => Promise<void>): Promise<void> {
       if (store.status() === 'streaming') {
         return;
@@ -257,6 +310,7 @@ export const ConversationDetailStore = signalStore(
       },
 
       _discard: discard,
+      _refreshResearch: refreshResearch,
     };
   }),
 
@@ -284,6 +338,19 @@ export const ConversationDetailStore = signalStore(
   })),
   withHooks({
     onInit(store) {
+      effect((onCleanup) => {
+        const scope = store._session.scope();
+        store.threadId();
+        if (!scope || store.loading() || store.isStreaming()) return;
+        untracked(() => {
+          void store._refreshResearch();
+        });
+        const timer = setInterval(() => {
+          void store._refreshResearch();
+        }, 8000);
+        onCleanup(() => clearInterval(timer));
+      });
+
       // Run failures do not reject `send()`; the client reports them here.
       const unsubscribe = store._chatAgentClient.onError((error) =>
         patchState(store, { status: 'error', error }),

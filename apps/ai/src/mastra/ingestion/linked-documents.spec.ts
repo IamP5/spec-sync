@@ -4,7 +4,7 @@ import { linkedPdfs, linkedSpecificationPages } from './linked-documents';
 
 const base = 'https://www.ford.com.br/picapes/ranger/compare-as-versoes/';
 
-it('lists PDFs on approved domains from markup and embedded JSON, brochures first', () => {
+it('lists linked PDFs including external hosting from markup and embedded JSON, brochures first', () => {
   const html = [
     '<a href="/content/dam/br/pdf/fbr-ranger-manual-de-implementador.pdf">Manual</a>',
     '{"file":"\\/content\\/dam\\/br\\/pdf\\/fbr-ranger-ficha-tecnica.pdf?v=2#p1"}',
@@ -22,6 +22,11 @@ it('lists PDFs on approved domains from markup and embedded JSON, brochures firs
     {
       title: 'catalogo-ranger.PDF',
       url: 'https://www.ford.com.br/picapes/ranger/catalogo-ranger.PDF',
+      specification: true,
+    },
+    {
+      title: 'elsewhere',
+      url: 'https://cdn.example.com/other-ficha-tecnica.pdf',
       specification: true,
     },
     {
@@ -97,10 +102,10 @@ it('reads entity-encoded component JSON while excluding footer and rescue docume
   ]);
 });
 
-it('follows only relevant observed official page links outside navigation', () => {
+it('follows relevant observed page links including secondary sites outside navigation', () => {
   expect(
     linkedSpecificationPages(
-      '<nav><a href="/ranger/other.html">Ranger</a></nav><a href="/ficha.html">Ficha técnica</a><a href="https://ford.com.br.evil.test/ranger.html">Ranger</a><a href="/news/ranger.html">Ranger notícia</a>',
+      '<nav><a href="/ranger/other.html">Ranger</a></nav><a href="/ficha.html">Ficha técnica</a><a href="https://www.webmotors.com.br/ranger.html">Ranger</a><a href="/news/ranger.html">Ranger notícia</a>',
       base,
       'Ranger',
       'Ford',
@@ -108,5 +113,6 @@ it('follows only relevant observed official page links outside navigation', () =
     ),
   ).toEqual([
     { title: 'Ficha técnica', url: 'https://www.ford.com.br/ficha.html' },
+    { title: 'Ranger', url: 'https://www.webmotors.com.br/ranger.html' },
   ]);
 });

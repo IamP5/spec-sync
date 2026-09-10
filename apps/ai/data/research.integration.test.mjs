@@ -548,8 +548,20 @@ test(
       2,
       'Only the crashed attempt and its replacement executed',
     );
-    const reviewable = (await curate(workId)).body.result;
-    const published = await curate(workId, '/publish', {
+    const reviewPath = `${userPath('alice', alice.id)}/review`;
+    assert.equal(
+      (await http(`${userPath('outsider', alice.id)}/review`)).status,
+      422,
+    );
+    assert.equal((await http(`${userPath('bob', bob.id)}/review`)).status, 422);
+    const reviewable = (await http(reviewPath)).body.result;
+    assert.equal(reviewable.id, workId);
+    assert.equal(reviewable.draft.source.textSha256, source.textSha256);
+    const capture = await http(`${reviewPath}/source`);
+    assert.equal(capture.status, 200);
+    assert.equal(Buffer.from(capture.body.base64, 'base64').toString(), text);
+    const runCount = await sql('SELECT count(*) FROM ingestion.run');
+    const published = await http(`${reviewPath}/publish`, 'POST', {
       review: {
         draftHash: reviewable.draftHash,
         baseRevision: reviewable.baseRevision,
@@ -562,6 +574,21 @@ test(
       },
     });
     assert.equal(published.status, 200, JSON.stringify(published.body));
+    assert.equal(published.body.result.id, workId);
+    assert.equal(await sql('SELECT count(*) FROM ingestion.run'), runCount);
+    assert.equal(
+      attempts.length,
+      2,
+      'Review and publication do not execute extraction',
+    );
+    assert.equal(
+      (
+        await sql(
+          `SELECT count(*) FROM ingestion.selection_decision WHERE run_id='${workId}' AND reviewer='alice'`,
+        )
+      ).trim(),
+      '2',
+    );
     const reuse = await http(userPath('diana'), 'POST', {
       id: randomUUID(),
       request,

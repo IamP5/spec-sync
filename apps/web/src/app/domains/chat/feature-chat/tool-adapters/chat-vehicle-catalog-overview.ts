@@ -25,13 +25,19 @@ import {
 @Component({
   selector: 'app-chat-vehicle-catalog-overview',
   imports: [VehicleCatalogOverview],
-  template: `<app-vehicle-catalog-overview
-    [page]="result()"
-    [failure]="failure()?.message"
-    [complete]="toolCall().status === 'complete'"
-    (questionRequested)="ask($event)"
-    (comparisonRequested)="compare($event)"
-  />`,
+  template: `@if (result()?.items?.length === 0 && !result()?.hasMore) {
+      <p class="text-sm text-muted-foreground" role="status">
+        No configurations found for {{ query() }}.
+      </p>
+    } @else {
+      <app-vehicle-catalog-overview
+        [page]="result()"
+        [failure]="failure()?.message"
+        [complete]="toolCall().status === 'complete'"
+        (questionRequested)="ask($event)"
+        (comparisonRequested)="compare($event)"
+      />
+    }`,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block min-w-0 w-full' },
 })
@@ -51,6 +57,12 @@ export class ChatVehicleCatalogOverview
   protected readonly failure = computed(() =>
     parseResult(this.resultText(), failureSchema),
   );
+  protected readonly query = computed(() => {
+    const args = this.toolCall().args;
+    return [args['q'] || 'this search', args['market'], args['modelYear']]
+      .filter((value) => typeof value === 'string' || typeof value === 'number')
+      .join(' · ');
+  });
   protected ask(question: VehicleQuestion): void {
     // The next page is navigation, not a question: it is sent with the
     // original search arguments instead of being drafted for editing.

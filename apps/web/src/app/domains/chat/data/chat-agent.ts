@@ -229,9 +229,11 @@ export function toolActivities(messages: Message[], running: boolean) {
                   name: call.function.name,
                   label: call.function.name,
                   status: result
-                    ? result.error
-                      ? 'Failed'
-                      : 'Completed'
+                    ? toolOutcome(
+                        result.content,
+                        !!result.error,
+                        call.function.name,
+                      )
                     : running && index > lastUserIndex
                       ? 'Running'
                       : 'Incomplete',
@@ -253,4 +255,27 @@ function formatToolData(value: string): string {
     // Arguments arrive incrementally and may not yet be valid JSON.
     return value;
   }
+}
+
+function toolOutcome(content: string, error: boolean, name: string): string {
+  if (error) return 'Failed';
+  try {
+    const data: unknown = JSON.parse(content);
+    if (data && typeof data === 'object') {
+      const status = 'status' in data ? data.status : undefined;
+      if (status === 'EMPTY') return 'No matches';
+      if (status === 'ERROR' || status === 'UNAVAILABLE' || status === 'FAILED')
+        return 'Failed';
+      if (
+        name === 'searchVehicleConfigurations' &&
+        'items' in data &&
+        Array.isArray(data.items) &&
+        !data.items.length
+      )
+        return 'No matches';
+    }
+  } catch {
+    // A completed tool may legitimately return plain text.
+  }
+  return 'Completed';
 }

@@ -21,6 +21,7 @@ import {
   getVehicleResearch,
   replayVehicleResearch,
   researchVehicleSpecifications,
+  reviewVehicleResearch,
 } from './research-tools';
 
 const request = {
@@ -184,4 +185,26 @@ it('returns bounded progress from both tools for an eight-configuration, 800-cla
   }
   expect(large.configurations[0]?.claims).toHaveLength(100);
   expect(large.warnings).toHaveLength(20);
+});
+
+it('opens completed research for review without creating or replaying extraction', async () => {
+  const result = await reviewVehicleResearch.execute?.(
+    { id },
+    context('real-user'),
+  );
+  expect(result).toMatchObject({
+    id,
+    workId: snapshot.workId,
+    reviewReady: true,
+  });
+  expect(read).toHaveBeenCalledWith('real-user', id, undefined);
+  expect(create).not.toHaveBeenCalled();
+  expect(replay).not.toHaveBeenCalled();
+  read.mockResolvedValue({ ...snapshot, requestStatus: 'CANCELLED' });
+  expect(
+    await reviewVehicleResearch.execute?.({ id }, context('real-user')),
+  ).toMatchObject({ reviewReady: false });
+  await expect(
+    reviewVehicleResearch.execute?.({ id }, { observe: noopObserve }),
+  ).rejects.toThrow('Authentication required');
 });

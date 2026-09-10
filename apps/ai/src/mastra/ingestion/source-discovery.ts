@@ -25,6 +25,12 @@ export const discoveredItemSchema = z.object({
   url: z.string(),
   documentType: z.enum(['PDF', 'HTML']),
   applicability: z.literal('UNVERIFIED'),
+  sourceType: z.enum([
+    'MANUFACTURER_WEBSITE',
+    'LINKED_FROM_MANUFACTURER',
+    'EXTERNAL_WEBSITE',
+  ]),
+  linkedFrom: z.string().optional(),
   provenance: z.enum(['OFFICIAL_SITE', 'PAGE_LINK', 'WEB_SEARCH']),
   modelMatch: z.boolean(),
   yearHint: z.number().nullable(),
@@ -65,6 +71,7 @@ type Search = (
   scope: DiscoveryScope,
   domains: string[],
   signal: AbortSignal,
+  stage: 'official' | 'secondary',
 ) => Promise<Array<{ title: string; url: string }>>;
 
 /** Title/URL metadata only; never derive a year from the request or page copyright. */
@@ -87,6 +94,18 @@ export async function discoverOfficialSources(
     AbortSignal.any([signal, AbortSignal.timeout(ms)]);
   const scope = canonicalScope(input.brand, input.model, input.modelYear);
   const domains = brandDomains(scope.brand);
+  const preferred = (value: string) => {
+    const host = new URL(value).hostname;
+    return domains.some(
+      (domain) => host === domain || host.endsWith(`.${domain}`),
+    );
+  };
+  const sourceType = (url: string, linkedFrom?: string): Item['sourceType'] =>
+    preferred(url)
+      ? 'MANUFACTURER_WEBSITE'
+      : linkedFrom && preferred(linkedFrom)
+        ? 'LINKED_FROM_MANUFACTURER'
+        : 'EXTERNAL_WEBSITE';
   const stats: SiteDiagnostics = { pagesInspected: 0, pageFailures: 0 };
   let searchStatus: 'SKIPPED' | 'COMPLETED' | 'FAILED' = 'SKIPPED';
   const candidates = new Map<string, Candidate>();
@@ -100,9 +119,10 @@ export async function discoverOfficialSources(
     html?: string,
     parentRelevant = false,
     depth = 0,
+    linkedFrom?: string,
   ): Candidate | undefined => {
     try {
-      const url = validateSourceUrl(value, domains).href;
+      const url = validateSourceUrl(value).href;
       const key = sourceKey(url);
       const existing = candidates.get(key);
       if (existing) {
@@ -118,6 +138,8 @@ export async function discoverOfficialSources(
         url,
         documentType: /\.pdf$/i.test(new URL(url).pathname) ? 'PDF' : 'HTML',
         applicability: 'UNVERIFIED',
+        sourceType: sourceType(url, linkedFrom),
+        ...(linkedFrom ? { linkedFrom } : {}),
         provenance,
         modelMatch,
         yearHint: yearHint(words),
@@ -136,6 +158,7 @@ export async function discoverOfficialSources(
   };
   const score = (item: Candidate) =>
     (item.relevant ? 60 : 0) +
+    (item.sourceType === 'EXTERNAL_WEBSITE' ? 0 : 20) +
     (item.specification ? 40 : 0) +
     (item.yearHint === scope.modelYear
       ? 30
@@ -154,8 +177,11 @@ export async function discoverOfficialSources(
     [...candidates.values()].sort((a, b) => score(b) - score(a));
   const retarget = (item: Candidate, finalUrl: string) => {
     const before = new URL(item.url);
-    const after = validateSourceUrl(finalUrl, domains);
+    const after = validateSourceUrl(finalUrl);
+    if (preferred(before.href) && !preferred(after.href))
+      item.linkedFrom ??= before.href;
     item.url = after.href;
+    item.sourceType = sourceType(item.url, item.linkedFrom);
     if (before.pathname === after.pathname) return;
     // A redirect is a new discovery lead; the previous URL/title cannot establish its scope.
     item.title = decodeURI(after.pathname);
@@ -164,8 +190,8 @@ export async function discoverOfficialSources(
     item.relevant = item.modelMatch;
     item.specification = specificationHint(item.title);
   };
-  const crawl = async (deadline: AbortSignal) => {
-    while (!deadline.aborted && inspected.size < 6) {
+  const crawl = async (deadline: AbortSignal, limit = 6) => {
+    while (!deadline.aborted && inspected.size < limit) {
       const batch = ranked()
         .filter(
           (item) =>
@@ -173,7 +199,7 @@ export async function discoverOfficialSources(
             !inspected.has(sourceKey(item.url)) &&
             item.depth <= 2,
         )
-        .slice(0, Math.min(2, 6 - inspected.size));
+        .slice(0, Math.min(2, limit - inspected.size));
       if (!batch.length) break;
       await Promise.all(
         batch.map(async (item) => {
@@ -184,7 +210,6 @@ export async function discoverOfficialSources(
               const response = await downloadSource(
                 item.url,
                 AbortSignal.any([deadline, AbortSignal.timeout(5000)]),
-                domains,
               );
               retarget(item, response.url.href);
               item.byteLength = response.bytes.length;
@@ -203,6 +228,7 @@ export async function discoverOfficialSources(
                 undefined,
                 item.relevant,
                 item.depth + 1,
+                item.url,
               );
             if (item.depth < 2)
               for (const link of linkedSpecificationPages(
@@ -219,6 +245,7 @@ export async function discoverOfficialSources(
                   undefined,
                   item.relevant,
                   item.depth + 1,
+                  item.url,
                 );
           } catch {
             stats.pageFailures++;
@@ -236,16 +263,12 @@ export async function discoverOfficialSources(
           item.relevant &&
           !metadataProbed.has(sourceKey(item.url)),
       )
-      .slice(0, Math.max(0, 2 - metadataProbed.size));
+      .slice(0, Math.min(2, Math.max(0, 6 - metadataProbed.size)));
     await Promise.all(
       batch.map(async (item) => {
         metadataProbed.add(sourceKey(item.url));
         try {
-          const metadata = await probeSourceMetadata(
-            item.url,
-            phase(6500),
-            domains,
-          );
+          const metadata = await probeSourceMetadata(item.url, phase(6500));
           retarget(item, metadata.url);
           item.byteLength = metadata.byteLength;
           item.availability =
@@ -280,45 +303,47 @@ export async function discoverOfficialSources(
     await crawl(phase(10000));
     await probePdfs();
     parent?.throwIfAborted();
-    // A usable brochure from the model page saves a model call. Explicit year conflicts require search.
-    const usableBrochure = ranked().some(
+  }
+  const usableSource = () =>
+    ranked().some(
       (item) =>
         item.relevant &&
         item.specification &&
-        item.documentType === 'PDF' &&
         item.availability === 'READABLE' &&
         (item.yearHint === null || item.yearHint === scope.modelYear),
     );
-    if (!usableBrochure && !signal.aborted) {
-      try {
-        const grounded = await search(
-          { ...input, ...scope },
-          domains,
-          phase(40000),
-        );
-        parent?.throwIfAborted();
-        searchStatus = 'COMPLETED';
-        for (const source of grounded)
-          add(source.title, source.url, 'WEB_SEARCH');
-      } catch {
-        parent?.throwIfAborted();
-        searchStatus = 'FAILED';
-      }
-      await crawl(phase(10000));
-      await probePdfs();
+  // Seeds guide the first pass. Unknown brands and external hosting are never blocked.
+  for (const stage of ['official', 'secondary'] as const) {
+    if (usableSource() || signal.aborted) break;
+    try {
+      const grounded = await search(
+        { ...input, ...scope },
+        domains,
+        phase(25000),
+        stage,
+      );
+      parent?.throwIfAborted();
+      searchStatus = 'COMPLETED';
+      for (const source of grounded)
+        add(source.title, source.url, 'WEB_SEARCH');
+    } catch {
+      parent?.throwIfAborted();
+      searchStatus = 'FAILED';
+      warnings.push(
+        `${stage === 'official' ? 'Official-source' : 'Secondary-source'} web search was unavailable.`,
+      );
     }
-  } else
-    warnings.push(
-      'This manufacturer has no configured approved domain. An operator must extend the source policy before automatic research can use it.',
-    );
+    await crawl(phase(8000), Math.min(12, inspected.size + 3));
+    await probePdfs();
+  }
   parent?.throwIfAborted();
   if (stats.pageFailures)
     warnings.push(
-      'Some official pages could not be read. Grounded links may still be available; unavailable pages are not verified sources.',
+      'Some source pages could not be read. Grounded links may still be available; unavailable pages are not verified sources.',
     );
   if (searchStatus === 'FAILED')
     warnings.push(
-      'Grounded search was unavailable. Any returned official-site candidates remain usable discovery leads.',
+      'Grounded search was unavailable. Any returned candidates remain discovery leads.',
     );
   if (signal.aborted)
     warnings.push(
@@ -338,7 +363,15 @@ export async function discoverOfficialSources(
     );
   if (candidates.size && !ranked().some((item) => item.relevant))
     warnings.push(
-      'Official links were found, but none matched the requested model. These are not substitutes for the requested vehicle.',
+      'Source links were found, but none matched the requested model. These are not substitutes for the requested vehicle.',
+    );
+  if (
+    ranked().some(
+      (item) => item.relevant && item.sourceType === 'EXTERNAL_WEBSITE',
+    )
+  )
+    warnings.push(
+      'Some candidates are hosted outside the known manufacturer websites. Verify their publisher and distinguish secondary reporting from manufacturer evidence.',
     );
   const finalUrls = new Set<string>();
   const items = ranked()
@@ -358,7 +391,7 @@ export async function discoverOfficialSources(
     diagnostics: { ...stats, search: searchStatus },
     warnings,
     message: items.length
-      ? 'Official source candidates found. Vehicle and model-year applicability still needs to be checked in the documents.'
-      : 'Automatic official-source discovery found no usable candidate within its bounds. Explain the unavailable or unsupported scope; a failed lookup does not prove that the vehicle or its specifications do not exist.',
+      ? 'Specification source candidates found. Check publisher, evidence and vehicle/model-year applicability before using their claims.'
+      : 'Official and secondary source searches found no usable candidate within their bounds. A failed lookup does not prove that the vehicle or its specifications do not exist.',
   };
 }

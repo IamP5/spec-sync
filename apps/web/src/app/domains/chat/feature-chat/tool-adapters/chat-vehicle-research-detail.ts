@@ -10,7 +10,10 @@ import { z } from 'zod';
 import { VehicleResearchDetail } from '../../../vehicles/api/features';
 import { parseResult } from '../../util/parse-result';
 
-const referenceSchema = z.object({ id: z.string().uuid() });
+const referenceSchema = z.object({
+  id: z.string().uuid(),
+  reviewReady: z.boolean().optional(),
+});
 
 @Component({
   selector: 'app-chat-vehicle-research-detail',
@@ -19,7 +22,10 @@ const referenceSchema = z.object({ id: z.string().uuid() });
   host: { class: 'block min-w-0 w-full' },
   template: `
     @if (reference(); as reference) {
-      <app-vehicle-research-detail [requestId]="reference.id" />
+      <app-vehicle-research-detail
+        [requestId]="reference.id"
+        [reviewInitiallyOpen]="reference.reviewReady ?? false"
+      />
     } @else {
       <p
         class="rounded-xl border p-4 text-sm text-muted-foreground"

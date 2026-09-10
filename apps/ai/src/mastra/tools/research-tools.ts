@@ -35,7 +35,7 @@ function verifiedUid(requestContext: RequestContext | undefined): string {
 export const researchVehicleSpecifications = createTool({
   id: 'researchVehicleSpecifications',
   description:
-    'Start or join shared manufacturer-document research for a signed-in user. Requires an official approved source URL, brand, model and explicit Brazilian model year. The whole document is researched once for all users; requested configurations are a personal selection. Returns a compact progress summary and private request id. The browser fetches and displays full source evidence and draft claims. Draft claims need curator review before catalog publication.',
+    'Start or join shared manufacturer-document research for a signed-in user. Requires a public source URL, brand, model and explicit Brazilian model year. Prefer manufacturer evidence; reputable secondary sources and external document hosting are supported. Preserve source attribution and distinguish secondary claims from manufacturer evidence. The whole document is researched once for all users; requested configurations are a personal selection. Returns a compact progress summary and private request id. The browser fetches and displays full source evidence and draft claims. Draft claims need curator review before catalog publication.',
   inputSchema: requestSchema,
   outputSchema: researchSummarySchema,
   execute: async (request, context) => {
@@ -82,4 +82,26 @@ export const replayVehicleResearch = createTool({
         context?.abortSignal,
       ),
     ),
+});
+
+/** Opens the already extracted draft; never starts another workflow. */
+export const reviewVehicleResearch = createTool({
+  id: 'reviewVehicleResearch',
+  description:
+    'Open human review and catalog publication for an existing private research request. Reuses the saved source and extracted draft without new discovery, preview or extraction. Requires the signed-in account, no curator key. Use when asked to review or import completed chat research. Publication remains a human decision in the card.',
+  inputSchema: z.object({ id: z.string().uuid() }),
+  outputSchema: researchSummarySchema.extend({ reviewReady: z.boolean() }),
+  execute: async ({ id }, context) => {
+    const research = await readResearch(
+      verifiedUid(context?.requestContext),
+      id,
+      context?.abortSignal,
+    );
+    return {
+      ...summarizeResearch(research),
+      reviewReady:
+        research.requestStatus === 'ACTIVE' &&
+        ['REVIEW', 'PUBLISHED'].includes(research.status),
+    };
+  },
 });

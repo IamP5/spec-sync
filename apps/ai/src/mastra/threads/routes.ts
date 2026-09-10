@@ -6,6 +6,7 @@ import type { Memory } from '@mastra/memory';
 import { CHAT_AGENT_ID } from '../agents/spec-sync-agent';
 import { requireVerifiedUser, verifiedUserOf } from '../identity';
 import { toAGUIMessages } from './messages';
+import { researchUpdates } from './research-updates';
 
 export const CHAT_THREADS_PATH = '/chat/threads';
 
@@ -62,6 +63,30 @@ async function ownedThread(
 }
 
 export const chatThreadRoutes = [
+  registerApiRoute(`${CHAT_THREADS_PATH}/:threadId/research-updates`, {
+    method: 'POST',
+    middleware: requireVerifiedUser,
+    handler: async (c) => {
+      c.header('Cache-Control', 'no-store');
+      const user = await verifiedUserOf(c.req.raw.headers);
+      if (!user) return c.json({ error: 'Authentication required' }, 401);
+      const memory = await chatMemory(c);
+      const threadId = c.req.param('threadId');
+      const thread = await ownedThread(memory, threadId, user.resourceId);
+      if (!thread) return c.json({ error: 'Not found' }, 404);
+      return c.json({
+        ...summaryOf(thread),
+        messages: await researchUpdates(
+          memory,
+          threadId,
+          user.resourceId,
+          user.uid,
+          c.req.raw.signal,
+        ),
+      });
+    },
+  }),
+
   registerApiRoute(CHAT_THREADS_PATH, {
     method: 'GET',
     middleware: requireVerifiedUser,
