@@ -10,6 +10,27 @@ export function isChatThreadPath(path: string): boolean {
   return path === '/ai/chat/threads' || path.startsWith('/ai/chat/threads/');
 }
 
+function isResearchRoute(path: string, method: string): boolean {
+  if (
+    /^\/ai\/chat\/research\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/interests$/i.test(
+      path,
+    )
+  )
+    return ['GET', 'POST'].includes(method);
+  if (path === '/ai/chat/research') return ['GET', 'POST'].includes(method);
+  if (
+    /^\/ai\/chat\/research\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/replay$/i.test(
+      path,
+    )
+  )
+    return method === 'POST';
+  return (
+    /^\/ai\/chat\/research\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      path,
+    ) && ['GET', 'DELETE'].includes(method)
+  );
+}
+
 export function createGateway(
   config: GatewayConfig,
   identity: IdentityService,
@@ -81,6 +102,7 @@ export function createGateway(
             ['GET', 'POST'].includes(c.req.method)) ||
           (path === '/ai/chat/models' && c.req.method === 'GET') ||
           (path === '/ai/chat/credits' && c.req.method === 'GET') ||
+          isResearchRoute(path, c.req.method) ||
           (isChatThreadPath(path) &&
             ['GET', 'PATCH', 'DELETE'].includes(c.req.method))
         )

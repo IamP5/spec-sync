@@ -1,66 +1,40 @@
+import { linkedSpecificationPages, sourceKey } from './linked-documents';
+import {
+  manufacturerDomains,
+  modelPathTemplates,
+  modelSlugs,
+  slugOf,
+} from './manufacturers';
 import { downloadSource, sourceDomains, validateSourceUrl } from './source';
 
-/**
- * Official model pages found without a search engine: the manufacturer's
- * sitemap (announced in robots.txt, else /sitemap.xml) is scanned for pages
- * about the model, and when a site publishes no usable sitemap the known
- * model-page path patterns of the approved domains are probed. Everything
- * goes through the pinned-DNS downloader and the approved-domain check.
- */
-const PATH_TEMPLATES: Record<string, string[]> = {
-  'ford.com.br': [
-    '/picapes/{model}/',
-    '/suvs/{model}/',
-    '/carros/{model}/',
-    '/utilitarios/{model}/',
-  ],
-  'toyota.com.br': ['/modelos/{model}'],
-  'nissan.com.br': [
-    '/veiculos/modelos/{model}.html',
-    '/veiculos/modelos/novo-{model}.html',
-    '/veiculos/modelos/nova-{model}.html',
-  ],
-};
-/** Path segments of pages that never present specifications. */
+export { slugOf } from './manufacturers';
+
 const IGNORED_SEGMENTS =
-  /^(support|servico.*|service|revisao.*|acessorios|galeria|gallery|design|test-drive|content|noticias|news|blog|central-conhecimento|financ.*|seguro.*|pecas|ofertas|promocoes|concession.*|manuais|owner-manuals)$/;
-/** Segments of pages that usually present every version of a model. */
+  /^(support|servico.*|service|revisao.*|acessorios|galeria|gallery|design|test-drive|noticias|news|blog|central-conhecimento|financ.*|seguro.*|pecas|ofertas|promocoes|concession.*|manuais|owner-manuals)$/;
 const PREFERRED_SEGMENTS = /compare|versoes|versao|ficha|especific|catalog/;
 const MAX_SITEMAP_FILES = 4;
-const MAX_MODEL_PAGES = 3;
-const FETCH_TIMEOUT_MS = 20000;
-const CACHE_TTL_MS = 15 * 60 * 1000;
+const FETCH_TIMEOUT_MS = 4000;
 
 export interface ModelPage {
   url: string;
-  /** Page body when the probe downloaded it, so callers need not fetch twice. */
+  /** Body of a successful probe; callers reuse it instead of downloading again. */
   html?: string;
 }
 
-/** Lower-case ASCII slug: `Corolla Cross` → `corolla-cross`. */
-export function slugOf(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+export interface SiteDiagnostics {
+  pagesInspected: number;
+  pageFailures: number;
 }
 
-/** Approved domains whose first label is the brand (`ford` → `ford.com.br`). */
 export function brandDomains(
   brand: string,
   domains = sourceDomains(),
 ): string[] {
-  const slug = slugOf(brand);
-  return domains.filter((domain) => domain.split('.')[0] === slug);
+  return manufacturerDomains(brand, domains);
 }
 
-async function fetchText(
-  url: string,
-  signal: AbortSignal,
-  domains: string[],
-): Promise<{ url: string; mime: string; text: string } | undefined> {
+async function fetchText(url: string, signal: AbortSignal, domains: string[]) {
+  if (signal.aborted) return undefined;
   try {
     const response = await downloadSource(
       url,
@@ -77,29 +51,34 @@ async function fetchText(
   }
 }
 
-function locations(xml: string): string[] {
-  return [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].flatMap((match) =>
-    match[1] ? [match[1]] : [],
-  );
+function locations(xml: string, domains: string[]): string[] {
+  return [
+    ...xml.matchAll(
+      /<(?:[a-z]+:)?loc\b[^>]*>\s*([^<\s]+)\s*<\/(?:[a-z]+:)?loc>/gi,
+    ),
+  ].flatMap((match) => {
+    try {
+      return match[1]
+        ? [validateSourceUrl(match[1].replace(/&amp;/g, '&'), domains).href]
+        : [];
+    } catch {
+      return [];
+    }
+  });
 }
 
-const sitemapCache = new Map<string, { expires: number; urls: string[] }>();
-
-/** Every page URL the domain's sitemap lists; empty when there is none. */
+/** No process cache: an unavailable sitemap must not poison subsequent research. */
 export async function sitemapUrls(
   domain: string,
   signal: AbortSignal,
   domains = sourceDomains(),
 ): Promise<string[]> {
-  const hit = sitemapCache.get(domain);
-  if (hit && hit.expires > Date.now()) return hit.urls;
-  const origin = `https://www.${domain}`;
+  const origin = `https://www.${domain.replace(/^www\./, '')}`;
   const robots = await fetchText(`${origin}/robots.txt`, signal, domains);
   const announced = (robots?.text ?? '').split('\n').flatMap((line) => {
     const match = /^\s*sitemap:\s*(\S+)/i.exec(line);
-    if (!match?.[1]) return [];
     try {
-      return [validateSourceUrl(match[1], [domain]).href];
+      return match?.[1] ? [validateSourceUrl(match[1], [domain]).href] : [];
     } catch {
       return [];
     }
@@ -107,47 +86,56 @@ export async function sitemapUrls(
   const queue = announced.length ? announced : [`${origin}/sitemap.xml`];
   const urls: string[] = [];
   const visited = new Set<string>();
-  while (queue.length && visited.size < MAX_SITEMAP_FILES) {
-    const next = queue.shift();
-    if (!next || visited.has(next)) continue;
-    visited.add(next);
-    const file = await fetchText(next, signal, [domain]);
-    if (!file || !/xml/.test(file.mime)) continue;
-    if (/<sitemapindex/i.test(file.text)) {
-      for (const child of locations(file.text)) {
-        try {
-          queue.push(validateSourceUrl(child, [domain]).href);
-        } catch {
-          // Sitemaps on other hosts are ignored.
-        }
-      }
-    } else urls.push(...locations(file.text));
+  while (queue.length && visited.size < MAX_SITEMAP_FILES && !signal.aborted) {
+    const batch: string[] = [];
+    while (
+      queue.length &&
+      batch.length < 2 &&
+      visited.size < MAX_SITEMAP_FILES
+    ) {
+      const next = queue.shift();
+      if (!next || visited.has(next)) continue;
+      visited.add(next);
+      batch.push(next);
+    }
+    const files = await Promise.all(
+      batch.map((url) => fetchText(url, signal, [domain])),
+    );
+    for (const file of files) {
+      if (!file || !/xml/i.test(file.mime)) continue;
+      const links = locations(file.text, [domain]);
+      if (/<sitemapindex/i.test(file.text)) queue.push(...links);
+      else urls.push(...links);
+    }
   }
-  sitemapCache.set(domain, { expires: Date.now() + CACHE_TTL_MS, urls });
-  return urls;
+  return [...new Set(urls)];
 }
 
-/** Whether a sitemap URL is a page about the model (not support, news, ...). */
-export function isModelPage(url: string, model: string): boolean {
-  const slug = slugOf(model);
-  let segments: string[];
+/** Exact model path segments, allowing typography aliases but not other trims/models. */
+export function isModelPage(url: string, model: string, brand = ''): boolean {
   try {
-    segments = new URL(url).pathname
+    const segments = new URL(url).pathname
       .split('/')
       .filter(Boolean)
-      .map((segment) => segment.replace(/\.html?$/, ''));
+      .map((segment) =>
+        slugOf(decodeURIComponent(segment).replace(/\.html?$/i, '')),
+      );
+    if (
+      segments.length > 8 ||
+      segments.some((segment) => IGNORED_SEGMENTS.test(segment))
+    )
+      return false;
+    const aliases = modelSlugs(model, brand).map((slug) =>
+      slug.replace(/-/g, ''),
+    );
+    return segments.some((segment) =>
+      aliases.includes(
+        segment.replace(/^(novo|nova|new)-/, '').replace(/-/g, ''),
+      ),
+    );
   } catch {
     return false;
   }
-  if (segments.length > 4 || segments.some((s) => IGNORED_SEGMENTS.test(s)))
-    return false;
-  return segments.some(
-    (segment) =>
-      segment === slug ||
-      segment === `novo-${slug}` ||
-      segment === `nova-${slug}` ||
-      segment === `new-${slug}`,
-  );
 }
 
 function rank(url: string): number {
@@ -155,47 +143,91 @@ function rank(url: string): number {
   return (PREFERRED_SEGMENTS.test(path) ? 0 : 1000) + path.length;
 }
 
-/**
- * Official pages about one model on the brand's approved domain: sitemap
- * matches ranked with version-comparison pages first, else probed
- * well-known paths. Empty when the brand has no approved domain.
- */
+/** Probe known paths alongside the index, then follow observed model links from the homepage. */
 export async function wellKnownModelPages(
   brand: string,
   model: string,
   signal: AbortSignal,
   domains = sourceDomains(),
+  stats?: SiteDiagnostics,
 ): Promise<ModelPage[]> {
   const pages: ModelPage[] = [];
-  for (const domain of brandDomains(brand, domains)) {
-    const listed = (await sitemapUrls(domain, signal, domains))
-      .filter((url) => isModelPage(url, model))
-      .sort((a, b) => rank(a) - rank(b))
-      .slice(0, MAX_MODEL_PAGES)
-      .map((url) => ({ url }));
-    if (listed.length) {
-      pages.push(...listed);
-      continue;
-    }
-    const slug = slugOf(model);
-    const probes = await Promise.all(
-      (PATH_TEMPLATES[domain] ?? []).map((template) =>
-        fetchText(
-          `https://www.${domain}${template.replace('{model}', slug)}`,
-          signal,
-          domains,
+  const fetched = new Map<string, Promise<ModelPage | undefined>>();
+  const readPage = (url: string): Promise<ModelPage | undefined> => {
+    const key = sourceKey(url);
+    const existing = fetched.get(key);
+    if (existing) return existing;
+    if (fetched.size >= 10 || signal.aborted) return Promise.resolve(undefined);
+    const pending = (async () => {
+      if (stats) stats.pagesInspected++;
+      const response = await fetchText(url, signal, domains);
+      if (!response || response.mime !== 'text/html') {
+        if (stats) stats.pageFailures++;
+        return undefined;
+      }
+      return { url: response.url, html: response.text };
+    })();
+    fetched.set(key, pending);
+    return pending;
+  };
+  const readBatch = async (urls: string[]) => {
+    for (let index = 0; index < urls.length && !signal.aborted; index += 2) {
+      const results = await Promise.all(
+        urls.slice(index, index + 2).map(readPage),
+      );
+      pages.push(
+        ...results.filter(
+          (page): page is Required<ModelPage> => page !== undefined,
         ),
-      ),
+      );
+    }
+  };
+  for (const domain of brandDomains(brand, domains).slice(0, 2)) {
+    if (signal.aborted) break;
+    const origin = `https://www.${domain.replace(/^www\./, '')}`;
+    const probes = modelPathTemplates(domain)
+      .flatMap((template) =>
+        modelSlugs(model, brand).map(
+          (slug) => `${origin}${template.replace('{model}', slug)}`,
+        ),
+      )
+      .slice(0, 4);
+    // A listed URL is only a lead; a dead sitemap must not suppress working paths.
+    const [listed] = await Promise.all([
+      sitemapUrls(domain, signal, domains),
+      readBatch(probes),
+    ]);
+    await readBatch(
+      listed
+        .filter((url) => isModelPage(url, model, brand))
+        .sort((a, b) => rank(a) - rank(b))
+        .slice(0, 3),
     );
-    for (const probe of probes)
-      if (probe && probe.mime === 'text/html')
-        pages.push({ url: probe.url, html: probe.text });
+    if (!pages.length && !signal.aborted) {
+      const home = await readPage(`${origin}/`);
+      if (home?.html)
+        await readBatch(
+          linkedSpecificationPages(
+            home.html,
+            home.url,
+            model,
+            brand,
+            domains,
+            true,
+          )
+            .map((link) => link.url)
+            .slice(0, 3),
+        );
+    }
   }
   const seen = new Set<string>();
-  return pages.filter((page) => {
-    const key = page.url.replace(/\/$/, '');
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return pages
+    .filter((page) => {
+      const key = sourceKey(page.url);
+      if (seen.has(key) || !isModelPage(page.url, model, brand)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => rank(a.url) - rank(b.url))
+    .slice(0, 4);
 }

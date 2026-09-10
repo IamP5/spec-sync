@@ -13,6 +13,8 @@ import { requireVerifiedUser, setChatIdentityContext } from './identity';
 import { ingestionRoutes } from './ingestion/routes';
 import { vehicleIngestionWorkflow } from './ingestion/workflow';
 import { postgresStorage } from './memory';
+import { researchRoutes } from './research/routes';
+import { sharedVehicleResearchWorkflow } from './research/workflow';
 import { chatThreadRoutes } from './threads/routes';
 
 const production = process.env['NODE_ENV'] === 'production';
@@ -51,7 +53,10 @@ const devDatabase = `file:${fileURLToPath(new URL('../dev.db', import.meta.url))
 export const mastra = new Mastra({
   agents: { [specSyncAgent.id]: specSyncAgent },
   // Bounded ingestion pipeline; the API owns run status, review and publication.
-  workflows: { [vehicleIngestionWorkflow.id]: vehicleIngestionWorkflow },
+  workflows: {
+    [vehicleIngestionWorkflow.id]: vehicleIngestionWorkflow,
+    [sharedVehicleResearchWorkflow.id]: sharedVehicleResearchWorkflow,
+  },
   storage:
     postgresStorage() ??
     (production
@@ -64,6 +69,7 @@ export const mastra = new Mastra({
   server: {
     apiRoutes: [
       ...ingestionRoutes,
+      ...researchRoutes,
       ...chatModelRoutes,
       ...chatThreadRoutes,
       ...chatCreditsRoutes,

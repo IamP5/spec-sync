@@ -3,8 +3,8 @@
  * `https://vertexaisearch.cloud.google.com/grounding-api-redirect/...` links
  * that redirect once to the real page. Approved-domain checks and the links
  * shown to users need that real URL, so it is read from the redirect's
- * `Location` header. Only that Google host is ever requested, the redirect is
- * never followed, and no other network access happens here.
+ * `Location` header. A bounded GET fallback handles HEAD responses without a
+ * redirect. Only that Google host is requested; redirects are never followed.
  */
 const GROUNDING_HOST = 'vertexaisearch.cloud.google.com';
 const RESOLVE_TIMEOUT_MS = 10_000;
@@ -19,7 +19,14 @@ export interface GroundedSource {
 export function isGroundingRedirect(value: string): boolean {
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' && url.hostname === GROUNDING_HOST;
+    return (
+      url.protocol === 'https:' &&
+      url.hostname === GROUNDING_HOST &&
+      !url.username &&
+      !url.password &&
+      !url.port &&
+      url.pathname.startsWith('/grounding-api-redirect/')
+    );
   } catch {
     return false;
   }
@@ -36,15 +43,20 @@ export async function resolveGroundingUrl(
   if (!isGroundingRedirect(value)) return value;
   try {
     const timeout = AbortSignal.timeout(RESOLVE_TIMEOUT_MS);
-    const response = await fetch(value, {
-      method: 'HEAD',
-      redirect: 'manual',
-      signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
-    });
-    const location = response.headers.get('location');
-    if (response.status < 300 || response.status > 399 || !location)
-      return undefined;
-    return new URL(location, value).href;
+    const deadline = signal ? AbortSignal.any([signal, timeout]) : timeout;
+    for (const method of ['HEAD', 'GET'] as const) {
+      deadline.throwIfAborted();
+      const response = await fetch(value, {
+        method,
+        redirect: 'manual',
+        signal: deadline,
+      });
+      const location = response.headers.get('location');
+      await response.body?.cancel();
+      if (response.status >= 300 && response.status <= 399 && location)
+        return new URL(location, value).href;
+    }
+    return undefined;
   } catch {
     return undefined;
   }

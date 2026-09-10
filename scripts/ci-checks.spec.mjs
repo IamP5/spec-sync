@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('node:child_process', () => ({ execSync: vi.fn() }));
 
@@ -51,6 +51,29 @@ describe('runChecks', () => {
   beforeEach(() => {
     execSyncMock.mockReset();
   });
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  it.each([false, true])(
+    'isolates child checks from hook Git settings (capture=%s)',
+    (capture) => {
+      vi.stubEnv('GIT_INDEX_FILE', '/temporary/commit-index');
+      vi.stubEnv('GIT_DIR', '/another/repository');
+      vi.stubEnv('GIT_OBJECT_DIRECTORY', '/another/objects');
+      vi.stubEnv('GIT_SSH_COMMAND', 'ssh -F user-config');
+      execSyncMock.mockReturnValue('ok');
+      expect(
+        runChecks({ changedFiles: ['apps/web/test.ts'], capture, ...registry })
+          .status,
+      ).toBe('success');
+      const options = execSyncMock.mock.calls[0][1];
+      expect(options.env.GIT_INDEX_FILE).toBeUndefined();
+      expect(options.env.GIT_DIR).toBeUndefined();
+      expect(options.env.GIT_OBJECT_DIRECTORY).toBeUndefined();
+      expect(options.env.GIT_SSH_COMMAND).toBe('ssh -F user-config');
+      expect(process.env.GIT_INDEX_FILE).toBe('/temporary/commit-index');
+    },
+  );
 
   it('runs the fast steps of the selected projects and succeeds when all pass', () => {
     execSyncMock.mockReturnValue('ok');

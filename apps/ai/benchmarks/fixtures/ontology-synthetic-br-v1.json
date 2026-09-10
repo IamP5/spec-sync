@@ -1,0 +1,666 @@
+{
+  "schemaVersion": 1,
+  "id": "specsync-ontology-synthetic-br",
+  "revision": "v1",
+  "synthetic": true,
+  "provenance": "synthetic",
+  "description": "Fabricated ontology normalization contract cases using familiar manufacturer labels. Numbers are not authoritative vehicle specifications; this measures deterministic mapping and evidence contracts, not LLM or PDF accuracy.",
+  "terminologyBefore": [
+    {
+      "attributeCode": "payload",
+      "term": "Capacidade de carga",
+      "brand": "Ford",
+      "model": null,
+      "market": "BR",
+      "language": "pt-BR",
+      "modelYear": null
+    },
+    {
+      "attributeCode": "luggage_volume",
+      "term": "Volume do porta-malas",
+      "brand": "Ford",
+      "model": null,
+      "market": "BR",
+      "language": "pt-BR",
+      "modelYear": null
+    }
+  ],
+  "terminologyAfter": [
+    {
+      "attributeCode": "payload",
+      "term": "Capacidade de carga",
+      "brand": "Ford",
+      "model": null,
+      "market": "BR",
+      "language": "pt-BR",
+      "modelYear": null
+    },
+    {
+      "attributeCode": "luggage_volume",
+      "term": "Volume do porta-malas",
+      "brand": "Ford",
+      "model": null,
+      "market": "BR",
+      "language": "pt-BR",
+      "modelYear": null
+    },
+    {
+      "attributeCode": "towing_capacity",
+      "term": "Capacidade de reboque",
+      "brand": "Ford",
+      "model": "F-150",
+      "market": "BR",
+      "language": "pt-BR",
+      "modelYear": 2026
+    },
+    {
+      "attributeCode": "cargo_bed_volume",
+      "term": "Capacidade da caçamba",
+      "brand": "Ford",
+      "model": "F-150",
+      "market": "BR",
+      "language": "pt-BR",
+      "modelYear": null
+    },
+    {
+      "attributeCode": "passenger_capacity",
+      "term": "Número de passageiros",
+      "brand": "Ford",
+      "model": null,
+      "market": "BR",
+      "language": "pt-BR",
+      "modelYear": null
+    },
+    {
+      "attributeCode": "fuel_type",
+      "term": "Combustível",
+      "brand": "Ford",
+      "model": null,
+      "market": "BR",
+      "language": "pt-BR",
+      "modelYear": null
+    }
+  ],
+  "cases": [
+    {
+      "id": "payload",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nCapacidade de carga | 740 kg",
+      "sourceSha256": "61869431b03d08cbd3471b7952ae77c588b62f9f1ba545cc62e9b2898bd452e1",
+      "observation": {
+        "originalTerm": "Capacidade de carga",
+        "rawValue": "740",
+        "sourceUnit": "kg",
+        "qualifiers": [],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Capacidade de carga row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": "payload",
+        "afterAttributeCode": "payload",
+        "configuration": "Lariat Black",
+        "originalTerm": "Capacidade de carga",
+        "rawValue": "740",
+        "sourceUnit": "kg",
+        "qualifiers": {},
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Capacidade de carga | 740 kg"
+      }
+    },
+    {
+      "id": "towing_black",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nCapacidade de reboque | 3.492 kg",
+      "sourceSha256": "a5cb33e0e270b878200a1534fec67e0129351f93c1a469c39382973859121159",
+      "observation": {
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "3.492",
+        "sourceUnit": "kg",
+        "qualifiers": [
+          {
+            "name": "brakingCondition",
+            "value": "UNKNOWN"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Capacidade de reboque row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": "towing_capacity",
+        "configuration": "Lariat Black",
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "3.492",
+        "sourceUnit": "kg",
+        "qualifiers": {
+          "brakingCondition": "UNKNOWN"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Capacidade de reboque | 3.492 kg"
+      }
+    },
+    {
+      "id": "towing_tremor",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Tremor",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Tremor\nCapacidade de reboque | 3.945 kg",
+      "sourceSha256": "324c7432aa33f4e9dd691f2ca95c49f7c7d8c3a3fd7ad9bc9cd7b85984823150",
+      "observation": {
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "3.945",
+        "sourceUnit": "kg",
+        "qualifiers": [
+          {
+            "name": "brakingCondition",
+            "value": "UNKNOWN"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Capacidade de reboque row, Tremor column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": "towing_capacity",
+        "configuration": "Tremor",
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "3.945",
+        "sourceUnit": "kg",
+        "qualifiers": {
+          "brakingCondition": "UNKNOWN"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Capacidade de reboque | 3.945 kg"
+      }
+    },
+    {
+      "id": "bed_volume",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nCapacidade da caçamba | 1.495 L",
+      "sourceSha256": "9f9f0cfce00ce5dd7a645c3278eee72908047afef2ad3b849206a8d11cf34064",
+      "observation": {
+        "originalTerm": "Capacidade da caçamba",
+        "rawValue": "1.495",
+        "sourceUnit": "L",
+        "qualifiers": [],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Capacidade da caçamba row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": "cargo_bed_volume",
+        "configuration": "Lariat Black",
+        "originalTerm": "Capacidade da caçamba",
+        "rawValue": "1.495",
+        "sourceUnit": "L",
+        "qualifiers": {},
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Capacidade da caçamba | 1.495 L"
+      }
+    },
+    {
+      "id": "luggage",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nVolume do porta-malas | 510 L",
+      "sourceSha256": "d3a248781c2479ae0cee2bd9ad0e8c9369db9b1d7e396e8ffd2910d91a61d863",
+      "observation": {
+        "originalTerm": "Volume do porta-malas",
+        "rawValue": "510",
+        "sourceUnit": "L",
+        "qualifiers": [],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Volume do porta-malas row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": "luggage_volume",
+        "afterAttributeCode": "luggage_volume",
+        "configuration": "Lariat Black",
+        "originalTerm": "Volume do porta-malas",
+        "rawValue": "510",
+        "sourceUnit": "L",
+        "qualifiers": {},
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Volume do porta-malas | 510 L"
+      }
+    },
+    {
+      "id": "passengers",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nNúmero de passageiros | 5",
+      "sourceSha256": "7fcbaf0b0057656bedf8223e9755c429920959526429b867814d8c73a2779ecc",
+      "observation": {
+        "originalTerm": "Número de passageiros",
+        "rawValue": "5",
+        "sourceUnit": null,
+        "qualifiers": [
+          {
+            "name": "driverIncluded",
+            "value": "UNKNOWN"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Número de passageiros row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": "passenger_capacity",
+        "configuration": "Lariat Black",
+        "originalTerm": "Número de passageiros",
+        "rawValue": "5",
+        "sourceUnit": null,
+        "qualifiers": {
+          "driverIncluded": "UNKNOWN"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Número de passageiros | 5"
+      }
+    },
+    {
+      "id": "fuel_combination",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nCombustível | Gasolina e Etanol",
+      "sourceSha256": "c4e1b662bcc7c50af8704a917230636ce9cc0ae92ba14aeceb78611a100d5ad6",
+      "observation": {
+        "originalTerm": "Combustível",
+        "rawValue": "Gasolina e Etanol",
+        "sourceUnit": null,
+        "qualifiers": [
+          {
+            "name": "combination",
+            "value": "Gasolina e Etanol"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Combustível row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": "fuel_type",
+        "configuration": "Lariat Black",
+        "originalTerm": "Combustível",
+        "rawValue": "Gasolina e Etanol",
+        "sourceUnit": null,
+        "qualifiers": {
+          "combination": "Gasolina e Etanol"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Combustível | Gasolina e Etanol"
+      }
+    },
+    {
+      "id": "hybrid_not_fuel",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nSistema híbrido | Híbrido leve",
+      "sourceSha256": "3c44ea773d4130f4843debc2c1f37d61d26424381da9f3f89a419fe270c9e89e",
+      "observation": {
+        "originalTerm": "Sistema híbrido",
+        "rawValue": "Híbrido leve",
+        "sourceUnit": null,
+        "qualifiers": [],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Sistema híbrido row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": null,
+        "configuration": "Lariat Black",
+        "originalTerm": "Sistema híbrido",
+        "rawValue": "Híbrido leve",
+        "sourceUnit": null,
+        "qualifiers": {},
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Sistema híbrido | Híbrido leve"
+      }
+    },
+    {
+      "id": "driver_semantics",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nAssentos incluindo motorista | 5",
+      "sourceSha256": "2732b675f65323ce4d25001084a48efb43c5c554c2619df0aedb2a196bb355c7",
+      "observation": {
+        "originalTerm": "Assentos incluindo motorista",
+        "rawValue": "5",
+        "sourceUnit": null,
+        "qualifiers": [
+          {
+            "name": "driverIncluded",
+            "value": "TRUE"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Assentos incluindo motorista row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": null,
+        "configuration": "Lariat Black",
+        "originalTerm": "Assentos incluindo motorista",
+        "rawValue": "5",
+        "sourceUnit": null,
+        "qualifiers": {
+          "driverIncluded": "TRUE"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Assentos incluindo motorista | 5"
+      }
+    },
+    {
+      "id": "other_brand",
+      "scope": {
+        "brand": "Toyota",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Fabricated A",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Fabricated A\nCapacidade de reboque | 3.100 kg",
+      "sourceSha256": "92ecfb07db6ec32ee966362a84ffeab6e45ba0c0286f8eb671d9641cf9c8a52e",
+      "observation": {
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "3.100",
+        "sourceUnit": "kg",
+        "qualifiers": [
+          {
+            "name": "brakingCondition",
+            "value": "UNKNOWN"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Capacidade de reboque row, Fabricated A column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": null,
+        "configuration": "Fabricated A",
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "3.100",
+        "sourceUnit": "kg",
+        "qualifiers": {
+          "brakingCondition": "UNKNOWN"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Capacidade de reboque | 3.100 kg"
+      }
+    },
+    {
+      "id": "other_model",
+      "scope": {
+        "brand": "Ford",
+        "model": "Ranger",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Fabricated B",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Fabricated B\nCapacidade da caçamba | 1.000 L",
+      "sourceSha256": "44d46ad8d3980bc13ab77879d9e1da8535d4ff325e087675a354d42de86ad005",
+      "observation": {
+        "originalTerm": "Capacidade da caçamba",
+        "rawValue": "1.000",
+        "sourceUnit": "L",
+        "qualifiers": [],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Capacidade da caçamba row, Fabricated B column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": null,
+        "configuration": "Fabricated B",
+        "originalTerm": "Capacidade da caçamba",
+        "rawValue": "1.000",
+        "sourceUnit": "L",
+        "qualifiers": {},
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Capacidade da caçamba | 1.000 L"
+      }
+    },
+    {
+      "id": "other_year",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2025
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nCapacidade de reboque | 2.900 kg",
+      "sourceSha256": "7f2efafde2dc4a4feab4d9713aa533da7a9f926f4cd057aba5434827e6ec698b",
+      "observation": {
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "2.900",
+        "sourceUnit": "kg",
+        "qualifiers": [
+          {
+            "name": "brakingCondition",
+            "value": "UNKNOWN"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Capacidade de reboque row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": null,
+        "configuration": "Lariat Black",
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "2.900",
+        "sourceUnit": "kg",
+        "qualifiers": {
+          "brakingCondition": "UNKNOWN"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Capacidade de reboque | 2.900 kg"
+      }
+    },
+    {
+      "id": "f150_alias",
+      "scope": {
+        "brand": "Ford",
+        "model": "F150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Lariat Black",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Lariat Black\nCapacidade de reboque | 3.492 kg",
+      "sourceSha256": "a5cb33e0e270b878200a1534fec67e0129351f93c1a469c39382973859121159",
+      "observation": {
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "3.492",
+        "sourceUnit": "kg",
+        "qualifiers": [
+          {
+            "name": "brakingCondition",
+            "value": "UNKNOWN"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Capacidade de reboque row, Lariat Black column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": "towing_capacity",
+        "configuration": "Lariat Black",
+        "originalTerm": "Capacidade de reboque",
+        "rawValue": "3.492",
+        "sourceUnit": "kg",
+        "qualifiers": {
+          "brakingCondition": "UNKNOWN"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Capacidade de reboque | 3.492 kg"
+      }
+    },
+    {
+      "id": "package_not_feature",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Tremor",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Tremor\nPacote Tremor | Opcional",
+      "sourceSha256": "ff6247d59491e368ceb429711ba4a41775df2b3fa31e44de533aece061811cae",
+      "observation": {
+        "originalTerm": "Pacote Tremor",
+        "rawValue": "Opcional",
+        "sourceUnit": null,
+        "qualifiers": [
+          {
+            "name": "package",
+            "value": "Tremor"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Pacote Tremor row, Tremor column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": null,
+        "configuration": "Tremor",
+        "originalTerm": "Pacote Tremor",
+        "rawValue": "Opcional",
+        "sourceUnit": null,
+        "qualifiers": {
+          "package": "Tremor"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Pacote Tremor | Opcional"
+      }
+    },
+    {
+      "id": "novel_concept",
+      "scope": {
+        "brand": "Ford",
+        "model": "F-150",
+        "market": "BR",
+        "modelYear": 2026
+      },
+      "configuration": "Fabricated C",
+      "text": "SYNTHETIC ONTOLOGY CONTRACT FIXTURE; NOT MANUFACTURER FACTS\nConfiguration | Fabricated C\nVida projetada da bateria | 12 anos",
+      "sourceSha256": "6bdec16fa0ce2d1dd44386b13c920d8dee0676e158be4d2f46e1c81b81f2f112",
+      "observation": {
+        "originalTerm": "Vida projetada da bateria",
+        "rawValue": "12",
+        "sourceUnit": "anos",
+        "qualifiers": [
+          {
+            "name": "testCycle",
+            "value": "UNKNOWN"
+          }
+        ],
+        "lineStart": 3,
+        "lineEnd": 3,
+        "locator": "Synthetic table, Vida projetada da bateria row, Fabricated C column",
+        "proposal": null
+      },
+      "gold": {
+        "beforeAttributeCode": null,
+        "afterAttributeCode": null,
+        "configuration": "Fabricated C",
+        "originalTerm": "Vida projetada da bateria",
+        "rawValue": "12",
+        "sourceUnit": "anos",
+        "qualifiers": {
+          "testCycle": "UNKNOWN"
+        },
+        "lineStart": 3,
+        "lineEnd": 3,
+        "excerpt": "Vida projetada da bateria | 12 anos"
+      }
+    }
+  ]
+}

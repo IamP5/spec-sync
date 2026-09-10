@@ -108,6 +108,9 @@ const assembleStep = createStep({
       source,
       configurations: inputData,
       warnings: identified.warnings,
+      ontologyRevision: identified.ontologyRevision,
+      normalizationRevision: identified.normalizationRevision,
+      readerRevision: source.parserVersion,
     });
   },
 });
@@ -135,6 +138,9 @@ export const vehicleIngestionWorkflow = createWorkflow({
       attributes: inputData.attributes,
       scope,
       legend: inputData.legend,
+      terminology: inputData.terminology,
+      attributeValues: inputData.attributeValues,
+      readerRevision: inputData.source.parserVersion,
     })),
   )
   .foreach(extractStep, { concurrency: 2 })

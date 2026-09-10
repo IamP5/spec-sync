@@ -33,7 +33,13 @@ public class DefaultProcessIngestion extends ProcessIngestion {
         } else {
             gateway.claim().ifPresent(work -> {
                 try {
-                    gateway.complete(work, extraction.extract(work.request(), catalog.attributes()));
+                    gateway.complete(
+                            work,
+                            extraction.extract(
+                                    work,
+                                    work.ontology() == null
+                                            ? catalog.attributes()
+                                            : work.ontology().attributes()));
                 } catch (RuntimeException e) {
                     gateway.fail(
                             work,

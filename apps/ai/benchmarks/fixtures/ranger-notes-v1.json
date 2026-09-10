@@ -1,0 +1,407 @@
+{
+  "schemaVersion": 1,
+  "id": "specsync-ranger-curated-notes",
+  "revision": "v1",
+  "synthetic": false,
+  "provenance": "curated-notes",
+  "description": "Frozen exact prefix (original lines 1-151) of apps/api/data/sources/ranger-specs.md, POC CURATED_NOTES captured 2026-09-05. Full parent SHA256: a7604a3a019e0d93da206b3a54ba639ee26e69e928e3ffb294e7936e6179a2bf. Source-attribution URL is inherited from curated-pickups.json; it does not establish that the live page matches these notes. Labels were transcribed from the supplied notes for power and torque only, across all five Performance table columns, without independent human adjudication or manufacturer verification. Not a full-specification, discovery, natural-language identity, original PDF, or representative Brazil benchmark. This excerpt states no model year; gold preserves unknown year and requires clarification. The later website appendix (outside the excerpt) lists model years but is not part of this evidence scope. Date of capture is not model year.",
+  "cases": [
+    {
+      "id": "ranger-performance-five-trims-undated",
+      "tags": [
+        "pickup-notes",
+        "multi-trim",
+        "undated",
+        "rpm-qualifiers",
+        "curated-notes",
+        "power-and-torque-only"
+      ],
+      "input": {
+        "query": "Extraction-stage benchmark: the brand/model is already resolved as Ford Ranger, market BR. The user wants Limited power and torque; expand ONLY those two fields across all five configurations in the Performance table. Use each exact printed configuration name as both id and trim. Use field codes power and torque; preserve printed scalar values, cv/Nm units, and qualifiers fuel=diesel and rpm as printed without the ' rpm' suffix. The table identifies diesel engines by configuration. Do not extract other fields from the supplied source. Do not infer model year: use null when unstated and request clarification even if one trim matches. Body type is outside this extraction scope: use bodyType='not-stated'. Evidence cites the exact full source row, with headerLine identifying the Performance table header and column counted from 1 for XLS 4x4 (exclude the Item label column). Cite both the numeric row and the engine row establishing the diesel qualifier for that column; all cited lines must be included in the evidence array.",
+        "requested": {
+          "market": "BR",
+          "make": "Ford",
+          "model": "Ranger",
+          "modelYear": null,
+          "trim": "Limited"
+        },
+        "sources": [
+          {
+            "id": "ranger-curated-notes",
+            "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+            "sha256": "032e6c66351cb3ba8ac13351344faeae32694f05dfef281ccf5971eb71cc1e35",
+            "url": "https://www.ford.com.br/picapes/ranger/",
+            "format": "text-v1",
+            "text": "# Nova Geração Ford Ranger — Specs & Features\n\n**Versões disponíveis:** XLS 4x4 · Black · XLS 4WD · XLT 4WD · Limited\n\nLegenda: ✓ = item de série · — = não disponível\n\n---\n\n## Exterior\n\n| Item | XLS 4x4 | Black | XLS 4WD | XLT 4WD | Limited |\n|---|:-:|:-:|:-:|:-:|:-:|\n| Ajuste elétrico da altura dos faróis | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Bagageiro de teto | — | — | — | — | ✓ |\n| Degrau de acesso à caçamba | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Estribo Plataforma | — | ✓ | — | ✓ | ✓ |\n| Faróis de neblina em LED | — | — | — | ✓ | ✓ |\n| Faróis de neblina halógenos | ✓ | ✓ | ✓ | — | — |\n| Faróis Full LED | ✓ | ✓ | ✓ | ✓ | — |\n| Iluminação na caçamba | — | — | — | — | ✓ |\n| Lanternas traseiras em LED | — | — | — | — | ✓ |\n| Luzes de condução diurna (DRL) | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Para-barros dianteiros | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Para-barros traseiros | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Para-choque na cor do veículo | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Pneus 255/70 R17 All Terrain | ✓ | — | ✓ | ✓ | — |\n| Pneus 255/65 R18 All Terrain | — | ✓ | — | — | ✓ |\n| Protetor de caçamba | — | — | — | — | ✓ |\n| Retrovisores externos com ajuste elétrico e indicação de direção | ✓ | ✓ | ✓ | — | — |\n| Retrovisores externos com ajuste elétrico, indicador de direção e rebatimento elétrico | — | — | — | ✓ | ✓ |\n| Rodas de liga leve 17\" | ✓ | — | ✓ | ✓ | — |\n| Rodas de liga leve 18\" | — | ✓ | — | — | ✓ |\n| Santo Antônio esportivo | — | ✓ | — | — | ✓ |\n| Tampa traseira com assistente de abertura e fechamento | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Tomada 12V na caçamba | — | — | — | ✓ | ✓ |\n\n---\n\n## Sistema Multimídia SYNC 4\n\n| Item | XLS 4x4 | Black | XLS 4WD | XLT 4WD | Limited |\n|---|:-:|:-:|:-:|:-:|:-:|\n| Alto-falantes | 6 | 6 | 6 | 6 | 6 |\n| AppLink | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Assistência de Emergência | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Bluetooth | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Comando de voz em português nativo | — | — | — | ✓ | ✓ |\n| Comandos de áudio no volante | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Conectividade Android Auto e Apple CarPlay sem fio | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Entradas USB | 4 | 4 | 4 | 4 | 4 |\n| Tela central multifuncional touchscreen HD | 10\" | 10\" | 10\" | 10\" | 12\" |\n\n---\n\n## AppFord — Conectividade via aplicativo Ford\n\n| Item | XLS 4x4 | Black | XLS 4WD | XLT 4WD | Limited |\n|---|:-:|:-:|:-:|:-:|:-:|\n| Alerta de acionamento do alarme no celular | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Alertas de funcionamento do veículo | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Monitoramento da vida útil do óleo | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Partida Remota Agendada | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Partida remota com acionamento do ar condicionado | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Sistema de localização do veículo no celular | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Status remoto do veículo (nível de combustível, hodômetro) | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Travamento e destravamento remoto do veículo | ✓ | ✓ | ✓ | ✓ | ✓ |\n\n---\n\n## Interior\n\n| Item | XLS 4x4 | Black | XLS 4WD | XLT 4WD | Limited |\n|---|:-:|:-:|:-:|:-:|:-:|\n| Acendimento automático dos faróis | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Ajuste do banco do motorista elétrico em 8 posições | — | — | — | ✓ | ✓ |\n| Ar condicionado | ✓ | ✓ | ✓ | — | — |\n| Ar condicionado automático e digital com controle individual de temperatura | — | — | — | ✓ | ✓ |\n| Ar condicionado para a segunda fileira de bancos | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Bancos com revestimento premium | — | ✓ | — | ✓ | ✓ |\n| Bancos revestidos em tecido | ✓ | — | ✓ | — | — |\n| Carregador por indução | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Chave com sensor de presença e partida sem chave | — | — | — | ✓ | ✓ |\n| Descanso de braço traseiro | — | — | — | — | ✓ |\n| Painel de instrumentos colorido configurável (via comandos no volante) | 8\" | 8\" | 8\" | 8\" | 8\" |\n| Pontos de amarração de carga | 6 | 6 | 6 | 6 | 6 |\n| Retrovisor eletrocrômico | — | — | — | ✓ | ✓ |\n| Sensor de chuva | — | — | — | ✓ | ✓ |\n| Tapetes de borracha | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Vidros elétricos dianteiros/traseiros com sistema global de abertura/fechamento | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Volante com ajuste de altura e profundidade | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Volante com revestimento premium | — | — | — | ✓ | ✓ |\n\n---\n\n## Segurança\n\n| Item | XLS 4x4 | Black | XLS 4WD | XLT 4WD | Limited |\n|---|:-:|:-:|:-:|:-:|:-:|\n| Air bags (7): frontais, laterais, cortinas e joelho para o motorista | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Alarme Perimétrico | ✓ | ✓ | ✓ | — | — |\n| Alarme Volumétrico | — | — | — | ✓ | ✓ |\n| Alerta de colisão com aviso luminoso e sonoro | — | — | — | ✓ | ✓ |\n| Assistente Autônomo de frenagem (com detecção de pedestres) | — | — | — | ✓ | ✓ |\n| Assistente de partida em rampas | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Assistente de permanência em faixa | — | — | — | ✓ | ✓ |\n| Câmera de ré | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Cintos de segurança traseiros laterais e central de 3 pontos | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Controle eletrônico de estabilidade | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Farol alto automático | — | — | — | ✓ | ✓ |\n| Frenagem pós-colisão | — | — | — | ✓ | ✓ |\n| Limitador de velocidade | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Piloto automático | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Sensor de estacionamento dianteiro | — | — | — | ✓ | ✓ |\n| Sensor de estacionamento traseiro | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Sistema de reconhecimento de sinais de trânsito | — | — | — | ✓ | ✓ |\n| Trava da tampa da caçamba com chave | ✓ | ✓ | ✓ | — | — |\n| Trava da tampa da caçamba elétrica | — | — | — | ✓ | ✓ |\n\n---\n\n## Tecnologia\n\n| Item | XLS 4x4 | Black | XLS 4WD | XLT 4WD | Limited |\n|---|:-:|:-:|:-:|:-:|:-:|\n| 4 modos de condução (Normal, Eco, Rebocar/Transp, Escorregadio) | ✓ | ✓ | ✓ | ✓ | — |\n| 6 modos de condução (Normal, Eco, Rebocar/Transp, Escorregadio, Lama/Terra, Areia) | — | — | — | — | ✓ |\n| Câmbio eletrônico (E-Shifter) | — | — | ✓ | ✓ | ✓ |\n| Controle automático em descidas | ✓ | — | ✓ | ✓ | ✓ |\n| Diferencial traseiro bloqueante | — | — | ✓ | ✓ | ✓ |\n| Direção elétrica | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Freio a disco nas 4 rodas | — | — | — | ✓ | ✓ |\n| Freio de mão eletrônico | — | — | — | ✓ | ✓ |\n| Navegador Off-road | — | — | — | — | ✓ |\n| Provisão elétrica de reboque | ✓ | ✓ | ✓ | ✓ | ✓ |\n| Sensor de monitoramento de pressão dos pneus (TPMS) | — | — | — | — | ✓ |\n| Start & Stop | — | — | ✓ | ✓ | ✓ |\n\n---\n\n## Especificações Técnicas — Performance\n\n| Item | XLS 4x4 | Black | XLS 4WD | XLT 4WD | Limited |\n|---|:-:|:-:|:-:|:-:|:-:|\n| Motor 2.0 turbo Diesel | ✓ | ✓ | — | — | — |\n| Motor 3.0 V6 turbo Diesel | — | — | ✓ | ✓ | ✓ |\n| Potência | 170 cv @ 3.500 rpm | 170 cv @ 3.500 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm |\n| Torque | 405 Nm @ 2.000 rpm | 405 Nm @ 2.000 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm |\n| Tração | 4x4 | 4x4 | 4WD | 4WD | 4WD |\n| Transmissão | AT 6 vel. | AT 6 vel. | AT 10 vel. | AT 10 vel. | AT 10 vel. |\n| Freio hidráulico a vácuo, duplo circuito, disco ventilado dianteiro e tambor traseiro | ✓ | ✓ | — | — | — |\n| Freio hidráulico a vácuo, duplo circuito e disco ventilado nas 4 rodas | — | — | ✓ | ✓ | ✓ |\n"
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "needs-clarification",
+          "vehicleIds": ["Limited"]
+        },
+        "variants": [
+          {
+            "id": "XLS 4x4",
+            "market": "BR",
+            "make": "Ford",
+            "model": "Ranger",
+            "modelYear": null,
+            "trim": "XLS 4x4",
+            "bodyType": "not-stated"
+          },
+          {
+            "id": "Black",
+            "market": "BR",
+            "make": "Ford",
+            "model": "Ranger",
+            "modelYear": null,
+            "trim": "Black",
+            "bodyType": "not-stated"
+          },
+          {
+            "id": "XLS 4WD",
+            "market": "BR",
+            "make": "Ford",
+            "model": "Ranger",
+            "modelYear": null,
+            "trim": "XLS 4WD",
+            "bodyType": "not-stated"
+          },
+          {
+            "id": "XLT 4WD",
+            "market": "BR",
+            "make": "Ford",
+            "model": "Ranger",
+            "modelYear": null,
+            "trim": "XLT 4WD",
+            "bodyType": "not-stated"
+          },
+          {
+            "id": "Limited",
+            "market": "BR",
+            "make": "Ford",
+            "model": "Ranger",
+            "modelYear": null,
+            "trim": "Limited",
+            "bodyType": "not-stated"
+          }
+        ],
+        "claims": [
+          {
+            "vehicleId": "XLS 4x4",
+            "field": "power",
+            "rawValue": "170",
+            "unit": "cv",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "3.500"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 146,
+                "lineEnd": 146,
+                "headerLine": 142,
+                "column": 1,
+                "quote": "| Potência | 170 cv @ 3.500 rpm | 170 cv @ 3.500 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 144,
+                "lineEnd": 144,
+                "headerLine": 142,
+                "column": 1,
+                "quote": "| Motor 2.0 turbo Diesel | ✓ | ✓ | — | — | — |"
+              }
+            ]
+          },
+          {
+            "vehicleId": "XLS 4x4",
+            "field": "torque",
+            "rawValue": "405",
+            "unit": "Nm",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "2.000"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 147,
+                "lineEnd": 147,
+                "headerLine": 142,
+                "column": 1,
+                "quote": "| Torque | 405 Nm @ 2.000 rpm | 405 Nm @ 2.000 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 144,
+                "lineEnd": 144,
+                "headerLine": 142,
+                "column": 1,
+                "quote": "| Motor 2.0 turbo Diesel | ✓ | ✓ | — | — | — |"
+              }
+            ]
+          },
+          {
+            "vehicleId": "Black",
+            "field": "power",
+            "rawValue": "170",
+            "unit": "cv",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "3.500"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 146,
+                "lineEnd": 146,
+                "headerLine": 142,
+                "column": 2,
+                "quote": "| Potência | 170 cv @ 3.500 rpm | 170 cv @ 3.500 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 144,
+                "lineEnd": 144,
+                "headerLine": 142,
+                "column": 2,
+                "quote": "| Motor 2.0 turbo Diesel | ✓ | ✓ | — | — | — |"
+              }
+            ]
+          },
+          {
+            "vehicleId": "Black",
+            "field": "torque",
+            "rawValue": "405",
+            "unit": "Nm",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "2.000"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 147,
+                "lineEnd": 147,
+                "headerLine": 142,
+                "column": 2,
+                "quote": "| Torque | 405 Nm @ 2.000 rpm | 405 Nm @ 2.000 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 144,
+                "lineEnd": 144,
+                "headerLine": 142,
+                "column": 2,
+                "quote": "| Motor 2.0 turbo Diesel | ✓ | ✓ | — | — | — |"
+              }
+            ]
+          },
+          {
+            "vehicleId": "XLS 4WD",
+            "field": "power",
+            "rawValue": "250",
+            "unit": "cv",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "3.250"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 146,
+                "lineEnd": 146,
+                "headerLine": 142,
+                "column": 3,
+                "quote": "| Potência | 170 cv @ 3.500 rpm | 170 cv @ 3.500 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 145,
+                "lineEnd": 145,
+                "headerLine": 142,
+                "column": 3,
+                "quote": "| Motor 3.0 V6 turbo Diesel | — | — | ✓ | ✓ | ✓ |"
+              }
+            ]
+          },
+          {
+            "vehicleId": "XLS 4WD",
+            "field": "torque",
+            "rawValue": "600",
+            "unit": "Nm",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "1.750"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 147,
+                "lineEnd": 147,
+                "headerLine": 142,
+                "column": 3,
+                "quote": "| Torque | 405 Nm @ 2.000 rpm | 405 Nm @ 2.000 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 145,
+                "lineEnd": 145,
+                "headerLine": 142,
+                "column": 3,
+                "quote": "| Motor 3.0 V6 turbo Diesel | — | — | ✓ | ✓ | ✓ |"
+              }
+            ]
+          },
+          {
+            "vehicleId": "XLT 4WD",
+            "field": "power",
+            "rawValue": "250",
+            "unit": "cv",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "3.250"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 146,
+                "lineEnd": 146,
+                "headerLine": 142,
+                "column": 4,
+                "quote": "| Potência | 170 cv @ 3.500 rpm | 170 cv @ 3.500 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 145,
+                "lineEnd": 145,
+                "headerLine": 142,
+                "column": 4,
+                "quote": "| Motor 3.0 V6 turbo Diesel | — | — | ✓ | ✓ | ✓ |"
+              }
+            ]
+          },
+          {
+            "vehicleId": "XLT 4WD",
+            "field": "torque",
+            "rawValue": "600",
+            "unit": "Nm",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "1.750"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 147,
+                "lineEnd": 147,
+                "headerLine": 142,
+                "column": 4,
+                "quote": "| Torque | 405 Nm @ 2.000 rpm | 405 Nm @ 2.000 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 145,
+                "lineEnd": 145,
+                "headerLine": 142,
+                "column": 4,
+                "quote": "| Motor 3.0 V6 turbo Diesel | — | — | ✓ | ✓ | ✓ |"
+              }
+            ]
+          },
+          {
+            "vehicleId": "Limited",
+            "field": "power",
+            "rawValue": "250",
+            "unit": "cv",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "3.250"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 146,
+                "lineEnd": 146,
+                "headerLine": 142,
+                "column": 5,
+                "quote": "| Potência | 170 cv @ 3.500 rpm | 170 cv @ 3.500 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm | 250 cv @ 3.250 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 145,
+                "lineEnd": 145,
+                "headerLine": 142,
+                "column": 5,
+                "quote": "| Motor 3.0 V6 turbo Diesel | — | — | ✓ | ✓ | ✓ |"
+              }
+            ]
+          },
+          {
+            "vehicleId": "Limited",
+            "field": "torque",
+            "rawValue": "600",
+            "unit": "Nm",
+            "qualifiers": {
+              "fuel": "diesel",
+              "rpm": "1.750"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 147,
+                "lineEnd": 147,
+                "headerLine": 142,
+                "column": 5,
+                "quote": "| Torque | 405 Nm @ 2.000 rpm | 405 Nm @ 2.000 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm | 600 Nm @ 1.750 rpm |"
+              },
+              {
+                "sourceId": "ranger-curated-notes",
+                "revision": "curated-notes-2026-09-05-lines-1-151-v1",
+                "lineStart": 145,
+                "lineEnd": 145,
+                "headerLine": 142,
+                "column": 5,
+                "quote": "| Motor 3.0 V6 turbo Diesel | — | — | ✓ | ✓ | ✓ |"
+              }
+            ]
+          }
+        ],
+        "abstentions": []
+      }
+    }
+  ]
+}

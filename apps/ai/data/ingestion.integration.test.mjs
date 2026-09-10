@@ -174,7 +174,7 @@ async function start() {
   await new Promise((resolve, reject) => {
     const timeout = setTimeout(
       () => reject(new Error(`Startup timed out: ${logs}`)),
-      60000,
+      120000,
     );
     const finish = (error) => {
       clearTimeout(timeout);
@@ -241,13 +241,18 @@ before(async () => {
     neo4j.auth.basic('neo4j', 'ingestion-test'),
     { maxTransactionRetryTime: 0, connectionTimeout: 2000 },
   );
-  const graphDeadline = Date.now() + 60000;
+  // Cold Neo4j startup can exceed a minute while local builds share the CPU.
+  const graphDeadline = Date.now() + 120000;
   while (true) {
     try {
       await graphDriver.verifyConnectivity();
       break;
     } catch (error) {
-      if (Date.now() > graphDeadline) throw error;
+      if (Date.now() > graphDeadline)
+        throw new Error(
+          `Neo4j startup timed out: ${await docker(['logs', graphContainer])}`,
+          { cause: error },
+        );
       await delay(500);
     }
   }
@@ -337,7 +342,7 @@ async function waitFor(id, status, timeout = 45000) {
 }
 test(
   'durable drafts, evidence validation, reviewed publication, retries and isolation',
-  { timeout: 150000 },
+  { timeout: 300000 },
   async () => {
     const id = randomUUID();
     assert.equal((await http('', { id, request }, null)).status, 401);

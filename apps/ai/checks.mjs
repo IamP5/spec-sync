@@ -7,9 +7,10 @@ export const aiChecks = {
   name: 'ai',
   paths: ['apps/ai/', 'apps/api/data/'],
   // Fast, deterministic checks that run after every agent coding round and
-  // before every commit: lint and a strict type check.
+  // before every commit: deterministic fixtures, lint and a strict type check.
   fastSteps: [
     'npx nx run ai:data-test --output-style=static-failures-only',
+    'npx nx run ai:benchmark-test --output-style=static-failures-only',
     'npx nx run ai:lint --output-style=static-failures-only',
     'npx nx run ai:typecheck --output-style=static-failures-only',
   ],

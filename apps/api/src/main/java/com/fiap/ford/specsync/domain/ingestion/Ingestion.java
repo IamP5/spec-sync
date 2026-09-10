@@ -1,6 +1,7 @@
 package com.fiap.ford.specsync.domain.ingestion;
 
 import com.fiap.ford.specsync.domain.exceptions.DomainException;
+import com.fiap.ford.specsync.domain.ontology.Ontology;
 import com.fiap.ford.specsync.domain.shared.ValueObject;
 import com.fiap.ford.specsync.domain.validation.Error;
 import java.math.BigDecimal;
@@ -91,8 +92,42 @@ public final class Ingestion {
             String excerpt,
             String locator,
             Object value,
-            List<String> issues)
-            implements ValueObject {}
+            List<String> issues,
+            String originalTerm)
+            implements ValueObject {
+        public Claim(
+                String attributeCode,
+                String label,
+                String unit,
+                String rawValue,
+                String rawUnit,
+                String availability,
+                List<String> listValue,
+                Map<String, String> qualifiers,
+                int lineStart,
+                int lineEnd,
+                String excerpt,
+                String locator,
+                Object value,
+                List<String> issues) {
+            this(
+                    attributeCode,
+                    label,
+                    unit,
+                    rawValue,
+                    rawUnit,
+                    availability,
+                    listValue,
+                    qualifiers,
+                    lineStart,
+                    lineEnd,
+                    excerpt,
+                    locator,
+                    value,
+                    issues,
+                    null);
+        }
+    }
 
     /** Claims proposed for one configuration, with the evidence establishing its identity. */
     public record ConfigurationDraft(
@@ -101,12 +136,41 @@ public final class Ingestion {
             int identityLineEnd,
             String identityExcerpt,
             List<Claim> claims,
-            List<String> warnings)
-            implements ValueObject {}
+            List<String> warnings,
+            List<Ontology.Observation> unmappedObservations)
+            implements ValueObject {
+        public ConfigurationDraft {
+            unmappedObservations = unmappedObservations == null ? List.of() : List.copyOf(unmappedObservations);
+        }
+
+        public ConfigurationDraft(
+                String name,
+                int identityLineStart,
+                int identityLineEnd,
+                String identityExcerpt,
+                List<Claim> claims,
+                List<String> warnings) {
+            this(name, identityLineStart, identityLineEnd, identityExcerpt, claims, warnings, List.of());
+        }
+    }
 
     /** Everything the extractor proposed for one source; {@code warnings} is the coverage report. */
-    public record Draft(Source source, List<ConfigurationDraft> configurations, List<String> warnings)
-            implements ValueObject {}
+    public record Draft(
+            Source source,
+            List<ConfigurationDraft> configurations,
+            List<String> warnings,
+            Long ontologyRevision,
+            String normalizationRevision,
+            String readerRevision)
+            implements ValueObject {
+        public Draft {
+            ontologyRevision = ontologyRevision == null ? 0L : ontologyRevision;
+        }
+
+        public Draft(Source source, List<ConfigurationDraft> configurations, List<String> warnings) {
+            this(source, configurations, warnings, 0L, null, null);
+        }
+    }
 
     public record Run(
             UUID id,
@@ -137,7 +201,17 @@ public final class Ingestion {
             Instant updatedAt)
             implements ValueObject {}
 
-    public record Work(UUID id, UUID leaseToken, Request request) implements ValueObject {}
+    public record Work(
+            UUID id, UUID leaseToken, Request request, String researchPolicyVersion, Ontology.Context ontology)
+            implements ValueObject {
+        public Work(UUID id, UUID leaseToken, Request request, String researchPolicyVersion) {
+            this(id, leaseToken, request, researchPolicyVersion, null);
+        }
+
+        public Work(UUID id, UUID leaseToken, Request request) {
+            this(id, leaseToken, request, null);
+        }
+    }
 
     public record Projection(UUID leaseToken, long revision, String snapshot) implements ValueObject {}
 

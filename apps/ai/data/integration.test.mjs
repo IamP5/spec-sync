@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { readdir } from 'node:fs/promises';
 import { before, test } from 'node:test';
 
 import { migrate, project, seed } from './cli.mjs';
@@ -11,6 +12,7 @@ import {
   sha256,
   snapshotSql,
   sqlLiteral,
+  workspaceRoot,
 } from './foundation.mjs';
 
 let dataset;
@@ -40,11 +42,20 @@ test('migrations, seed and projection can be repeated without changing PostgreSQ
   await project();
   assert.deepEqual(await snapshot(), before);
   assert.equal((await graphMetadata())[0], sha256(JSON.stringify(before)));
-  assert.equal(
-    await postgres(
-      'SELECT count(*) FROM public.flyway_schema_history WHERE success;',
+  const expectedVersions = (
+    await readdir(`${workspaceRoot}/apps/api/src/main/resources/db/migration`)
+  )
+    .map((name) => name.match(/^V(\d+)__/))
+    .filter(Boolean)
+    .map((match) => Number(match[1]))
+    .sort((a, b) => a - b);
+  assert.deepEqual(
+    JSON.parse(
+      await postgres(
+        'SELECT jsonb_agg(version::int ORDER BY version::int) FROM public.flyway_schema_history WHERE success AND version IS NOT NULL;',
+      ),
     ),
-    '4',
+    expectedVersions,
   );
 });
 
@@ -161,7 +172,7 @@ test('matrix preserves conflict, missing data, and known equipment absence acros
     SELECT knowledge_status, count(*) AS total FROM catalog.specification_matrix GROUP BY knowledge_status
   ) counts;`),
   );
-  assert.deepEqual(result, { KNOWN: 72, NOT_REPORTED: 31, CONFLICTING: 2 });
+  assert.deepEqual(result, { KNOWN: 72, NOT_REPORTED: 51, CONFLICTING: 2 });
   const graph = await neo4j([
     {
       statement: `MATCH (c:SpecSyncCatalog:SpecificationCell)
@@ -174,7 +185,7 @@ test('matrix preserves conflict, missing data, and known equipment absence acros
     [
       ['CONFLICTING', 2, 0],
       ['KNOWN', 72, 72],
-      ['NOT_REPORTED', 31, 0],
+      ['NOT_REPORTED', 51, 0],
     ],
   );
 });

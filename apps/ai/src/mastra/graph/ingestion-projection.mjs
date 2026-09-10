@@ -6,6 +6,10 @@ import {
   projectionStatements,
 } from './catalog-projection.mjs';
 import { reviewProjectionStatements } from './review-projection.mjs';
+import {
+  ontologyProjectionStatements,
+  ontologyTables,
+} from './ontology-projection.mjs';
 import { createHash } from 'node:crypto';
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 
@@ -38,6 +42,12 @@ export const projectionInput = z
   .refine(
     (input) => tables.every((table) => Array.isArray(input.snapshot[table])),
     'Incomplete projection snapshot',
+  )
+  .refine(
+    (input) =>
+      !ontologyTables.some((table) => table in input.snapshot) ||
+      ontologyTables.every((table) => Array.isArray(input.snapshot[table])),
+    'Incomplete ontology snapshot',
   );
 function parameters(value) {
   if (typeof value === 'number' && Number.isInteger(value))
@@ -122,8 +132,12 @@ export async function projectIngestion(input) {
           tables.slice(13).map((table) => [table, input.snapshot[table] ?? []]),
         );
         for (const item of [
-          ...projectionStatements(catalog, sha256(JSON.stringify(catalog))),
+          ...projectionStatements(
+            catalog,
+            sha256(JSON.stringify(input.snapshot)),
+          ),
           ...reviewProjectionStatements(reviews),
+          ...ontologyProjectionStatements(input.snapshot),
         ])
           await tx.run(item.statement, parameters(item.parameters ?? {}));
         await tx.run(

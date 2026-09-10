@@ -90,12 +90,19 @@ export const getVehicleSpecifications = createTool({
 });
 const conceptInput = z.object({
   q: z.string().max(500),
+  brand: z.string().max(150).optional(),
+  model: z.string().max(150).optional(),
+  market: z
+    .string()
+    .regex(/^[A-Z]{2}$/)
+    .optional(),
+  modelYear: z.number().int().min(1900).max(2200).optional(),
   limit: z.number().int().min(1).max(30).default(10),
 });
 export const resolveComparisonConcepts = createTool({
   id: 'resolveComparisonConcepts',
   description:
-    'Resolve terminology against curated graph attribute definitions and aliases. No match is not proof of functional inequivalence; use listComparisonAttributes as fallback.',
+    'Resolve terminology against curated graph attribute definitions and aliases. Pass brand, model, market and modelYear when resolving manufacturer wording; manufacturer terms remain scoped and are not global synonyms. No match is not proof of functional inequivalence; use listComparisonAttributes as fallback.',
   inputSchema: conceptInput,
   outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>

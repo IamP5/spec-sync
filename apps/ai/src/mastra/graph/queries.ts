@@ -3,11 +3,18 @@ export const CONCEPTS = `
  MATCH (a:SpecSyncCatalog:AttributeDefinition)
  OPTIONAL MATCH (alias:SpecSyncCatalog:AttributeAlias)-[:ALIAS_OF]->(a)
  WITH a, collect(alias.term) AS aliases
+ OPTIONAL MATCH (term:SpecSyncCatalog:ManufacturerTerm)-[:TERM_FOR]->(a)
+ WHERE $brand IS NOT NULL AND toLower(term.brand)=toLower($brand)
+   AND (term.market IS NULL OR term.market='' OR term.market=$market)
+   AND (term.model IS NULL OR term.model='' OR toLower(term.model)=toLower($model))
+   AND (term.model_year IS NULL OR term.model_year=0 OR term.model_year=$year)
+ WITH a, aliases, collect(term{.term,.brand,.model,.market,.language,.model_year,.introduced_revision,.source_sha256,.locator}) AS manufacturerTerms
  WHERE $q = '' OR toLower(a.code) = toLower($q) OR toLower(a.label) CONTAINS toLower($q)
    OR toLower(coalesce(a.description,'')) CONTAINS toLower($q)
    OR any(term IN aliases WHERE toLower(term) = toLower($q))
+   OR any(term IN manufacturerTerms WHERE toLower(term.term) = toLower($q))
  RETURN {id:a.id, code:a.code, label:a.label, description:a.description,
-   unit:a.unit, valueType:a.value_type, aliases:aliases} AS item
+   unit:a.unit, valueType:a.value_type, aliases:aliases, manufacturerTerms:manufacturerTerms} AS item
  ORDER BY item.code LIMIT $limit
 `;
 

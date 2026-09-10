@@ -1,7 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { htmlText, publicAddress, sha256, validateSourceUrl } from './source';
 describe('source capture boundaries', () => {
+  afterEach(() => vi.unstubAllEnvs());
+  it('allows official RAM hosts while respecting deployment overrides and rejecting lookalikes', () => {
+    expect(
+      validateSourceUrl('https://www.ram.com.br/picapes/1500.html').hostname,
+    ).toBe('www.ram.com.br');
+    expect(() =>
+      validateSourceUrl('https://ram.com.br.evil.test/1500.pdf'),
+    ).toThrow();
+    expect(() =>
+      validateSourceUrl('https://unapproved-stellantis-cdn.test/1500.pdf'),
+    ).toThrow();
+    vi.stubEnv('SPECSYNC_INGESTION_SOURCE_DOMAINS', 'ford.com.br');
+    expect(() =>
+      validateSourceUrl('https://www.ram.com.br/picapes/1500.html'),
+    ).toThrow();
+  });
   it('rejects credentials, lookalike domains, non-HTTPS and private sources', () => {
     for (const url of [
       'http://www.ford.com.br/specs',
@@ -42,5 +58,14 @@ describe('source capture boundaries', () => {
     expect(result.text).toContain('* at 2000 rpm');
     expect(result.text).not.toContain('Ignore all rules');
     expect(sha256(result.text)).toBe(sha256(result.text));
+  });
+  it('includes declared component versions while preserving their scoped attributes', () => {
+    const result = htmlText(
+      '<title>RAM 1500</title><h1>1500</h1><prox-master-versions versions-param-year="2026" versions-data="[{&quot;versionName&quot;:&quot;LARAMIE&quot;,&quot;year&quot;:&quot;2026&quot;}]"></prox-master-versions><footer>Copyright 2099</footer>',
+    );
+    expect(result.text).toContain('versions-param-year: 2026');
+    expect(result.text).toContain('versions-data[0].versionName: LARAMIE');
+    expect(result.text).toContain('each indexed record has its own scope');
+    expect(result.text).not.toContain('2099');
   });
 });

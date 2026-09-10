@@ -44,6 +44,10 @@ node apps/gateway/ops/set-user-roles.mjs PROJECT_ID UID reviewer
   model, so Mastra's own `/api/memory` routes and every wallet mutation stay
   unreachable from the browser.
 - Unknown routes, frontend assets, AI Studio and internal workers are not exposed.
+- Shared vehicle research uses `/ai/chat/research` GET/POST and
+  `/ai/chat/research/<request UUID>` GET/DELETE. AI verifies the signed user token;
+  the API scopes each subscription to that UID. Worker leases and checkpoints
+  are private service calls, with a separate research key.
 - Hono's official `hono/proxy` helper handles forwarding with streaming and cancellation.
   The wrapper filters headers, forbids upstream redirects and prevents shared caching.
 - Hono's official CORS middleware allows exactly `FRONTEND_ORIGIN`, including preflight

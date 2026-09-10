@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import test from 'node:test';
+import { ontologyProjectionStatements } from '../src/mastra/graph/ontology-projection.mjs';
+import { projectionInput } from '../src/mastra/graph/ingestion-projection.mjs';
 
 import {
   fixtureRoot,
@@ -14,6 +16,71 @@ import {
 
 const { dataset, digest } = await loadDataset();
 const t = dataset.tables;
+test('ontology projection retains typed evidence and never converts proposals into aliases', () => {
+  const observation = {
+    originalTerm: 'Capacidade',
+    rawValue: '6',
+    qualifiers: { scope: 'bed' },
+  };
+  const statements = ontologyProjectionStatements({
+    ontology_revision: [{ revision: 2, reason: 'Reviewed' }],
+    manufacturer_term: [
+      {
+        id: 'term',
+        attribute_id: 'attribute',
+        term: "x' DELETE n //",
+        brand: 'ford',
+      },
+    ],
+    ontology_proposal: [
+      { id: 'pending', status: 'PENDING', alternatives: ['payload is mass'] },
+    ],
+    ontology_proposal_evidence: [
+      { id: 'evidence', proposal_id: 'pending', observation },
+    ],
+    attribute_value: [
+      { attribute_id: 'fuel', code: 'GASOLINE', aliases: ['gasolina'] },
+    ],
+  });
+  assert.ok(
+    statements.every((row) => !row.statement.includes("x' DELETE n //")),
+  );
+  const evidence = statements.find(
+    (row) =>
+      row.statement.includes('OntologyProposalEvidence') && row.parameters,
+  )?.parameters.rows[0];
+  assert.deepEqual(JSON.parse(evidence.observation_json), observation);
+  assert.ok(!statements.some((row) => row.statement.includes('ALIAS_OF')));
+  assert.equal(statements.at(-1).parameters.revision, 2);
+  const incomplete = {
+    revision: 2,
+    snapshot: Object.fromEntries(
+      [
+        'brand',
+        'vehicle_model',
+        'vehicle_configuration',
+        'attribute_definition',
+        'source_revision',
+        'evidence',
+        'spec_assertion',
+        'assertion_evidence',
+        'accepted_specification',
+        'feature_package',
+        'package_item',
+        'configuration_package',
+        'seed_dataset',
+        'attribute_alias',
+        'review_source_revision',
+        'review_chunk',
+        'review_aspect',
+        'review_aspect_attribute',
+        'review_observation',
+        'ontology_revision',
+      ].map((table) => [table, []]),
+    ),
+  };
+  assert.equal(projectionInput.safeParse(incomplete).success, false);
+});
 const documents = Object.fromEntries(
   await Promise.all(
     t.source_revision.map(async (s) => [

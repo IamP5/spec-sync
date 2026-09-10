@@ -48,6 +48,31 @@ describe('direct graph retrieval', () => {
       expect(query).not.toHaveBeenCalled();
     },
   );
+  it('passes manufacturer scope separately from canonical concepts', async () => {
+    const query = snapshotQuery(async (_cypher, params) => {
+      expect(params).toMatchObject({
+        brand: 'Ford',
+        model: 'F-150',
+        market: 'BR',
+        year: 2026,
+      });
+      return [
+        {
+          code: 'towing_capacity',
+          manufacturerTerms: [{ term: 'Capacidade de reboque', brand: 'Ford' }],
+        },
+      ];
+    });
+    expect(
+      await retrieveKnowledge(query, 'concepts', {
+        q: 'Capacidade de reboque',
+        brand: 'Ford',
+        model: 'F-150',
+        market: 'BR',
+        modelYear: 2026,
+      }),
+    ).toMatchObject({ status: 'OK' });
+  });
   it('does not turn missing projections or unconfigured connections into absence', async () => {
     expect(
       await retrieveKnowledge(async () => [], 'concepts', {}),

@@ -39,6 +39,35 @@ function setup() {
 const authorization = 'Bearer valid';
 
 describe('gateway authentication and routing', () => {
+  it('forwards authenticated source replay while blocking other methods and worker paths', async () => {
+    const { app, fetcher } = setup();
+    const path =
+      '/ai/chat/research/29c07c5e-47cb-4385-9dd5-1c4f07c3cf2e/replay';
+    expect((await app.request(path, { method: 'POST' })).status).toBe(401);
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(
+      (
+        await app.request(path, {
+          method: 'POST',
+          headers: { authorization, 'content-type': 'application/json' },
+          body: JSON.stringify({ id: '17742c01-6a79-441f-ac83-ee79a9b18e35' }),
+        })
+      ).status,
+    ).toBe(200);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(
+      (await app.request(path, { headers: { authorization } })).status,
+    ).toBe(404);
+    expect(
+      (
+        await app.request('/ai/internal/research/extract', {
+          method: 'POST',
+          headers: { authorization },
+        })
+      ).status,
+    ).toBe(404);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   it('keeps health public but rejects missing, forged and revoked sessions before proxying', async () => {
     const { app, fetcher } = setup();
     expect((await app.request('/health')).status).toBe(200);
@@ -219,6 +248,47 @@ describe('gateway authentication and routing', () => {
     expect((fetcher.mock.calls[0]?.[0] as Request).url).toBe(
       'https://ai.run.app/chat/credits',
     );
+  });
+
+  it('exposes only the authenticated research subscription methods', async () => {
+    const id = '28efec3a-44d9-4c16-bcd8-d705c1505a3c';
+    for (const [path, method] of [
+      ['/ai/chat/research', 'GET'],
+      ['/ai/chat/research', 'POST'],
+      [`/ai/chat/research/${id}`, 'GET'],
+      [`/ai/chat/research/${id}/interests`, 'GET'],
+      [`/ai/chat/research/${id}/interests`, 'POST'],
+      [`/ai/chat/research/${id}`, 'DELETE'],
+    ]) {
+      const { app, fetcher } = setup();
+      expect((await app.request(path!, { method })).status).toBe(401);
+      const response = await app.request(path!, {
+        method,
+        headers: { authorization },
+      });
+      expect(response.status).toBe(200);
+      const request = fetcher.mock.calls[0]![0] as Request;
+      expect(request.url).toBe(config.aiUrl + path!.slice(3));
+      expect(request.headers.get('x-specsync-token')).toBe('valid');
+      expect(request.headers.has('authorization')).toBe(false);
+    }
+    const { app, fetcher } = setup();
+    for (const [path, method] of [
+      ['/ai/chat/research', 'DELETE'],
+      [`/ai/chat/research/${id}`, 'POST'],
+      [`/ai/chat/research/${id}/interests`, 'DELETE'],
+      [`/ai/chat/research/${id}/interests`, 'PUT'],
+      [`/ai/chat/research/${id}/checkpoints`, 'GET'],
+      ['/ai/chat/research/not-a-uuid', 'GET'],
+      ['/ai/internal/research/extract', 'POST'],
+      ['/ai/chat/researchx', 'GET'],
+      ['/ai/chat/research/%2e%2e/internal', 'GET'],
+    ])
+      expect(
+        (await app.request(path!, { method, headers: { authorization } }))
+          .status,
+      ).toBe(404);
+    expect(fetcher).not.toHaveBeenCalled();
   });
 
   it('forwards the mode and model catalog of the AI service', async () => {
