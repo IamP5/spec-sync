@@ -941,6 +941,57 @@ describe('ChatPage', () => {
     expect(log.scrollTop).toBe(1200);
   });
 
+  it('compacts while reading earlier messages and expands for typing, drafts and the latest message', async () => {
+    agent.replyWith((input) => textReply(input, 'Initial answer'));
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'first');
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const log = element.querySelector<HTMLElement>('[role="log"]')!;
+    const composer = element.querySelector<HTMLElement>('.chat-composer')!;
+    const prompt = element.querySelector<HTMLTextAreaElement>('#prompt')!;
+    const isCompact = () =>
+      composer.classList.contains('chat-composer-compact');
+    Object.defineProperties(log, {
+      clientHeight: { value: 300 },
+      scrollHeight: { value: 1200 },
+    });
+    prompt.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    log.scrollTop = 900;
+    log.dispatchEvent(new Event('scroll'));
+    log.scrollTop = 850;
+    log.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    expect(isCompact()).toBe(false);
+
+    log.scrollTop = 400;
+    log.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    expect(isCompact()).toBe(true);
+
+    prompt.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    await fixture.whenStable();
+    expect(isCompact()).toBe(false);
+    expect(log.scrollTop).toBe(400);
+    prompt.value = 'Keep this draft';
+    prompt.dispatchEvent(new Event('input', { bubbles: true }));
+    prompt.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    await fixture.whenStable();
+    expect(isCompact()).toBe(false);
+    expect(prompt.value).toBe('Keep this draft');
+
+    prompt.value = '';
+    prompt.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    expect(isCompact()).toBe(true);
+    log.scrollTop = 900;
+    log.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    expect(isCompact()).toBe(false);
+  });
+
   it('follows layout resizing only while pinned and disconnects its observers', async () => {
     let resize: ResizeObserverCallback | undefined;
     const observers: { disconnect: ReturnType<typeof vi.fn> }[] = [];

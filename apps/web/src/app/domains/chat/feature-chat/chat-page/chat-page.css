@@ -201,17 +201,43 @@
     padding: 0.625rem 0;
     margin-inline: 1rem;
     line-height: 1.5rem;
+    transition: margin-inline-end 180ms ease;
   }
 
   /* Options row under the prompt, like ChatGPT: the picker left, send right. */
   .chat-composer-actions {
-    padding: 0 0 0 0.375rem;
+    height: 2.75rem;
+    padding: 0 3rem 0 0.375rem;
+    transition: height 180ms ease;
+  }
+
+  .chat-composer-actions > div {
+    transition:
+      opacity 120ms ease,
+      visibility 120ms ease;
   }
 
   .chat-composer-actions > button {
+    position: absolute;
+    right: 0.25rem;
+    bottom: 0.25rem;
     width: 2.75rem;
     height: 2.75rem;
     border-radius: 50%;
+  }
+
+  .chat-composer-compact .chat-prompt {
+    margin-inline-end: 3.5rem;
+  }
+
+  .chat-composer-compact .chat-composer-actions {
+    height: 0;
+  }
+
+  .chat-composer-compact .chat-composer-actions > div {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .chat-composer-actions .chat-run-options {

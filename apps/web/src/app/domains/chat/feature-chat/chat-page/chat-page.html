@@ -48,10 +48,6 @@
   </div>
 </header>
 
-<app-vehicle-research-search
-  class="mx-auto w-full max-w-3xl shrink-0 px-3 pb-2 sm:px-4"
-/>
-
 <ng-template #composer>
   <div class="w-full">
     @if (creditsExhausted()) {
@@ -125,10 +121,16 @@
       </button></ng-template
     >
     }
-    <form (submit)="onSubmit($event)" novalidate>
+    <form
+      (submit)="onSubmit($event)"
+      (focusin)="composerFocused.set(true)"
+      (focusout)="onComposerBlur($event)"
+      novalidate
+    >
       <label for="prompt" class="sr-only">Message</label>
       <div
         class="chat-composer flex flex-col rounded-2xl border border-border bg-card/95 p-2 backdrop-blur-xl shadow-[0_2px_12px_-4px_rgb(0_0_0/10%)] transition-[border-color,box-shadow] focus-within:border-ring focus-within:shadow-sm"
+        [class.chat-composer-compact]="compactComposer()"
       >
         <textarea
           #promptInput

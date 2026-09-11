@@ -69,7 +69,6 @@ import { AuthSessionCoordinator } from '../../../auth/api/authentication';
 import { AuthLoginOverview } from '../../../auth/api/features';
 import { SESSION } from '../../../auth/api/session';
 import { UserPreferencesCoordinator } from '../../../user/api/preferences';
-import { VehicleResearchSearch } from '../../../vehicles/api/features';
 import { ChatConnectionCoordinator } from '../../api/connection';
 import {
   CHAT_AGENT_ID,
@@ -111,6 +110,8 @@ const CREDITS_UNAVAILABLE_MESSAGE =
 const COPIED_FEEDBACK_MS = 1500;
 /** Distance from the end of the transcript that still counts as "at the bottom". */
 const AT_BOTTOM_THRESHOLD_PX = 32;
+/** Leave room for the compact composer's height change without toggling near the end. */
+const COMPOSER_COLLAPSE_DISTANCE_PX = 160;
 
 /** Prompts offered on an empty conversation. */
 const SUGGESTIONS = [
@@ -174,7 +175,6 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     NgOptimizedImage,
     CreditsPill,
     RenderToolCalls,
-    VehicleResearchSearch,
     RunOptionsPicker,
     ZardAlertComponent,
     ZardButtonComponent,
@@ -417,6 +417,17 @@ export class ChatPage {
 
   /** False once the user scrolled up; auto-scroll pauses and a button offers the way back. */
   protected readonly atBottom = signal(true);
+  private readonly readingEarlier = signal(false);
+  protected readonly composerFocused = signal(false);
+  protected readonly compactComposer = computed(
+    () =>
+      !this.empty() &&
+      !this.loading() &&
+      !this.atBottom() &&
+      this.readingEarlier() &&
+      !this.composerFocused() &&
+      this.promptLength() === 0,
+  );
 
   protected readonly activityStatus = computed(() => runStatus(this.turns()));
 
@@ -723,8 +734,21 @@ export class ChatPage {
       } else if (remaining <= AT_BOTTOM_THRESHOLD_PX) {
         this.atBottom.set(true);
       }
+      if (this.atBottom()) this.readingEarlier.set(false);
+      else if (remaining > COMPOSER_COLLAPSE_DISTANCE_PX)
+        this.readingEarlier.set(true);
       this.lastScrollTop = element.scrollTop;
     }
+  }
+
+  protected onComposerBlur(event: FocusEvent): void {
+    if (
+      event.currentTarget instanceof HTMLElement &&
+      event.relatedTarget instanceof Node &&
+      event.currentTarget.contains(event.relatedTarget)
+    )
+      return;
+    this.composerFocused.set(false);
   }
 
   protected scrollToBottom(): void {
