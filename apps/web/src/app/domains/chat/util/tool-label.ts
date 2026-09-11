@@ -20,7 +20,6 @@ const TOOL_LABELS: Readonly<Record<string, string>> = {
   replayVehicleResearch: 'Updating the research interpretation',
   reviewVehicleResearch: 'Opening research for review',
   renderVehicleWorkspace: 'Building your research workspace',
-  renderCompetitiveWorkspace: 'Updating competitive analysis',
 };
 
 export function toolLabel(name: string): string {

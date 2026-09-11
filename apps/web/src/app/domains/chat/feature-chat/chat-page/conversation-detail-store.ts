@@ -30,7 +30,6 @@ import {
   toolActivities,
 } from '../../data/chat-agent';
 import { ChatAgentClient } from '../../data/chat-agent-client';
-import { createCompetitiveSurfaceProjection } from '../../data/competitive-surface-views';
 import { ChatThread, threadTitleOf } from '../../data/thread';
 import { ThreadClient } from '../../data/thread-client';
 import { threadEvents } from '../../data/thread-events';
@@ -82,41 +81,35 @@ export const ConversationDetailStore = signalStore(
     _dispatch: injectDispatch(threadEvents),
   })),
 
-  withComputed((store) => {
-    const projectSurfaces = createCompetitiveSurfaceProjection();
-    return {
-      /** Id of the open thread, as the AG-UI agent holds it. */
-      threadId: store._chatAgentClient.threadId,
-      /** The whole thread, tool messages included; the tool renderers need them. */
-      messages: store._chatAgentClient.messages,
-      /** User turns, thinking summaries and assistant output in transcript order. */
-      turns: computed(() =>
+  withComputed((store) => ({
+    /** Id of the open thread, as the AG-UI agent holds it. */
+    threadId: store._chatAgentClient.threadId,
+    /** The whole thread, tool messages included; the tool renderers need them. */
+    messages: store._chatAgentClient.messages,
+    /** User turns, thinking summaries and assistant output in transcript order. */
+    turns: computed(() =>
+      normalizeThread(
+        store._chatAgentClient.messages(),
+        store._chatAgentClient.placements(),
+      ).filter(isChatTurn),
+    ),
+    toolPresentation: computed(() =>
+      toolPresentation(
         normalizeThread(
           store._chatAgentClient.messages(),
           store._chatAgentClient.placements(),
-        ).filter(isChatTurn),
-      ),
-      toolPresentation: computed(() =>
-        toolPresentation(
-          normalizeThread(
-            store._chatAgentClient.messages(),
-            store._chatAgentClient.placements(),
-          ),
         ),
       ),
-      toolActivities: computed(() =>
-        toolActivities(
-          store._chatAgentClient.messages(),
-          store.status() === 'streaming',
-        ),
+    ),
+    toolActivities: computed(() =>
+      toolActivities(
+        store._chatAgentClient.messages(),
+        store.status() === 'streaming',
       ),
-      isStreaming: computed(() => store.status() === 'streaming'),
-      isEmpty: computed(() => store._chatAgentClient.messages().length === 0),
-      workspaceSurfaces: computed(() =>
-        projectSurfaces(store._chatAgentClient.messages()),
-      ),
-    };
-  }),
+    ),
+    isStreaming: computed(() => store.status() === 'streaming'),
+    isEmpty: computed(() => store._chatAgentClient.messages().length === 0),
+  })),
 
   withMethods((store) => {
     let runGeneration = 0;
@@ -134,7 +127,6 @@ export const ConversationDetailStore = signalStore(
               message.role === 'assistant' &&
               message.toolCalls?.some((call) =>
                 [
-                  'renderCompetitiveWorkspace',
                   'researchVehicleSpecifications',
                   'getVehicleResearch',
                   'replayVehicleResearch',
@@ -274,7 +266,7 @@ export const ConversationDetailStore = signalStore(
             patchState(store, { title, createdAt });
             store._dispatch.started({ id: store.threadId(), title, createdAt });
           }
-          store._chatAgentClient.append(content, options.workspaceAction);
+          store._chatAgentClient.append(content);
           await store._chatAgentClient.send(options);
         });
       },

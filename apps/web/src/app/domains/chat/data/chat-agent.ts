@@ -1,5 +1,4 @@
 import type {
-  ActivityMessage,
   AssistantMessage,
   Message,
   ReasoningMessage,
@@ -10,7 +9,6 @@ import type { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
 import { toolLabel } from '../util/tool-label';
 import type { ChatMode, RoleModels } from './chat-model';
-import type { WorkspaceAction } from './competitive-workspace-actions';
 
 /**
  * How the service should answer a run: the mode it answers in, the advanced
@@ -22,7 +20,6 @@ export interface ChatRunOptions {
   mode?: ChatMode | '';
   roleModels?: RoleModels;
   effort?: string;
-  workspaceAction?: WorkspaceAction;
 }
 
 /**
@@ -98,18 +95,13 @@ export const CHAT_RUNTIME_URL = '/ai/copilotkit';
 export const CONTINUATION_SUFFIX = '-agui-text';
 
 /** Transcript entries, including provider thinking summaries; tool results render in cards. */
-export type ChatTurn =
-  | UserMessage
-  | AssistantMessage
-  | ReasoningMessage
-  | ActivityMessage;
+export type ChatTurn = UserMessage | AssistantMessage | ReasoningMessage;
 
 export function isChatTurn(message: Message): message is ChatTurn {
   return (
     message.role === 'user' ||
     message.role === 'assistant' ||
-    message.role === 'reasoning' ||
-    message.role === 'activity'
+    message.role === 'reasoning'
   );
 }
 

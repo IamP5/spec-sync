@@ -136,7 +136,7 @@
           cdkTextareaAutosize
           id="prompt"
           rows="1"
-          placeholder="Ask a competitive question…"
+          placeholder="Message SpecSync…"
           class="chat-prompt max-h-52 min-h-16 resize-none border-0 bg-transparent px-3 py-2.5 text-base shadow-none focus-visible:ring-0 md:text-sm dark:bg-transparent"
           enterkeyhint="enter"
           [formField]="promptForm.prompt"
@@ -333,10 +333,6 @@
         <span class="h-8 w-px bg-primary" aria-hidden="true"></span>
         <span class="text-3xl font-semibold tracking-tight">SpecSync</span>
       </div>
-      <p class="max-w-lg text-sm leading-6 text-muted-foreground">
-        Competitive analysis for Ford. Compare exact configurations, investigate
-        market evidence, and test benchmark targets with traceable sources.
-      </p>
     </div>
 
     <div class="chat-empty-composer w-full">
@@ -361,8 +357,8 @@
           >Browse the vehicle catalog</span
         >
         <span class="mt-0.5 block text-xs leading-5 text-muted-foreground"
-          >Select a Ford reference and competitor configurations with search,
-          filters, sourced details, and a comparison shortlist.</span
+          >Start a new chat with search, filters, details, and a comparison
+          shortlist.</span
         >
       </span>
       <span class="ml-3 text-primary" aria-hidden="true">→</span>
@@ -421,32 +417,7 @@
         >
           <span class="whitespace-pre-wrap">{{ textOf(turn) }}</span>
         </z-message>
-        } @else if (turn.role === 'activity') { @if (researchCompletionOf(turn);
-        as completion) {
-        <section
-          class="mx-auto w-full max-w-7xl space-y-3"
-          data-role="research-completion"
-          aria-label="Research completion"
-        >
-          <header class="space-y-1">
-            <h2 class="text-base font-semibold">
-              Research ready · {{ completion.vehicle.brand }} {{
-              completion.vehicle.model }}
-            </h2>
-            <p class="text-sm text-muted-foreground" role="status">
-              {{ completion.vehicle.market }} · {{ completion.vehicle.modelYear
-              }} · {{ completion.counts.configurations }} configurations · {{
-              completion.counts.claims }} claims. {{ completion.status ===
-              'PUBLISHED' ? 'Published research is available.' : 'Draft findings
-              are ready for human review.' }}
-            </p>
-          </header>
-          <app-vehicle-research-detail
-            [requestId]="completion.requestId"
-            [reviewInitiallyOpen]="false"
-          />
-        </section>
-        } } @else if (turn.role === 'reasoning') { @if (showActivity() &&
+        } @else if (turn.role === 'reasoning') { @if (showActivity() &&
         turn.content) {
         <details
           class="activity-disclosure mx-auto w-full max-w-3xl text-sm"

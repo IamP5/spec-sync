@@ -2,11 +2,6 @@
 
 Date: 2026-09-10. Analysis and proposed direction; no runtime changes in this review.
 
-Implementation follow-up: [Ford competitive analysis workspaces](ford-competitive-workspaces-2026-09-10.md)
-delivers a separate, revisioned competitive-analysis catalog. The inventory below
-describes the earlier `renderVehicleWorkspace` profile and the rationale for that
-extension; it is not the current feature inventory.
-
 ## Conclusion
 
 SpecSync already supports **bounded runtime UI composition**. The agent can choose

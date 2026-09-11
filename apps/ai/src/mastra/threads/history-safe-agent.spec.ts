@@ -88,21 +88,6 @@ function input(rows: MastraDBMessage[]): RunAgentInput {
 }
 
 describe('history-safe Mastra bridge', () => {
-  it('keeps saved and unknown presentation activities out of model input', async () => {
-    const rows = stored();
-    const { bridge, stream } = setup(rows);
-    const request = input(rows);
-    request.messages.splice(0, 0, {
-      id: 'research-ready-completion',
-      role: 'activity',
-      activityType: 'specsync.research-completion',
-      content: { id: 'private-reference' },
-    });
-    await lastValueFrom(bridge.run(request).pipe(toArray()));
-    expect(stream.mock.calls[0]?.[0]).toEqual([
-      { id: 'u3', role: 'user', content: 'Next question' },
-    ]);
-  });
   it('does not re-ingest completed tool results or merge earlier turns on the third run', async () => {
     const rows = stored();
     const { bridge, stream } = setup(rows);

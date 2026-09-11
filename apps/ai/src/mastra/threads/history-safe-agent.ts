@@ -8,11 +8,6 @@ import { MastraAgent, type MastraAgentConfig } from '@ag-ui/mastra';
 import type { MastraDBMessage } from '@mastra/core/agent/message-list';
 import { defer, from, type Observable, switchMap } from 'rxjs';
 
-import {
-  COMPETITIVE_ACTION_CONTEXT,
-  validateCompetitiveAction,
-} from '../workspace/competitive-history';
-
 /** Keeps persisted server results out of the bridge's message-ID-only replay selector. */
 export class HistorySafeMastraAgent extends MastraAgent {
   constructor(private readonly initialConfig: MastraAgentConfig) {
@@ -38,32 +33,13 @@ export class HistorySafeMastraAgent extends MastraAgent {
       const thread = await memory.getThreadById({ threadId: input.threadId });
       if (thread && thread.resourceId !== this.resourceId)
         throw new Error('Chat thread does not belong to the verified user.');
-      const { messages } = thread
-        ? await memory.recall({
-            threadId: input.threadId,
-            resourceId: this.resourceId,
-            perPage: false,
-          })
-        : { messages: [] };
-      const freshMessages = newRunMessages(input.messages, messages);
-      this.requestContext?.delete(COMPETITIVE_ACTION_CONTEXT);
-      const props: unknown = input.forwardedProps;
-      if (
-        props &&
-        typeof props === 'object' &&
-        'workspaceAction' in props &&
-        props.workspaceAction !== undefined
-      ) {
-        const action = validateCompetitiveAction(
-          props.workspaceAction,
-          messages,
-        );
-        action.currentUserMessageId = freshMessages.findLast(
-          (message) => message.role === 'user',
-        )?.id;
-        this.requestContext?.set(COMPETITIVE_ACTION_CONTEXT, action);
-      }
-      return freshMessages;
+      if (!thread) return newRunMessages(input.messages, []);
+      const { messages } = await memory.recall({
+        threadId: input.threadId,
+        resourceId: this.resourceId,
+        perPage: false,
+      });
+      return newRunMessages(input.messages, messages);
     }).pipe(
       switchMap((messages) =>
         messages.length || isResume(input)
@@ -105,9 +81,7 @@ export function newRunMessages(
   const fresh = incoming.filter((message) =>
     message.role === 'tool'
       ? !completed.has(message.toolCallId)
-      : message.role !== 'reasoning' &&
-        message.role !== 'activity' &&
-        !known.has(message.id),
+      : message.role !== 'reasoning' && !known.has(message.id),
   );
   // Regenerate/ retry sends a transcript truncated at its user message. Keep
   // that single prompt, never the full stored assistant/result history.

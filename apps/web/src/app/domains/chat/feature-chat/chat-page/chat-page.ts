@@ -69,10 +69,7 @@ import { AuthSessionCoordinator } from '../../../auth/api/authentication';
 import { AuthLoginOverview } from '../../../auth/api/features';
 import { SESSION } from '../../../auth/api/session';
 import { UserPreferencesCoordinator } from '../../../user/api/preferences';
-import {
-  VehicleResearchDetail,
-  VehicleResearchSearch,
-} from '../../../vehicles/api/features';
+import { VehicleResearchSearch } from '../../../vehicles/api/features';
 import { ChatConnectionCoordinator } from '../../api/connection';
 import {
   CHAT_AGENT_ID,
@@ -87,18 +84,11 @@ import {
   type ModelRole,
   modeOfRunModel,
 } from '../../data/chat-model';
-import {
-  type WorkspaceAction,
-  workspaceActionSchema,
-  workspaceActionSummary,
-} from '../../data/competitive-workspace-actions';
-import { researchCompletionOf } from '../../data/research-completion';
 import { MarkdownPipe } from '../../util/markdown-pipe';
 import { revealText } from '../../util/text-reveal';
 import { toolLabel } from '../../util/tool-label';
 import { ChatCoordinator } from '../chat-coordinator';
 import { CHAT_CARD_ACTIONS } from '../tool-adapters/chat-card-actions';
-import { CHAT_WORKSPACE_SURFACES } from '../tool-adapters/chat-workspace-surfaces';
 import { CreditsPill } from '../ui/credits-pill';
 import { RunOptionsPicker } from '../ui/run-options-picker';
 import { registerChatTools } from './chat-tools';
@@ -126,27 +116,26 @@ const AT_BOTTOM_THRESHOLD_PX = 32;
 const SUGGESTIONS = [
   {
     icon: 'lucidePenLine',
-    label: 'Benchmark competitors',
+    label: 'Compare vehicles',
     prompt:
-      'Build a competitive analysis workspace for Ford Ranger versus BYD Shark and Toyota Hilux in Brazil, model year 2026. Start with one configuration selection panel, let me choose the Ford reference and competitor versions, then compare relevant powertrain, performance, dimensions and equipment with evidence and unresolved gaps. Do not select trims for me.',
+      'Compare Ranger Black and Limited, BR 2026, on power, torque and 360 camera.',
   },
   {
     icon: 'lucideFileSearch',
-    label: 'Investigate market evidence',
-    prompt:
-      'Investigate review evidence about Ford Ranger ride comfort relative to its competitors. Resolve the exact vehicle scope, distinguish opinions from measurements, and show sources and evidence gaps in a competitive analysis workspace.',
+    label: 'Find related reviews',
+    prompt: 'Find articles and videos reviewing the Ford Ranger ride comfort.',
   },
   {
     icon: 'lucideFileInput',
-    label: 'Research competitor specifications',
+    label: 'Import specifications',
     prompt:
-      'Research the official specifications of BYD Shark 2026 in Brazil for competitive analysis against Ford Ranger. Find relevant manufacturer sources, preserve model-year and trim uncertainty, and show research progress and evidence for review.',
+      'Import the official specifications of the Ford Ranger 2026 (Brazil): find the manufacturer PDF or page, show me which versions it lists, and start a reviewed import for the ones I choose.',
   },
   {
     icon: 'lucideCarFront',
-    label: 'Explore a benchmark target',
+    label: 'Build a research workspace',
     prompt:
-      'Build a competitive target scenario for Ford Ranger versus Toyota Hilux in Brazil, model year 2026. Let me choose exact configurations and a supported numeric specification, then enter a hypothetical target. Keep sourced values, assumptions and comparable conditions explicit; do not invent targets or competitive scores.',
+      'Start a research workspace by showing Ford Ranger and Toyota Hilux together in one interactive catalog, Brazil, model year 2026. Let me inspect configurations and choose what to compare.',
   },
 ] as const;
 
@@ -186,7 +175,6 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     CreditsPill,
     RenderToolCalls,
     VehicleResearchSearch,
-    VehicleResearchDetail,
     RunOptionsPicker,
     ZardAlertComponent,
     ZardButtonComponent,
@@ -207,14 +195,6 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
   ],
   providers: [
     {
-      provide: CHAT_WORKSPACE_SURFACES,
-      useFactory: () => {
-        const page = inject(ChatPage);
-        return (surfaceId: string) =>
-          page.store.workspaceSurfaces().get(surfaceId);
-      },
-    },
-    {
       provide: CHAT_CARD_ACTIONS,
       useFactory: () => {
         const page = inject(ChatPage);
@@ -222,8 +202,6 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
           draft: (prompt: string) => page.prepareDraft(prompt),
           send: (prompt: string) => page.sendFromCard(prompt),
           canSend: () => page.canSendFromCard(),
-          workspace: (action: WorkspaceAction) =>
-            page.sendWorkspaceAction(action),
         };
       },
     },
@@ -358,7 +336,6 @@ export class ChatPage {
   protected readonly suggestions = SUGGESTIONS;
   protected readonly messages = this.store.messages;
   protected readonly turns = this.store.turns;
-  protected readonly researchCompletionOf = researchCompletionOf;
   protected readonly streaming = this.store.isStreaming;
   protected readonly empty = this.store.isEmpty;
   /** True while a stored conversation is read back from the AI service. */
@@ -624,13 +601,6 @@ export class ChatPage {
     void this.send(content);
   }
 
-  async sendWorkspaceAction(action: WorkspaceAction): Promise<boolean> {
-    const parsed = workspaceActionSchema.safeParse(action);
-    if (!this.canSendFromCard() || !parsed.success) return false;
-    await this.send(workspaceActionSummary(parsed.data), parsed.data);
-    return this.store.status() !== 'error';
-  }
-
   private canSendFromCard(): boolean {
     return (
       this.connection.ready() &&
@@ -820,14 +790,11 @@ export class ChatPage {
     await this.send(prompt);
   }
 
-  private async send(
-    prompt: string,
-    workspaceAction?: WorkspaceAction,
-  ): Promise<void> {
+  private async send(prompt: string): Promise<void> {
     this.animateReplies.set(true);
     this.atBottom.set(true);
     const first = this.empty();
-    const sending = this.coordinator.send(prompt, workspaceAction);
+    const sending = this.coordinator.send(prompt);
     if (first) {
       // The conversation now has an id worth bookmarking; the route effect
       // recognises it as the open one and leaves the thread alone.

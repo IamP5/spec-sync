@@ -4,12 +4,7 @@ import type {
   MastraMessagePart,
 } from '@mastra/core/agent/message-list';
 
-import { competitiveActionSchema } from '../workspace/competitive-contracts';
 import { canonicalHistory } from './canonical-history';
-import {
-  RESEARCH_COMPLETION_ACTIVITY,
-  researchCompletionOf,
-} from './research-completion';
 
 export const CONTINUATION_SUFFIX = '-agui-text';
 
@@ -29,21 +24,7 @@ export function toAGUIMessages(stored: MastraDBMessage[]): Message[] {
 
 function userMessagesOf(message: MastraDBMessage): Message[] {
   const content = textOf(message.content.parts ?? []);
-  const action = competitiveActionSchema.safeParse(
-    message.content.metadata?.['specsyncWorkspaceAction'],
-  );
-  return content
-    ? [
-        {
-          id: message.id,
-          role: 'user',
-          content,
-          ...(action.success
-            ? { metadata: { specsyncWorkspaceAction: action.data } }
-            : {}),
-        },
-      ]
-    : [];
+  return content ? [{ id: message.id, role: 'user', content }] : [];
 }
 
 interface AssistantGroup {
@@ -52,17 +33,6 @@ interface AssistantGroup {
 }
 
 function assistantMessagesOf(message: MastraDBMessage): Message[] {
-  const completion = researchCompletionOf(message);
-  if (completion) {
-    return [
-      {
-        id: message.id,
-        role: 'activity',
-        activityType: RESEARCH_COMPLETION_ACTIVITY,
-        content: completion,
-      },
-    ];
-  }
   const reasoning: Message[] = [];
   let group: AssistantGroup = {
     message: { id: message.id, role: 'assistant', content: '' },

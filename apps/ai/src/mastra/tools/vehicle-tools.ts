@@ -11,18 +11,12 @@ import {
   attributeSchema,
   comparisonSchema,
   failureSchema,
+  knowledgeSchema,
   selectionSchema,
   singleSelectionSchema,
 } from '../catalog/contracts';
-import {
-  capabilityResultSchema,
-  conceptResultSchema,
-  evidenceExcerptResultSchema,
-  retrieveReviewEvidence,
-  retrieveTypedKnowledge,
-  reviewEvidenceResultSchema,
-} from '../catalog/knowledge-results';
-import { attributeCodeSchema } from '../graph/retrieval';
+import { retrieveReviews } from '../catalog/review-search';
+import { attributeCodeSchema, retrieveGraph } from '../graph/retrieval';
 
 export const searchVehicleConfigurations = createTool({
   id: 'searchVehicleConfigurations',
@@ -102,10 +96,10 @@ export const resolveComparisonConcepts = createTool({
   description:
     'Resolve terminology against curated graph attribute definitions and aliases. Pass brand, model, market and modelYear when resolving manufacturer wording; manufacturer terms remain scoped and are not global synonyms. No match is not proof of functional inequivalence; use listComparisonAttributes as fallback.',
   inputSchema: conceptInput,
-  outputSchema: z.union([conceptResultSchema, failureSchema]),
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>
     withToolFailure(() =>
-      retrieveTypedKnowledge('concepts', input, context?.abortSignal),
+      retrieveGraph('concepts', input, context?.abortSignal),
     ),
 });
 const capabilityInput = z.object({
@@ -123,10 +117,10 @@ export const findConfigurationsByCapabilities = createTool({
   description:
     'Find configurations with an accepted STANDARD or optionally OPTIONAL equipment attribute, including package evidence. Resolve attribute first. This graph snapshot can lag: confirm specifications through the catalog; empty results do not prove absence.',
   inputSchema: capabilityInput,
-  outputSchema: z.union([capabilityResultSchema, failureSchema]),
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>
     withToolFailure(() =>
-      retrieveTypedKnowledge('capabilities', input, context?.abortSignal),
+      retrieveGraph('capabilities', input, context?.abortSignal),
     ),
 });
 const reviewInput = z.object({
@@ -140,9 +134,9 @@ export const searchReviewEvidence = createTool({
   description:
     'Search existing indexed review passages, scoped to a configuration and optionally a specification. Returns exact excerpts, context, opinion kind and model/configuration scope. Never ingests content.',
   inputSchema: reviewInput,
-  outputSchema: z.union([reviewEvidenceResultSchema, failureSchema]),
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>
-    withToolFailure(() => retrieveReviewEvidence(input, context?.abortSignal)),
+    withToolFailure(() => retrieveReviews(input, context?.abortSignal)),
 });
 const relatedInput = z.object({
   configurationId: z.string().uuid(),
@@ -154,10 +148,10 @@ export const getRelatedReviews = createTool({
   description:
     'Find indexed review observations related to one specification. Related opinion is not evidence proving the technical specification.',
   inputSchema: relatedInput,
-  outputSchema: z.union([reviewEvidenceResultSchema, failureSchema]),
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>
     withToolFailure(() =>
-      retrieveTypedKnowledge('related-reviews', input, context?.abortSignal),
+      retrieveGraph('related-reviews', input, context?.abortSignal),
     ),
 });
 export const getEvidenceExcerpt = createTool({
@@ -165,14 +159,10 @@ export const getEvidenceExcerpt = createTool({
   description:
     'Retrieve exact stored specification or review evidence by UUID. Use only returned excerpts for quotations; source discovery snippets are not verified quotes.',
   inputSchema: z.object({ evidenceId: z.string().uuid() }),
-  outputSchema: z.union([evidenceExcerptResultSchema, failureSchema]),
+  outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>
     withToolFailure(() =>
-      retrieveTypedKnowledge(
-        'evidence',
-        { q: input.evidenceId },
-        context?.abortSignal,
-      ),
+      retrieveGraph('evidence', { q: input.evidenceId }, context?.abortSignal),
     ),
 });
 export const vehicleTools = {

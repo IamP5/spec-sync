@@ -7,10 +7,6 @@ import { Subject } from 'rxjs';
 import { ZardSidebarService } from '@/ui/components/sidebar';
 import { provideZard } from '@/ui/core';
 
-import {
-  competitiveWorkspaceFixture,
-  reviseCompetitiveWorkspace,
-} from '../../../../testing/competitive-workspace-fixtures';
 import { testSession } from '../../../../testing/fake-auth';
 import {
   failedRun,
@@ -35,11 +31,6 @@ import {
 import { matrix } from '../../../../testing/vehicle-fixtures';
 import { workspaceFixture } from '../../../../testing/vehicle-workspace-fixtures';
 import { UserPreferencesCoordinator } from '../../../user/api/preferences';
-import {
-  WORKSPACE_ACTION_METADATA_KEY,
-  type WorkspaceAction,
-} from '../../data/competitive-workspace-actions';
-import { RESEARCH_COMPLETION_ACTIVITY } from '../../data/research-completion';
 import { ChatThread } from '../../data/thread';
 import { TEXT_REVEAL_ENABLED } from '../../util/text-reveal';
 import { ChatPage } from './chat-page';
@@ -215,221 +206,6 @@ describe('ChatPage', () => {
       element.querySelector('app-vehicle-comparison-card')?.textContent,
     ).toContain('Black');
     expect(agent.runs).toHaveLength(1);
-  });
-
-  it('applies a typed analyst brief to one CopilotKit surface, preserves the draft and replays its latest revision', async () => {
-    const workspace = competitiveWorkspaceFixture();
-    agent.replyWith((input) =>
-      toolCallReply(
-        input,
-        'renderCompetitiveWorkspace',
-        {},
-        workspace,
-        'Analysis ready.',
-      ),
-    );
-    const fixture = TestBed.createComponent(ChatPage);
-    await fixture.whenStable();
-    await sendPrompt(fixture.nativeElement, 'Benchmark Ranger against Hilux');
-    const store = TestBed.inject(ConversationDetailStore);
-    await settled(store);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    expect(
-      element.querySelectorAll('section[id^="competitive-"]'),
-    ).toHaveLength(1);
-    expect(
-      element.querySelector('app-vehicle-catalog-card')?.textContent,
-    ).toContain('Hilux');
-    expect(
-      element.querySelector('[data-role="tool-activity"]')?.textContent,
-    ).toContain('Updating competitive analysis');
-    const draft = element.querySelector<HTMLTextAreaElement>('textarea#prompt');
-    const objective = element.querySelector<HTMLTextAreaElement>(
-      'app-analyst-brief-edit textarea',
-    );
-    const brief = element.querySelector(
-      'form[aria-label="Competitive analysis brief"]',
-    );
-    if (!draft || !objective || !brief)
-      throw new Error('Expected analyst brief and composer');
-    draft.value = 'Keep this question for later';
-    draft.dispatchEvent(new Event('input'));
-    objective.value =
-      'Investigate standard equipment differences for Ford planning';
-    objective.dispatchEvent(new Event('input'));
-    agent.replyWith((input) => {
-      const action = (
-        input.forwardedProps as { workspaceAction: WorkspaceAction }
-      ).workspaceAction;
-      if (action.action !== 'applyBrief')
-        throw new Error('Expected a typed brief');
-      const next = {
-        ...reviseCompetitiveWorkspace(workspace, { context: action.values }),
-        actionId: action.actionId,
-      };
-      return toolCallReply(
-        input,
-        'renderCompetitiveWorkspace',
-        { target: { surfaceId: workspace.surfaceId, baseRevision: 1 } },
-        next,
-        'Analysis updated.',
-      );
-    });
-    brief.dispatchEvent(new Event('submit'));
-    await vi.waitFor(() => expect(agent.runs).toHaveLength(2));
-    await settled(store);
-    await fixture.whenStable();
-    const action = (
-      agent.runs[1].forwardedProps as { workspaceAction: WorkspaceAction }
-    ).workspaceAction;
-    expect(action).toMatchObject({
-      version: 1,
-      action: 'applyBrief',
-      surfaceId: workspace.surfaceId,
-      expectedRevision: 1,
-      componentId: 'brief',
-      values: { objective: objective.value },
-    });
-    expect(
-      agent.runs[1].messages.filter((message) => message.role === 'user').pop()
-        ?.metadata?.[WORKSPACE_ACTION_METADATA_KEY],
-    ).toEqual(action);
-    expect(
-      element.querySelectorAll('section[id^="competitive-"]'),
-    ).toHaveLength(1);
-    expect(
-      element.querySelector('section[id^="competitive-"]')?.textContent,
-    ).toContain('revision 2');
-    expect(
-      store.messages().filter((message) => message.role === 'tool'),
-    ).toHaveLength(2);
-    expect(draft.value).toBe('Keep this question for later');
-    const id = store.threadId();
-    TestBed.inject(FakeThreadClient).seed(
-      storedThread(id, 'Ford benchmark', 1, store.messages()),
-    );
-    store.reset();
-    fixture.componentRef.setInput('threadId', id);
-    await fixture.whenStable();
-    await fixture.whenStable();
-    expect(
-      element.querySelectorAll('section[id^="competitive-"]'),
-    ).toHaveLength(1);
-    expect(
-      element.querySelector('section[id^="competitive-"]')?.textContent,
-    ).toContain('revision 2');
-    expect(agent.runs).toHaveLength(2);
-    agent.replyWith((input) => textReply(input, 'A separate answer.'));
-    await sendPrompt(element, 'What sources should I inspect next?');
-    await settled(store);
-    expect(
-      (agent.runs[2].forwardedProps as Record<string, unknown> | undefined)?.[
-        'workspaceAction'
-      ],
-    ).toBeUndefined();
-    expect(
-      agent.runs[2].messages.filter((message) => message.role === 'user').pop()
-        ?.metadata?.[WORKSPACE_ACTION_METADATA_KEY],
-    ).toBeUndefined();
-  });
-
-  it('renders a persisted research completion directly without inventing a tool call', async () => {
-    const completion = {
-      version: 1,
-      requestId: 'b0bf3b8d-12fb-45ae-83d4-5b41b61c559a',
-      workId: 'b98e8caa-d7e5-4440-8a9c-f5c267ab3fb1',
-      status: 'REVIEW',
-      vehicle: {
-        brand: 'Toyota',
-        model: 'Hilux',
-        market: 'BR',
-        modelYear: 2026,
-      },
-      counts: { configurations: 2, claims: 40, warnings: 3 },
-      updatedAt: '2026-09-10T12:00:00Z',
-    };
-    agent.replyWith((input) => {
-      const events = textReply(input, 'The research will continue.');
-      events.splice(events.length - 1, 0, {
-        type: EventType.ACTIVITY_SNAPSHOT,
-        messageId: 'research-ready-persisted',
-        activityType: RESEARCH_COMPLETION_ACTIVITY,
-        content: completion,
-      } as BaseEvent);
-      return events;
-    });
-    const fixture = TestBed.createComponent(ChatPage);
-    await fixture.whenStable();
-    await sendPrompt(fixture.nativeElement, 'Research Hilux specifications');
-    const store = TestBed.inject(ConversationDetailStore);
-    await settled(store);
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    expect(
-      element.querySelector('[data-role="research-completion"]')?.textContent,
-    ).toContain('Toyota Hilux');
-    expect(
-      element.querySelector('[data-role="research-completion"] [role="status"]')
-        ?.textContent,
-    ).toContain('40');
-    expect(
-      store.messages().filter((message) => message.role === 'tool'),
-    ).toHaveLength(0);
-    const id = store.threadId();
-    TestBed.inject(FakeThreadClient).seed(
-      storedThread(id, 'Research', 1, store.messages()),
-    );
-    store.reset();
-    fixture.componentRef.setInput('threadId', id);
-    await fixture.whenStable();
-    await fixture.whenStable();
-    expect(
-      element.querySelectorAll('[data-role="research-completion"]'),
-    ).toHaveLength(1);
-    expect(agent.runs).toHaveLength(1);
-  });
-
-  it('blocks analyst actions when credits are exhausted while leaving the saved analysis readable', async () => {
-    const workspace = competitiveWorkspaceFixture();
-    agent.replyWith((input) =>
-      toolCallReply(
-        input,
-        'renderCompetitiveWorkspace',
-        {},
-        workspace,
-        'Analysis ready.',
-      ),
-    );
-    const fixture = TestBed.createComponent(ChatPage);
-    await fixture.whenStable();
-    await sendPrompt(fixture.nativeElement, 'Open my competitive benchmark');
-    const store = TestBed.inject(ConversationDetailStore);
-    await settled(store);
-    TestBed.inject(FakeCreditsClient).answerWith(exhaustedWallet());
-    await fixture.whenStable();
-    const before = structuredClone(store.messages());
-    expect(
-      await fixture.componentInstance.sendWorkspaceAction({
-        version: 1,
-        actionId: crypto.randomUUID(),
-        surfaceId: workspace.surfaceId,
-        expectedRevision: 1,
-        componentId: 'brief',
-        action: 'applyBrief',
-        values: workspace.snapshot.plan.context,
-      }),
-    ).toBe(false);
-    expect(agent.runs).toHaveLength(1);
-    expect(store.messages()).toEqual(before);
-    const element = fixture.nativeElement as HTMLElement;
-    expect(
-      element.querySelector('section[id^="competitive-"]')?.textContent,
-    ).toContain('revision 1');
-    expect(
-      element.querySelector<HTMLButtonElement>('app-analyst-brief-edit button')
-        ?.disabled,
-    ).toBe(true);
   });
 
   it('renders one server catalog containing Shark and Ranger through CopilotKit with saved replay', async () => {
@@ -996,9 +772,7 @@ describe('ChatPage', () => {
     await fixture.whenStable();
 
     const turns = element.querySelectorAll('[data-slot="message"]');
-    expect(turns[0].textContent).toContain(
-      'Ford Ranger versus BYD Shark and Toyota Hilux',
-    );
+    expect(turns[0].textContent).toContain('Compare Ranger Black and Limited');
     expect(element.querySelector('[aria-label="Suggestions"]')).toBeNull();
   });
 
@@ -1802,7 +1576,7 @@ describe('ChatPage', () => {
 
 async function sendPrompt(host: HTMLElement, text: string): Promise<void> {
   const prompt = host.querySelector<HTMLTextAreaElement>('textarea#prompt');
-  const form = prompt?.closest('form');
+  const form = host.querySelector<HTMLFormElement>('form');
   if (!prompt || !form) {
     throw new Error('Expected the prompt form to render');
   }

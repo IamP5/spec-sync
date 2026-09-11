@@ -39,12 +39,12 @@ For the catalog-only example, `searchVehicleConfigurations` receives:
     {
       "q": "Ford Ranger",
       "market": "BR",
-      "modelYear": 2026
+      "year": 2026
     },
     {
       "q": "Toyota Hilux",
       "market": "BR",
-      "modelYear": 2026
+      "year": 2026
     }
   ]
 }

@@ -184,15 +184,8 @@ describe('chat agent with credits', () => {
   it('registers the workspace tool with grounded retrieval and reuse instructions', async () => {
     const tools = await specSyncAgent.listTools();
     expect(tools['renderVehicleWorkspace']?.id).toBe('renderVehicleWorkspace');
-    expect(tools['renderCompetitiveWorkspace']?.id).toBe(
-      'renderCompetitiveWorkspace',
-    );
     const instructions = await specSyncAgent.getInstructions();
     expect(instructions).toContain('Use renderVehicleWorkspace');
-    expect(instructions).toContain(
-      'Ford employees doing competitive market analysis',
-    );
-    expect(instructions).toContain('target {surfaceId,baseRevision}');
     expect(instructions).toContain(
       'requires 1–12 relevant supported attributes',
     );

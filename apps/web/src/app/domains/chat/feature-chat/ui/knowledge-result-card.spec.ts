@@ -3,78 +3,6 @@ import { TestBed } from '@angular/core/testing';
 import { KnowledgeResultCard } from './knowledge-result-card';
 
 describe('KnowledgeResultCard specification discovery', () => {
-  it('replays the exact historical specification excerpt contract', async () => {
-    const fixture = TestBed.createComponent(KnowledgeResultCard);
-    fixture.componentRef.setInput('toolCall', {
-      name: 'getEvidenceExcerpt',
-      status: 'complete',
-      args: {},
-      result: {
-        status: 'OK',
-        message: 'Source evidence.',
-        projectionVersion: 'v1',
-        items: [
-          {
-            evidenceId: '00000000-0000-4000-8000-000000000002',
-            title: 'Ranger brochure',
-            excerpt: 'The source reports a braked towing limit.',
-            locator: 'page 12',
-            path: 'ranger.pdf',
-            provenance: 'CURATED_NOTES',
-            upstreamUrls: ['https://ford.com/ranger.pdf'],
-          },
-        ],
-      },
-    });
-    await fixture.whenStable();
-    expect(fixture.nativeElement.textContent).toContain(
-      'The source reports a braked towing limit.',
-    );
-    expect(fixture.nativeElement.textContent).toContain('page 12');
-  });
-
-  it('replays historical review excerpts with attribution, conditions and video timing', async () => {
-    const fixture = TestBed.createComponent(KnowledgeResultCard);
-    fixture.componentRef.setInput('toolCall', {
-      name: 'getEvidenceExcerpt',
-      status: 'complete',
-      args: {},
-      result: {
-        status: 'OK',
-        message: 'Source evidence.',
-        projectionVersion: 'v1',
-        items: [
-          {
-            id: '00000000-0000-4000-8000-000000000001',
-            evidenceId: '00000000-0000-4000-8000-000000000002',
-            title: 'Independent road test',
-            excerpt: 'The ride felt firm.',
-            scope: 'MODEL',
-            url: 'https://www.youtube.com/watch?v=example',
-            startSeconds: 84,
-            author: 'Review author',
-            publishedOn: '2026-04-01',
-            capturedOn: '2026-04-02',
-            kind: 'OPINION',
-            sentiment: 'NEGATIVE',
-            conditions: ['unloaded', 'urban roads'],
-            context: 'The reviewer drove an unloaded vehicle.',
-          },
-        ],
-      },
-    });
-    await fixture.whenStable();
-    const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Review author');
-    expect(element.textContent).toContain('Captured 2026-04-02');
-    expect(element.textContent).toContain('Source sentiment: NEGATIVE');
-    expect(element.textContent).toContain('unloaded; urban roads');
-    expect(element.querySelector('details')?.textContent).toContain(
-      'The reviewer drove an unloaded vehicle.',
-    );
-    expect(element.querySelector('a')?.href).toContain('t=84');
-  });
-
   it('does not describe a historical EMPTY payload as discovered links', async () => {
     const fixture = TestBed.createComponent(KnowledgeResultCard);
     fixture.componentRef.setInput('toolCall', {
@@ -202,7 +130,7 @@ describe('KnowledgeResultCard specification discovery', () => {
     expect(element.textContent).not.toContain('No valid result');
   });
 
-  it('preserves declared applicability and excerpts without guessing identity from unrelated fields', async () => {
+  it('preserves the identity and excerpt presentation for review evidence', async () => {
     const fixture = TestBed.createComponent(KnowledgeResultCard);
     fixture.componentRef.setInput('toolCall', {
       name: 'searchReviewEvidence',
@@ -210,15 +138,10 @@ describe('KnowledgeResultCard specification discovery', () => {
       args: {},
       result: {
         status: 'OK',
-        message: 'Indexed review evidence.',
-        projectionVersion: 'catalog/reviews',
         warnings: ['Discovery-only warning must not appear here.'],
         items: [
           {
             title: 'Reviewed evidence',
-            id: '00000000-0000-4000-8000-000000000001',
-            evidenceId: '00000000-0000-4000-8000-000000000002',
-            scope: 'MODEL',
             market: 'BR',
             modelYear: 2026,
             identityStatus: 'CONFIRMED',
@@ -229,9 +152,9 @@ describe('KnowledgeResultCard specification discovery', () => {
     });
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Model-level evidence');
-    expect(element.textContent).not.toContain('CONFIRMED');
-    expect(element.textContent).not.toContain('2026');
+    expect(element.textContent).toContain('BR');
+    expect(element.textContent).toContain('2026');
+    expect(element.textContent).toContain('CONFIRMED');
     expect(element.querySelector('blockquote')?.textContent).toContain(
       'A reviewed source excerpt.',
     );
