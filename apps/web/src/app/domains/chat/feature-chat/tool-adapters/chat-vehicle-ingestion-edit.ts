@@ -60,8 +60,11 @@ import { parseResult } from '../../util/parse-result';
             />
           }
           <p class="mt-3 text-xs text-muted-foreground">
-            <a class="underline" [routerLink]="['/ingestion', result.runId]"
-              >Ver importação anterior</a
+            <a
+              class="underline"
+              [routerLink]="['/ingestion', result.runId]"
+              i18n
+              >See the earlier import</a
             >
           </p>
         } @else {
@@ -70,12 +73,12 @@ import { parseResult } from '../../util/parse-result';
           </p>
         }
       } @else if (toolCall().status === 'complete') {
-        <p class="text-muted-foreground" role="status">
+        <p class="text-muted-foreground" role="status" i18n>
           The import was not started in this browser.
         </p>
       } @else {
-        <strong>Start this import?</strong>
-        <p class="mt-1 mb-3 text-muted-foreground">
+        <strong i18n>Start this import?</strong>
+        <p class="mt-1 mb-3 text-muted-foreground" i18n>
           Check the scope, then start the extraction with your curator key. The
           agent never receives the key.
         </p>

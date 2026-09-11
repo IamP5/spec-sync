@@ -55,18 +55,18 @@ const failureSchema = z.union([
       @if (preview(); as preview) {
         <div class="flex flex-wrap items-start justify-between gap-2">
           <div class="min-w-0">
-            <strong class="flex items-center gap-1">
+            <strong class="flex items-center gap-1" i18n>
               <ng-icon name="lucideFileText" aria-hidden="true" />
               Configurations in the source
             </strong>
             <p class="mt-1 break-all text-muted-foreground">
               {{ preview.source.title }}
               @if (preview.source.pageCount) {
-                · {{ preview.source.pageCount }} pages
+                <span i18n>· {{ preview.source.pageCount }} pages</span>
               }
             </p>
           </div>
-          <z-badge zType="secondary"
+          <z-badge zType="secondary" i18n
             >{{ preview.configurations.length }} found</z-badge
           >
         </div>
@@ -76,7 +76,11 @@ const failureSchema = z.union([
           </p>
         }
         @if (preview.configurations.length) {
-          <ul class="mt-3 space-y-2" aria-label="Configurations">
+          <ul
+            class="mt-3 space-y-2"
+            i18n-aria-label
+            aria-label="Configurations"
+          >
             @for (
               configuration of preview.configurations;
               track configuration.name
@@ -109,7 +113,7 @@ const failureSchema = z.union([
           </ul>
           @if (preview.legend.length) {
             <p class="mt-3 text-xs text-muted-foreground">
-              Legend:
+              <span i18n>Legend:</span>
               @for (
                 entry of preview.legend;
                 track entry.symbol;
@@ -139,7 +143,7 @@ const failureSchema = z.union([
                 (click)="importSelected()"
               >
                 <ng-icon name="lucidePlay" aria-hidden="true" />
-                Import {{ selectedCount() }} selected
+                <span i18n>Import {{ selectedCount() }} selected</span>
               </button>
               <button
                 z-button
@@ -148,6 +152,7 @@ const failureSchema = z.union([
                 type="button"
                 data-action="import-all"
                 (click)="importAll()"
+                i18n
               >
                 Import all ({{ preview.configurations.length }})
               </button>
@@ -157,18 +162,18 @@ const failureSchema = z.union([
           <p class="mt-3 text-muted-foreground">{{ preview.message }}</p>
         }
       } @else if (failure(); as failure) {
-        <strong>Source could not be read</strong>
+        <strong i18n>Source could not be read</strong>
         <p class="mt-1 text-muted-foreground" role="status">
           {{ failure.message }}
         </p>
       } @else {
         <p class="flex items-center gap-2" role="status">
-          <z-spinner class="size-4" zAriaLabel="Reading the source" />
-          {{
-            toolCall().status === 'complete'
-              ? 'No valid preview returned.'
-              : 'Reading the source and listing its configurations…'
-          }}
+          <z-spinner
+            class="size-4"
+            i18n-zAriaLabel
+            zAriaLabel="Reading the source"
+          />
+          {{ toolCall().status === 'complete' ? noPreview : readingSource }}
         </p>
       }
     </z-card>
@@ -191,6 +196,8 @@ export class ChatVehicleSourceOverview
   );
   protected readonly selected = signal<ReadonlySet<string>>(new Set());
   protected readonly selectedCount = computed(() => this.selected().size);
+  protected readonly noPreview = $localize`No valid preview returned.`;
+  protected readonly readingSource = $localize`Reading the source and listing its configurations…`;
 
   protected isSelected(name: string): boolean {
     return this.selected().has(name);

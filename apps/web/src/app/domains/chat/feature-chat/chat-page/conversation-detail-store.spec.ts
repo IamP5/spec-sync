@@ -439,6 +439,9 @@ describe('ConversationDetailStore', () => {
       mode: 'intelligent',
       roleModels: { chat: 'anthropic/claude-sonnet-5' },
       effort: 'high',
+      // The language is not a per-run choice: it travels with every run so
+      // the agent answers in the language the interface is running in.
+      locale: 'en-US',
     });
     await store.regenerate({ mode: 'velocity' });
     const forwarded = () =>
@@ -452,6 +455,7 @@ describe('ConversationDetailStore', () => {
     expect(forwarded()?.['mode']).toBeUndefined();
     expect(forwarded()?.['roleModels']).toBeUndefined();
     expect(forwarded()?.['effort']).toBeUndefined();
+    expect(forwarded()?.['locale']).toBe('en-US');
   });
 
   it('starts empty and idle', () => {

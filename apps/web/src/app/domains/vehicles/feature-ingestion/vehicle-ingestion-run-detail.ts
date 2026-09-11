@@ -85,6 +85,8 @@ export class VehicleIngestionRunDetail {
   readonly compact = input(false, { transform: booleanAttribute });
   /** Credential-free summary, emitted whenever the persisted run changes. */
   readonly runChanged = output<IngestionRunSummary>();
+  protected readonly publishingLabel = $localize`Publishing…`;
+  protected readonly publishLabel = $localize`Publish selected`;
 
   protected readonly store = inject(IngestionDetailStore);
   protected readonly run = this.store.runValue;
@@ -154,7 +156,7 @@ export class VehicleIngestionRunDetail {
       this.store.publishError()?.message ??
       this.store.rejectError()?.message ??
       (this.store.runError()
-        ? 'Não foi possível carregar a revisão. Entre na sua conta e atualize.'
+        ? $localize`The review could not be loaded. Sign in and refresh.`
         : ''),
   );
 

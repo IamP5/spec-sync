@@ -119,6 +119,10 @@ export class ThreadSearch {
   private readonly focusSearch = signal(false);
 
   protected readonly groups = this.store.groups;
+
+  protected optionsLabel(title: string): string {
+    return $localize`Options for ${title}:title:`;
+  }
   protected readonly query = this.store.query;
   protected readonly noThreads = this.store.isEmpty;
   /**
@@ -202,9 +206,9 @@ export class ThreadSearch {
     const scope = this.session.scope();
     if (!scope) return;
     this.confirmation = this.alertDialog.confirm({
-      zTitle: 'Delete this conversation?',
-      zDescription: `"${thread.title}" will be removed from your history. This cannot be undone.`,
-      zOkText: 'Delete',
+      zTitle: $localize`Delete this conversation?`,
+      zDescription: $localize`"${thread.title}:title:" will be removed from your history. This cannot be undone.`,
+      zOkText: $localize`Delete`,
       zOkDestructive: true,
       zOnOk: () => {
         if (!this.session.isCurrent(scope)) return;

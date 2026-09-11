@@ -6,10 +6,10 @@
         class="inline-flex items-center gap-1 text-sm underline"
       >
         <ng-icon name="lucideArrowLeft" aria-hidden="true" />
-        Back to chat
+        <span i18n>Back to chat</span>
       </a>
-      <h1 class="mt-3 text-2xl font-semibold">Vehicle ingestion</h1>
-      <p class="mt-2 max-w-2xl text-muted-foreground">
+      <h1 class="mt-3 text-2xl font-semibold" i18n>Vehicle ingestion</h1>
+      <p class="mt-2 max-w-2xl text-muted-foreground" i18n>
         Import specifications from official manufacturer sources, review every
         claim against its evidence, and publish what you confirm. You can also
         ask the assistant to find a source and start an import from the chat.
@@ -17,7 +17,7 @@
     </div>
     <div class="flex flex-wrap items-center gap-2">
       @if (runId()) {
-      <a z-button zType="outline" routerLink="/ingestion">All imports</a>
+      <a z-button zType="outline" routerLink="/ingestion" i18n>All imports</a>
       } @if (hasKey()) {
       <button
         z-button
@@ -27,7 +27,7 @@
         (click)="disconnect()"
       >
         <ng-icon name="lucideLogOut" aria-hidden="true" />
-        Forget key
+        <span i18n>Forget key</span>
       </button>
       }
     </div>
@@ -37,11 +37,12 @@
   <form
     (submit)="connect($event)"
     class="rounded-xl border p-4"
+    i18n-aria-label
     aria-label="Curator access"
   >
     <label for="curator-key" class="mb-2 flex items-center gap-1 font-medium">
       <ng-icon name="lucideKeyRound" aria-hidden="true" />
-      Curator key
+      <span i18n>Curator key</span>
     </label>
     <div class="flex flex-wrap gap-2">
       <input
@@ -51,29 +52,42 @@
         autocomplete="off"
         class="min-w-0 flex-1"
         [formField]="keyForm.key"
+        i18n-placeholder
         placeholder="Enter your curator key"
       />
-      <button z-button type="submit" [zDisabled]="keyForm().invalid()">
+      <button z-button type="submit" [zDisabled]="keyForm().invalid()" i18n>
         Connect
       </button>
     </div>
-    <p class="mt-2 text-sm text-muted-foreground">
+    <p class="mt-2 text-sm text-muted-foreground" i18n>
       The key stays in memory for this page load, is shared with the chat, and
       is cleared when you reload or leave.
     </p>
   </form>
   } @if (runId(); as id) {
-  <section class="rounded-xl border p-5" aria-label="Import run">
+  <section
+    class="rounded-xl border p-5"
+    i18n-aria-label
+    aria-label="Import run"
+  >
     <app-vehicle-ingestion-run-detail [runId]="id" />
   </section>
   } @else {
-  <section class="rounded-xl border p-5" aria-label="New import">
+  <section
+    class="rounded-xl border p-5"
+    i18n-aria-label
+    aria-label="New import"
+  >
     <app-vehicle-ingestion-launch-edit
       [prefill]="prefill()"
       (started)="onStarted($event)"
     />
   </section>
-  <section class="rounded-xl border p-5" aria-label="Recent imports">
+  <section
+    class="rounded-xl border p-5"
+    i18n-aria-label
+    aria-label="Recent imports"
+  >
     <app-vehicle-ingestion-search (opened)="open($event)" />
   </section>
   }

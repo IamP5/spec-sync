@@ -29,6 +29,7 @@
     ></div>
     <p
       class="absolute top-5 left-5 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium tracking-widest text-white uppercase sm:left-7"
+      i18n
     >
       Vehicle details
     </p>
@@ -38,6 +39,7 @@
       zSize="icon-sm"
       type="button"
       class="absolute top-3 right-3 z-10 size-11 rounded-full border border-white/15 bg-black/60 text-white hover:bg-black/80 hover:text-white sm:top-4 sm:right-4 sm:size-8"
+      i18n-aria-label
       aria-label="Close vehicle details"
       (click)="closed.emit()"
     >
@@ -58,7 +60,7 @@
           class="border-amber-300/50 bg-amber-950/35 text-amber-100 backdrop-blur-sm"
         >
           <ng-icon name="lucideCircleAlert" aria-hidden="true" />
-          Provisional identity
+          <span i18n>Provisional identity</span>
         </z-badge>
         } @else {
         <z-badge
@@ -66,8 +68,8 @@
           class="border-white/25 bg-black/25 text-white backdrop-blur-sm"
         >
           <ng-icon name="lucideBadgeCheck" aria-hidden="true" />
-          {{ vehicle().identityStatus === 'CONFIRMED' ? 'Confirmed identity' :
-          'Resolved from notes' }}
+          {{ vehicle().identityStatus === 'CONFIRMED' ? confirmedIdentity :
+          resolvedFromNotes }}
         </z-badge>
         }
       </div>
@@ -88,6 +90,7 @@
         <p
           id="reference-price-heading"
           class="text-xs font-medium tracking-wide text-muted-foreground uppercase"
+          i18n
         >
           Reference price
         </p>
@@ -116,7 +119,7 @@
         (click)="askRequested.emit()"
       >
         <ng-icon name="lucideMessageCircle" aria-hidden="true" />
-        Ask about this vehicle
+        <span i18n>Ask about this vehicle</span>
       </button>
     </section>
 
@@ -125,8 +128,8 @@
       class="animate-in fade-in-0 slide-in-from-bottom-1 min-h-88 rounded-xl border border-destructive/35 bg-destructive/5 p-4 duration-200 motion-reduce:animate-none"
       role="alert"
     >
-      <h3 class="text-sm font-medium">Vehicle details are unavailable</h3>
-      <p class="mt-1 text-sm leading-6 text-muted-foreground">
+      <h3 class="text-sm font-medium" i18n>Vehicle details are unavailable</h3>
+      <p class="mt-1 text-sm leading-6 text-muted-foreground" i18n>
         The catalog identity is still available, but its sourced specifications
         could not be loaded.
       </p>
@@ -139,11 +142,15 @@
         (click)="retried.emit()"
       >
         <ng-icon name="lucideRotateCcw" aria-hidden="true" />
-        Try again
+        <span i18n>Try again</span>
       </button>
     </div>
     } @else if (loading() && !comparison()) {
-    <div class="min-h-88 space-y-5" aria-label="Loading vehicle specifications">
+    <div
+      class="min-h-88 space-y-5"
+      i18n-aria-label
+      aria-label="Loading vehicle specifications"
+    >
       <div class="flex gap-5 border-b pb-3">
         <z-skeleton class="h-4 w-16" />
         <z-skeleton class="h-4 w-24" />
@@ -161,10 +168,10 @@
       zVariant="line"
       class="animate-in fade-in-0 slide-in-from-bottom-1 min-h-88 gap-5 duration-300 motion-reduce:animate-none"
     >
-      <z-tab label="Overview">
+      <z-tab i18n-label label="Overview">
         <div class="grid grid-cols-2 gap-3 pt-5 sm:grid-cols-3">
           <div class="rounded-xl border bg-muted/25 p-3 sm:p-4">
-            <p class="text-xs text-muted-foreground">Power</p>
+            <p class="text-xs text-muted-foreground" i18n>Power</p>
             <p
               class="mt-1 text-lg font-semibold"
               [class.text-warning]="power().status === 'conflicting'"
@@ -176,7 +183,7 @@
             </p>
           </div>
           <div class="rounded-xl border bg-muted/25 p-3 sm:p-4">
-            <p class="text-xs text-muted-foreground">Torque</p>
+            <p class="text-xs text-muted-foreground" i18n>Torque</p>
             <p
               class="mt-1 text-lg font-semibold"
               [class.text-warning]="torque().status === 'conflicting'"
@@ -190,7 +197,7 @@
           <div
             class="col-span-2 rounded-xl border bg-muted/25 p-3 sm:col-span-1 sm:p-4"
           >
-            <p class="text-xs text-muted-foreground">Drivetrain</p>
+            <p class="text-xs text-muted-foreground" i18n>Drivetrain</p>
             <p
               class="mt-1 text-lg font-semibold"
               [class.text-warning]="drivetrain().status === 'conflicting'"
@@ -211,8 +218,8 @@
               aria-hidden="true"
             />
             <div>
-              <h3 class="text-sm font-medium">Catalog confidence</h3>
-              <p class="mt-1 text-sm leading-6 text-muted-foreground">
+              <h3 class="text-sm font-medium" i18n>Catalog confidence</h3>
+              <p class="mt-1 text-sm leading-6 text-muted-foreground" i18n>
                 {{ knownCount() }} of {{ facts().length }} shown attributes have
                 accepted observations. {{ uncertainCount() }} need clearer
                 evidence or were not reported in the curated subset.
@@ -223,7 +230,7 @@
 
         @if (vehicle().identityNote) {
         <div class="mt-3 rounded-xl border border-warning/30 bg-warning/5 p-4">
-          <p class="text-xs font-medium tracking-wide uppercase">
+          <p class="text-xs font-medium tracking-wide uppercase" i18n>
             Identity note
           </p>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
@@ -233,7 +240,7 @@
         }
       </z-tab>
 
-      <z-tab label="Specifications">
+      <z-tab i18n-label label="Specifications">
         <dl class="divide-y divide-border pt-4">
           @for (fact of facts(); track fact.code) {
           <div
@@ -246,18 +253,21 @@
                 <ng-icon
                   name="lucideCheck"
                   class="shrink-0 text-success"
+                  i18n-aria-label
                   aria-label="Accepted observation"
                 />
                 } @case ('conflicting') {
                 <ng-icon
                   name="lucideCircleAlert"
                   class="shrink-0 text-warning"
+                  i18n-aria-label
                   aria-label="Conflicting observations"
                 />
                 } @case ('not-reported') {
                 <ng-icon
                   name="lucideCircleHelp"
                   class="shrink-0 text-muted-foreground"
+                  i18n-aria-label
                   aria-label="Not reported"
                 />
                 } } {{ fact.value }}
@@ -269,22 +279,22 @@
                 {{ fact.note }}
               </p>
               } @if (fact.evidenceCount > 0) {
-              <p class="mt-1 text-[11px] font-normal text-info">
-                {{ fact.evidenceCount }} {{ fact.evidenceCount === 1 ? 'source'
-                : 'sources' }}
+              <p class="mt-1 text-[11px] font-normal text-info" i18n>
+                {fact.evidenceCount, plural, =1 {one source} other {{{
+                fact.evidenceCount }} sources}}
               </p>
               }
             </dd>
           </div>
           } @empty {
-          <div class="py-8 text-center text-sm text-muted-foreground">
+          <div class="py-8 text-center text-sm text-muted-foreground" i18n>
             No attributes were returned for this configuration.
           </div>
           }
         </dl>
       </z-tab>
 
-      <z-tab label="Evidence">
+      <z-tab i18n-label label="Evidence">
         <div class="space-y-4 pt-5 text-sm leading-6">
           <div class="rounded-xl border border-warning/30 bg-warning/5 p-4">
             <div class="flex items-start gap-3">
@@ -294,8 +304,10 @@
                 aria-hidden="true"
               />
               <div>
-                <h3 class="font-medium">Curated notes, not OEM verification</h3>
-                <p class="mt-1 text-muted-foreground">
+                <h3 class="font-medium" i18n>
+                  Curated notes, not OEM verification
+                </h3>
+                <p class="mt-1 text-muted-foreground" i18n>
                   Exact excerpts, accepted assertions, gaps, and conflicts
                   remain visible instead of being flattened into a single claim.
                 </p>
@@ -308,7 +320,7 @@
             <div class="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <h3 class="font-medium">{{ item.title }}</h3>
-                <p class="text-xs text-muted-foreground">
+                <p class="text-xs text-muted-foreground" i18n>
                   {{ item.locator }} · captured {{ item.capturedOn }}
                 </p>
               </div>
@@ -328,6 +340,7 @@
                 [href]="href"
                 target="_blank"
                 rel="noopener noreferrer"
+                i18n
               >
                 Source {{ index + 1 }}
               </a>
@@ -337,31 +350,31 @@
           </article>
           } @empty {
           <div class="rounded-xl border border-dashed p-4">
-            <p class="font-medium">No evidence excerpts returned</p>
-            <p class="mt-1 text-muted-foreground">
+            <p class="font-medium" i18n>No evidence excerpts returned</p>
+            <p class="mt-1 text-muted-foreground" i18n>
               Treat unreported facts as unknown, not as absent equipment.
             </p>
           </div>
           } @if (image(); as photo) {
           <div class="rounded-xl border p-4">
-            <p class="font-medium">Vehicle photo</p>
+            <p class="font-medium" i18n>Vehicle photo</p>
             <p class="mt-1 text-muted-foreground">
-              {{ photo.matchScope === 'ILLUSTRATIVE' ? 'Illustrative
-              manufacturer image; exact configuration appearance is not
-              verified.' : 'Image of this vehicle configuration.' }}
+              {{ photo.matchScope === 'ILLUSTRATIVE' ? illustrativePhoto :
+              exactPhoto }}
             </p>
             <a
               [href]="photo.sourcePageUrl"
               target="_blank"
               rel="noopener noreferrer"
               class="text-info underline"
+              i18n
               >Photo source</a
             >
           </div>
           } @else {
           <div class="rounded-xl border p-4">
-            <p class="font-medium">Vehicle photos unavailable</p>
-            <p class="mt-1 text-muted-foreground">
+            <p class="font-medium" i18n>Vehicle photos unavailable</p>
+            <p class="mt-1 text-muted-foreground" i18n>
               Photos are not available for this configuration yet.
             </p>
           </div>

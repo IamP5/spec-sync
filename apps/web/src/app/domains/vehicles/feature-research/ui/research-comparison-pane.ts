@@ -53,6 +53,31 @@ export class ResearchComparisonPane {
     researchComparisonRows(this.research()),
   );
   protected readonly stage = computed(() => researchStage(this.research()));
+  protected readonly sourcePreserved = $localize`The source is preserved`;
+  protected readonly lookingForSource = $localize`Looking for where the data comes from`;
+  protected readonly searchingDocuments = $localize`The research looks for documents matching the requested vehicle and market.`;
+  protected readonly versionsThatMatter = $localize`Versions and the details that matter.`;
+  protected readonly firstResultsHere = $localize`The first results appear here.`;
+  protected readonly publishedPartial = $localize`The publication may contain only part of the information below.`;
+  protected readonly extractedNotAccepted = $localize`Data extracted from the source, not yet accepted into the catalog.`;
+  protected readonly showHighlights = $localize`Show highlights`;
+  protected readonly closeComparison = $localize`Close comparison`;
+  protected readonly compareVersions = $localize`Compare versions`;
+  protected readonly updatingLabel = $localize`Updating…`;
+  protected readonly refreshLabel = $localize`Refresh research`;
+
+  protected dispositionLabel(): string {
+    const disposition = this.research().disposition;
+    if (disposition === 'JOINED')
+      return $localize`You are following a shared research`;
+    if (disposition === 'REUSED') return $localize`Existing research reused`;
+    return $localize`Research started`;
+  }
+
+  protected allAttributesLabel(): string {
+    const count = this.rows().length;
+    return $localize`See all ${count}:count: attributes`;
+  }
   protected readonly active = computed(() => researchIsActive(this.research()));
   protected readonly value = researchClaimValue;
   protected readonly selected = linkedSignal({

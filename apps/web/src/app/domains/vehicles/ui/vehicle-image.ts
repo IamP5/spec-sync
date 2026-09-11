@@ -34,6 +34,7 @@ import type { VehicleImageMetadata } from '../data/vehicle-contracts';
           <span
             [class.sr-only]="compact()"
             class="absolute bottom-1 left-1 rounded bg-background/90 px-1.5 py-0.5 text-[10px] text-foreground"
+            i18n
           >
             Illustrative image
           </span>
@@ -48,6 +49,7 @@ import type { VehicleImageMetadata } from '../data/vehicle-contracts';
       <span
         class="absolute inset-0 grid place-items-center"
         role="img"
+        i18n-aria-label
         aria-label="Vehicle image not available"
       >
         <ng-icon name="lucideCarFront" aria-hidden="true" />

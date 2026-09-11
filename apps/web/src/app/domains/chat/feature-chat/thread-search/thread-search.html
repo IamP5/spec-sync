@@ -3,8 +3,10 @@
   <button
     z-sidebar-menu-button
     type="button"
+    i18n-aria-label
     aria-label="Search conversations"
     class="min-h-9"
+    i18n-zTooltip
     zTooltip="Search conversations"
     (click)="onSearch()"
   >
@@ -12,7 +14,7 @@
   </button>
   }
   <label class="sidebar-expanded relative block">
-    <span class="sr-only">Search conversations</span>
+    <span class="sr-only" i18n>Search conversations</span>
     <ng-icon
       name="lucideSearch"
       class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
@@ -23,6 +25,7 @@
       z-sidebar-input
       #searchInput
       type="search"
+      i18n-placeholder
       placeholder="Search conversations"
       class="h-9 border-transparent bg-sidebar-accent! pl-8 text-sidebar-foreground placeholder:text-muted-foreground focus-visible:border-sidebar-ring focus-visible:ring-sidebar-ring dark:bg-sidebar-accent!"
       [value]="query()"
@@ -34,7 +37,7 @@
 <z-sidebar-content class="sidebar-expanded gap-0 px-1">
   @if (loading()) {
   <div role="status" aria-live="polite" data-role="history-loading">
-    <span class="sr-only">Loading conversations…</span>
+    <span class="sr-only" i18n>Loading conversations…</span>
     <!-- Same boxes as a loaded history: group padding, label row, 36px rows. -->
     @for (section of skeletonSections; track $index) {
     <div class="flex flex-col px-2 py-1" aria-hidden="true">
@@ -57,6 +60,7 @@
     <p
       class="px-4 py-8 text-center text-xs leading-relaxed text-muted-foreground"
       data-role="history-empty"
+      i18n
     >
       Your conversations will appear here.
     </p>
@@ -64,6 +68,7 @@
     <p
       class="px-4 py-8 text-center text-xs text-muted-foreground"
       role="status"
+      i18n
     >
       No conversations match “{{ query() }}”.
     </p>
@@ -82,6 +87,7 @@
               z-input
               type="text"
               class="h-8 border-sidebar-ring bg-sidebar-accent text-sidebar-foreground"
+              i18n-aria-label
               aria-label="Conversation title"
               [value]="thread.title"
               [maxLength]="maxTitleLength"
@@ -106,7 +112,7 @@
               z-dropdown
               [zDropdownMenu]="threadMenu"
               class="size-6 text-muted-foreground hover:bg-sidebar-border hover:text-sidebar-foreground data-[state=open]:opacity-100 data-[state=open]:bg-sidebar-accent"
-              [attr.aria-label]="'Options for ' + thread.title"
+              [attr.aria-label]="optionsLabel(thread.title)"
             >
               <ng-icon name="lucideEllipsisVertical" aria-hidden="true" />
             </button>
@@ -125,7 +131,7 @@
                 (click)="onRename(thread)"
               >
                 <ng-icon name="lucidePencil" aria-hidden="true" />
-                Rename
+                <span i18n>Rename</span>
               </button>
               <z-dropdown-menu-separator />
               <button
@@ -137,7 +143,7 @@
                 (click)="onDelete(thread)"
               >
                 <ng-icon name="lucideTrash2" aria-hidden="true" />
-                Delete
+                <span i18n>Delete</span>
               </button>
             </z-dropdown-menu-content>
             }

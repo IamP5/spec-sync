@@ -5,6 +5,7 @@ import {
   DOCUMENT,
   inject,
   input,
+  LOCALE_ID,
   signal,
 } from '@angular/core';
 
@@ -53,6 +54,7 @@ const RECENT_RUNS_SHOWN = 5;
         class="tabular-nums"
         data-role="credits-balance"
         [class.text-destructive]="exhausted()"
+        i18n
         >{{ balanceLabel() }} credits</span
       >
       <span
@@ -71,12 +73,13 @@ const RECENT_RUNS_SHOWN = 5;
       <z-popover
         data-role="credits-panel"
         tabindex="-1"
+        i18n-aria-label
         aria-label="AI Credits"
         class="w-80 max-w-[calc(100vw-2rem)] gap-3 rounded-2xl p-4"
       >
         <div class="flex flex-col gap-1">
-          <h2 class="text-sm font-semibold">AI Credits</h2>
-          <p class="text-sm text-foreground" data-role="credits-summary">
+          <h2 class="text-sm font-semibold" i18n>AI Credits</h2>
+          <p class="text-sm text-foreground" data-role="credits-summary" i18n>
             {{ balanceLabel() }} of {{ grantedLabel() }}
           </p>
           <z-progress
@@ -84,25 +87,35 @@ const RECENT_RUNS_SHOWN = 5;
             [value]="usedPercent()"
             [attr.aria-label]="progressDescription()"
           />
-          <p class="text-xs text-muted-foreground" data-role="credits-spent">
+          <p
+            class="text-xs text-muted-foreground"
+            data-role="credits-spent"
+            i18n
+          >
             Used {{ spentLabel() }}
           </p>
         </div>
 
         @if (models().length) {
           <div class="flex flex-col gap-1">
-            <h3 class="text-xs font-medium text-muted-foreground">
+            <h3 class="text-xs font-medium text-muted-foreground" i18n>
               Credits per 1M tokens
             </h3>
             <table class="w-full text-xs" data-role="credits-models">
-              <caption class="sr-only">
+              <caption class="sr-only" i18n>
                 Model prices in credits per one million tokens
               </caption>
               <thead>
                 <tr class="text-muted-foreground">
-                  <th scope="col" class="py-1 text-left font-normal">Model</th>
-                  <th scope="col" class="py-1 text-right font-normal">In</th>
-                  <th scope="col" class="py-1 text-right font-normal">Out</th>
+                  <th scope="col" class="py-1 text-left font-normal" i18n>
+                    Model
+                  </th>
+                  <th scope="col" class="py-1 text-right font-normal" i18n>
+                    In
+                  </th>
+                  <th scope="col" class="py-1 text-right font-normal" i18n>
+                    Out
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -120,7 +133,7 @@ const RECENT_RUNS_SHOWN = 5;
                     >
                       {{ model.modelId }}
                       @if (!model.affordable) {
-                        <span class="sr-only">(not affordable)</span>
+                        <span class="sr-only" i18n>(not affordable)</span>
                       }
                     </th>
                     <td class="py-1 text-right tabular-nums">
@@ -138,7 +151,7 @@ const RECENT_RUNS_SHOWN = 5;
 
         @if (runs().length) {
           <div class="flex flex-col gap-1">
-            <h3 class="text-xs font-medium text-muted-foreground">
+            <h3 class="text-xs font-medium text-muted-foreground" i18n>
               Recent replies
             </h3>
             <ul class="flex flex-col" data-role="credits-runs">
@@ -177,13 +190,16 @@ export class CreditsPill {
   /** Mirrors the popover, so the trigger can report its state. */
   protected readonly open = signal(false);
 
+  private readonly locale = inject(LOCALE_ID);
   protected readonly balanceLabel = computed(() =>
-    formatCredits(this.balance()),
+    formatCredits(this.balance(), this.locale),
   );
   protected readonly grantedLabel = computed(() =>
-    formatCredits(this.granted()),
+    formatCredits(this.granted(), this.locale),
   );
-  protected readonly spentLabel = computed(() => formatCredits(this.spent()));
+  protected readonly spentLabel = computed(() =>
+    formatCredits(this.spent(), this.locale),
+  );
   protected readonly runs = computed(() =>
     this.recentRuns().slice(0, RECENT_RUNS_SHOWN),
   );
@@ -194,15 +210,18 @@ export class CreditsPill {
     }
     return Math.round(Math.min(Math.max(this.spent() / granted, 0), 1) * 100);
   });
-  protected readonly triggerDescription = computed(
-    () => `AI Credits: ${this.balanceLabel()} of ${this.grantedLabel()} left`,
-  );
-  protected readonly progressDescription = computed(
-    () => `${this.usedPercent()}% of your AI credits used`,
-  );
+  protected readonly triggerDescription = computed(() => {
+    const balance = this.balanceLabel();
+    const granted = this.grantedLabel();
+    return $localize`AI Credits: ${balance}:balance: of ${granted}:granted: left`;
+  });
+  protected readonly progressDescription = computed(() => {
+    const used = this.usedPercent();
+    return $localize`${used}:used:% of your AI credits used`;
+  });
 
   protected price(micro: number): string {
-    return formatCredits(micro);
+    return formatCredits(micro, this.locale);
   }
 
   protected onVisible(visible: boolean): void {

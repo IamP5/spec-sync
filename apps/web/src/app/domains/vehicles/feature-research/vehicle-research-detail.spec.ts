@@ -43,9 +43,9 @@ describe('Research journal drawers', () => {
   }
   it('opens source evidence from the live snapshot without a new HTTP request or agent call', async () => {
     const { fixture, http, overlay, click } = await openResearch();
-    click('Ver evidências');
+    click('See evidence');
     await fixture.whenStable();
-    expect(overlay.textContent).toContain('Evidências da pesquisa');
+    expect(overlay.textContent).toContain('Research evidence');
     expect(overlay.textContent).toContain('250');
     expect(
       overlay.querySelector('a[href="https://example.com/vehicle.pdf"]'),
@@ -75,22 +75,20 @@ describe('Research journal drawers', () => {
   it('loads consented people only on opening, cancels on close and clears on account invalidation', async () => {
     const { fixture, http, overlay, click } = await openResearch();
     http.expectNone(`${url}/interests`);
-    click('Pessoas interessadas');
+    click('Interested people');
     const pending = http.expectOne(`${url}/interests`);
     fixture.detectChanges();
     TestBed.tick();
     expect(
-      overlay.querySelector('[aria-label="Fechar detalhes da pesquisa"]'),
+      overlay.querySelector('[aria-label="Close research details"]'),
     ).toBeTruthy();
     overlay
-      .querySelector<HTMLButtonElement>(
-        '[aria-label="Fechar detalhes da pesquisa"]',
-      )
+      .querySelector<HTMLButtonElement>('[aria-label="Close research details"]')
       ?.click();
     TestBed.tick();
     await fixture.whenStable();
     expect(pending.cancelled).toBe(true);
-    click('Pessoas interessadas');
+    click('Interested people');
     http.expectOne(`${url}/interests`).flush({
       people: [
         {
@@ -115,7 +113,7 @@ describe('Research journal drawers', () => {
   });
   it('requires deliberate consent and removes only the current user profile without another search', async () => {
     const { fixture, http, overlay, click } = await openResearch();
-    click('Pessoas interessadas');
+    click('Interested people');
     http.expectOne(`${url}/interests`).flush(empty);
     await fixture.whenStable();
     const inputs = overlay.querySelectorAll<HTMLInputElement>('input');
@@ -148,12 +146,12 @@ describe('Research journal drawers', () => {
     };
     save.flush({ people: [mine], mine, hasMore: false });
     await fixture.whenStable();
-    click('Remover meu perfil', overlay);
+    click('Remove my profile', overlay);
     const remove = http.expectOne(`${url}/interests`);
     expect(remove.request.body).toEqual({ visible: false });
     remove.flush(empty);
     await fixture.whenStable();
-    expect(overlay.textContent).toContain('Seu perfil foi removido.');
+    expect(overlay.textContent).toContain('Your profile was removed.');
     http.verify();
   });
 });

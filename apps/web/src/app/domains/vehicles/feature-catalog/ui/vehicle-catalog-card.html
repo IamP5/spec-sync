@@ -1,4 +1,4 @@
-<div class="w-full py-1 text-sm" aria-label="Vehicle catalog">
+<div class="w-full py-1 text-sm" i18n-aria-label aria-label="Vehicle catalog">
   @if (page(); as page) {
   <div class="mx-auto w-full max-w-3xl">
     <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -7,14 +7,15 @@
         class="text-muted-foreground"
         aria-hidden="true"
       />
-      <span class="font-medium">Vehicle catalog</span>
-      <span class="text-muted-foreground" role="status"
+      <span class="font-medium" i18n>Vehicle catalog</span>
+      <span class="text-muted-foreground" role="status" i18n
         >· showing {{ shown().length }} of {{ visibleConfigurations().length }}
         on this page @if (page.hasMore) { · more in the catalog }</span
       >
       <div
         class="ml-auto flex items-center rounded-full bg-muted p-0.5"
         role="group"
+        i18n-aria-label
         aria-label="Catalog layout"
       >
         <button
@@ -23,6 +24,7 @@
           [class.bg-background]="layout() === 'strip'"
           [class.shadow-sm]="layout() === 'strip'"
           [class.text-foreground]="layout() === 'strip'"
+          i18n-aria-label
           aria-label="Show as cards"
           [attr.aria-pressed]="layout() === 'strip'"
           (click)="layout.set('strip')"
@@ -35,6 +37,7 @@
           [class.bg-background]="layout() === 'list'"
           [class.shadow-sm]="layout() === 'list'"
           [class.text-foreground]="layout() === 'list'"
+          i18n-aria-label
           aria-label="Show as list"
           [attr.aria-pressed]="layout() === 'list'"
           (click)="layout.set('list')"
@@ -53,11 +56,12 @@
           class="pointer-events-none absolute left-1 text-muted-foreground"
           aria-hidden="true"
         />
-        <label [for]="searchId" class="sr-only">Search catalog</label>
+        <label [for]="searchId" class="sr-only" i18n>Search catalog</label>
         <input
           [id]="searchId"
           data-catalog-search
           type="search"
+          i18n-placeholder
           placeholder="Search vehicles…"
           class="h-8 w-full bg-transparent pr-7 pl-7 text-sm outline-none placeholder:text-muted-foreground focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ring"
           [formField]="searchField()"
@@ -66,6 +70,7 @@
         <button
           type="button"
           class="absolute right-0 grid size-7 place-items-center rounded-full text-muted-foreground hover:bg-muted"
+          i18n-aria-label
           aria-label="Clear search"
           (click)="searchCleared.emit()"
         >
@@ -81,6 +86,7 @@
         [class.hover:bg-foreground]="modelFilter() === 'all'"
         [attr.aria-pressed]="modelFilter() === 'all'"
         (click)="modelChanged.emit('all')"
+        i18n
       >
         All
       </button>
@@ -99,23 +105,23 @@
       </button>
       }
       <div class="ml-auto text-xs text-muted-foreground">
-        <label [for]="sortId" class="sr-only">Order by</label>
+        <label [for]="sortId" class="sr-only" i18n>Order by</label>
         <select
           [id]="sortId"
           data-catalog-sort
           class="h-7 cursor-pointer appearance-none rounded-full bg-transparent pr-1 pl-2 text-xs hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
           [formField]="sortField()"
         >
-          <option value="catalog-order">Catalog order</option>
-          <option value="price-asc">Lowest price</option>
-          <option value="power-desc">Highest power</option>
-          <option value="torque-desc">Highest torque</option>
+          <option value="catalog-order" i18n>Catalog order</option>
+          <option value="price-asc" i18n>Lowest price</option>
+          <option value="power-desc" i18n>Highest power</option>
+          <option value="torque-desc" i18n>Highest torque</option>
         </select>
       </div>
     </div>
 
     @if (summariesError()) {
-    <p class="mt-2 text-xs text-muted-foreground" role="status">
+    <p class="mt-2 text-xs text-muted-foreground" role="status" i18n>
       Highlights could not be loaded; catalog identities remain available.
       <button
         type="button"
@@ -156,6 +162,7 @@
   <p
     class="mx-auto w-full max-w-3xl py-6 text-center text-muted-foreground"
     role="status"
+    i18n
   >
     No configurations match. @if (activeFilterCount()) {
     <button
@@ -177,6 +184,7 @@
       type="button"
       class="inline-flex h-7 items-center gap-1 rounded-full px-2.5 font-medium hover:bg-muted"
       (click)="showMore()"
+      i18n
     >
       <ng-icon name="lucideChevronDown" aria-hidden="true" />
       Show {{ step() }} more
@@ -186,6 +194,7 @@
       type="button"
       class="inline-flex h-7 items-center gap-1 rounded-full px-2.5 font-medium hover:bg-muted"
       (click)="showLess()"
+      i18n
     >
       <ng-icon name="lucideChevronUp" aria-hidden="true" />
       Show less
@@ -195,12 +204,13 @@
       type="button"
       class="inline-flex h-7 items-center gap-1 rounded-full border border-border px-2.5 font-medium hover:bg-muted"
       (click)="nextPageRequested.emit()"
+      i18n
     >
       Load next {{ nextPageSize() }} from the catalog
       <ng-icon name="lucideArrowRight" aria-hidden="true" />
     </button>
     } @if (shortlistedConfigurations().length) {
-    <span class="text-muted-foreground"
+    <span class="text-muted-foreground" i18n
       ><span class="font-medium text-foreground"
         >{{ shortlistedConfigurations().length }} selected</span
       >
@@ -212,12 +222,13 @@
       data-action="compare-shortlist"
       [disabled]="shortlistedConfigurations().length < 2"
       (click)="shortlistCompared.emit()"
+      i18n
     >
       Compare in chat
       <ng-icon name="lucideArrowRight" aria-hidden="true" />
     </button>
     } @else {
-    <span class="ml-auto text-muted-foreground"
+    <span class="ml-auto text-muted-foreground" i18n
       >Tap a vehicle for specifications. Add two or more to compare.</span
     >
     }
@@ -230,9 +241,7 @@
   } @else {
   <div class="mx-auto w-full max-w-3xl space-y-3">
     <p class="text-muted-foreground" role="status">
-      {{ complete() ? 'This saved catalog result is no longer compatible. Ask
-      the assistant to open the catalog again.' : 'Loading the vehicle catalog…'
-      }}
+      {{ complete() ? incompatibleResult : loadingCatalog }}
     </p>
     @if (!complete()) {
     <z-skeleton class="h-24 w-full" />

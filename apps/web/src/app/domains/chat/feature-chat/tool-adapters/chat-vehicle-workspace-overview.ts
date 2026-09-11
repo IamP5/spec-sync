@@ -39,28 +39,25 @@ import { ChatVehicleComparisonOverview } from './chat-vehicle-comparison-overvie
         <header class="space-y-1">
           <p
             class="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+            i18n
           >
             Vehicle workspace
           </p>
           <h2 class="text-lg font-semibold tracking-tight">
             {{ current.title }}
           </h2>
-          <p class="text-sm text-muted-foreground">
+          <p class="text-sm text-muted-foreground" i18n>
             Explore the catalog, inspect sources, and carry your selections into
             the conversation.
           </p>
         </header>
         @if (current.status !== 'OK') {
           <p class="rounded-lg bg-muted p-3 text-sm" role="status">
-            {{
-              current.status === 'PARTIAL'
-                ? 'Some sections could not be loaded. The available results are ready to explore.'
-                : 'This workspace could not retrieve its data. Try a narrower search or ask again.'
-            }}
+            {{ current.status === 'PARTIAL' ? partialData : noData }}
           </p>
         }
         @if (actions?.canSend && !actions.canSend()) {
-          <p class="text-sm text-muted-foreground" role="status">
+          <p class="text-sm text-muted-foreground" role="status" i18n>
             You can explore these results now. Sending a follow-up will be
             available when the conversation is ready.
           </p>
@@ -98,13 +95,14 @@ import { ChatVehicleComparisonOverview } from './chat-vehicle-comparison-overvie
     } @else if (toolCall().status !== 'complete') {
       <section
         class="space-y-3 rounded-xl border bg-card p-4"
+        i18n-aria-label
         aria-label="Building vehicle workspace"
         aria-busy="true"
       >
-        <p class="text-sm font-medium" role="status">
+        <p class="text-sm font-medium" role="status" i18n>
           Building your vehicle workspace…
         </p>
-        <p class="text-sm text-muted-foreground">
+        <p class="text-sm text-muted-foreground" i18n>
           Gathering catalog data, specifications, and evidence for your request.
         </p>
         <div
@@ -115,12 +113,13 @@ import { ChatVehicleComparisonOverview } from './chat-vehicle-comparison-overvie
     } @else {
       <section
         class="space-y-2 rounded-xl border bg-card p-4"
+        i18n-aria-label
         aria-label="Vehicle workspace unavailable"
       >
-        <p class="text-sm font-medium" role="status">
+        <p class="text-sm font-medium" role="status" i18n>
           This workspace could not be displayed.
         </p>
-        <p class="text-sm text-muted-foreground">
+        <p class="text-sm text-muted-foreground" i18n>
           Ask again with the vehicles or specifications you want to explore.
         </p>
       </section>
@@ -133,6 +132,8 @@ export class ChatVehicleWorkspaceOverview
   readonly toolCall =
     input.required<AngularToolCall<Record<string, unknown>>>();
   protected readonly actions = inject(CHAT_CARD_ACTIONS, { optional: true });
+  protected readonly partialData = $localize`Some sections could not be loaded. The available results are ready to explore.`;
+  protected readonly noData = $localize`This workspace could not retrieve its data. Try a narrower search or ask again.`;
 
   // Transcript updates replace the envelope. Parse only changed result text to
   // preserve the local state of each catalog, comparison, and evidence card.

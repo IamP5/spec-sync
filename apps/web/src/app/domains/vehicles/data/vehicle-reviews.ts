@@ -85,17 +85,17 @@ export function reviewMedia(type: string | null | undefined): string {
   return (
     (
       {
-        VIDEO: 'Vídeo',
-        YOUTUBE: 'Vídeo',
-        ARTICLE: 'Artigo',
-        BLOG: 'Blog',
-        BLOG_POST: 'Blog',
-        SOCIAL: 'Post',
-        SOCIAL_POST: 'Post',
-        TWEET: 'Post',
+        VIDEO: $localize`Video`,
+        YOUTUBE: $localize`Video`,
+        ARTICLE: $localize`Article`,
+        BLOG: $localize`Blog`,
+        BLOG_POST: $localize`Blog`,
+        SOCIAL: $localize`Post`,
+        SOCIAL_POST: $localize`Post`,
+        TWEET: $localize`Post`,
       } as Record<string, string>
     )[type ?? ''] ??
     type ??
-    'Outro'
+    $localize`Other`
   );
 }

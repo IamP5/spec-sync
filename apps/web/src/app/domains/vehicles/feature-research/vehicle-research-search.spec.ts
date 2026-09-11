@@ -54,7 +54,7 @@ describe('VehicleResearchSearch', () => {
     await fixture.whenStable();
     expect(element.querySelectorAll('[data-configuration]')).toHaveLength(2);
     expect(element.textContent).toContain(
-      'Dados extraídos da fonte, ainda não aceitos no catálogo.',
+      'Data extracted from the source, not yet accepted into the catalog.',
     );
     http.verify();
   });

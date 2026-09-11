@@ -7,6 +7,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "isolatedModules": true,
+    // The runtime translations in `src/i18n` are imported as typed modules.
+    "resolveJsonModule": true,
     "target": "es2022",
     "emitDecoratorMetadata": false,
     "module": "preserve"

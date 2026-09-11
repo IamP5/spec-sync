@@ -31,11 +31,7 @@ const referenceSchema = z.object({
         class="rounded-xl border p-4 text-sm text-muted-foreground"
         role="status"
       >
-        {{
-          toolCall().status === 'complete'
-            ? 'Research could not be opened. Ask SpecSync to try again.'
-            : 'Connecting to vehicle research…'
-        }}
+        {{ toolCall().status === 'complete' ? failed : connecting }}
       </p>
     }
   `,
@@ -48,4 +44,6 @@ export class ChatVehicleResearchDetail
   protected readonly reference = computed(() =>
     parseResult(this.toolCall().result, referenceSchema),
   );
+  protected readonly failed = $localize`Research could not be opened. Ask SpecSync to try again.`;
+  protected readonly connecting = $localize`Connecting to vehicle research…`;
 }

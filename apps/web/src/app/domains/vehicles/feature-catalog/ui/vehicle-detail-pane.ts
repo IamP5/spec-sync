@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
+  LOCALE_ID,
   output,
 } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -95,8 +97,9 @@ export class VehicleDetailPane {
       )?.primaryImage,
   );
 
+  private readonly locale = inject(LOCALE_ID);
   protected readonly facts = computed(() =>
-    detailFacts(this.comparison(), this.vehicle().id),
+    detailFacts(this.comparison(), this.vehicle().id, this.locale),
   );
   protected readonly knownCount = computed(
     () => this.facts().filter(({ status }) => status === 'known').length,
@@ -123,11 +126,16 @@ export class VehicleDetailPane {
     factByCode(this.facts(), 'drivetrain'),
   );
   protected readonly safeUrl = safeSourceUrl;
+  protected readonly confirmedIdentity = $localize`Confirmed identity`;
+  protected readonly resolvedFromNotes = $localize`Resolved from notes`;
+  protected readonly illustrativePhoto = $localize`Illustrative manufacturer image; exact configuration appearance is not verified.`;
+  protected readonly exactPhoto = $localize`Image of this vehicle configuration.`;
 }
 
 function detailFacts(
   comparison: Comparison | undefined,
   configurationId: string,
+  locale: string,
 ): DetailFact[] {
   return (
     comparison?.rows.map((row) => {
@@ -138,9 +146,9 @@ function detailFacts(
         return {
           code: row.attribute.code,
           label: row.attribute.label,
-          value: 'Not reported',
+          value: $localize`Not reported`,
           status: 'not-reported' as const,
-          note: 'Missing information does not establish that equipment is absent.',
+          note: $localize`Missing information does not establish that equipment is absent.`,
           evidenceCount: 0,
         };
       const observations = cellObservations(cell);
@@ -148,11 +156,11 @@ function detailFacts(
         return {
           code: row.attribute.code,
           label: row.attribute.label,
-          value: 'Conflicting',
+          value: $localize`Conflicting`,
           status: 'conflicting' as const,
           note:
             cell.reason ??
-            'Sources disagree; no observation has been silently preferred.',
+            $localize`Sources disagree; no observation has been silently preferred.`,
           evidenceCount: observations.reduce(
             (total, observation) => total + observation.evidence.length,
             0,
@@ -163,7 +171,7 @@ function detailFacts(
         return {
           code: row.attribute.code,
           label: row.attribute.label,
-          value: 'Not reported',
+          value: $localize`Not reported`,
           status: 'not-reported' as const,
           evidenceCount: 0,
         };
@@ -175,6 +183,7 @@ function detailFacts(
           observation.availability,
           row.attribute.unit,
           row.attribute.code,
+          locale,
         ),
         status: 'known' as const,
         note: qualifierContext(observation.qualifiers),
@@ -189,20 +198,21 @@ function observationValue(
   availability: string | null,
   unit: string | null,
   code: string,
+  locale: string,
 ): string {
   if (availability)
     return (
       (
         {
-          STANDARD: 'Standard',
-          OPTIONAL: 'Optional',
-          ABSENT: 'Absent',
-          NOT_APPLICABLE: 'Not applicable',
+          STANDARD: $localize`Standard`,
+          OPTIONAL: $localize`Optional`,
+          ABSENT: $localize`Absent`,
+          NOT_APPLICABLE: $localize`Not applicable`,
         } as Record<string, string>
       )[availability] ?? availability
     );
   if (code === 'reference_price' && typeof value === 'number')
-    return new Intl.NumberFormat('pt-BR', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'BRL',
       maximumFractionDigits: 0,
@@ -228,7 +238,7 @@ function factByCode(facts: DetailFact[], code: string): DetailFact {
     facts.find((fact) => fact.code === code) ?? {
       code,
       label: code,
-      value: 'Not reported',
+      value: $localize`Not reported`,
       status: 'not-reported',
       evidenceCount: 0,
     }
@@ -246,12 +256,15 @@ function referencePriceContext(
     (candidate) => candidate.configurationId === configurationId,
   );
   const observation = cell ? cellObservations(cell)[0] : undefined;
-  if (!observation) return 'No accepted reference-price observation.';
+  if (!observation) return $localize`No accepted reference-price observation.`;
   const effectiveOn = observation.qualifiers['effective_on'];
   const verified = observation.qualifiers['current_price_verified'];
-  if (typeof effectiveOn === 'string' && effectiveOn)
-    return `Source observation effective ${effectiveOn}${verified === true ? ' · current price verified' : ''}.`;
-  return 'Undated source observation — not a current market price.';
+  if (typeof effectiveOn === 'string' && effectiveOn) {
+    const suffix =
+      verified === true ? $localize` · current price verified` : '';
+    return $localize`Source observation effective ${effectiveOn}:date:${suffix}:verified:.`;
+  }
+  return $localize`Undated source observation — not a current market price.`;
 }
 
 function detailEvidence(

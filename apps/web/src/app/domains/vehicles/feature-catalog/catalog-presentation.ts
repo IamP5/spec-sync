@@ -41,8 +41,8 @@ export function identityLabel(vehicle: VehicleConfiguration): string {
   return vehicle.identityStatus === 'CONFIRMED'
     ? ''
     : vehicle.identityStatus === 'PROVISIONAL'
-      ? 'Provisional'
-      : 'From notes';
+      ? $localize`Provisional`
+      : $localize`From notes`;
 }
 
 export function modelSummaries(
@@ -100,6 +100,7 @@ export function catalogFact(
   comparison: Comparison | undefined,
   configurationId: string,
   code: string,
+  locale = 'en-US',
 ): CatalogFact {
   const row = comparison?.rows.find(
     (candidate) => candidate.attribute.code === code,
@@ -108,11 +109,12 @@ export function catalogFact(
     (candidate) => candidate.configurationId === configurationId,
   );
   if (!cell || cell.knowledgeStatus === 'NOT_REPORTED')
-    return { text: 'Not reported', status: 'not-reported' };
+    return { text: $localize`Not reported`, status: 'not-reported' };
   if (cell.knowledgeStatus === 'CONFLICTING')
-    return { text: 'Conflicting', status: 'conflicting' };
+    return { text: $localize`Conflicting`, status: 'conflicting' };
   const observation = cellObservations(cell)[0];
-  if (!observation) return { text: 'Not reported', status: 'not-reported' };
+  if (!observation)
+    return { text: $localize`Not reported`, status: 'not-reported' };
   if (observation.availability)
     return {
       text: availabilityLabel(observation.availability),
@@ -122,7 +124,9 @@ export function catalogFact(
     typeof observation.value === 'number' ? observation.value : undefined;
   if (code === 'reference_price' && numeric !== undefined)
     return {
-      text: new Intl.NumberFormat('pt-BR', {
+      // The catalog prices Brazilian vehicles, so the currency is fixed;
+      // only the way the amount reads follows the user's language.
+      text: new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: 'BRL',
         maximumFractionDigits: 0,

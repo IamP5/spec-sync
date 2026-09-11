@@ -10,6 +10,7 @@ import {
   ElementRef,
   inject,
   input,
+  LOCALE_ID,
   signal,
   untracked,
   viewChild,
@@ -85,7 +86,11 @@ import {
 } from '../../data/chat-model';
 import { MarkdownPipe } from '../../util/markdown-pipe';
 import { revealText } from '../../util/text-reveal';
-import { toolLabel } from '../../util/tool-label';
+import {
+  toolLabel,
+  type ToolStatus,
+  toolStatusLabel,
+} from '../../util/tool-label';
 import { ChatCoordinator } from '../chat-coordinator';
 import { CHAT_CARD_ACTIONS } from '../tool-adapters/chat-card-actions';
 import { CreditsPill } from '../ui/credits-pill';
@@ -94,19 +99,15 @@ import { registerChatTools } from './chat-tools';
 import { ConversationDetailStore } from './conversation-detail-store';
 import { ModelSearchStore } from './model-search-store';
 
-const PROMPT_REQUIRED_MESSAGE = 'Type a message to send.';
-const OFFLINE_MESSAGE =
-  'The assistant is unavailable. Make sure the AI service is running.';
-const FAILURE_MESSAGE = 'The assistant could not answer. Please try again.';
+const PROMPT_REQUIRED_MESSAGE = $localize`Type a message to send.`;
+const OFFLINE_MESSAGE = $localize`The assistant is unavailable. Make sure the AI service is running.`;
+const FAILURE_MESSAGE = $localize`The assistant could not answer. Please try again.`;
 const MAX_PROMPT_LENGTH = 4000;
-const EXHAUSTED_MESSAGE =
-  'Your AI credits are used up. You can keep reading your conversations.';
-const STOPPED_BY_CREDITS_PREFIX =
-  'The reply was stopped because your credits ran out. ';
+const EXHAUSTED_MESSAGE = $localize`Your AI credits are used up. You can keep reading your conversations.`;
+const STOPPED_BY_CREDITS_PREFIX = $localize`The reply was stopped because your credits ran out. `;
 /** The cheapest mode; the way out of a run refused for lack of credits. */
 const VELOCITY_MODE = 'velocity' as const;
-const CREDITS_UNAVAILABLE_MESSAGE =
-  'The credits service is unavailable. Try again in a moment.';
+const CREDITS_UNAVAILABLE_MESSAGE = $localize`The credits service is unavailable. Try again in a moment.`;
 const COPIED_FEEDBACK_MS = 1500;
 /** Distance from the end of the transcript that still counts as "at the bottom". */
 const AT_BOTTOM_THRESHOLD_PX = 32;
@@ -117,28 +118,28 @@ const COMPOSER_COLLAPSE_DISTANCE_PX = 160;
 const SUGGESTIONS = [
   {
     icon: 'lucidePenLine',
-    label: 'Compare vehicles',
-    prompt:
-      'Compare Ranger Black and Limited, BR 2026, on power, torque and 360 camera.',
+    label: $localize`Compare vehicles`,
+    prompt: $localize`Compare Ranger Black and Limited, BR 2026, on power, torque and 360 camera.`,
   },
   {
     icon: 'lucideFileSearch',
-    label: 'Find related reviews',
-    prompt: 'Find articles and videos reviewing the Ford Ranger ride comfort.',
+    label: $localize`Find related reviews`,
+    prompt: $localize`Find articles and videos reviewing the Ford Ranger ride comfort.`,
   },
   {
     icon: 'lucideFileInput',
-    label: 'Import specifications',
-    prompt:
-      'Import the official specifications of the Ford Ranger 2026 (Brazil): find the manufacturer PDF or page, show me which versions it lists, and start a reviewed import for the ones I choose.',
+    label: $localize`Import specifications`,
+    prompt: $localize`Import the official specifications of the Ford Ranger 2026 (Brazil): find the manufacturer PDF or page, show me which versions it lists, and start a reviewed import for the ones I choose.`,
   },
   {
     icon: 'lucideCarFront',
-    label: 'Build a research workspace',
-    prompt:
-      'Start a research workspace by showing Ford Ranger and Toyota Hilux together in one interactive catalog, Brazil, model year 2026. Let me inspect configurations and choose what to compare.',
+    label: $localize`Build a research workspace`,
+    prompt: $localize`Start a research workspace by showing Ford Ranger and Toyota Hilux together in one interactive catalog, Brazil, model year 2026. Let me inspect configurations and choose what to compare.`,
   },
 ] as const;
+
+/** The prompt behind the catalog card on an empty conversation. */
+const CATALOG_SUGGESTION = $localize`Show me the current vehicle catalog. Search all available configurations with an empty query and display the interactive catalog.`;
 
 const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
   CopilotKitCoreErrorCode.RUNTIME_INFO_FETCH_FAILED,
@@ -247,6 +248,8 @@ export class ChatPage {
   readonly threadId = input<string>();
   private readonly session = inject(SESSION);
   private readonly auth = inject(AuthSessionCoordinator);
+  /** Formats the character limit the way the user's language writes numbers. */
+  private readonly locale = inject(LOCALE_ID);
   private readonly connection = inject(ChatConnectionCoordinator);
   private readonly dialogs = inject(ZardDialogService);
   private loginDialog?: ZardDialogRef<AuthLoginOverview>;
@@ -334,6 +337,14 @@ export class ChatPage {
 
   protected readonly agentId = CHAT_AGENT_ID;
   protected readonly suggestions = SUGGESTIONS;
+  protected readonly catalogSuggestion = CATALOG_SUGGESTION;
+  protected readonly newChatTitle = $localize`New chat`;
+  protected readonly receivingInput = $localize`Receiving input…`;
+  protected readonly waitingForTool = $localize`Waiting for the tool…`;
+  protected readonly noToolResult = $localize`No result received.`;
+  protected readonly copiedLabel = $localize`Copied`;
+  protected readonly copyLabel = $localize`Copy`;
+  protected readonly copyReplyLabel = $localize`Copy reply`;
   protected readonly messages = this.store.messages;
   protected readonly turns = this.store.turns;
   protected readonly streaming = this.store.isStreaming;
@@ -355,7 +366,9 @@ export class ChatPage {
             !this.connection.error()))),
   );
   protected readonly loadingLabel = computed(() =>
-    this.auth.pending() ? 'Loading your account…' : 'Loading conversation…',
+    this.auth.pending()
+      ? $localize`Loading your account…`
+      : $localize`Loading conversation…`,
   );
   protected readonly stopped = this.store.stopped;
   protected readonly title = this.store.title;
@@ -409,7 +422,7 @@ export class ChatPage {
     this.promptForm.prompt().invalid(),
   );
   protected readonly promptError = computed(() =>
-    promptValidationMessage(this.model().prompt),
+    promptValidationMessage(this.model().prompt, this.locale),
   );
 
   /** Id of the turn whose text was just copied, for the button feedback. */
@@ -430,6 +443,17 @@ export class ChatPage {
   );
 
   protected readonly activityStatus = computed(() => runStatus(this.turns()));
+
+  /**
+   * What the screen reader hears about the run. Only one live region reports
+   * it, so the states are collapsed into a single string.
+   */
+  protected readonly liveStatus = computed(() => {
+    if (this.loading()) return '';
+    if (this.streaming()) return this.activityStatus();
+    if (this.stopped()) return $localize`Reply stopped`;
+    return !this.empty() && !this.error() ? $localize`Response ready` : '';
+  });
 
   /**
    * The generic run failure. A credits rejection has its own banner with the
@@ -537,6 +561,10 @@ export class ChatPage {
     return this.store.toolPresentation().get(turn.id);
   }
 
+  protected statusLabel(status: ToolStatus): string {
+    return toolStatusLabel(status);
+  }
+
   protected activityFor(turn: ChatTurn) {
     return this.store.toolActivities().get(turn.id) ?? [];
   }
@@ -631,7 +659,7 @@ export class ChatPage {
       await navigator.clipboard.writeText(textOf(turn));
     } catch {
       this.copyError.set(
-        'Could not copy. Select the reply text and copy it manually.',
+        $localize`Could not copy. Select the reply text and copy it manually.`,
       );
       return;
     }
@@ -800,7 +828,7 @@ export class ChatPage {
       this.pendingPrompt.set(prompt);
       if (!this.session.authenticated())
         this.loginDialog = this.dialogs.create({
-          zTitle: 'Sign in to continue',
+          zTitle: $localize`Sign in to continue`,
           zContent: AuthLoginOverview,
           zHideFooter: true,
           zWidth: '24rem',
@@ -875,14 +903,15 @@ function runStatus(turns: ChatTurn[]): string {
   const last = lastOf(turns);
   if (last?.role === 'assistant') {
     const call = last.toolCalls?.[last.toolCalls.length - 1];
-    return call ? toolLabel(call.function.name) : 'Writing a response';
+    return call ? toolLabel(call.function.name) : $localize`Writing a response`;
   }
-  return 'Thinking';
+  return $localize`Thinking`;
 }
 
-function promptValidationMessage(prompt: string): string {
+function promptValidationMessage(prompt: string, locale: string): string {
   if (prompt.length > MAX_PROMPT_LENGTH) {
-    return `Use ${MAX_PROMPT_LENGTH.toLocaleString('en-US')} characters or fewer.`;
+    const limit = MAX_PROMPT_LENGTH.toLocaleString(locale);
+    return $localize`Use ${limit}:limit: characters or fewer.`;
   }
   return '';
 }

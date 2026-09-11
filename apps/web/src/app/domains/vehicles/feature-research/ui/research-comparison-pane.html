@@ -1,20 +1,15 @@
-<section
-  class="mx-auto w-full max-w-4xl text-sm"
-  data-research-result
-  lang="pt-BR"
->
+<section class="mx-auto w-full max-w-4xl text-sm" data-research-result>
   <header class="mb-7 border-b border-border pb-6">
-    <p class="text-xs text-muted-foreground">
-      Pesquisa de veículos · {{ research().disposition === 'JOINED' ? 'Você
-      acompanha uma pesquisa compartilhada' : research().disposition ===
-      'REUSED' ? 'Pesquisa existente reutilizada' : 'Pesquisa iniciada' }}
+    <p class="text-xs text-muted-foreground" i18n>
+      Vehicle research · {{ dispositionLabel() }}
     </p>
-    <h2 class="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-      Conhecendo {{ research().request.brand }} {{ research().request.model }}.
+    <h2 class="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl" i18n>
+      Getting to know {{ research().request.brand }} {{ research().request.model
+      }}.
     </h2>
-    <p class="mt-2 text-xs text-muted-foreground">
+    <p class="mt-2 text-xs text-muted-foreground" i18n>
       {{ research().request.market }} · {{ research().request.modelYear }}
-      solicitado · confirme o ano-modelo nas evidências
+      requested · confirm the model year in the evidence
     </p>
     <div class="mt-5 flex items-start gap-3" role="status" aria-live="polite">
       <span
@@ -23,8 +18,11 @@
         >{{ stage().index + 1 }}</span
       >
       <div>
-        <p class="text-[10px] uppercase tracking-widest text-muted-foreground">
-          Etapa {{ stage().index + 1 }} de 4
+        <p
+          class="text-[10px] uppercase tracking-widest text-muted-foreground"
+          i18n
+        >
+          Step {{ stage().index + 1 }} of 4
         </p>
         <p class="mt-1 text-base font-semibold">{{ stage().label }}</p>
         <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -33,9 +31,9 @@
       </div>
     </div>
     @if (research().replayedFromWorkId) {
-    <p class="mt-3 text-xs text-muted-foreground">
-      Nova interpretação da fonte salva. A pesquisa original permanece no
-      histórico.
+    <p class="mt-3 text-xs text-muted-foreground" i18n>
+      A new interpretation of the source has been saved. The original research
+      stays in the history.
     </p>
     } @if (terminalError(); as message) {
     <p class="mt-3 break-words text-destructive" role="alert">{{ message }}</p>
@@ -51,18 +49,19 @@
           aria-hidden="true"
           ><ng-icon name="lucideFileText"
         /></span>
-        <p class="text-[10px] uppercase tracking-widest text-muted-foreground">
-          01 / A origem
+        <p
+          class="text-[10px] uppercase tracking-widest text-muted-foreground"
+          i18n
+        >
+          01 / The origin
         </p>
         <h3 class="mt-2 text-lg font-semibold">
-          {{ research().source ? 'A fonte está preservada' : 'Procurando a
-          origem dos dados' }}
+          {{ research().source ? sourcePreserved : lookingForSource }}
         </h3>
         <p
           class="mt-2 break-words text-sm leading-relaxed text-muted-foreground"
         >
-          {{ research().source?.title || 'A pesquisa procura documentos que
-          correspondam ao veículo e ao mercado solicitado.' }}
+          {{ research().source?.title || searchingDocuments }}
         </p>
         <button
           z-button
@@ -73,7 +72,7 @@
           aria-haspopup="dialog"
           (click)="evidenceRequested.emit(null)"
         >
-          <ng-icon name="lucideFileText" /> Ver evidências
+          <ng-icon name="lucideFileText" /> <span i18n>See evidence</span>
           <ng-icon name="lucideArrowRight" />
         </button>
       </li>
@@ -83,29 +82,32 @@
           aria-hidden="true"
           ><ng-icon name="lucideLayers"
         /></span>
-        <p class="text-[10px] uppercase tracking-widest text-muted-foreground">
-          02 / O que já sabemos
+        <p
+          class="text-[10px] uppercase tracking-widest text-muted-foreground"
+          i18n
+        >
+          02 / What we know so far
         </p>
         <h3 class="mt-2 text-lg font-semibold">
-          {{ research().configurations.length ? 'Versões e detalhes que
-          importam.' : 'Os primeiros resultados aparecem aqui.' }}
+          {{ research().configurations.length ? versionsThatMatter :
+          firstResultsHere }}
         </h3>
-        <p class="mt-2 text-xs text-muted-foreground">
-          {{ findings() }} dados encontrados · {{
-          research().configurations.length }} versões · {{ unmapped() }}
-          observações sem correspondência no catálogo
+        <p class="mt-2 text-xs text-muted-foreground" i18n>
+          {{ findings() }} data points found · {{
+          research().configurations.length }} versions · {{ unmapped() }}
+          observations without a match in the catalog
         </p>
         @if (research().configurations.length) {
-        <p class="mt-3 text-xs leading-relaxed text-muted-foreground">
-          {{ research().status === 'PUBLISHED' ? 'A publicação pode conter
-          apenas parte das informações abaixo.' : 'Dados extraídos da fonte,
-          ainda não aceitos no catálogo.' }} A confiabilidade não foi calibrada.
-          Consulte as condições e os avisos.
+        <p class="mt-3 text-xs leading-relaxed text-muted-foreground" i18n>
+          {{ research().status === 'PUBLISHED' ? publishedPartial :
+          extractedNotAccepted }} Reliability has not been calibrated. Check the
+          conditions and the warnings.
         </p>
         <div
           class="mt-4 flex flex-wrap gap-1"
           role="group"
-          aria-label="Versão em consulta"
+          i18n-aria-label
+          aria-label="Version being viewed"
         >
           @for (configuration of research().configurations; track
           configuration.name; let index = $index) {
@@ -151,13 +153,12 @@
           [attr.aria-expanded]="expanded()"
           (click)="expanded.set(!expanded())"
         >
-          {{ expanded() ? 'Mostrar destaques' : 'Ver todos os ' + rows().length
-          + ' atributos' }}
+          {{ expanded() ? showHighlights : allAttributesLabel() }}
         </button>
         } @if (!rows().length) {
-        <p class="mt-3 text-xs text-muted-foreground">
-          Ainda não há atributos normalizados. As observações originais estão
-          nas evidências.
+        <p class="mt-3 text-xs text-muted-foreground" i18n>
+          There are no normalised attributes yet. The original observations are
+          in the evidence.
         </p>
         } @if (research().configurations.length > 1) {
         <button
@@ -169,7 +170,7 @@
           [attr.aria-expanded]="comparing()"
           (click)="comparing.set(!comparing())"
         >
-          {{ comparing() ? 'Fechar comparação' : 'Comparar versões' }}
+          {{ comparing() ? closeComparison : compareVersions }}
           <ng-icon name="lucideArrowRight" />
         </button>
         } } @if (research().warnings.length || unmapped()) {
@@ -182,7 +183,8 @@
           aria-haspopup="dialog"
           (click)="evidenceRequested.emit(null)"
         >
-          Ver avisos e informações pendentes <ng-icon name="lucideArrowRight" />
+          <span i18n>See warnings and pending information</span>
+          <ng-icon name="lucideArrowRight" />
         </button>
         }
       </li>
@@ -195,10 +197,12 @@
         class="text-xl text-muted-foreground"
         aria-hidden="true"
       />
-      <h3 class="mt-3 text-base font-semibold">A pesquisa aproxima.</h3>
-      <p class="mt-2 text-xs leading-relaxed text-muted-foreground">
-        Conheça o interesse de outras pessoas neste veículo. Seu histórico de
-        conversa permanece privado.
+      <h3 class="mt-3 text-base font-semibold" i18n>
+        Research brings people together.
+      </h3>
+      <p class="mt-2 text-xs leading-relaxed text-muted-foreground" i18n>
+        See who else is interested in this vehicle. Your conversation history
+        stays private.
       </p>
       <button
         z-button
@@ -209,7 +213,8 @@
         aria-haspopup="dialog"
         (click)="peopleRequested.emit()"
       >
-        Pessoas interessadas <ng-icon name="lucideArrowRight" />
+        <span i18n>Interested people</span>
+        <ng-icon name="lucideArrowRight" />
       </button>
     </aside>
   </div>
@@ -217,20 +222,22 @@
   <div
     class="mt-5 max-h-[28rem] overflow-auto border-y border-border"
     role="region"
-    aria-label="Comparação das versões"
+    i18n-aria-label
+    aria-label="Version comparison"
     tabindex="0"
   >
     <table class="w-full min-w-[540px] border-collapse text-left text-xs">
-      <caption class="sr-only">
-        Dados da fonte por versão, ainda sujeitos a revisão.
+      <caption class="sr-only" i18n>
+        Source data per version, still subject to review.
       </caption>
       <thead>
         <tr>
           <th
             scope="col"
             class="sticky top-0 z-10 bg-background p-3 font-medium"
+            i18n
           >
-            Especificação
+            Specification
           </th>
           @for (configuration of research().configurations; track
           configuration.name; let index = $index) {
@@ -274,7 +281,7 @@
     [zDisabled]="updating()"
     (click)="refreshRequested.emit()"
   >
-    {{ updating() ? 'Atualizando…' : 'Atualizar pesquisa' }}
+    {{ updating() ? updatingLabel : refreshLabel }}
   </button>
   }
 </section>
@@ -288,8 +295,8 @@
       (click)="evidenceRequested.emit({ configuration: configuration, attribute: claim.attributeCode })"
     >
       {{ value(claim) }} {{ claim.rawUnit || claim.unit || '' }}
-      <span class="text-[10px] font-normal text-muted-foreground"
-        >↗ fonte</span
+      <span class="text-[10px] font-normal text-muted-foreground" i18n
+        >↗ source</span
       >
     </button>
     @if (claim.availability) {
@@ -297,11 +304,13 @@
     } @if (qualifiers(claim.qualifiers); as conditions) {
     <p class="mt-1 text-xs text-muted-foreground">{{ conditions }}</p>
     } @if (claim.issues.length) {
-    <span class="mt-1 block text-xs text-warning"
-      >{{ claim.issues.length }} {{ claim.issues.length === 1 ? 'ponto' :
-      'pontos' }} para revisar</span
+    <span class="mt-1 block text-xs text-warning" i18n
+      >{claim.issues.length, plural, =1 {one point} other {{{
+      claim.issues.length }} points}} to review</span
     >
     }
   </div>
-  } @empty { <span class="text-xs text-muted-foreground">Não informado</span> }
+  } @empty {
+  <span class="text-xs text-muted-foreground" i18n>Not reported</span>
+  }
 </ng-template>

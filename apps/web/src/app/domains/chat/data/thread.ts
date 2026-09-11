@@ -104,11 +104,11 @@ export function groupThreads(
 ): ChatThreadGroup[] {
   const startOfToday = startOfDay(now);
   const sections: { label: string; from: number }[] = [
-    { label: 'Today', from: startOfToday },
-    { label: 'Yesterday', from: startOfToday - DAY_MS },
-    { label: 'Previous 7 days', from: startOfToday - 7 * DAY_MS },
-    { label: 'Previous 30 days', from: startOfToday - 30 * DAY_MS },
-    { label: 'Older', from: Number.NEGATIVE_INFINITY },
+    { label: $localize`Today`, from: startOfToday },
+    { label: $localize`Yesterday`, from: startOfToday - DAY_MS },
+    { label: $localize`Previous 7 days`, from: startOfToday - 7 * DAY_MS },
+    { label: $localize`Previous 30 days`, from: startOfToday - 30 * DAY_MS },
+    { label: $localize`Older`, from: Number.NEGATIVE_INFINITY },
   ];
   const sorted = [...threads].sort((a, b) => b.updatedAt - a.updatedAt);
   return sections

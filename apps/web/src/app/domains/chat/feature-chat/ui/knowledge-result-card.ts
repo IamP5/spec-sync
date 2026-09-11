@@ -29,15 +29,11 @@ const schema = z.object({
         <strong>{{ title() }}</strong>
         @if (result(); as data) {
           <p class="my-2 text-muted-foreground" role="status">
-            {{
-              emptyContent()
-                ? 'No external links found for this search.'
-                : data.message
-            }}
+            {{ emptyContent() ? noExternalLinks : data.message }}
           </p>
           @if (specificationDiscovery()) {
             @if (data.items?.length) {
-              <p class="mb-3 text-xs text-muted-foreground">
+              <p class="mb-3 text-xs text-muted-foreground" i18n>
                 Source candidates only. Applicability to the requested vehicle
                 and model year has not been verified.
               </p>
@@ -45,6 +41,7 @@ const schema = z.object({
             @if (discoveryWarnings().length) {
               <ul
                 class="mb-3 list-disc space-y-1 pl-5 text-muted-foreground"
+                i18n-aria-label
                 aria-label="Source discovery warnings"
               >
                 @for (warning of discoveryWarnings(); track $index) {
@@ -70,14 +67,14 @@ const schema = z.object({
                       rel="noopener noreferrer"
                       >{{ label(item) }}
                       @if (specificationDiscovery()) {
-                        <span class="sr-only">(opens in a new tab)</span>
+                        <span class="sr-only" i18n>(opens in a new tab)</span>
                       }
                     </a>
                   } @else {
                     <strong>{{ label(item) }}</strong>
                   }
                   @if (item['verification']) {
-                    <p class="text-xs">
+                    <p class="text-xs" i18n>
                       Discovered link · content not verified or ingested
                     </p>
                   }
@@ -85,30 +82,30 @@ const schema = z.object({
                     <p class="text-xs">
                       {{
                         item['documentType'] === 'PDF'
-                          ? 'Brochure PDF · not yet read'
-                          : 'Web page · not yet read'
+                          ? brochureNotRead
+                          : webPageNotRead
                       }}
                     </p>
                   }
                   @if (specificationDiscovery()) {
                     @if (item['availability'] === 'OVERSIZE') {
-                      <p class="mt-1 text-xs text-muted-foreground">
+                      <p class="mt-1 text-xs text-muted-foreground" i18n>
                         Document exceeds the current reading limit; another
                         source may be used.
                       </p>
                     } @else if (item['availability'] === 'UNREACHABLE') {
-                      <p class="mt-1 text-xs text-muted-foreground">
+                      <p class="mt-1 text-xs text-muted-foreground" i18n>
                         Source could not be reached; another source may be used.
                       </p>
                     }
                     @if (yearHint(item); as year) {
-                      <p class="mt-1 text-xs text-muted-foreground">
+                      <p class="mt-1 text-xs text-muted-foreground" i18n>
                         Year mentioned in the title or URL: {{ year }}.
                         Model-year applicability is unverified.
                       </p>
                     }
                     @if (item['modelMatch'] === false) {
-                      <p class="mt-1 text-xs text-muted-foreground">
+                      <p class="mt-1 text-xs text-muted-foreground" i18n>
                         Model match is not confirmed by the link text.
                       </p>
                     }
@@ -132,7 +129,7 @@ const schema = z.object({
                     </p>
                   }
                   @if (item['scope']) {
-                    <p class="text-xs">
+                    <p class="text-xs" i18n>
                       Scope: {{ format(item['scope']) }} ·
                       {{ format(item['kind']) }} ·
                       {{ format(item['sentiment']) }}
@@ -142,7 +139,7 @@ const schema = z.object({
                     <p class="text-xs">{{ format(item['locator']) }}</p>
                   }
                   @if (item['conditions']) {
-                    <p class="text-xs">
+                    <p class="text-xs" i18n>
                       Conditions: {{ format(item['conditions']) }}
                     </p>
                   }
@@ -150,13 +147,13 @@ const schema = z.object({
                     <p>{{ format(item['availability']) }}</p>
                   }
                   @if (item['packages']) {
-                    <p class="text-xs">
+                    <p class="text-xs" i18n>
                       Packages: {{ format(item['packages']) }}
                     </p>
                   }
                   @if (item['context']) {
                     <details>
-                      <summary class="cursor-pointer underline">
+                      <summary class="cursor-pointer underline" i18n>
                         Passage context
                       </summary>
                       <p>{{ format(item['context']) }}</p>
@@ -166,15 +163,11 @@ const schema = z.object({
               }
             </ul>
           } @else if (!data.message) {
-            <p>No matching results.</p>
+            <p i18n>No matching results.</p>
           }
         } @else {
           <p role="status">
-            {{
-              toolCall().status === 'complete'
-                ? 'No valid result returned.'
-                : 'Retrieving information…'
-            }}
+            {{ toolCall().status === 'complete' ? noValidResult : retrieving }}
           </p>
         }
       </z-card>
@@ -215,9 +208,14 @@ export class KnowledgeResultCard
   );
   protected readonly title = computed(() =>
     this.emptyContent()
-      ? 'External content search'
+      ? $localize`External content search`
       : toolTitle(this.toolCall().name ?? ''),
   );
+  protected readonly noExternalLinks = $localize`No external links found for this search.`;
+  protected readonly brochureNotRead = $localize`Brochure PDF · not yet read`;
+  protected readonly webPageNotRead = $localize`Web page · not yet read`;
+  protected readonly noValidResult = $localize`No valid result returned.`;
+  protected readonly retrieving = $localize`Retrieving information…`;
   protected readonly format = displayValue;
   protected yearHint(item: Record<string, unknown>): number | undefined {
     const value = item['yearHint'];
@@ -227,10 +225,10 @@ export class KnowledgeResultCard
   }
   protected sourceTypeLabel(value: unknown): string {
     return value === 'MANUFACTURER_WEBSITE'
-      ? 'Site da montadora'
+      ? $localize`Manufacturer website`
       : value === 'LINKED_FROM_MANUFACTURER'
-        ? 'Documento vinculado pelo site da montadora'
-        : 'Site externo — confirme autoria e evidências';
+        ? $localize`Document linked from the manufacturer website`
+        : $localize`External site — confirm authorship and evidence`;
   }
 
   protected label(item: Record<string, unknown>) {
@@ -239,7 +237,7 @@ export class KnowledgeResultCard
         item['name'] ??
         item['label'] ??
         item['code'] ??
-        'Evidence',
+        $localize`Evidence`,
     );
   }
   protected link(item: Record<string, unknown>) {
@@ -263,17 +261,16 @@ function toolTitle(name: string): string {
   return (
     (
       {
-        searchVehicleConfigurations: 'Busca de veículos',
-        listComparisonAttributes: 'Especificações disponíveis',
-        resolveComparisonConcepts: 'Identificação de especificações',
-        findConfigurationsByCapabilities:
-          'Veículos com os equipamentos solicitados',
-        searchReviewEvidence: 'Avaliações e relatos',
-        getRelatedReviews: 'Avaliações relacionadas',
-        getEvidenceExcerpt: 'Trecho e contexto da fonte',
-        discoverVehicleContent: 'Artigos, blogs e vídeos encontrados',
-        discoverVehicleSpecificationSources: 'Fontes de especificações',
+        searchVehicleConfigurations: $localize`Vehicle search`,
+        listComparisonAttributes: $localize`Available specifications`,
+        resolveComparisonConcepts: $localize`Specification identification`,
+        findConfigurationsByCapabilities: $localize`Vehicles with the requested equipment`,
+        searchReviewEvidence: $localize`Reviews and reports`,
+        getRelatedReviews: $localize`Related reviews`,
+        getEvidenceExcerpt: $localize`Source excerpt and context`,
+        discoverVehicleContent: $localize`Articles, blogs and videos found`,
+        discoverVehicleSpecificationSources: $localize`Specification sources`,
       } as Record<string, string>
-    )[name] ?? 'Resultado da consulta'
+    )[name] ?? $localize`Query result`
   );
 }

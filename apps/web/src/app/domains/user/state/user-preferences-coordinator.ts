@@ -1,8 +1,9 @@
-import { effect, inject, Injectable } from '@angular/core';
+import { DOCUMENT, effect, inject, Injectable } from '@angular/core';
 
 import { EDarkModes, ZardDarkMode } from '@/ui/services';
 
 import type { Preferences } from '../data/preferences';
+import { type LocaleId, LOCALES } from '../util/locale';
 import { PreferencesDetailStore } from './preferences-detail-store';
 
 /** Applies the user's saved appearance to the design system. */
@@ -10,6 +11,7 @@ import { PreferencesDetailStore } from './preferences-detail-store';
 export class UserPreferencesCoordinator {
   private readonly store = inject(PreferencesDetailStore);
   private readonly darkMode = inject(ZardDarkMode);
+  private readonly document = inject(DOCUMENT);
   readonly displayName = this.store.displayName;
   readonly showActivity = this.store.showActivity;
   readonly mode = this.store.mode;
@@ -19,6 +21,9 @@ export class UserPreferencesCoordinator {
   readonly initials = this.store.initials;
   readonly theme = this.store.theme;
   readonly error = this.store.error;
+  /** The language this document runs in; constant until it reloads. */
+  readonly language = this.store.language;
+  readonly languages = LOCALES;
   constructor() {
     effect(() => this.darkMode.toggleTheme(this.theme() as EDarkModes));
   }
@@ -27,5 +32,19 @@ export class UserPreferencesCoordinator {
   }
   setTheme(theme: EDarkModes): void {
     this.store.update({ theme });
+  }
+
+  /**
+   * Switches the language. Translations are loaded once before bootstrap, so
+   * the choice only takes effect on the next load; reloading immediately
+   * keeps the user from sitting in front of a page that ignored them.
+   */
+  setLanguage(language: LocaleId): void {
+    if (language === this.language) {
+      return;
+    }
+    if (this.store.setLanguage(language)) {
+      this.document.defaultView?.location.reload();
+    }
   }
 }

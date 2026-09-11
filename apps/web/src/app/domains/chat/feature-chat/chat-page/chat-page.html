@@ -3,6 +3,7 @@
 >
   <button
     z-sidebar-trigger
+    i18n-aria-label
     aria-label="Toggle sidebar"
     class="size-11 shrink-0 text-muted-foreground md:hidden"
   ></button>
@@ -13,7 +14,7 @@
     <z-skeleton class="inline-block h-4 w-36 align-middle" />
     } @else {
     <span class="animate-in fade-in duration-300"
-      >{{ title() || 'New chat' }}</span
+      >{{ title() || newChatTitle }}</span
     >
     }
   </h1>
@@ -25,7 +26,9 @@
       type="button"
       [attr.aria-pressed]="showActivity()"
       (click)="onActivityToggle()"
+      i18n-aria-label
       aria-label="Show thinking and tool activity"
+      i18n-zTooltip
       zTooltip="Thinking and tool activity"
       zPosition="bottom"
     >
@@ -39,7 +42,9 @@
       data-action="new-chat"
       (click)="onNewChat()"
       [zDisabled]="empty() || streaming()"
+      i18n-aria-label
       aria-label="New chat"
+      i18n-zTooltip
       zTooltip="New chat"
       zPosition="bottom"
     >
@@ -75,6 +80,7 @@
         type="button"
         data-action="switch-mode"
         (click)="onSwitchToVelocity()"
+        i18n
       >
         Switch to Velocity mode
       </button></ng-template
@@ -96,6 +102,7 @@
         type="button"
         data-action="credits-retry"
         (click)="onCreditsRetry()"
+        i18n
       >
         <ng-icon name="lucideRefreshCw" aria-hidden="true" />Try again
       </button></ng-template
@@ -116,6 +123,7 @@
         type="button"
         data-action="retry"
         (click)="onRegenerate()"
+        i18n
       >
         <ng-icon name="lucideRefreshCw" aria-hidden="true" />Try again
       </button></ng-template
@@ -127,7 +135,7 @@
       (focusout)="onComposerBlur($event)"
       novalidate
     >
-      <label for="prompt" class="sr-only">Message</label>
+      <label for="prompt" class="sr-only" i18n>Message</label>
       <div
         class="chat-composer flex flex-col rounded-2xl border border-border bg-card/95 p-2 backdrop-blur-xl shadow-[0_2px_12px_-4px_rgb(0_0_0/10%)] transition-[border-color,box-shadow] focus-within:border-ring focus-within:shadow-sm"
         [class.chat-composer-compact]="compactComposer()"
@@ -138,6 +146,7 @@
           cdkTextareaAutosize
           id="prompt"
           rows="1"
+          i18n-placeholder
           placeholder="Message SpecSync…"
           class="chat-prompt max-h-52 min-h-16 resize-none border-0 bg-transparent px-3 py-2.5 text-base shadow-none focus-visible:ring-0 md:text-sm dark:bg-transparent"
           enterkeyhint="enter"
@@ -180,12 +189,13 @@
           <span
             id="prompt-help"
             class="hidden items-center gap-1 text-[11px] text-muted-foreground sm:flex"
+            i18n
           >
             <z-kbd class="h-4 min-w-4 px-1 text-[10px]">⇧</z-kbd>
             <z-kbd class="h-4 min-w-4 px-1 text-[10px]">↵</z-kbd>
             for a new line
           </span>
-          <span id="prompt-help-mobile" class="sr-only"
+          <span id="prompt-help-mobile" class="sr-only" i18n
             >Use the send button to send your message. Shift + Enter adds a new
             line with a keyboard.</span
           >
@@ -207,6 +217,7 @@
             class="ml-auto rounded-full bg-primary text-primary-foreground hover:bg-primary-hover"
             data-action="stop"
             (click)="onStop()"
+            i18n-aria-label
             aria-label="Stop generating"
           >
             <ng-icon name="lucideSquare" aria-hidden="true" />
@@ -218,6 +229,7 @@
             type="submit"
             class="ml-auto rounded-full bg-primary text-primary-foreground hover:bg-primary-hover"
             [zDisabled]="promptInvalid() || loading() || composerBlocked()"
+            i18n-aria-label
             aria-label="Send message"
           >
             <ng-icon name="lucideArrowUp" aria-hidden="true" />
@@ -237,8 +249,8 @@
     <p
       class="sr-only text-center text-[11px] text-muted-foreground sm:not-sr-only sm:mt-2 sm:px-3"
     >
-      <span class="sm:hidden">Check sources and vehicle details.</span>
-      <span class="hidden sm:inline"
+      <span class="sm:hidden" i18n>Check sources and vehicle details.</span>
+      <span class="hidden sm:inline" i18n
         >Check sources, vehicle versions and dates before relying on a
         comparison.</span
       >
@@ -316,6 +328,7 @@
 <div
   class="chat-empty flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 pb-8 sm:px-6"
   role="log"
+  i18n-aria-label
   aria-label="Conversation"
 >
   <div
@@ -347,7 +360,7 @@
       type="button"
       data-action="catalog"
       class="group h-auto w-full max-w-xl justify-start rounded-2xl border-primary/25 bg-primary/5 px-5 py-4 text-left whitespace-normal shadow-none hover:border-primary/45 hover:bg-primary/10"
-      (click)="onSuggestion('Show me the current vehicle catalog. Search all available configurations with an empty query and display the interactive catalog.')"
+      (click)="onSuggestion(catalogSuggestion)"
     >
       <span
         class="mr-3 grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"
@@ -355,10 +368,10 @@
         <ng-icon name="lucideCarFront" aria-hidden="true" />
       </span>
       <span class="min-w-0 flex-1">
-        <span class="block font-semibold text-foreground"
+        <span class="block font-semibold text-foreground" i18n
           >Browse the vehicle catalog</span
         >
-        <span class="mt-0.5 block text-xs leading-5 text-muted-foreground"
+        <span class="mt-0.5 block text-xs leading-5 text-muted-foreground" i18n
           >Start a new chat with search, filters, details, and a comparison
           shortlist.</span
         >
@@ -366,7 +379,11 @@
       <span class="ml-3 text-primary" aria-hidden="true">→</span>
     </button>
 
-    <ul class="flex flex-wrap justify-center gap-2" aria-label="Suggestions">
+    <ul
+      class="flex flex-wrap justify-center gap-2"
+      i18n-aria-label
+      aria-label="Suggestions"
+    >
       @for (suggestion of suggestions; track suggestion.prompt) {
       <li>
         <button
@@ -400,6 +417,7 @@
     class="chat-transcript min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-6 sm:px-6"
     role="log"
     aria-live="off"
+    i18n-aria-label
     aria-label="Conversation"
     tabindex="0"
     (scroll)="onTranscriptScroll()"
@@ -412,9 +430,11 @@
           zAlign="end"
           zVariant="muted"
           class="mx-auto w-full max-w-3xl [--muted:var(--sidebar-accent)]"
+          i18n-zAlt
           zAlt="You"
           data-role="user"
           role="group"
+          i18n-aria-label
           aria-label="You"
         >
           <span class="whitespace-pre-wrap">{{ textOf(turn) }}</span>
@@ -428,11 +448,12 @@
         >
           <summary
             class="w-fit cursor-pointer rounded-md py-2 text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
+            i18n
           >
             Thinking summary
           </summary>
           <div class="mt-2 border-l-2 border-border pl-4">
-            <p class="mb-3 text-xs text-muted-foreground">
+            <p class="mb-3 text-xs text-muted-foreground" i18n>
               A summary provided by the model. It may be incomplete.
             </p>
             <div
@@ -447,9 +468,11 @@
         turn.toolCalls?.length)) {
         <z-message
           zAlign="start"
+          i18n-zAlt
           zAlt="Assistant"
           data-role="assistant"
           role="article"
+          i18n-aria-label
           aria-label="Assistant"
         >
           <z-message-content class="gap-4">
@@ -461,6 +484,7 @@
             } @if (turn.toolCalls?.length) { @if (showActivity()) {
             <div
               class="mx-auto flex w-full max-w-3xl flex-col gap-2"
+              i18n-aria-label
               aria-label="Tool activity"
             >
               @for (call of activityFor(turn); track call.id) {
@@ -475,7 +499,7 @@
                 >
                   <span class="ml-1 font-medium">{{ call.label }}</span>
                   <span class="ml-2 text-xs text-muted-foreground"
-                    >{{ call.status }}</span
+                    >{{ statusLabel(call.status) }}</span
                   >
                 </summary>
                 <div class="flex flex-col gap-3 border-t py-3">
@@ -483,21 +507,21 @@
                     {{ call.name }}
                   </p>
                   <div>
-                    <h3 class="mb-1 text-xs font-semibold">Input</h3>
+                    <h3 class="mb-1 text-xs font-semibold" i18n>Input</h3>
                     <pre
                       tabindex="0"
                       class="max-h-60 overflow-auto rounded-lg bg-muted p-3 text-xs wrap-break-word whitespace-pre-wrap"
                     >
-{{ call.input || 'Receiving input…' }}</pre
+{{ call.input || receivingInput }}</pre
                     >
                   </div>
                   <div>
-                    <h3 class="mb-1 text-xs font-semibold">Result</h3>
+                    <h3 class="mb-1 text-xs font-semibold" i18n>Result</h3>
                     <pre
                       tabindex="0"
                       class="max-h-60 overflow-auto rounded-lg bg-muted p-3 text-xs wrap-break-word whitespace-pre-wrap"
                     >
-{{ call.result || (call.status === 'Running' ? 'Waiting for the tool…' : 'No result received.') }}</pre
+{{ call.result || (call.status === 'running' ? waitingForTool : noToolResult) }}</pre
                     >
                   </div>
                 </div>
@@ -511,7 +535,7 @@
               data-role="tool-summary"
             >
               <summary class="cursor-pointer py-2">{{ note.text }}</summary>
-              <p>
+              <p i18n>
                 Source candidates only. Vehicle and model-year applicability
                 must be checked in the documents.
               </p>
@@ -523,7 +547,7 @@
                     [href]="source.url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    >{{ source.title }}<span class="sr-only">
+                    >{{ source.title }}<span class="sr-only" i18n>
                       (opens in a new tab)</span
                     ></a
                   >
@@ -560,8 +584,10 @@
                 zSize="icon-sm"
                 type="button"
                 data-action="copy"
-                [attr.aria-label]="copiedId() === turn.id ? 'Copied' : 'Copy reply'"
-                [zTooltip]="copiedId() === turn.id ? 'Copied' : 'Copy'"
+                [attr.aria-label]="
+                  copiedId() === turn.id ? copiedLabel : copyReplyLabel
+                "
+                [zTooltip]="copiedId() === turn.id ? copiedLabel : copyLabel"
                 (click)="onCopy(turn)"
               >
                 <ng-icon
@@ -576,7 +602,9 @@
                 zSize="icon-sm"
                 type="button"
                 data-action="regenerate"
+                i18n-aria-label
                 aria-label="Regenerate reply"
+                i18n-zTooltip
                 zTooltip="Regenerate"
                 (click)="onRegenerate()"
               >
@@ -590,7 +618,10 @@
         } } @if (streaming()) {
         <z-marker class="mx-auto w-full max-w-3xl">
           <z-marker-icon
-            ><z-spinner class="size-4" zAriaLabel="Assistant working"
+            ><z-spinner
+              class="size-4"
+              i18n-zAriaLabel
+              zAriaLabel="Assistant working"
           /></z-marker-icon>
           <z-marker-content class="shimmer"
             >{{ activityStatus() }}</z-marker-content
@@ -602,6 +633,7 @@
           zIcon="lucideSquare"
           class="mx-auto mt-2 w-full max-w-3xl text-xs"
           data-role="stopped"
+          i18n
           >Reply stopped</z-marker
         >
         <div class="mx-auto w-full max-w-3xl">
@@ -612,6 +644,7 @@
             type="button"
             data-action="retry-stopped"
             (click)="onRegenerate()"
+            i18n
           >
             Try again
           </button>
@@ -628,6 +661,7 @@
     type="button"
     class="chat-scroll-latest absolute left-1/2 z-20 -translate-x-1/2 rounded-full bg-background shadow-md"
     [style.bottom.px]="composerHeight() + 16"
+    i18n-aria-label
     aria-label="Scroll to the latest message"
     (click)="scrollToBottom()"
   >
@@ -646,6 +680,5 @@
 }
 
 <span class="sr-only" role="status" aria-live="polite" aria-atomic="true"
-  >{{ loading() ? '' : streaming() ? activityStatus() : stopped() ? 'Reply
-  stopped' : !empty() && !error() ? 'Response ready' : '' }}</span
+  >{{ liveStatus() }}</span
 >

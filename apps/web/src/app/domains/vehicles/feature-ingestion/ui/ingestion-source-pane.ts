@@ -44,7 +44,7 @@ export interface IngestionSourceView {
   template: `
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div class="min-w-0">
-        <h3 class="font-semibold">Source</h3>
+        <h3 class="font-semibold" i18n>Source</h3>
         @if (href(); as link) {
           <a
             class="mt-1 inline-flex max-w-full items-center gap-1 break-all text-sm underline"
@@ -63,9 +63,9 @@ export interface IngestionSourceView {
         <div class="mt-2 flex flex-wrap gap-1.5">
           <z-badge zType="outline">{{ kind() }}</z-badge>
           @if (visual()) {
-            <z-badge zType="secondary">AI visual transcript</z-badge>
+            <z-badge zType="secondary" i18n>AI visual transcript</z-badge>
           }
-          <z-badge zType="outline">{{ lineCount() }} lines</z-badge>
+          <z-badge zType="outline" i18n>{{ lineCount() }} lines</z-badge>
         </div>
       </div>
       <button
@@ -77,24 +77,24 @@ export interface IngestionSourceView {
         (click)="downloadRequested.emit()"
       >
         <ng-icon name="lucideDownload" aria-hidden="true" />
-        {{ downloading() ? 'Downloading…' : 'Download original' }}
+        {{ downloading() ? downloadingLabel : downloadLabel }}
       </button>
     </div>
     @if (downloadFailed()) {
-      <p class="mt-2 text-sm text-destructive" role="alert">
+      <p class="mt-2 text-sm text-destructive" role="alert" i18n>
         Could not download the captured file. Check the curator key and try
         again.
       </p>
     }
     @if (visual()) {
-      <p class="mt-3 text-sm text-muted-foreground">
+      <p class="mt-3 text-sm text-muted-foreground" i18n>
         Evidence below comes from an AI transcript of the rendered pages.
         Compare table columns, symbols and footnotes with the downloaded
         original before publishing.
       </p>
     }
     @if (warnings().length) {
-      <ul class="mt-3 space-y-1.5" aria-label="Coverage notes">
+      <ul class="mt-3 space-y-1.5" i18n-aria-label aria-label="Coverage notes">
         @for (warning of warnings(); track $index) {
           <li class="flex items-start gap-2 text-sm">
             <ng-icon
@@ -119,7 +119,7 @@ export interface IngestionSourceView {
         [class.rotate-180]="expanded()"
         aria-hidden="true"
       />
-      {{ expanded() ? 'Hide' : 'Show' }} captured text
+      <span i18n>{{ expanded() ? hideLabel : showLabel }} captured text</span>
     </button>
     @if (expanded()) {
       <pre
@@ -138,12 +138,16 @@ export class IngestionSourcePane {
   readonly downloadRequested = output<void>();
 
   protected readonly expanded = signal(false);
+  protected readonly downloadingLabel = $localize`Downloading…`;
+  protected readonly downloadLabel = $localize`Download original`;
+  protected readonly hideLabel = $localize`Hide`;
+  protected readonly showLabel = $localize`Show`;
   protected readonly href = computed(() => safeSourceUrl(this.source().url));
   protected readonly visual = computed(() =>
     this.source().parserVersion.startsWith('specsync-visual-pdf'),
   );
   protected readonly kind = computed(() =>
-    this.source().mimeType === 'application/pdf' ? 'PDF' : 'HTML page',
+    this.source().mimeType === 'application/pdf' ? 'PDF' : $localize`HTML page`,
   );
   protected readonly lineCount = computed(
     () => this.source().text.split('\n').length,

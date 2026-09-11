@@ -41,7 +41,7 @@ describe('Chat vehicle research renderer', () => {
       http.expectOne(`/ai/chat/research/${RESEARCH_ID}`).flush(researchDraft());
       await fixture.whenStable();
       const element = fixture.nativeElement as HTMLElement;
-      expect(element.textContent).toContain('Pronta para revisar');
+      expect(element.textContent).toContain('Ready for review');
       expect(element.textContent).not.toContain('Stale tool output');
       expect(element.textContent).not.toContain('curator key');
       testSession().invalidate();

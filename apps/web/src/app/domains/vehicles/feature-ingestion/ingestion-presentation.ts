@@ -16,38 +16,55 @@ export interface RunStage {
   readonly step: number;
   readonly terminal: boolean;
 }
-export const RUN_STEPS = [
-  'Queued',
-  'Extracting',
-  'Review',
-  'Published',
-] as const;
+export function runSteps(): string[] {
+  return [
+    $localize`Queued`,
+    $localize`Extracting`,
+    $localize`Review`,
+    $localize`Published`,
+  ];
+}
 
 export function runStage(status: IngestionStatus): RunStage {
   switch (status) {
     case 'QUEUED':
-      return { label: 'Queued', badge: 'secondary', step: 0, terminal: false };
+      return {
+        label: $localize`Queued`,
+        badge: 'secondary',
+        step: 0,
+        terminal: false,
+      };
     case 'PROCESSING':
       return {
-        label: 'Extracting',
+        label: $localize`Extracting`,
         badge: 'secondary',
         step: 1,
         terminal: false,
       };
     case 'REVIEW':
       return {
-        label: 'Ready for review',
+        label: $localize`Ready for review`,
         badge: 'default',
         step: 2,
         terminal: false,
       };
     case 'PUBLISHED':
-      return { label: 'Published', badge: 'outline', step: 3, terminal: true };
+      return {
+        label: $localize`Published`,
+        badge: 'outline',
+        step: 3,
+        terminal: true,
+      };
     case 'REJECTED':
-      return { label: 'Rejected', badge: 'outline', step: -1, terminal: true };
+      return {
+        label: $localize`Rejected`,
+        badge: 'outline',
+        step: -1,
+        terminal: true,
+      };
     case 'FAILED':
       return {
-        label: 'Failed',
+        label: $localize`Failed`,
         badge: 'destructive',
         step: -1,
         terminal: true,
@@ -103,10 +120,10 @@ export function availabilityLabel(value: string): string {
   return (
     (
       {
-        STANDARD: 'Standard',
-        OPTIONAL: 'Optional',
-        ABSENT: 'Absent',
-        NOT_APPLICABLE: 'Not applicable',
+        STANDARD: $localize`Standard`,
+        OPTIONAL: $localize`Optional`,
+        ABSENT: $localize`Absent`,
+        NOT_APPLICABLE: $localize`Not applicable`,
       } as Record<string, string>
     )[value] ?? value
   );
@@ -175,13 +192,17 @@ export function claimGroups(
 }
 
 export type ClaimFilter = 'all' | 'changes' | 'issues' | 'conflicts';
-export const CLAIM_FILTERS: ReadonlyArray<{ id: ClaimFilter; label: string }> =
-  [
-    { id: 'all', label: 'All' },
-    { id: 'changes', label: 'New or changed' },
-    { id: 'conflicts', label: 'Conflicts' },
-    { id: 'issues', label: 'Needs correction' },
+export function claimFilters(): ReadonlyArray<{
+  id: ClaimFilter;
+  label: string;
+}> {
+  return [
+    { id: 'all', label: $localize`All` },
+    { id: 'changes', label: $localize`New or changed` },
+    { id: 'conflicts', label: $localize`Conflicts` },
+    { id: 'issues', label: $localize`Needs correction` },
   ];
+}
 
 export function filterGroups(
   groups: ClaimGroup[],

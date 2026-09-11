@@ -24,6 +24,7 @@ import { SESSION } from '../../domains/auth/api/session';
 import { CreditsOverview } from '../../domains/chat/api/features';
 import {
   UserAppearanceOverview,
+  UserLanguageOverview,
   UserProfileOverview,
 } from '../../domains/user/api/features';
 import type { SettingsEdit } from '../settings/settings-edit';
@@ -43,6 +44,7 @@ import type { SettingsEdit } from '../settings/settings-edit';
     CreditsOverview,
     UserProfileOverview,
     UserAppearanceOverview,
+    UserLanguageOverview,
   ],
   host: { class: 'contents' },
   template: ` <z-sidebar-footer
@@ -56,6 +58,7 @@ import type { SettingsEdit } from '../settings/settings-edit';
       [zDropdownMenu]="menu"
       class="min-h-12"
       data-action="user-menu"
+      i18n-aria-label
       aria-label="Account menu"
     >
       <app-user-profile-overview />
@@ -73,11 +76,13 @@ import type { SettingsEdit } from '../settings/settings-edit';
       <z-dropdown-menu-separator />
       <app-credits-overview />
       <app-user-appearance-overview />
+      <app-user-language-overview />
       <button
         z-dropdown-menu-item
         type="button"
         class="min-h-9 w-full rounded-md px-3"
         (click)="settings()"
+        i18n
       >
         Settings
       </button>
@@ -103,9 +108,8 @@ export class AccountMenuOverview {
     const { SettingsEdit } = await import('../settings/settings-edit');
     if (this.destroyRef.destroyed || !this.session.isCurrent(scope)) return;
     this.settingsDialog = this.dialog.create({
-      zTitle: 'Settings',
-      zDescription:
-        'Personalise the assistant. Preferences are stored in this browser.',
+      zTitle: $localize`Settings`,
+      zDescription: $localize`Personalise the assistant. Preferences are stored in this browser.`,
       zContent: SettingsEdit,
       zHideFooter: true,
       zWidth: '32rem',

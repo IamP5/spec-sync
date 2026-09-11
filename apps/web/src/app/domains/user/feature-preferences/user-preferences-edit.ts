@@ -12,6 +12,10 @@ import { lucideMonitor, lucideMoon, lucideSun } from '@ng-icons/lucide';
 
 import { ZardButtonComponent } from '@/ui/components/button';
 import { ZardInputComponent } from '@/ui/components/input';
+import {
+  ZardSelectComponent,
+  ZardSelectItemComponent,
+} from '@/ui/components/select';
 import { ZardSeparatorComponent } from '@/ui/components/separator';
 import { ZardSwitchComponent } from '@/ui/components/switch';
 import {
@@ -22,12 +26,23 @@ import { EDarkModes } from '@/ui/services';
 
 import { UserPreferencesCoordinator } from '../api/preferences';
 import { MAX_DISPLAY_NAME_LENGTH } from '../data/preferences';
+import { isLocaleId } from '../util/locale';
 
-const THEMES: ZardToggleGroupItem[] = [
-  { value: EDarkModes.LIGHT, label: 'Light', icon: 'lucideSun' },
-  { value: EDarkModes.DARK, label: 'Dark', icon: 'lucideMoon' },
-  { value: EDarkModes.SYSTEM, label: 'System', icon: 'lucideMonitor' },
-];
+/**
+ * Built per instance rather than as a module constant: the translations are
+ * only in place once the application has bootstrapped.
+ */
+function themes(): ZardToggleGroupItem[] {
+  return [
+    { value: EDarkModes.LIGHT, label: $localize`Light`, icon: 'lucideSun' },
+    { value: EDarkModes.DARK, label: $localize`Dark`, icon: 'lucideMoon' },
+    {
+      value: EDarkModes.SYSTEM,
+      label: $localize`System`,
+      icon: 'lucideMonitor',
+    },
+  ];
+}
 
 /**
  * Content of the settings dialog opened from the sidebar: the display name,
@@ -41,6 +56,8 @@ const THEMES: ZardToggleGroupItem[] = [
     FormField,
     ZardButtonComponent,
     ZardInputComponent,
+    ZardSelectComponent,
+    ZardSelectItemComponent,
     ZardSeparatorComponent,
     ZardSwitchComponent,
     ZardToggleGroupComponent,
@@ -49,25 +66,30 @@ const THEMES: ZardToggleGroupItem[] = [
   template: `
     <form class="flex flex-col gap-6" (submit)="onSubmit($event)" novalidate>
       <div class="flex flex-col gap-2">
-        <label for="display-name" class="text-sm font-medium">Your name</label>
+        <label for="display-name" class="text-sm font-medium" i18n
+          >Your name</label
+        >
         <input
           z-input
           id="display-name"
           type="text"
           autocomplete="name"
+          i18n-placeholder
           placeholder="How should the assistant address you?"
           [formField]="settingsForm.displayName"
           [attr.maxlength]="maxNameLength"
           aria-describedby="display-name-help"
         />
-        <p id="display-name-help" class="text-xs text-muted-foreground">
+        <p id="display-name-help" class="text-xs text-muted-foreground" i18n>
           Used to greet you in chat. Your account name comes from Google. Stored
           only in this browser.
         </p>
       </div>
 
       <div class="flex flex-col gap-2">
-        <span id="theme-label" class="text-sm font-medium">Appearance</span>
+        <span id="theme-label" class="text-sm font-medium" i18n
+          >Appearance</span
+        >
         <z-toggle-group
           zMode="single"
           zType="outline"
@@ -79,12 +101,30 @@ const THEMES: ZardToggleGroupItem[] = [
         />
       </div>
 
+      <div class="flex flex-col gap-2">
+        <span class="text-sm font-medium">{{ languageLabel }}</span>
+        <z-select
+          [zValue]="language"
+          [zLabel]="languageLabel"
+          (zSelectionChange)="onLanguage($event)"
+        >
+          @for (option of languages; track option.id) {
+            <z-select-item [zValue]="option.id">{{
+              option.label
+            }}</z-select-item>
+          }
+        </z-select>
+        <p class="text-xs text-muted-foreground" i18n>
+          SpecSync reloads to change language. Stored only in this browser.
+        </p>
+      </div>
+
       <div class="flex items-start justify-between gap-4">
         <div class="flex flex-col gap-1">
-          <label for="show-activity" class="text-sm font-medium"
+          <label for="show-activity" class="text-sm font-medium" i18n
             >Show thinking and tool activity</label
           >
-          <p class="text-xs text-muted-foreground">
+          <p class="text-xs text-muted-foreground" i18n>
             Thinking summaries and the input and output of every tool call
             appear as collapsible details in the transcript.
           </p>
@@ -101,7 +141,9 @@ const THEMES: ZardToggleGroupItem[] = [
       <ng-content />
 
       <div class="flex justify-end">
-        <button z-button type="submit" [zDisabled]="nameInvalid()">Done</button>
+        <button z-button type="submit" [zDisabled]="nameInvalid()" i18n>
+          Done
+        </button>
       </div>
     </form>
   `,
@@ -118,10 +160,14 @@ export class UserPreferencesEdit {
     maxLength(path.displayName, MAX_DISPLAY_NAME_LENGTH);
   });
 
-  protected readonly themes = THEMES;
+  protected readonly themes = themes();
   protected readonly maxNameLength = MAX_DISPLAY_NAME_LENGTH;
   protected readonly theme = this.store.theme;
   protected readonly showActivity = this.store.showActivity;
+  protected readonly language = this.store.language;
+  protected readonly languages = this.store.languages;
+  /** Labels the select's trigger as well as the row above it. */
+  protected readonly languageLabel = $localize`Language`;
   protected readonly nameInvalid = computed(() =>
     this.settingsForm.displayName().invalid(),
   );
@@ -134,6 +180,13 @@ export class UserPreferencesEdit {
       theme === EDarkModes.SYSTEM
     ) {
       this.store.setTheme(theme);
+    }
+  }
+
+  protected onLanguage(value: string | string[]): void {
+    const language = Array.isArray(value) ? value[0] : value;
+    if (isLocaleId(language)) {
+      this.store.setLanguage(language);
     }
   }
 

@@ -1,5 +1,5 @@
 @if (!store.authenticated()) {
-<p class="py-4 text-sm text-muted-foreground" role="status">
+<p class="py-4 text-sm text-muted-foreground" role="status" i18n>
   Sign in to view your research request.
 </p>
 } @else if (store.view(); as research) { @if (!reviewOpen() ||
@@ -8,7 +8,7 @@ research.status !== 'PUBLISHED')) {
 <app-research-comparison-pane
   [research]="research"
   [updating]="store.researchIsLoading()"
-  [error]="store.researchError() ? 'Não foi possível atualizar o progresso. A pesquisa continua; tentaremos novamente.' : ''"
+  [error]="store.researchError() ? refreshFailed : ''"
   (evidenceRequested)="openEvidence($event)"
   (peopleRequested)="openDetails('people')"
   (refreshRequested)="store.reload()"
@@ -22,14 +22,13 @@ research.status === 'PUBLISHED')) {
     (click)="reviewOpen.set(!reviewOpen())"
     [attr.aria-expanded]="reviewOpen()"
   >
-    {{ reviewOpen() ? 'Voltar aos resultados da pesquisa' : research.status ===
-    'PUBLISHED' ? 'Ver publicação no catálogo' : 'Revisar e importar para o
-    catálogo' }}
+    {{ reviewOpen() ? backToResults : research.status === 'PUBLISHED' ?
+    seePublication : reviewAndImport }}
   </button>
   @if (reviewOpen()) {
-  <p class="text-sm text-muted-foreground">
-    Revise os dados já extraídos e escolha o que publicar. Nenhuma nova pesquisa
-    será iniciada.
+  <p class="text-sm text-muted-foreground" i18n>
+    Review the data already extracted and choose what to publish. No new
+    research is started.
   </p>
   <app-vehicle-ingestion-run-detail
     [researchId]="research.id"
@@ -49,15 +48,16 @@ research.status === 'PUBLISHED')) {
     class="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4"
   >
     <z-drawer-title
-      >{{ detailsKind() === 'evidence' ? 'Evidências da pesquisa' : 'Pessoas
-      interessadas' }}</z-drawer-title
+      >{{ detailsKind() === 'evidence' ? evidenceTitle : peopleTitle
+      }}</z-drawer-title
     >
     <button
       z-button
       zType="ghost"
       zSize="icon-sm"
       type="button"
-      aria-label="Fechar detalhes da pesquisa"
+      i18n-aria-label
+      aria-label="Close research details"
       (click)="closeDetails()"
     >
       <ng-icon name="lucideX" />
@@ -65,9 +65,9 @@ research.status === 'PUBLISHED')) {
   </div>
   <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5">
     @if (detailsKind() === 'evidence') {
-    <p class="mb-4 text-xs text-muted-foreground">
-      Fonte, versões, valores originais e observações preservadas. Os dados
-      acompanham o progresso sem uma nova busca.
+    <p class="mb-4 text-xs text-muted-foreground" i18n>
+      Source, versions, original values and preserved observations. The data
+      follows the progress without a new search.
     </p>
     @if (evidenceFocus()) {
     <button
@@ -77,8 +77,9 @@ research.status === 'PUBLISHED')) {
       type="button"
       class="mb-4"
       (click)="evidenceFocus.set(null)"
+      i18n
     >
-      Ver todas as evidências
+      See all evidence
     </button>
     }
     <app-research-result-pane
@@ -97,17 +98,17 @@ research.status === 'PUBLISHED')) {
       {{ research.request.brand }} {{ research.request.model }} · {{
       research.request.modelYear }}
     </p>
-    <p class="mt-2 text-sm text-muted-foreground">
-      Conheça quem também pesquisa este veículo. Apenas quem escolheu
-      compartilhar aparece aqui; o contato acontece fora do SpecSync.
+    <p class="mt-2 text-sm text-muted-foreground" i18n>
+      See who else is researching this vehicle. Only people who chose to share
+      appear here; contact happens outside SpecSync.
     </p>
     @if (people.peopleIsLoading()) {
-    <p class="py-6 text-sm text-muted-foreground" role="status">
-      Carregando pessoas interessadas…
+    <p class="py-6 text-sm text-muted-foreground" role="status" i18n>
+      Loading interested people…
     </p>
     } @else if (people.peopleError()) {
-    <p class="mt-5 text-sm" role="alert">
-      Não foi possível carregar os perfis.
+    <p class="mt-5 text-sm" role="alert" i18n>
+      The profiles could not be loaded.
     </p>
     <button
       z-button
@@ -115,8 +116,9 @@ research.status === 'PUBLISHED')) {
       zSize="sm"
       class="mt-2"
       (click)="people.reload()"
+      i18n
     >
-      Tentar novamente
+      Try again
     </button>
     } @else if (people.view(); as page) {
     <div class="mt-6 divide-y divide-border">
@@ -125,10 +127,10 @@ research.status === 'PUBLISHED')) {
         <div class="min-w-0">
           <p class="truncate text-sm font-semibold">
             {{ person.name }} @if (person.isYou) {
-            <span class="font-normal text-muted-foreground">· você</span> }
+            <span class="font-normal text-muted-foreground" i18n>· you</span> }
           </p>
-          <p class="text-xs text-muted-foreground">
-            Perfil compartilhado voluntariamente
+          <p class="text-xs text-muted-foreground" i18n>
+            Profile shared voluntarily
           </p>
         </div>
         <a
@@ -138,20 +140,21 @@ research.status === 'PUBLISHED')) {
           [href]="person.contactUrl"
           target="_blank"
           rel="noopener noreferrer nofollow ugc"
-          [attr.aria-label]="'Abrir contato de ' + person.name + ' em outra aba'"
-          >Abrir contato ↗</a
+          [attr.aria-label]="contactLabel(person.name)"
+          i18n
+          >Open contact ↗</a
         >
       </div>
       } @empty {
-      <p class="py-5 text-sm text-muted-foreground">
-        Ninguém compartilhou um perfil nesta pesquisa ainda. Você pode ser a
-        primeira pessoa.
+      <p class="py-5 text-sm text-muted-foreground" i18n>
+        Nobody has shared a profile on this research yet. You could be the
+        first.
       </p>
       }
     </div>
     @if (page.hasMore) {
-    <p class="text-xs text-muted-foreground">
-      Exibindo os primeiros 100 perfis compartilhados.
+    <p class="text-xs text-muted-foreground" i18n>
+      Showing the first 100 shared profiles.
     </p>
     }
     <form
@@ -159,15 +162,16 @@ research.status === 'PUBLISHED')) {
       (submit)="$event.preventDefault(); shareProfile()"
     >
       <h3 class="text-base font-semibold">
-        {{ page.mine ? 'Seu perfil nesta pesquisa' : 'Participar da conversa' }}
+        {{ page.mine ? myProfileTitle : joinTitle }}
       </h3>
-      <p class="mt-1 text-xs text-muted-foreground">
-        Seu nome e link ficam visíveis para outras pessoas com acesso à mesma
-        pesquisa, inclusive novas interpretações da fonte. Você pode removê-los
-        aqui a qualquer momento.
+      <p class="mt-1 text-xs text-muted-foreground" i18n>
+        Your name and link are visible to other people with access to the same
+        research, including new interpretations of the source. You can remove
+        them here at any time.
       </p>
       <label class="mt-4 block text-sm font-medium"
-        >Nome para exibição<input
+        ><span i18n>Display name</span
+        ><input
           z-input
           class="mt-1 w-full"
           autocomplete="nickname"
@@ -175,7 +179,8 @@ research.status === 'PUBLISHED')) {
           [formField]="profileForm.name"
       /></label>
       <label class="mt-4 block text-sm font-medium"
-        >Link de contato externo<input
+        ><span i18n>External contact link</span
+        ><input
           z-input
           class="mt-1 w-full"
           type="url"
@@ -183,20 +188,24 @@ research.status === 'PUBLISHED')) {
           maxlength="500"
           [formField]="profileForm.contactUrl"
       /></label>
-      <p class="mt-1 text-xs text-muted-foreground">
-        Use um perfil público ou link de contato que você queira compartilhar.
+      <p class="mt-1 text-xs text-muted-foreground" i18n>
+        Use a public profile or contact link you are happy to share.
       </p>
       @if (profileForm.contactUrl().touched() &&
       profileForm.contactUrl().invalid()) {
-      <p class="mt-1 text-xs text-destructive">Use um link HTTPS completo.</p>
+      <p class="mt-1 text-xs text-destructive" i18n>
+        Use a complete HTTPS link.
+      </p>
       }
       <label class="mt-4 flex items-start gap-2 text-sm"
         ><input
           type="checkbox"
           class="mt-1 accent-primary"
           [formField]="profileForm.consent"
-        />Quero compartilhar este nome e link com as pessoas desta
-        pesquisa.</label
+        /><span i18n
+          >I want to share this name and link with the people on this
+          research.</span
+        ></label
       >
       @if (participation.error()) {
       <p class="mt-3 text-sm text-destructive" role="alert">
@@ -204,7 +213,7 @@ research.status === 'PUBLISHED')) {
       </p>
       } @if (participation.saved()) {
       <p class="mt-3 text-sm" role="status">
-        {{ page.mine ? 'Perfil compartilhado.' : 'Seu perfil foi removido.' }}
+        {{ page.mine ? profileShared : profileRemoved }}
       </p>
       }
       <div class="mt-4 flex flex-wrap gap-2">
@@ -213,8 +222,8 @@ research.status === 'PUBLISHED')) {
           type="submit"
           [zDisabled]="profileForm().invalid() || !profileModel().consent || participation.saveIsPending()"
         >
-          {{ participation.saveIsPending() ? 'Salvando…' : page.mine ? 'Salvar
-          perfil' : 'Compartilhar meu perfil' }}
+          {{ participation.saveIsPending() ? savingLabel : page.mine ?
+          saveProfileLabel : shareProfileLabel }}
         </button>
         @if (page.mine) {
         <button
@@ -223,8 +232,9 @@ research.status === 'PUBLISHED')) {
           type="button"
           [zDisabled]="participation.saveIsPending()"
           (click)="participation.submit({ visible: false })"
+          i18n
         >
-          Remover meu perfil
+          Remove my profile
         </button>
         }
       </div>
@@ -234,7 +244,7 @@ research.status === 'PUBLISHED')) {
 </z-drawer>
 } @else if (store.researchError()) {
 <div class="py-4 text-sm">
-  <p role="alert">
+  <p role="alert" i18n>
     This research request could not be loaded. It may be unavailable to your
     account.
   </p>
@@ -245,12 +255,13 @@ research.status === 'PUBLISHED')) {
     class="mt-2"
     type="button"
     (click)="store.reload()"
+    i18n
   >
     Try again
   </button>
 </div>
 } @else {
-<p class="py-4 text-sm text-muted-foreground" role="status">
+<p class="py-4 text-sm text-muted-foreground" role="status" i18n>
   Loading your research request…
 </p>
 }

@@ -1,24 +1,30 @@
 <div
   class="mx-auto w-full max-w-3xl text-sm"
-  aria-label="Comparação de veículos"
+  i18n-aria-label
+  aria-label="Vehicle comparison"
 >
   @if (result(); as comparison) {
   <p class="text-muted-foreground">
     <span class="font-medium text-foreground"
-      >{{ comparison.configurations.length > 1 ? 'Comparação de especificações'
-      : 'Especificações do veículo' }}</span
+      >{{ comparison.configurations.length > 1 ? comparisonTitle : singleTitle
+      }}</span
     >
-    · {{ comparison.configurations.length }} {{ comparison.configurations.length
-    > 1 ? 'veículos' : 'veículo' }} ·
-    <span role="status"
-      >{{ rows().length }} de {{ comparison.rows.length }} itens</span
+    ·
+    <span i18n
+      >{comparison.configurations.length, plural, =1 {one vehicle} other {{{
+      comparison.configurations.length }} vehicles}}</span
+    >
+    ·
+    <span role="status" i18n
+      >{{ rows().length }} of {{ comparison.rows.length }} items</span
     >
   </p>
 
   <!-- Pinned 1.5rem above the scrollport edge so the transcript's top padding cannot show rows scrolling underneath. -->
   <ol
     class="comparison-legend sticky -top-6 z-10 -mx-1 mt-1 flex flex-wrap gap-x-4 gap-y-1 bg-background px-1 py-2"
-    aria-label="Veículos comparados"
+    i18n-aria-label
+    aria-label="Compared vehicles"
   >
     @for (configuration of comparison.configurations; track configuration.id;
     let index = $index) {
@@ -35,7 +41,7 @@
       <button
         type="button"
         class="grid size-5 shrink-0 place-items-center rounded-full bg-foreground text-[11px] font-semibold text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        [attr.aria-label]="'Mostrar o nome de ' + configuration.model + ' ' + configuration.name + ' junto aos valores'"
+        [attr.aria-label]="nameToggleLabel(configuration)"
         [attr.aria-pressed]="isNamed(configuration.id)"
         (click)="toggleName(configuration.id)"
       >
@@ -51,8 +57,9 @@
           configuration.market }} @if (configuration.identityStatus !==
           'CONFIRMED') {
           <span
-            [attr.title]="configuration.identityNote || 'Identificação baseada nas notas compiladas; consulte a fonte para confirmar a versão.'"
-            >· versão a confirmar</span
+            [attr.title]="configuration.identityNote || provisionalIdentityNote"
+            i18n
+            >· version to confirm</span
           >
           }
         </span></span
@@ -72,8 +79,10 @@
       />
       <input
         type="search"
-        aria-label="Filtrar especificações"
-        placeholder="Filtrar especificações…"
+        i18n-aria-label
+        aria-label="Filter specifications"
+        i18n-placeholder
+        placeholder="Filter specifications…"
         class="h-8 w-full bg-transparent pl-7 text-sm outline-none placeholder:text-muted-foreground focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ring"
         [formField]="queryField()"
       />
@@ -87,8 +96,9 @@
       [class.hover:bg-foreground]="differencesOnly()"
       [attr.aria-pressed]="differencesOnly()"
       (click)="differencesChanged.emit(!differencesOnly())"
+      i18n
     >
-      Só diferenças
+      Differences only
     </button>
     }
   </div>
@@ -107,16 +117,18 @@
         @if (numbered() && differing().has(row.attribute.id)) {
         <span
           class="shrink-0 text-[10px] tracking-wide text-muted-foreground uppercase"
-          >difere</span
+          i18n
+          >differs</span
         >
         } @if (questionsEnabled()) {
         <button
           type="button"
           class="ml-auto shrink-0 rounded text-xs text-muted-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring"
-          [attr.aria-label]="'Ver avaliações sobre ' + row.attribute.label"
+          [attr.aria-label]="reviewsLabel(row)"
           (click)="openReviews(row)"
+          i18n
         >
-          Avaliações ↗
+          Reviews ↗
         </button>
         }
       </div>
@@ -133,7 +145,7 @@
             type="button"
             class="inline-flex h-4 min-w-4 shrink-0 items-center gap-1 rounded-full bg-foreground/80 px-1 text-[10px] font-semibold text-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             [attr.title]="configuration.model + ' ' + configuration.name"
-            [attr.aria-label]="'Mostrar o nome de ' + configuration.model + ' ' + configuration.name + ' junto aos valores'"
+            [attr.aria-label]="nameToggleLabel(configuration)"
             [attr.aria-pressed]="isNamed(configuration.id)"
             (click)="toggleName(configuration.id)"
           >
@@ -155,7 +167,7 @@
             >{{ cellSummary.text }}</span
           >
           @if (cellSummary.tone === 'muted') {
-          <span class="sr-only">não informado</span>
+          <span class="sr-only" i18n>not reported</span>
           }
         </span>
         }
@@ -164,8 +176,9 @@
       <details class="mt-1.5 text-xs">
         <summary
           class="w-fit cursor-pointer rounded py-1 text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
+          i18n
         >
-          Fontes e observações
+          Sources and observations
         </summary>
         <div class="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           @for (configuration of comparison.configurations; track
@@ -180,14 +193,13 @@
               {{ configuration.name }}
             </p>
             @if (cellData) { @if (cellData.knowledgeStatus === 'NOT_REPORTED') {
-            <p class="text-muted-foreground">
-              Não informado. Ausência de informação não significa ausência do
-              equipamento.
+            <p class="text-muted-foreground" i18n>
+              Not reported. Missing information does not mean the equipment is
+              absent.
             </p>
             } @if (cellData.knowledgeStatus === 'CONFLICTING') {
-            <p class="text-warning">
-              Dados divergentes. As fontes divergem; confira os registros
-              abaixo.
+            <p class="text-warning" i18n>
+              Conflicting data. The sources disagree; check the records below.
             </p>
             } @for (observation of observations(cellData); track observation.id)
             {
@@ -202,19 +214,18 @@
               } @for (evidence of observation.evidence; track evidence.id) {
               <div class="mt-1 border-l-2 border-border pl-2">
                 <p class="font-medium">{{ evidence.title }}</p>
-                <p class="text-muted-foreground">
-                  {{ evidence.locator }} · Capturado em {{ evidence.capturedOn
-                  }}
+                <p class="text-muted-foreground" i18n>
+                  {{ evidence.locator }} · captured on {{ evidence.capturedOn }}
                 </p>
                 <blockquote
                   class="mt-1 line-clamp-4 whitespace-pre-wrap text-muted-foreground"
                 >
                   {{ evidence.excerpt }}
                 </blockquote>
-                <p class="mt-1 text-muted-foreground">
-                  {{ evidence.provenance === 'CURATED_NOTE' ? 'Notas compiladas'
-                  : evidence.provenance }} · A referência original não
-                  representa verificação independente.
+                <p class="mt-1 text-muted-foreground" i18n>
+                  {{ evidence.provenance === 'CURATED_NOTE' ? curatedNote :
+                  evidence.provenance }} · the original reference does not
+                  represent independent verification.
                 </p>
                 @for (url of evidence.upstreamUrls; track url) { @if
                 (safeUrl(url); as href) {
@@ -223,15 +234,16 @@
                   [href]="href"
                   target="_blank"
                   rel="noopener noreferrer"
-                  >Referência original ↗<span class="sr-only">
-                    (nova aba)</span
+                  i18n
+                  >Original reference ↗<span class="sr-only">
+                    (new tab)</span
                   ></a
                 >
                 } }
               </div>
               } @empty {
-              <p class="text-muted-foreground">
-                Nenhuma evidência anexada a este registro.
+              <p class="text-muted-foreground" i18n>
+                No evidence attached to this record.
               </p>
               }
             </div>
@@ -239,10 +251,11 @@
             <button
               type="button"
               class="mt-1 rounded text-muted-foreground underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
-              [attr.aria-label]="'Relatos desta versão: ' + configuration.name + ' sobre ' + row.attribute.label"
+              [attr.aria-label]="versionReportsLabel(configuration, row)"
               (click)="openReviews(row, configuration.id)"
+              i18n
             >
-              Relatos desta versão ↗
+              Reports for this version ↗
             </button>
             } }
           </div>
@@ -252,14 +265,14 @@
       }
     </li>
     } @empty {
-    <li class="py-6 text-center text-muted-foreground">
-      Nenhum item corresponde aos filtros.
+    <li class="py-6 text-center text-muted-foreground" i18n>
+      No item matches the filters.
       <button
         type="button"
         class="ml-1 rounded underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
         (click)="filtersCleared.emit()"
       >
-        Limpar filtros
+        Clear filters
       </button>
     </li>
     }
@@ -268,17 +281,18 @@
   <footer
     class="mt-2 flex flex-wrap items-center gap-3 border-t border-border pt-2 text-xs text-muted-foreground"
   >
-    <span
-      >Itens opcionais dependem do pacote contratado. Dados não informados e
-      divergências permanecem explícitos.</span
+    <span i18n
+      >Optional items depend on the package purchased. Unreported data and
+      conflicts stay explicit.</span
     >
     @if (questionsEnabled()) {
     <button
       type="button"
       class="ml-auto inline-flex h-7 items-center rounded-full border border-border px-3 font-medium text-foreground hover:bg-muted"
       (click)="followUpRequested.emit()"
+      i18n
     >
-      Analisar para o meu uso ↗
+      Analyse for my use ↗
     </button>
     }
   </footer>
@@ -287,9 +301,7 @@
   } @else {
   <div class="space-y-3">
     <p class="text-muted-foreground" role="status">
-      {{ complete() ? 'Não foi possível exibir esta comparação. Peça ao
-      assistente para tentar novamente.' : 'Consultando especificações e
-      fontes…' }}
+      {{ complete() ? unavailableComparison : loadingComparison }}
     </p>
     @if (!complete()) {<z-skeleton class="h-24 w-full" />}
   </div>

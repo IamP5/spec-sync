@@ -32,20 +32,20 @@ export class AuthSessionCoordinator {
           ? error.code
           : undefined;
       if (code === 'auth/popup-blocked')
-        return 'Google sign-in was blocked by this browser. Open SpecSync directly in Safari or Chrome and try again.';
+        return $localize`Google sign-in was blocked by this browser. Open SpecSync directly in Safari or Chrome and try again.`;
       if (
         code === 'auth/popup-closed-by-user' ||
         code === 'auth/cancelled-popup-request'
       )
-        return 'The Google sign-in window closed before sign-in finished. Please try again.';
+        return $localize`The Google sign-in window closed before sign-in finished. Please try again.`;
       if (code === 'auth/unauthorized-domain')
-        return 'This address is not authorized for Google sign-in. Please contact the app administrator. (auth/unauthorized-domain)';
+        return $localize`This address is not authorized for Google sign-in. Please contact the app administrator. (auth/unauthorized-domain)`;
       return code
-        ? `Google sign-in failed (${code}). Please try again or share this code with support.`
-        : 'Google sign-in could not finish. Please try again.';
+        ? $localize`Google sign-in failed (${code}:code:). Please try again or share this code with support.`
+        : $localize`Google sign-in could not finish. Please try again.`;
     }
     return this.status() === 'error'
-      ? 'SpecSync could not verify your session with its server. Refresh the page and try again.'
+      ? $localize`SpecSync could not verify your session with its server. Refresh the page and try again.`
       : undefined;
   });
   login() {

@@ -1,3 +1,4 @@
+import { LOCALE_ID } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type {
@@ -12,6 +13,9 @@ describe('VehicleDetailPane', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [VehicleDetailPane],
+      // Amounts follow the running language; pin it so the Brazilian
+      // grouping below is asserted rather than the test runner's default.
+      providers: [{ provide: LOCALE_ID, useValue: 'pt-BR' }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(VehicleDetailPane);

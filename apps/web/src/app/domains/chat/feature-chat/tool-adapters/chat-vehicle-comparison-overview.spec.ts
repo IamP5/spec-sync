@@ -46,7 +46,7 @@ describe('comparison chat adapter', () => {
     });
     await fixture.whenStable();
     const trigger = fixture.nativeElement.querySelector(
-      '[aria-label^="Ver avaliações sobre"]',
+      '[aria-label^="See reviews about"]',
     ) as HTMLButtonElement;
     expect(trigger).not.toBeNull();
     trigger.focus();
@@ -56,12 +56,12 @@ describe('comparison chat adapter', () => {
     expect(overlay?.querySelector('app-vehicle-reviews-search')).not.toBeNull();
     expect(document.querySelectorAll('.cdk-focus-trap-anchor')).toHaveLength(2);
     const select = overlay?.querySelector<HTMLButtonElement>(
-      '[aria-label^="Selecionar relato:"]',
+      '[aria-label^="Select report:"]',
     );
     select?.click();
     await fixture.whenStable();
     const ask = [...(overlay?.querySelectorAll('button') ?? [])].find(
-      (button) => button.textContent?.includes('Levar ao chat'),
+      (button) => button.textContent?.includes('Take to the chat'),
     );
     ask?.click();
     await new Promise((resolve) => setTimeout(resolve, 500));

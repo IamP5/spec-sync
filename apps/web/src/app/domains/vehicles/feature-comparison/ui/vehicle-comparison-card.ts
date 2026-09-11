@@ -93,6 +93,33 @@ export class VehicleComparisonCard {
       return next;
     });
   }
+  protected readonly comparisonTitle = $localize`Specification comparison`;
+  protected readonly singleTitle = $localize`Vehicle specifications`;
+  protected readonly curatedNote = $localize`Compiled notes`;
+  protected readonly provisionalIdentityNote = $localize`Identity based on compiled notes; check the source to confirm the version.`;
+  protected readonly unavailableComparison = $localize`This comparison could not be displayed. Ask the assistant to try again.`;
+  protected readonly loadingComparison = $localize`Looking up specifications and sources…`;
+
+  protected nameToggleLabel(configuration: {
+    model: string;
+    name: string;
+  }): string {
+    const vehicle = `${configuration.model} ${configuration.name}`;
+    return $localize`Show the name of ${vehicle}:vehicle: next to the values`;
+  }
+  protected reviewsLabel(row: Row): string {
+    const attribute = row.attribute.label;
+    return $localize`See reviews about ${attribute}:attribute:`;
+  }
+  protected versionReportsLabel(
+    configuration: { name: string },
+    row: Row,
+  ): string {
+    const version = configuration.name;
+    const attribute = row.attribute.label;
+    return $localize`Reports for this version: ${version}:version: about ${attribute}:attribute:`;
+  }
+
   protected cell(row: Row, configurationId: string): Cell | undefined {
     return row.cells.find((cell) => cell.configurationId === configurationId);
   }
@@ -101,7 +128,7 @@ export class VehicleComparisonCard {
     if (!cell || cell.knowledgeStatus === 'NOT_REPORTED')
       return { text: '—', tone: 'muted' };
     if (cell.knowledgeStatus === 'CONFLICTING')
-      return { text: 'Divergente', tone: 'warning' };
+      return { text: $localize`Conflicting`, tone: 'warning' };
     const observation = cellObservations(cell)[0];
     if (!observation) return { text: '—', tone: 'muted' };
     if (observation.value !== null)
@@ -146,47 +173,49 @@ function availabilityLabel(value: string | null) {
   return (
     (
       {
-        STANDARD: 'De série',
-        OPTIONAL: 'Opcional',
-        ABSENT: 'Não disponível',
-        NOT_APPLICABLE: 'Não se aplica',
+        STANDARD: $localize`Standard`,
+        OPTIONAL: $localize`Optional`,
+        ABSENT: $localize`Not available`,
+        NOT_APPLICABLE: $localize`Not applicable`,
       } as Record<string, string>
     )[value ?? ''] ?? ''
   );
 }
 function qualifierLabels(qualifiers: Record<string, unknown>) {
   const labels: Record<string, string> = {
-    rpm: 'Rotação (rpm)',
-    engine_speed_rpm: 'Rotação (rpm)',
-    engine_speed_rpm_min: 'Rotação mínima (rpm)',
-    engine_speed_rpm_max: 'Rotação máxima (rpm)',
-    package: 'Pacote',
-    packages: 'Pacotes',
-    fuel: 'Combustível',
-    conditions: 'Condições',
-    scope: 'Escopo',
-    date: 'Data',
-    note: 'Nota',
-    source_unit: 'Unidade na fonte',
-    source_value: 'Valor na fonte',
-    source_scope: 'Escopo na fonte',
-    source_section: 'Seção da fonte',
-    source_also_mentions: 'A fonte também menciona',
-    manufacturer_term: 'Termo do fabricante',
-    completeness: 'Abrangência',
-    conversion_factor: 'Fator de conversão',
-    current_price_verified: 'Preço atual verificado',
-    effective_on: 'Vigência',
-    interpretation: 'Interpretação',
-    moving_object_detection: 'Detecção de objetos em movimento',
-    off_road: 'Uso fora de estrada',
-    price_kind: 'Tipo de preço',
-    stop_and_go: 'Parada e retomada',
-    same_as_first_column: 'Mesmo valor da primeira coluna na fonte',
+    rpm: $localize`Engine speed (rpm)`,
+    engine_speed_rpm: $localize`Engine speed (rpm)`,
+    engine_speed_rpm_min: $localize`Minimum engine speed (rpm)`,
+    engine_speed_rpm_max: $localize`Maximum engine speed (rpm)`,
+    package: $localize`Package`,
+    packages: $localize`Packages`,
+    fuel: $localize`Fuel`,
+    conditions: $localize`Conditions`,
+    scope: $localize`Scope`,
+    date: $localize`Date`,
+    note: $localize`Note`,
+    source_unit: $localize`Unit in the source`,
+    source_value: $localize`Value in the source`,
+    source_scope: $localize`Scope in the source`,
+    source_section: $localize`Section of the source`,
+    source_also_mentions: $localize`The source also mentions`,
+    manufacturer_term: $localize`Manufacturer term`,
+    completeness: $localize`Coverage`,
+    conversion_factor: $localize`Conversion factor`,
+    current_price_verified: $localize`Current price verified`,
+    effective_on: $localize`Effective on`,
+    interpretation: $localize`Interpretation`,
+    moving_object_detection: $localize`Moving object detection`,
+    off_road: $localize`Off-road use`,
+    price_kind: $localize`Price type`,
+    stop_and_go: $localize`Stop and go`,
+    same_as_first_column: $localize`Same value as the first column in the source`,
   };
+  const yes = $localize`Yes`;
+  const no = $localize`No`;
   return Object.entries(qualifiers).map(([key, value]) =>
     key === 'package_id'
-      ? 'Vinculado a pacote opcional. Confira as condições na fonte.'
-      : `${labels[key] ?? key.replace(/_/g, ' ')}: ${typeof value === 'boolean' ? (value ? 'Sim' : 'Não') : displayValue(value)}`,
+      ? $localize`Tied to an optional package. Check the conditions in the source.`
+      : `${labels[key] ?? key.replace(/_/g, ' ')}: ${typeof value === 'boolean' ? (value ? yes : no) : displayValue(value)}`,
   );
 }

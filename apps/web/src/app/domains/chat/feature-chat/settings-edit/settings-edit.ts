@@ -19,8 +19,8 @@ import { ChatCoordinator } from '../chat-coordinator';
   template: `
     <div class="flex items-start justify-between gap-4">
       <div class="flex flex-col gap-1">
-        <span class="text-sm font-medium">Conversation history</span>
-        <p class="text-xs text-muted-foreground">
+        <span class="text-sm font-medium" i18n>Conversation history</span>
+        <p class="text-xs text-muted-foreground" i18n>
           Removes every conversation from this browser.
         </p>
       </div>
@@ -32,6 +32,7 @@ import { ChatCoordinator } from '../chat-coordinator';
         class="shrink-0 text-destructive hover:text-destructive"
         data-action="clear-history"
         (click)="onClearHistory()"
+        i18n
       >
         Delete all
       </button>
@@ -53,10 +54,9 @@ export class HistorySettingsEdit {
     const scope = this.session.scope();
     if (!scope) return;
     this.confirmation = this.alertDialog.confirm({
-      zTitle: 'Delete all conversations?',
-      zDescription:
-        'Every conversation in this browser will be removed. This cannot be undone.',
-      zOkText: 'Delete all',
+      zTitle: $localize`Delete all conversations?`,
+      zDescription: $localize`Every conversation in this browser will be removed. This cannot be undone.`,
+      zOkText: $localize`Delete all`,
       zOkDestructive: true,
       zOnOk: () => {
         if (!this.session.isCurrent(scope)) return;

@@ -34,7 +34,7 @@ describe('VehicleComparisonOverview', () => {
         2,
       );
       expect(element.textContent).toContain('Black');
-      expect(element.textContent).toContain('Opcional');
+      expect(element.textContent).toContain('Optional');
       expect(element.textContent).not.toContain('Changed live identity');
       expect(JSON.stringify(recorded)).toBe(before);
       fixture.componentRef.setInput('comparison', undefined);
@@ -58,7 +58,7 @@ describe('VehicleComparisonOverview', () => {
       fixture.componentRef.setInput('comparison', matrix);
       await fixture.whenStable();
       const element = fixture.nativeElement as HTMLElement;
-      expect(element.textContent).toContain('Opcional');
+      expect(element.textContent).toContain('Optional');
       expect(
         element.querySelectorAll('[aria-label="Vehicle image not available"]'),
       ).toHaveLength(2);
@@ -111,7 +111,7 @@ describe('VehicleComparisonOverview', () => {
         const trigger = (
           fixture.nativeElement as HTMLElement
         ).querySelector<HTMLButtonElement>(
-          '[aria-label="Ver avaliações sobre Camera"]',
+          '[aria-label="See reviews about Camera"]',
         )!;
         trigger.focus();
         trigger.click();
@@ -126,12 +126,12 @@ describe('VehicleComparisonOverview', () => {
         );
         panel
           .querySelector<HTMLButtonElement>(
-            '[aria-label="Selecionar relato: Review fixture"]',
+            '[aria-label="Select report: Review fixture"]',
           )!
           .click();
         await fixture.whenStable();
         [...panel.querySelectorAll('button')]
-          .find((b) => b.textContent?.includes('Levar ao chat'))!
+          .find((b) => b.textContent?.includes('Take to the chat'))!
           .click();
         expect(questions).not.toHaveBeenCalled();
         await new Promise((resolve) => setTimeout(resolve, 500));
@@ -188,13 +188,13 @@ describe('VehicleComparisonOverview', () => {
       comparison.configurations.map((configuration) => configuration.id),
     );
     expect(values[0].textContent).toContain('Black');
-    expect(values[0].textContent).toContain('Opcional');
+    expect(values[0].textContent).toContain('Optional');
     expect(values[1].textContent).toContain('Limited');
-    expect(values[1].textContent).toContain('não informado');
-    expect(values[1].textContent).not.toContain('Opcional');
+    expect(values[1].textContent).toContain('not reported');
+    expect(values[1].textContent).not.toContain('Optional');
     expect(values[2].textContent).toContain('SRX Plus');
-    expect(values[2].textContent).toContain('Divergente');
-    expect(element.textContent).toContain('difere');
+    expect(values[2].textContent).toContain('Conflicting');
+    expect(element.textContent).toContain('differs');
 
     const details = element.querySelector('details')!;
     expect(details.open).toBe(false);
@@ -204,9 +204,9 @@ describe('VehicleComparisonOverview', () => {
     ).toEqual(
       comparison.configurations.map((configuration) => configuration.id),
     );
-    expect(blocks[0].textContent).toContain('Pacote: Tech');
-    expect(blocks[1].textContent).toContain('Não informado');
-    expect(blocks[2].textContent).toContain('Dados divergentes');
+    expect(blocks[0].textContent).toContain('Package: Tech');
+    expect(blocks[1].textContent).toContain('Not reported');
+    expect(blocks[2].textContent).toContain('Conflicting data');
     expect(details.querySelector('button')).toBeNull();
     fixture.destroy();
   });
@@ -254,10 +254,10 @@ describe('VehicleComparisonOverview', () => {
     });
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Especificações do veículo');
+    expect(element.textContent).toContain('Vehicle specifications');
     expect(element.querySelector('.comparison-legend button')).toBeNull();
     expect(element.querySelector('.comparison-value button')).toBeNull();
-    expect(element.textContent).not.toContain('Só diferenças');
+    expect(element.textContent).not.toContain('Differences only');
     fixture.destroy();
   });
 
@@ -269,14 +269,14 @@ describe('VehicleComparisonOverview', () => {
     const search = element.querySelector<HTMLInputElement>('input')!;
     search.value = 'missing specification';
     search.dispatchEvent(new Event('input', { bubbles: true }));
-    const differences = buttonNamed(element, 'Só diferenças');
+    const differences = buttonNamed(element, 'Differences only');
     differences.click();
     await fixture.whenStable();
     expect(differences.getAttribute('aria-pressed')).toBe('true');
-    expect(element.textContent).toContain('Nenhum item corresponde');
+    expect(element.textContent).toContain('No item matches the filters');
     expect(element.querySelectorAll('.comparison-spec')).toHaveLength(0);
 
-    buttonNamed(element, 'Limpar filtros').click();
+    buttonNamed(element, 'Clear filters').click();
     await fixture.whenStable();
     expect(search.value).toBe('');
     expect(differences.getAttribute('aria-pressed')).toBe('false');

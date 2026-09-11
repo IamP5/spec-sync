@@ -14,9 +14,14 @@ export const webChecks = {
   fastSteps: [
     'npx nx run-many -t lint -p web,ui --output-style=static-failures-only',
     'npx nx run web:test-arch --output-style=static-failures-only',
+    // Every offered locale must translate exactly the extracted messages.
+    'npx nx run web:check-i18n --output-style=static-failures-only',
   ],
   // Expensive steps that only `npm run verify` (and CI) run.
   fullOnlySteps: [
+    // Re-extracts the source messages to prove the committed catalogue is current.
+    'npx nx run web:extract-i18n-check --output-style=static-failures-only',
+    'node apps/web/scripts/check-i18n.mjs --extract',
     'npx nx run web:test --output-style=static-failures-only',
     'npx nx run web:build --output-style=static-failures-only',
   ],

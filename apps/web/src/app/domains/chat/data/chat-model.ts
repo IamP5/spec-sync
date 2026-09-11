@@ -22,6 +22,14 @@ export const CHAT_MODE_PROPERTY = 'mode';
 export const CHAT_ROLE_MODELS_PROPERTY = 'roleModels';
 
 /**
+ * Key of the AG-UI `forwardedProps` that carries the language the browser is
+ * running in (a BCP 47 tag). Part of the contract with `apps/ai`: the agent
+ * answers in it, so a Portuguese interface gets a Portuguese reply. An
+ * unknown tag is ignored and the agent keeps its default language.
+ */
+export const CHAT_LOCALE_PROPERTY = 'locale';
+
+/**
  * Key of the AG-UI `forwardedProps` that carries the reasoning effort the
  * user picked. Part of the contract with `apps/ai` (`CHAT_EFFORT_PROPERTY`);
  * the service maps it to the thinking settings of the model's vendor.
@@ -129,6 +137,81 @@ export type ChatRoleOption = z.infer<typeof chatRoleOptionSchema>;
 export type ChatModelOption = z.infer<typeof chatModelOptionSchema>;
 export type ChatEffortOption = z.infer<typeof chatEffortOptionSchema>;
 export type ChatModelCatalog = z.infer<typeof chatModelCatalogSchema>;
+
+/**
+ * Labels for the ids the AI service is known to offer. The service names them
+ * in the source language; the browser is where the user's language lives, so
+ * the catalog is translated here on the way in and an id we do not know keeps
+ * the service's own wording (see `localizeCatalog`).
+ */
+function modeLabels(): Record<
+  ChatMode,
+  { label: string; description: string }
+> {
+  return {
+    velocity: {
+      label: $localize`Velocity`,
+      description: $localize`Fastest answers, lowest cost.`,
+    },
+    normal: {
+      label: $localize`Normal`,
+      description: $localize`Balanced answers for everyday questions.`,
+    },
+    intelligent: {
+      label: $localize`Intelligent`,
+      description: $localize`A stronger reasoner for hard comparisons.`,
+    },
+    auto: {
+      label: $localize`Auto`,
+      description: $localize`Picks a mode from your message.`,
+    },
+  };
+}
+
+function roleLabels(): Partial<Record<ModelRole, string>> {
+  return {
+    chat: $localize`Chat`,
+    vision: $localize`Document reading`,
+    identification: $localize`Configuration identification`,
+    contentDiscovery: $localize`Content discovery`,
+  };
+}
+
+function effortLabels(): Record<string, string> {
+  return {
+    auto: $localize`Auto`,
+    low: $localize`Low`,
+    medium: $localize`Medium`,
+    high: $localize`High`,
+  };
+}
+
+/**
+ * The catalog in the user's language. Model and vendor names are proper nouns
+ * and stay as they are; everything the service phrases is replaced when the
+ * id is one we ship a translation for.
+ */
+export function localizeCatalog(catalog: ChatModelCatalog): ChatModelCatalog {
+  const modes = modeLabels();
+  const roles = roleLabels();
+  const efforts = effortLabels();
+  return {
+    ...catalog,
+    modes: catalog.modes.map((mode) => ({
+      ...mode,
+      label: modes[mode.id]?.label ?? mode.label,
+      description: modes[mode.id]?.description ?? mode.description,
+    })),
+    roles: catalog.roles.map((role) => ({
+      ...role,
+      label: roles[role.id] ?? role.label,
+    })),
+    efforts: catalog.efforts.map((effort) => ({
+      ...effort,
+      label: efforts[effort.id] ?? effort.label,
+    })),
+  };
+}
 
 const VENDOR_LABELS: Record<string, string> = {
   google: 'Google',

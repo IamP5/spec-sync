@@ -7,6 +7,7 @@ import {
   ElementRef,
   inject,
   input,
+  LOCALE_ID,
   output,
   signal,
   viewChild,
@@ -37,13 +38,12 @@ import {
   type RoleModels,
   vendorLabelOf,
 } from '../../data/chat-model';
-import { formatCredits } from '../../data/credits';
+import { formatCredits, isBelowSmallestShown } from '../../data/credits';
 
 type PickerView = 'options' | 'advanced' | 'confirm';
 
 /** What a role is set to when it has no override of its own. */
 const FOLLOW_MODE = '';
-const FOLLOW_MODE_LABEL = 'Follow mode';
 
 const OPTION_SELECTOR = '[role="radio"]';
 /** Below this width the panel spans the viewport instead of hanging off the pill. */
@@ -131,17 +131,24 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
               aria-describedby="run-options-confirm-body"
               (keydown)="onConfirmKeydown($event)"
             >
-              <h3 class="text-sm font-medium" id="run-options-confirm-title">
+              <h3
+                class="text-sm font-medium"
+                id="run-options-confirm-title"
+                i18n
+              >
                 Switch to {{ pendingLabel() }}?
               </h3>
               <p
                 class="text-xs text-muted-foreground"
                 id="run-options-confirm-body"
+                i18n
               >
                 {{ pendingCost() }}. Your credits cover about
-                {{ pendingMessages() }}
-                {{ pendingMessages() === 1 ? 'message' : 'messages' }} in this
-                mode.
+                {pendingMessages(), plural,
+                  =1 {one message}
+                  other {{{ pendingMessages() }} messages}
+                }
+                in this mode.
               </p>
               <div class="flex justify-end gap-2 pt-1">
                 <button
@@ -149,6 +156,7 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
                   data-action="mode-cancel"
                   class="inline-flex min-h-8 items-center rounded-md px-3 text-xs font-medium hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   (click)="cancelSwitch()"
+                  i18n
                 >
                   Cancel
                 </button>
@@ -157,6 +165,7 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
                   data-action="mode-confirm"
                   class="inline-flex min-h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   (click)="confirmSwitch()"
+                  i18n
                 >
                   Switch
                 </button>
@@ -172,12 +181,13 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
                   type="button"
                   data-action="back"
                   class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                  i18n-aria-label
                   aria-label="Back to modes"
                   (click)="showOptions()"
                 >
                   <ng-icon name="lucideChevronLeft" aria-hidden="true" />
                 </button>
-                <span class="text-xs font-medium text-muted-foreground"
+                <span class="text-xs font-medium text-muted-foreground" i18n
                   >Advanced</span
                 >
               </div>
@@ -252,6 +262,7 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
                 <div
                   role="radiogroup"
                   tabindex="-1"
+                  i18n-aria-label
                   aria-label="Mode"
                   data-role="mode-select"
                   (keydown)="onOptionKeydown($event)"
@@ -305,9 +316,10 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
                   <span
                     class="px-1.5 text-[11px] font-medium text-muted-foreground"
                     id="run-options-effort-label"
+                    i18n
                     >Reasoning effort</span
                   >
-                  <span class="sr-only" aria-live="polite"
+                  <span class="sr-only" aria-live="polite" i18n
                     >Reasoning effort: {{ effortLabel() }}</span
                   >
                   <div
@@ -381,7 +393,7 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
                     class="size-4 shrink-0"
                     aria-hidden="true"
                   />
-                  <span class="flex-1">Advanced</span>
+                  <span class="flex-1" i18n>Advanced</span>
                   <ng-icon
                     name="lucideChevronRight"
                     class="size-4 shrink-0"
@@ -400,6 +412,9 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
 })
 export class RunOptionsPicker {
   private readonly document = inject(DOCUMENT);
+  private readonly locale = inject(LOCALE_ID);
+  /** What a role reads as while it has no override of its own. */
+  protected readonly followModeLabel = $localize`Follow mode`;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly popover = viewChild.required(ZardPopoverDirective);
 
@@ -480,11 +495,14 @@ export class RunOptionsPicker {
     () => this.efforts()[this.selectedIndex()]?.label ?? '',
   );
   protected readonly triggerDescription = computed(() => {
-    const parts = [`Mode: ${this.modeLabel()}`];
+    const mode = this.modeLabel();
+    const parts = [$localize`Mode: ${mode}:mode:`];
     const resolved = this.resolvedLabel();
-    if (resolved) parts.push(`answering in ${resolved}`);
-    if (this.showEfforts())
-      parts.push(`Reasoning effort: ${this.effortLabel()}`);
+    if (resolved) parts.push($localize`answering in ${resolved}:mode:`);
+    if (this.showEfforts()) {
+      const effort = this.effortLabel();
+      parts.push($localize`Reasoning effort: ${effort}:effort:`);
+    }
     return parts.join('. ');
   });
 
@@ -492,7 +510,7 @@ export class RunOptionsPicker {
     () => this.pendingMode()?.label ?? '',
   );
   protected readonly pendingCost = computed(() =>
-    costOf(this.pendingMode()?.estimatedCredits),
+    costOf(this.pendingMode()?.estimatedCredits, this.locale),
   );
   protected readonly pendingMessages = computed(() =>
     messagesCovered(
@@ -520,7 +538,7 @@ export class RunOptionsPicker {
 
   /** What a mode costs per message, and what it is for; the cost comes first. */
   protected detail(mode: ChatModeOption): string {
-    const cost = costOf(mode.estimatedCredits);
+    const cost = costOf(mode.estimatedCredits, this.locale);
     return [cost, mode.description].filter(Boolean).join(' · ');
   }
 
@@ -534,7 +552,9 @@ export class RunOptionsPicker {
   protected modeDescription(mode: ChatModeOption): string {
     const parts = [mode.label, this.detail(mode)].filter(Boolean);
     const relative = mode.relativeCost;
-    if (relative && relative > 1) parts.push(`${relative}× Normal`);
+    if (relative && relative > 1) {
+      parts.push($localize`${relative}:factor:× Normal`);
+    }
     return parts.join('. ');
   }
 
@@ -542,7 +562,7 @@ export class RunOptionsPicker {
   protected roleOptions(role: ChatRoleOption): { id: string; label: string }[] {
     const models = this.models();
     return [
-      { id: FOLLOW_MODE, label: FOLLOW_MODE_LABEL },
+      { id: FOLLOW_MODE, label: this.followModeLabel },
       ...role.models.map((id) => {
         const model = models.find((option) => option.id === id);
         return {
@@ -559,7 +579,7 @@ export class RunOptionsPicker {
 
   protected roleValueLabel(role: ChatRoleOption): string {
     const picked = this.roleModelOf(role.id);
-    if (!picked) return FOLLOW_MODE_LABEL;
+    if (!picked) return this.followModeLabel;
     return this.models().find((model) => model.id === picked)?.label ?? picked;
   }
 
@@ -703,11 +723,17 @@ function labelOf(mode: string): string {
 }
 
 /** `≈ 0.03 credits per message`, or nothing when the mode has no estimate. */
-function costOf(estimatedCredits: number | null | undefined): string {
+function costOf(
+  estimatedCredits: number | null | undefined,
+  locale: string,
+): string {
   if (!estimatedCredits) {
     return '';
   }
-  const amount = formatCredits(estimatedCredits);
-  const prefix = amount.startsWith('less than') ? '' : '≈ ';
-  return `${prefix}${amount} credits per message`;
+  // "less than …" already reads as an approximation; anything else gets the sign.
+  const formatted = formatCredits(estimatedCredits, locale);
+  const amount = isBelowSmallestShown(estimatedCredits)
+    ? formatted
+    : `≈ ${formatted}`;
+  return $localize`${amount}:amount: credits per message`;
 }

@@ -25,6 +25,7 @@ import {
   Preferences,
 } from '../data/preferences';
 import { UserPreferencesClient } from '../data/user-preferences-client';
+import type { LocaleId } from '../util/locale';
 
 /** Browser-local user preferences, shared through the public preference coordinator. */
 export const PreferencesDetailStore = signalStore(
@@ -35,10 +36,20 @@ export const PreferencesDetailStore = signalStore(
     error: '',
   }),
 
-  withProps(() => ({
-    _preferencesClient: inject(UserPreferencesClient),
-    _session: inject(SESSION),
-  })),
+  withProps(() => {
+    const preferencesClient = inject(UserPreferencesClient);
+    return {
+      _preferencesClient: preferencesClient,
+      _session: inject(SESSION),
+      /**
+       * The language this document runs in. It is a constant rather than
+       * state: translations are loaded once before bootstrap, so a new
+       * language only takes effect on reload. It also survives a session
+       * change, because it is not scoped to a user.
+       */
+      language: preferencesClient.loadLanguage(),
+    };
+  }),
 
   withComputed((store) => ({
     initials: computed(() => initialsOf(store.displayName())),
@@ -67,8 +78,24 @@ export const PreferencesDetailStore = signalStore(
         effort: store.effort(),
       });
       patchState(store, {
-        error: saved ? '' : 'Your browser could not save this preference.',
+        error: saved
+          ? ''
+          : $localize`Your browser could not save this preference.`,
       });
+    },
+
+    /**
+     * Persists the language choice. The document keeps running in the old
+     * language until it is reloaded, which the coordinator does.
+     */
+    setLanguage(language: LocaleId): boolean {
+      const saved = store._preferencesClient.saveLanguage(language);
+      patchState(store, {
+        error: saved
+          ? ''
+          : $localize`Your browser could not save this preference.`,
+      });
+      return saved;
     },
   })),
 

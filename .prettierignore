@@ -17,3 +17,6 @@ apps/web/.agents/skills/angular-developer
 # Evidence snapshots and versioned seed bytes are checksum-verified.
 apps/api/data/sources/
 apps/api/data/curated-pickups.json
+
+# Extracted source messages (written by `nx run web:extract-i18n`)
+apps/web/src/i18n/messages.json

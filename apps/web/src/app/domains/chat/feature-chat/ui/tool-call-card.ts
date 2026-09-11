@@ -41,7 +41,7 @@ import { ZardSpinnerComponent } from '@/ui/components/spinner';
         @if (done) {
           <ng-icon name="lucideCheck" class="text-success" />
         } @else {
-          <z-spinner class="size-4" zAriaLabel="Running" />
+          <z-spinner class="size-4" i18n-zAriaLabel zAriaLabel="Running" />
         }
       </z-marker-icon>
       <z-marker-content [class]="done ? '' : 'shimmer'">
@@ -60,7 +60,9 @@ export class ToolCallCard implements ToolRenderer<Record<string, unknown>> {
   protected readonly label = computed(
     () =>
       (
-        ({ skill: 'Reading the ingestion procedure' }) as Record<string, string>
+        ({
+          skill: $localize`Reading the ingestion procedure`,
+        }) as Record<string, string>
       )[this.toolCall().name ?? ''] ?? this.toolCall().name,
   );
 }

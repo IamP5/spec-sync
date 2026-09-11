@@ -42,34 +42,35 @@ export function researchClaimValue(claim: IngestionClaim): string {
 }
 
 export function researchStatus(research: ResearchSnapshot): string {
-  if (research.requestStatus === 'CANCELLED') return 'Not following';
+  if (research.requestStatus === 'CANCELLED') return $localize`Not following`;
   if (researchIsActive(research)) {
     const retrying =
       research.attempts > 1 ||
       (research.status === 'QUEUED' && research.attempts > 0);
+    const attempts = research.attempts;
     if (research.status === 'QUEUED')
       return retrying
-        ? `Retry queued after attempt ${research.attempts}`
-        : 'Queued';
+        ? $localize`Retry queued after attempt ${attempts}:attempt:`
+        : $localize`Queued`;
     const progress =
       research.stage === 'capture-source'
-        ? 'Source captured'
+        ? $localize`Source captured`
         : research.stage === 'identify-configurations'
-          ? 'Configurations identified'
+          ? $localize`Configurations identified`
           : /^extract-(?:[a-f0-9]{20}-)?configuration-\d+$/.test(research.stage)
-            ? 'Extracting specifications'
-            : 'Researching sources';
+            ? $localize`Extracting specifications`
+            : $localize`Researching sources`;
     return retrying
-      ? `Retrying research · attempt ${research.attempts} · ${progress}`
+      ? $localize`Retrying research · attempt ${attempts}:attempt: · ${progress}:progress:`
       : progress;
   }
   return {
-    REVIEW: 'Ready for review',
-    PUBLISHED: 'Catalog update published',
-    FAILED: 'Research failed',
-    REJECTED: 'Research rejected',
-    QUEUED: 'Queued',
-    PROCESSING: 'Researching sources',
+    REVIEW: $localize`Ready for review`,
+    PUBLISHED: $localize`Catalog update published`,
+    FAILED: $localize`Research failed`,
+    REJECTED: $localize`Research rejected`,
+    QUEUED: $localize`Queued`,
+    PROCESSING: $localize`Researching sources`,
   }[research.status];
 }
 
@@ -92,43 +93,45 @@ export function researchStage(research: ResearchSnapshot): {
   if (research.requestStatus === 'CANCELLED')
     return {
       index,
-      label: 'Você deixou de acompanhar',
-      note: 'A pesquisa compartilhada pode continuar para outras pessoas.',
+      label: $localize`You stopped following`,
+      note: $localize`The shared research may continue for other people.`,
     };
   if (research.status === 'FAILED' || research.status === 'REJECTED')
     return {
       index,
-      label: 'A pesquisa precisa de atenção',
-      note: 'Os resultados já encontrados continuam disponíveis para consulta.',
+      label: $localize`The research needs attention`,
+      note: $localize`The results found so far remain available to consult.`,
     };
   if (research.status === 'PUBLISHED')
     return {
       index,
-      label: 'Atualização publicada no catálogo',
-      note: 'As evidências podem incluir informações além da seleção publicada.',
+      label: $localize`Catalog update published`,
+      note: $localize`The evidence may include information beyond the published selection.`,
     };
   if (research.status === 'REVIEW')
     return {
       index,
-      label: 'Pronta para revisar',
-      note: 'Confira as evidências e as informações que ainda precisam de confirmação.',
+      label: $localize`Ready for review`,
+      note: $localize`Check the evidence and the information that still needs confirmation.`,
     };
   if (research.status === 'QUEUED')
     return {
       index,
       label: research.attempts
-        ? 'Aguardando nova tentativa'
-        : 'Pesquisa na fila',
+        ? $localize`Waiting for another attempt`
+        : $localize`Research queued`,
       note: research.attempts
-        ? 'A pesquisa retoma automaticamente e reutiliza as etapas concluídas.'
-        : 'Você pode continuar no chat. Os resultados aparecem conforme a pesquisa avança.',
+        ? $localize`The research resumes automatically and reuses the steps already completed.`
+        : $localize`You can carry on in the chat. Results appear as the research progresses.`,
     };
   return {
     index,
-    label: ['Buscando fontes', 'Lendo o documento', 'Conferindo as versões'][
-      index
-    ],
-    note: 'Atualização automática. Você pode sair e voltar pelo histórico de pesquisas.',
+    label: [
+      $localize`Searching for sources`,
+      $localize`Reading the document`,
+      $localize`Checking the versions`,
+    ][index],
+    note: $localize`Updates automatically. You can leave and come back through the research history.`,
   };
 }
 

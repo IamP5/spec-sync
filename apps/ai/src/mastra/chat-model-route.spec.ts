@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   autoModeSignals,
   CHAT_EFFORT_PROPERTY,
+  CHAT_LOCALE_PROPERTY,
   CHAT_MODE_PROPERTY,
   CHAT_MODEL_PROPERTY,
   CHAT_MODELS_PATH,
@@ -19,6 +20,7 @@ import {
   CREDITS_SERVICE_KEY_ENV,
   resetTariffCache,
 } from './credits/credits-client';
+import { CHAT_LOCALE_KEY, languageInstruction } from './language';
 import {
   CHAT_EFFORT_KEY,
   CHAT_MODE_KEY,
@@ -75,6 +77,7 @@ describe('chat model route', () => {
     expect(CHAT_ROLE_MODELS_PROPERTY).toBe('roleModels');
     expect(CHAT_MODEL_PROPERTY).toBe('model');
     expect(CHAT_EFFORT_PROPERTY).toBe('effort');
+    expect(CHAT_LOCALE_PROPERTY).toBe('locale');
     expect(chatModelRoutes.map((route) => [route.path, route.method])).toEqual([
       ['/chat/models', 'GET'],
     ]);
@@ -185,6 +188,28 @@ describe('request context', () => {
       vision: 'google/gemini-3.8-flash',
     });
     expect(requestContext.get(CHAT_EFFORT_KEY)).toBe('medium');
+  });
+
+  it('stores the interface language, so the agent answers in it', async () => {
+    const requestContext = await contextOf({
+      method: 'agent/run',
+      body: { forwardedProps: { locale: 'pt-BR' } },
+    });
+    expect(requestContext.get(CHAT_LOCALE_KEY)).toBe('pt-BR');
+    expect(languageInstruction(requestContext)).toContain(
+      'Brazilian Portuguese',
+    );
+  });
+
+  it('keeps the agent on the conversation language for an unknown tag', async () => {
+    const requestContext = await contextOf({
+      method: 'agent/run',
+      body: { forwardedProps: { locale: 'fr-CA' } },
+    });
+    expect(requestContext.get(CHAT_LOCALE_KEY)).toBe('fr-CA');
+    expect(languageInstruction(requestContext)).toBe(
+      "Reply in the user's language.",
+    );
   });
 
   it('maps a stale browser sending only `model` into a chat role override', async () => {

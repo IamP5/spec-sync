@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
+  LOCALE_ID,
 } from '@angular/core';
 
 import { ZardProgressComponent } from '@/ui/components/progress';
@@ -22,7 +24,7 @@ import { formatCredits } from '../../data/credits';
   template: `
     <div class="flex flex-col gap-1.5" data-role="credits-usage">
       <div class="flex items-baseline justify-between gap-2">
-        <span class="text-xs text-muted-foreground">AI Credits</span>
+        <span class="text-xs text-muted-foreground" i18n>AI Credits</span>
         <span
           class="text-xs font-medium tabular-nums"
           data-role="credits-usage-balance"
@@ -35,9 +37,7 @@ import { formatCredits } from '../../data/credits';
         [value]="usedPercent()"
         [attr.aria-label]="description()"
       />
-      <span class="text-[11px] text-muted-foreground">
-        {{ exhausted() ? 'Used up' : 'of ' + grantedLabel() + ' left' }}
-      </span>
+      <span class="text-[11px] text-muted-foreground">{{ remaining() }}</span>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,11 +49,12 @@ export class CreditsUsageCard {
   readonly spent = input(0);
   readonly exhausted = input(false);
 
+  private readonly locale = inject(LOCALE_ID);
   protected readonly balanceLabel = computed(() =>
-    formatCredits(this.balance()),
+    formatCredits(this.balance(), this.locale),
   );
   protected readonly grantedLabel = computed(() =>
-    formatCredits(this.granted()),
+    formatCredits(this.granted(), this.locale),
   );
   protected readonly usedPercent = computed(() => {
     const granted = this.granted();
@@ -62,8 +63,16 @@ export class CreditsUsageCard {
     }
     return Math.round(Math.min(Math.max(this.spent() / granted, 0), 1) * 100);
   });
-  protected readonly description = computed(
-    () =>
-      `AI Credits: ${this.balanceLabel()} of ${this.grantedLabel()} left, ${this.usedPercent()}% used`,
-  );
+  protected readonly remaining = computed(() => {
+    const granted = this.grantedLabel();
+    return this.exhausted()
+      ? $localize`Used up`
+      : $localize`of ${granted}:granted: left`;
+  });
+  protected readonly description = computed(() => {
+    const balance = this.balanceLabel();
+    const granted = this.grantedLabel();
+    const used = this.usedPercent();
+    return $localize`AI Credits: ${balance}:balance: of ${granted}:granted: left, ${used}:used:% used`;
+  });
 }

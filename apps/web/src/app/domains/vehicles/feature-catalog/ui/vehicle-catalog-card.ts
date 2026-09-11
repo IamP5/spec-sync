@@ -74,6 +74,8 @@ export class VehicleCatalogCard {
   private readonly uniqueId = inject(ZardIdDirective);
   protected readonly searchId = `${this.uniqueId.id()}-search`;
   protected readonly sortId = `${this.uniqueId.id()}-sort`;
+  protected readonly incompatibleResult = $localize`This saved catalog result is no longer compatible. Ask the assistant to open the catalog again.`;
+  protected readonly loadingCatalog = $localize`Loading the vehicle catalog…`;
   readonly page = input<CatalogPage>();
   readonly failure = input<string>();
   readonly complete = input(false);

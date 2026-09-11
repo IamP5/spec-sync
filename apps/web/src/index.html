@@ -26,6 +26,16 @@
       (function () {
         const html = document.documentElement;
 
+        // The language the user picked, so assistive technology and font
+        // rendering are right before the bundle runs. `main.ts` resolves the
+        // same value (falling back to the browser's languages) and re-applies
+        // it; keep the storage key in sync with `LOCALE_STORAGE_KEY`.
+        try {
+          const locale = localStorage.getItem('specsync.locale');
+          if (['pt-BR', 'en-US', 'es-419'].includes(locale))
+            html.setAttribute('lang', locale);
+        } catch (_) {}
+
         let theme = 'system';
         try {
           const stored = localStorage.getItem('theme');

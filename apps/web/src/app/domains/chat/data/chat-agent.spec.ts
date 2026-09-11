@@ -130,7 +130,7 @@ describe('toolActivities', () => {
     expect(toolActivities(messages, false).get('a')?.[0]).toMatchObject({
       label: 'Building your research workspace',
       name: 'renderVehicleWorkspace',
-      status: 'Partially completed',
+      status: 'partial',
     });
   });
   const thread: Message[] = [
@@ -142,11 +142,11 @@ describe('toolActivities', () => {
 
   it('distinguishes current activity from an older interrupted tool', () => {
     expect(toolActivities(thread, true).get('a1')?.[0].status).toBe(
-      'Incomplete',
+      'incomplete',
     );
-    expect(toolActivities(thread, true).get('a2')?.[0].status).toBe('Running');
+    expect(toolActivities(thread, true).get('a2')?.[0].status).toBe('running');
     expect(toolActivities(thread, false).get('a2')?.[0].status).toBe(
-      'Incomplete',
+      'incomplete',
     );
   });
 
@@ -162,7 +162,7 @@ describe('toolActivities', () => {
       },
     ];
     const activity = toolActivities(messages, false).get('a2')?.[0];
-    expect(activity?.status).toBe('Failed');
+    expect(activity?.status).toBe('failed');
     expect(activity?.result).toBe('Unavailable');
   });
 
@@ -224,10 +224,10 @@ describe('creditsErrorOf', () => {
 
 it('distinguishes empty and failed business results from successful execution', () => {
   for (const [status, expected] of [
-    ['EMPTY', 'No matches'],
-    ['UNAVAILABLE', 'Failed'],
-    ['FAILED', 'Failed'],
-    ['QUEUED', 'Completed'],
+    ['EMPTY', 'empty'],
+    ['UNAVAILABLE', 'failed'],
+    ['FAILED', 'failed'],
+    ['QUEUED', 'completed'],
   ]) {
     const messages: Message[] = [
       {

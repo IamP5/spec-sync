@@ -3,7 +3,9 @@ import {
   Component,
   computed,
   ElementRef,
+  inject,
   input,
+  LOCALE_ID,
   output,
   signal,
   viewChild,
@@ -68,36 +70,50 @@ export class VehicleReviewsPane {
   readonly discoverRequested = output<void>();
   private readonly queryInput =
     viewChild<ElementRef<HTMLInputElement>>('reviewQuery');
+  private readonly locale = inject(LOCALE_ID);
   protected readonly format = displayValue;
+  protected readonly unknownAuthor = $localize`Author not reported`;
+  protected readonly unknownLocation = $localize`Location not reported`;
   protected readonly mediaLabel = reviewMedia;
   protected readonly kindLabel = reviewKind;
   protected readonly link = reviewUrl;
+  protected readonly selectedLabel = $localize`Selected ✓`;
+  protected readonly selectLabel2 = $localize`Select +`;
+
+  protected selectLabel(title: string): string {
+    return $localize`Select report: ${title}:title:`;
+  }
+  protected removeSelectionLabel(title: string): string {
+    return $localize`Remove selection: ${title}:title:`;
+  }
+
   protected reset(): void {
     this.filtersCleared.emit();
     this.queryInput()?.nativeElement.focus();
   }
   protected vehicleName(review: RelatedReview) {
     if (review.scope === 'MODEL')
-      return 'Sobre o modelo · versão não confirmada';
+      return $localize`About the model · version not confirmed`;
     return (
       this.context().comparison.configurations.find(
         (c) => c.id === review.configurationId,
-      )?.name ?? 'Versão da avaliação'
+      )?.name ?? $localize`Reviewed version`
     );
   }
   protected specification(id: string) {
     const cell = this.context().row.cells.find((c) => c.configurationId === id);
     if (!cell || cell.knowledgeStatus === 'NOT_REPORTED')
-      return 'Não informado';
-    if (cell.knowledgeStatus === 'CONFLICTING') return 'Dados divergentes';
+      return $localize`Not reported`;
+    if (cell.knowledgeStatus === 'CONFLICTING')
+      return $localize`Conflicting data`;
     return cellObservations(cell)
       .map((o) => {
         const availability = (
           {
-            STANDARD: 'De série',
-            OPTIONAL: 'Opcional',
-            ABSENT: 'Não disponível',
-            NOT_APPLICABLE: 'Não se aplica',
+            STANDARD: $localize`Standard`,
+            OPTIONAL: $localize`Optional`,
+            ABSENT: $localize`Not available`,
+            NOT_APPLICABLE: $localize`Not applicable`,
           } as Record<string, string>
         )[o.availability ?? ''];
         const value =
@@ -109,7 +125,7 @@ export class VehicleReviewsPane {
           value,
           availability,
           typeof rpm === 'number'
-            ? `${rpm.toLocaleString('pt-BR')} rpm`
+            ? `${rpm.toLocaleString(this.locale)} rpm`
             : undefined,
         ]
           .filter(Boolean)
@@ -122,11 +138,11 @@ function reviewKind(kind: string | null | undefined) {
   return (
     (
       {
-        OPINION: 'Opinião do avaliador',
-        MEASUREMENT: 'Medição do avaliador',
-        REPORTED_SPEC: 'Especificação citada no relato',
-        OWNER_EXPERIENCE: 'Experiência de proprietário',
+        OPINION: $localize`Reviewer opinion`,
+        MEASUREMENT: $localize`Reviewer measurement`,
+        REPORTED_SPEC: $localize`Specification quoted in the report`,
+        OWNER_EXPERIENCE: $localize`Owner experience`,
       } as Record<string, string>
-    )[kind ?? ''] ?? 'Relato'
+    )[kind ?? ''] ?? $localize`Report`
   );
 }

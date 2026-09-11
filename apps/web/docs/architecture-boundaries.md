@@ -190,6 +190,29 @@ transcript results and simultaneous instances do not share selection or loading.
   components with the Zard CLI; import via `@/ui/components/...`,
   `@/ui/services`, or `@/ui/utils`, not relative paths out of the app.
 
+## Internationalization
+
+The app ships one build and translates at runtime
+([ADR-0008](adr/0008-runtime-translation.md)).
+
+- `en-US` is the source locale: write every template and every `$localize`
+  template literal in English. `pt-BR` is the default runtime locale and
+  `es-419` the third; the catalogue is `domains/user/util/locale.ts`.
+- Mark user-visible text: `i18n` on elements, `i18n-{attribute}` on attributes,
+  ICU expressions for plurals, `$localize` tagged templates in TypeScript. Text
+  that is part of a contract with the agent — prompts sent straight through,
+  tool names, attribute codes, status codes — stays in the source language, and
+  a status _code_ is never the same string as its label.
+- Nothing imported by `src/main.ts` before `loadTranslations()` may use
+  `$localize`; such a message would keep its English source forever.
+- Format through `LOCALE_ID` (`inject(LOCALE_ID)`, the `date`/`number`/
+  `currency` pipes). Never hardcode a locale tag or a `lang` attribute.
+- After changing user-visible text run `nx run web:extract-i18n` and translate
+  the new ids in `src/i18n/messages.pt-BR.json` and `messages.es-419.json`;
+  `nx run web:check-i18n` fails on a missing, orphaned or placeholder-breaking
+  message. Ids are generated from the source text, so editing an English string
+  retires its translation on purpose.
+
 ## Reference implementations and checks
 
 Use `VehicleCatalogOverview` plus its card for controlled presentation,
@@ -198,5 +221,6 @@ host adapter, and `ChatCoordinator` for cross-store orchestration. Conversation
 streaming still follows `ConversationDetailStore` and `ChatAgentClient`.
 
 Run `npm exec -- nx run-many -t lint -p web,ui` and
-`npm exec -- nx run web:test-arch` for boundaries. Full verification is
+`npm exec -- nx run web:test-arch` for boundaries, and
+`npm exec -- nx run web:check-i18n` for translation completeness. Full verification is
 `npm run verify` (or `npm run verify -- --changed` for changed projects).

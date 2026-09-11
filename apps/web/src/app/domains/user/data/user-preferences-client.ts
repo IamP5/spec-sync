@@ -1,10 +1,16 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, LOCALE_ID } from '@angular/core';
 
 import {
   isChatMode,
   isModelRole,
   type RoleModels,
 } from '../../chat/api/contracts';
+import {
+  DEFAULT_LOCALE,
+  isLocaleId,
+  type LocaleId,
+  storeLocale,
+} from '../util/locale';
 import { USER_STORAGE_SCOPE } from '../util/storage-scope';
 import { DEFAULT_PREFERENCES, Preferences } from './preferences';
 
@@ -18,6 +24,8 @@ const STORAGE_KEY = 'specsync.chat.preferences.v1';
 @Injectable({ providedIn: 'root' })
 export class UserPreferencesClient {
   private readonly scope = inject(USER_STORAGE_SCOPE);
+  /** The language the document is running in, as resolved by `main.ts`. */
+  private readonly running = inject(LOCALE_ID);
   private key(): string {
     const scope = this.scope();
     return scope ? `${STORAGE_KEY}.${encodeURIComponent(scope)}` : STORAGE_KEY;
@@ -79,6 +87,20 @@ export class UserPreferencesClient {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * The language this document runs in. It is not part of the stored blob
+   * above: `main.ts` needs it before Angular, and therefore before a user
+   * scope, exists, so it lives under its own unscoped key and only changes
+   * when the document reloads.
+   */
+  loadLanguage(): LocaleId {
+    return isLocaleId(this.running) ? this.running : DEFAULT_LOCALE;
+  }
+
+  saveLanguage(language: LocaleId): boolean {
+    return storeLocale(language);
   }
 }
 

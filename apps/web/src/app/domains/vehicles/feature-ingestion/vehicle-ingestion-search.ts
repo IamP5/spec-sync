@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  LOCALE_ID,
   output,
 } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -43,6 +44,12 @@ export class VehicleIngestionSearch {
   protected readonly loading = this.store.runsIsLoading;
   protected readonly failed = computed(() => !!this.store.runsError());
   protected readonly hasKey = this.store.hasKey;
+  private readonly locale = inject(LOCALE_ID);
+
+  protected openImportLabel(summary: IngestionSummary): string {
+    const name = this.title(summary);
+    return $localize`Open import ${name}:import:`;
+  }
 
   protected stage(summary: IngestionSummary) {
     return runStage(summary.status);
@@ -57,7 +64,7 @@ export class VehicleIngestionSearch {
     const date = new Date(summary.updatedAt);
     return Number.isNaN(date.getTime())
       ? ''
-      : date.toLocaleString('pt-BR', {
+      : date.toLocaleString(this.locale, {
           dateStyle: 'short',
           timeStyle: 'short',
         });

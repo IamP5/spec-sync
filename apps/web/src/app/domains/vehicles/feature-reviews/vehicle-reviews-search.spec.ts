@@ -83,7 +83,7 @@ describe('Vehicle reviews', () => {
     filtersToggle.click();
     await fixture.whenStable();
     const vehicle = element.querySelector<HTMLSelectElement>(
-      'select[aria-label="Veículo"]',
+      'select[aria-label="Vehicle"]',
     )!;
     vehicle.value = matrix.configurations[1].id;
     vehicle.dispatchEvent(new Event('input', { bubbles: true }));
@@ -96,10 +96,10 @@ describe('Vehicle reviews', () => {
     expect(element.querySelectorAll('article')).toHaveLength(1);
 
     expect(element.querySelector('[role="alert"]')).toBeNull();
-    expect(element.textContent).toContain('versão não confirmada');
+    expect(element.textContent).toContain('version not confirmed');
     element
       .querySelector<HTMLButtonElement>(
-        '[aria-label="Selecionar relato: Teste de estrada"]',
+        '[aria-label="Select report: Teste de estrada"]',
       )
       ?.click();
     const search = element.querySelector<HTMLInputElement>('input');
@@ -109,10 +109,10 @@ describe('Vehicle reviews', () => {
     await fixture.whenStable();
     expect(element.querySelectorAll('article')).toHaveLength(0);
     expect(
-      element.querySelector('[aria-label="Relatos selecionados"]')?.textContent,
+      element.querySelector('[aria-label="Selected reports"]')?.textContent,
     ).toContain('Teste de estrada');
     const ask = [...element.querySelectorAll('button')].find((b) =>
-      b.textContent?.includes('Levar ao chat'),
+      b.textContent?.includes('Take to the chat'),
     );
     ask?.click();
     fixture.destroy();
@@ -170,9 +170,9 @@ describe('Vehicle reviews', () => {
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('[role="alert"]')?.textContent).toContain(
-      'Não foi possível',
+      'could not be retrieved',
     );
-    expect(element.textContent).not.toContain('Ainda não há avaliações');
+    expect(element.textContent).not.toContain('No reviews are indexed');
     fetch.mockImplementation(
       async () =>
         new Response(
@@ -185,9 +185,9 @@ describe('Vehicle reviews', () => {
         ),
     );
     [...element.querySelectorAll('button')]
-      .find((b) => b.textContent?.includes('Tentar novamente'))
+      .find((b) => b.textContent?.includes('Try again'))
       ?.click();
     await fixture.whenStable();
-    expect(element.textContent).toContain('Ainda não há avaliações indexadas');
+    expect(element.textContent).toContain('No reviews are indexed');
   });
 });

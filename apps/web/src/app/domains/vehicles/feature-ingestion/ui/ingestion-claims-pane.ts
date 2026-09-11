@@ -24,9 +24,9 @@ import type {
   IngestionCurrentCell,
 } from '../../data/ingestion-contracts';
 import {
-  CLAIM_FILTERS,
   claimCounts,
   type ClaimFilter,
+  claimFilters,
   type ClaimGroup,
   claimGroups,
   filterGroups,
@@ -70,7 +70,11 @@ export class IngestionClaimsPane {
   readonly suggestedRequested = output<void>();
   readonly clearRequested = output<void>();
 
-  protected readonly filters = CLAIM_FILTERS;
+  protected readonly filters = claimFilters();
+
+  protected publishLabel(label: string): string {
+    return $localize`Publish ${label}:specification:`;
+  }
   protected readonly filter = signal<ClaimFilter>('all');
   protected readonly expanded = signal<ReadonlySet<number>>(new Set());
   protected readonly groups = computed<ClaimGroup[]>(() =>

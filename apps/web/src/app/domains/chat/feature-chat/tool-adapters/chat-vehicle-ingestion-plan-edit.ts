@@ -47,12 +47,12 @@ import { parseResult } from '../../util/parse-result';
           (runChanged)="report($event)"
         />
         <p class="mt-3 text-xs text-muted-foreground">
-          <a class="underline" [routerLink]="['/ingestion', runId]"
+          <a class="underline" [routerLink]="['/ingestion', runId]" i18n
             >Open this import on the ingestion page</a
           >
         </p>
       } @else if (plan(); as plan) {
-        <strong>Import ready to start</strong>
+        <strong i18n>Import ready to start</strong>
         <p class="mt-1 mb-3 text-muted-foreground">{{ plan.message }}</p>
         <app-vehicle-ingestion-launch-edit
           [prefill]="plan.request"
@@ -64,16 +64,13 @@ import { parseResult } from '../../util/parse-result';
             class="underline"
             [routerLink]="'/ingestion'"
             [queryParams]="query()"
+            i18n
             >Open the ingestion page instead</a
           >
         </p>
       } @else {
         <p class="text-muted-foreground" role="status">
-          {{
-            toolCall().status === 'complete'
-              ? 'No valid import plan returned.'
-              : 'Preparing the import…'
-          }}
+          {{ toolCall().status === 'complete' ? noPlan : preparing }}
         </p>
       }
     </z-card>
@@ -89,6 +86,8 @@ export class ChatVehicleIngestionPlanEdit
     parseResult(this.toolCall().result, ingestionPlanSchema),
   );
   protected readonly runId = signal('');
+  protected readonly noPlan = $localize`No valid import plan returned.`;
+  protected readonly preparing = $localize`Preparing the import…`;
   protected readonly query = computed(() => {
     const request = this.plan()?.request;
     return request

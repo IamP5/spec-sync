@@ -12,7 +12,7 @@ describe('Source-backed research presentation', () => {
         stage: 'capture-source',
         configurations: [],
       }),
-    ).toMatchObject({ index: 1, label: 'A pesquisa precisa de atenção' });
+    ).toMatchObject({ index: 1, label: 'The research needs attention' });
     expect(
       researchStage({
         ...research,

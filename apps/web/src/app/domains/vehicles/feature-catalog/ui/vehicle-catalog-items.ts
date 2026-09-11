@@ -1,4 +1,4 @@
-import { Directive, input, output } from '@angular/core';
+import { Directive, inject, input, LOCALE_ID, output } from '@angular/core';
 
 import type {
   Comparison,
@@ -20,11 +20,12 @@ export abstract class VehicleCatalogItems {
   readonly vehicleSelected = output<VehicleConfiguration>();
   readonly shortlistToggled = output<VehicleConfiguration>();
 
+  private readonly locale = inject(LOCALE_ID);
   protected readonly identity = identityLabel;
   protected readonly metrics = [
-    { label: 'Power', code: 'power_max' },
-    { label: 'Torque', code: 'torque_max' },
-    { label: 'Reference price', code: 'reference_price' },
+    { label: $localize`Power`, code: 'power_max' },
+    { label: $localize`Torque`, code: 'torque_max' },
+    { label: $localize`Reference price`, code: 'reference_price' },
   ] as const;
 
   protected image(vehicle: VehicleConfiguration) {
@@ -36,7 +37,7 @@ export abstract class VehicleCatalogItems {
   }
 
   protected fact(vehicle: VehicleConfiguration, code: string) {
-    return catalogFact(this.summaries(), vehicle.id, code);
+    return catalogFact(this.summaries(), vehicle.id, code, this.locale);
   }
   protected isShortlisted(vehicle: VehicleConfiguration): boolean {
     return this.shortlistedConfigurations().some(({ id }) => id === vehicle.id);
@@ -46,11 +47,13 @@ export abstract class VehicleCatalogItems {
     this.shortlistToggled.emit(vehicle);
   }
   protected detailsLabel(vehicle: VehicleConfiguration): string {
-    return `Open ${vehicle.brand} ${vehicle.model} ${vehicle.name} details`;
+    const name = `${vehicle.brand} ${vehicle.model} ${vehicle.name}`;
+    return $localize`Open ${name}:vehicle: details`;
   }
   protected shortlistLabel(vehicle: VehicleConfiguration): string {
+    const name = `${vehicle.model} ${vehicle.name}`;
     return this.isShortlisted(vehicle)
-      ? `Remove ${vehicle.model} ${vehicle.name} from comparison`
-      : `Add ${vehicle.model} ${vehicle.name} to comparison`;
+      ? $localize`Remove ${name}:vehicle: from comparison`
+      : $localize`Add ${name}:vehicle: to comparison`;
   }
 }

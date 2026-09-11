@@ -81,6 +81,23 @@ describe('user preference persistence', () => {
     ).not.toContain('"model"');
   });
 
+  it('keeps the language out of the per-account blob', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: USER_STORAGE_SCOPE, useValue: () => 'alice' }],
+    });
+    const client = TestBed.inject(UserPreferencesClient);
+    // `main.ts` reads the language before a session exists, so it lives under
+    // its own unscoped key and survives a sign-out.
+    expect(client.saveLanguage('es-419')).toBe(true);
+    expect(localStorage.getItem('specsync.locale')).toBe('es-419');
+    expect(
+      localStorage.getItem('specsync.chat.preferences.v1.alice'),
+    ).toBeNull();
+    // What the app reports is the language it is actually running in, which
+    // the stored choice only decides on the next page load.
+    expect(client.loadLanguage()).toBe('en-US');
+  });
+
   it('ignores stored junk in the mode and the overrides', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: USER_STORAGE_SCOPE, useValue: () => 'alice' }],

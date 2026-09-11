@@ -29,19 +29,47 @@ export function catalogPagePrompt(
   return `Show the next page of the vehicle catalog: up to ${question.limit} configurations from offset ${question.offset}${scope.length ? `, keeping the same search (${scope.join(', ')})` : ''}. Call searchVehicleConfigurations with exactly this offset and limit and render the result as the catalog.`;
 }
 
+/**
+ * The prompt a vehicle card hands to the chat. Every branch except
+ * `catalog-page` is *drafted* into the composer, so the user reads and edits
+ * it: those are translated. `catalog-page` is sent straight through and names
+ * a tool with its arguments, so it stays in the source language where the
+ * wording is part of the contract with the agent.
+ */
 export function vehicleQuestionPrompt(question: VehicleQuestion): string {
   switch (question.kind) {
     case 'vehicle': {
       const vehicle = question.vehicle;
-      return `Tell me more about ${vehicle.brand} ${vehicle.model} ${vehicle.name}, ${vehicle.market} ${vehicle.modelYear} (configuration ID ${vehicle.id}). Preserve unknowns, conflicts, qualifiers, and evidence.`;
+      const name = `${vehicle.brand} ${vehicle.model} ${vehicle.name}`;
+      const scope = `${vehicle.market} ${vehicle.modelYear}`;
+      const id = vehicle.id;
+      return $localize`Tell me more about ${name}:vehicle:, ${scope}:scope: (configuration ID ${id}:id:). Preserve unknowns, conflicts, qualifiers, and evidence.`;
     }
-    case 'comparison':
-      return `Para as configurações ${question.configurations.map((c) => `${c.brand} ${c.model} ${c.name} (${c.id})`).join('; ')}, explique as implicações práticas das diferenças em ${question.attributeCodes.join(', ')}. Considere o meu uso: `;
-    case 'reviews':
+    case 'comparison': {
+      const configurations = question.configurations
+        .map((c) => `${c.brand} ${c.model} ${c.name} (${c.id})`)
+        .join('; ');
+      const attributes = question.attributeCodes.join(', ');
+      return $localize`For the configurations ${configurations}:configurations:, explain the practical implications of the differences in ${attributes}:attributes:. Consider my use: `;
+    }
+    case 'reviews': {
       // Only stable IDs cross into a prompt; never copy untrusted review passages.
-      return `Analise os relatos selecionados sobre ${question.attributeCode} para as configurações ${question.configurationIds.join(', ')}. Consulte os trechos pelos IDs de evidência: ${question.evidenceIds.join(', ')}. Observações selecionadas: ${question.observationIds.join(', ')}. Explique concordâncias, divergências e limites de aplicação a cada versão. Separe opiniões de especificações técnicas.`;
-    case 'discover':
-      return `Busque artigos, blogs e vídeos sobre ${question.attributeLabel} de ${question.configurations.map((c) => `${c.brand} ${c.model} ${c.name}, ${c.market} ${c.modelYear} (ID ${c.id})`).join('; ')}. Distinga links descobertos de avaliações já verificadas.`;
+      const attribute = question.attributeCode;
+      const configurations = question.configurationIds.join(', ');
+      const evidence = question.evidenceIds.join(', ');
+      const observations = question.observationIds.join(', ');
+      return $localize`Analyse the selected reports about ${attribute}:attribute: for the configurations ${configurations}:configurations:. Look the passages up by their evidence IDs: ${evidence}:evidence:. Selected observations: ${observations}:observations:. Explain agreements, disagreements and the limits of applicability for each version. Keep opinions separate from technical specifications.`;
+    }
+    case 'discover': {
+      const attribute = question.attributeLabel;
+      const configurations = question.configurations
+        .map(
+          (c) =>
+            `${c.brand} ${c.model} ${c.name}, ${c.market} ${c.modelYear} (ID ${c.id})`,
+        )
+        .join('; ');
+      return $localize`Find articles, blogs and videos about ${attribute}:attribute: for ${configurations}:configurations:. Distinguish discovered links from reviews that are already verified.`;
+    }
     case 'catalog-page':
       return catalogPagePrompt(question);
   }

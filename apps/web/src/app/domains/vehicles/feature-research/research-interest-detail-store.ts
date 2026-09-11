@@ -53,7 +53,7 @@ export const ResearchInterestDetailStore = signalStore(
       onError: (_error, { id, scope }) => {
         if (store.id() === id && store._session.isCurrent(scope))
           patchState(store, {
-            error: 'Não foi possível salvar. Tente novamente.',
+            error: $localize`Could not save. Please try again.`,
           });
       },
     }),

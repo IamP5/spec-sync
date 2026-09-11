@@ -14,6 +14,7 @@
         "outputPath": "dist/apps/web",
         "browser": "apps/web/src/main.ts",
         "tsConfig": "apps/web/tsconfig.app.json",
+        "polyfills": ["@angular/localize/init"],
         "assets": [
           {
             "glob": "**/*",
@@ -111,12 +112,45 @@
         "command": "bash tools/deploy/web.sh"
       }
     },
+    "extract-i18n": {
+      "executor": "@angular/build:extract-i18n",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "buildTarget": "web:build:development",
+        "format": "json",
+        "outputPath": "apps/web/src/i18n",
+        "outFile": "messages.json"
+      }
+    },
     "test-arch": {
       "executor": "nx:run-commands",
       "cache": true,
       "inputs": ["default", "^default", "{workspaceRoot}/libs/ui/**/*.ts"],
       "options": {
         "command": "vitest run --config vitest.arch.config.ts",
+        "cwd": "apps/web"
+      }
+    },
+    "extract-i18n-check": {
+      "executor": "@angular/build:extract-i18n",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "buildTarget": "web:build:development",
+        "format": "json",
+        "outputPath": "dist/i18n-check",
+        "outFile": "messages.json"
+      }
+    },
+    "check-i18n": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/src/i18n/*.json",
+        "{projectRoot}/scripts/check-i18n.mjs",
+        "{projectRoot}/src/app/domains/user/util/locale.ts"
+      ],
+      "options": {
+        "command": "node scripts/check-i18n.mjs",
         "cwd": "apps/web"
       }
     }

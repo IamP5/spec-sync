@@ -24,6 +24,7 @@ import { UserPreferencesCoordinator } from '../api/preferences';
       type="button"
       class="min-h-9 w-full rounded-md px-3"
       [zSubMenu]="appearance"
+      i18n
     >
       Appearance
     </button>
@@ -54,8 +55,8 @@ import { UserPreferencesCoordinator } from '../api/preferences';
 export class UserAppearanceOverview {
   protected readonly preferences = inject(UserPreferencesCoordinator);
   protected readonly themes = [
-    { value: EDarkModes.LIGHT, label: 'Light' },
-    { value: EDarkModes.DARK, label: 'Dark' },
-    { value: EDarkModes.SYSTEM, label: 'System' },
+    { value: EDarkModes.LIGHT, label: $localize`Light` },
+    { value: EDarkModes.DARK, label: $localize`Dark` },
+    { value: EDarkModes.SYSTEM, label: $localize`System` },
   ];
 }

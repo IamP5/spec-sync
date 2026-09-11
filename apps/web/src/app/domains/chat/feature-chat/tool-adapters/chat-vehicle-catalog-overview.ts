@@ -33,7 +33,7 @@ import {
     }
     @if (result()?.items?.length === 0 && !result()?.hasMore) {
       @if (!result()?.notices?.length) {
-        <p class="text-sm text-muted-foreground" role="status">
+        <p class="text-sm text-muted-foreground" role="status" i18n>
           No configurations found for {{ query() }}.
         </p>
       }
@@ -71,7 +71,11 @@ export class ChatVehicleCatalogOverview
   );
   protected readonly query = computed(() => {
     const args = this.toolCall().args;
-    return [args['q'] || 'this search', args['market'], args['modelYear']]
+    return [
+      args['q'] || $localize`this search`,
+      args['market'],
+      args['modelYear'],
+    ]
       .filter((value) => typeof value === 'string' || typeof value === 'number')
       .join(' · ');
   });

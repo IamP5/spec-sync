@@ -4,8 +4,9 @@
       <div class="min-w-0">
         <p
           class="text-xs font-medium tracking-widest text-muted-foreground uppercase"
+          i18n
         >
-          Avaliações e contexto
+          Reviews and context
         </p>
         <h2
           class="mt-1 text-lg font-semibold tracking-tight [overflow-wrap:anywhere] md:text-xl"
@@ -19,9 +20,11 @@
         zSize="sm"
         class="min-h-11 min-w-11 shrink-0"
         (click)="closed.emit()"
-        aria-label="Fechar avaliações"
+        i18n-aria-label
+        aria-label="Close reviews"
+        i18n
       >
-        Fechar
+        Close
       </button>
     </div>
   </header>
@@ -29,13 +32,15 @@
     <details class="border-b px-4 md:px-7">
       <summary
         class="min-h-11 cursor-pointer content-center rounded text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring"
+        i18n
       >
-        Especificações e contexto
+        Specifications and context
       </summary>
       <div
         class="grid gap-3 py-3 text-sm md:grid-cols-2"
         role="region"
-        aria-label="Resumo das especificações"
+        i18n-aria-label
+        aria-label="Specification summary"
       >
         @for (configuration of context().comparison.configurations; track
         configuration.id) {
@@ -51,9 +56,9 @@
         </p>
         }
       </div>
-      <p class="mt-3 text-xs text-muted-foreground">
-        Relatos complementam a ficha técnica. O contexto e a versão avaliada
-        podem ser diferentes.
+      <p class="mt-3 text-xs text-muted-foreground" i18n>
+        Reports complement the specification sheet. The context and the reviewed
+        version may differ.
       </p>
     </details>
     <div class="border-b bg-muted/20 px-4 py-3 md:px-7">
@@ -61,9 +66,11 @@
         <input
           z-input
           #reviewQuery
-          aria-label="Buscar nos relatos"
+          i18n-aria-label
+          aria-label="Search the reports"
           [formField]="filterForm().query"
-          placeholder="Buscar nos relatos…"
+          i18n-placeholder
+          placeholder="Search the reports…"
           class="h-11 min-w-0 flex-1 text-base md:text-sm"
         />
         <button
@@ -73,8 +80,9 @@
           [attr.aria-expanded]="filtersExpanded()"
           [attr.aria-controls]="filtersId"
           (click)="filtersExpanded.set(!filtersExpanded())"
+          i18n
         >
-          Filtros{{ activeFilters() ? ' (' + activeFilters() + ')' : '' }}
+          Filters{{ activeFilters() ? ' (' + activeFilters() + ')' : '' }}
         </button>
       </div>
       <div
@@ -84,13 +92,14 @@
         [class.hidden]="!filtersExpanded()"
       >
         <label class="min-w-0 text-xs font-medium"
-          >Veículo
+          ><span i18n>Vehicle</span>
           <select
-            aria-label="Veículo"
+            i18n-aria-label
+            aria-label="Vehicle"
             [formField]="filterForm().vehicle"
             class="mt-1 block h-11 w-full min-w-0 rounded-lg border bg-background px-3 text-base focus-visible:outline-2 focus-visible:outline-ring md:text-sm"
           >
-            <option value="">Todos os veículos</option>
+            <option value="" i18n>All vehicles</option>
             @for (c of context().comparison.configurations; track c.id) {
             <option [value]="c.id">
               {{ c.brand }} {{ c.model }} · {{ c.name }}
@@ -99,13 +108,14 @@
           </select>
         </label>
         <label class="min-w-0 text-xs font-medium"
-          >Formato
+          ><span i18n>Format</span>
           <select
-            aria-label="Formato"
+            i18n-aria-label
+            aria-label="Format"
             [formField]="filterForm().media"
             class="mt-1 block h-11 w-full rounded-lg border bg-background px-3 text-base focus-visible:outline-2 focus-visible:outline-ring md:text-sm"
           >
-            <option value="">Todos os formatos</option>
+            <option value="" i18n>All formats</option>
             @for (type of media(); track type) {
             <option [value]="type">{{ type }}</option>
             }
@@ -115,12 +125,13 @@
     </div>
     <section
       class="px-4 py-4 md:px-7"
-      aria-label="Avaliações encontradas"
+      i18n-aria-label
+      aria-label="Reviews found"
       [attr.aria-busy]="loading()"
     >
       @if (loading()) {
-      <p class="mb-4 text-sm text-muted-foreground" role="status">
-        Consultando avaliações relacionadas…
+      <p class="mb-4 text-sm text-muted-foreground" role="status" i18n>
+        Looking up related reviews…
       </p>
       <div class="grid gap-4 md:grid-cols-2" aria-hidden="true">
         @for (n of [1,2,3,4]; track n) {<z-skeleton
@@ -132,9 +143,9 @@
         class="mb-4 rounded-xl border p-4 text-sm leading-6 [overflow-wrap:anywhere]"
         role="alert"
       >
-        <p>
-          Não foi possível consultar as avaliações{{ failedNames() ? ' de ' +
-          failedNames() : '' }}. Isso não significa que não existam relatos.
+        <p i18n>
+          The reviews{{ failedNames() ? ' for ' + failedNames() : '' }} could
+          not be retrieved. That does not mean no reports exist.
         </p>
         <button
           z-button
@@ -142,19 +153,20 @@
           zSize="sm"
           class="mt-3 min-h-11"
           (click)="retried.emit()"
+          i18n
         >
-          Tentar novamente
+          Try again
         </button>
       </div>
       } @if (items().length) {
-      <p class="mb-4 text-xs text-muted-foreground" role="status">
-        {{ visible().length }} de {{ items().length }} relatos carregados · {{
-        selectedReviews().length }} selecionados
+      <p class="mb-4 text-xs text-muted-foreground" role="status" i18n>
+        {{ visible().length }} of {{ items().length }} reports loaded · {{
+        selectedReviews().length }} selected
       </p>
       @if (limited()) {
-      <p class="mb-4 text-xs text-muted-foreground">
-        Exibindo até 30 relatos por veículo. Use o chat para uma pesquisa mais
-        específica.
+      <p class="mb-4 text-xs text-muted-foreground" i18n>
+        Showing up to 30 reports per vehicle. Use the chat for a more specific
+        search.
       </p>
       }
       <div class="grid items-start gap-4 md:grid-cols-2">
@@ -173,18 +185,18 @@
               zSize="sm"
               class="min-h-11"
               [attr.aria-pressed]="selected().includes(review.id)"
-              [attr.aria-label]="'Selecionar relato: ' + review.title"
+              [attr.aria-label]="selectLabel(review.title)"
               [zDisabled]="!selected().includes(review.id) && selected().length >= 8"
               (click)="selectionToggled.emit(review.id)"
             >
-              {{ selected().includes(review.id) ? 'Selecionado ✓' : 'Selecionar
-              +' }}
+              {{ selected().includes(review.id) ? selectedLabel : selectLabel2
+              }}
             </button>
           </div>
           <h3 class="text-base font-semibold leading-6">{{ review.title }}</h3>
           <p class="mt-1 text-xs text-muted-foreground">
-            {{ review.author || 'Autor não informado' }}{{ review.publishedOn ?
-            ' · ' + review.publishedOn : '' }}
+            {{ review.author || unknownAuthor }}{{ review.publishedOn ? ' · ' +
+            review.publishedOn : '' }}
           </p>
           <p class="mt-2 text-xs font-medium">{{ vehicleName(review) }}</p>
           <p class="mt-1 text-xs text-muted-foreground">
@@ -196,15 +208,16 @@
             {{ review.excerpt }}
           </blockquote>
           @if (review.conditions) {
-          <p class="mt-3 text-xs leading-5 text-muted-foreground">
-            Condições: {{ format(review.conditions) }}
+          <p class="mt-3 text-xs leading-5 text-muted-foreground" i18n>
+            Conditions: {{ format(review.conditions) }}
           </p>
           }
           <details class="mt-4 text-xs">
             <summary
               class="min-h-11 cursor-pointer content-center rounded py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring"
+              i18n
             >
-              Contexto e origem
+              Context and origin
             </summary>
             @if (review.context) {
             <p class="mt-2 leading-6 whitespace-pre-wrap">
@@ -212,9 +225,9 @@
             </p>
             }
             <p class="mt-3 text-muted-foreground">
-              {{ review.locator || 'Localização não informada' }}{{
-              review.startSeconds !== null && review.startSeconds !== undefined
-              ? ' · ' + review.startSeconds + 's' : '' }}
+              {{ review.locator || unknownLocation }}{{ review.startSeconds !==
+              null && review.startSeconds !== undefined ? ' · ' +
+              review.startSeconds + 's' : '' }}
             </p>
             @if (link(review); as href) {<a
               z-button
@@ -224,41 +237,43 @@
               [href]="href"
               target="_blank"
               rel="noopener noreferrer"
-              >Abrir fonte ↗<span class="sr-only"> (nova aba)</span></a
+              i18n
+              >Open source ↗<span class="sr-only"> (new tab)</span></a
             >}
           </details>
         </article>
         } @empty {
         <div class="col-span-full py-10 text-center">
-          <p class="text-sm">Nenhum relato corresponde aos filtros.</p>
+          <p class="text-sm" i18n>No report matches the filters.</p>
           <button
             z-button
             zType="outline"
             class="mt-4 min-h-11"
             (click)="reset()"
+            i18n
           >
-            Limpar filtros
+            Clear filters
           </button>
         </div>
         }
       </div>
       } @else if (!failedNames() && !failed()) {
       <div class="mx-auto max-w-md py-10 text-center">
-        <h3 class="font-medium">
-          Ainda não há avaliações indexadas para este item
+        <h3 class="font-medium" i18n>
+          No reviews are indexed for this item yet
         </h3>
-        <p class="mt-2 text-sm leading-6 text-muted-foreground">
-          Você pode pedir ao assistente para encontrar artigos e vídeos. Os
-          links encontrados serão apresentados como referências ainda não
-          verificadas.
+        <p class="mt-2 text-sm leading-6 text-muted-foreground" i18n>
+          You can ask the assistant to find articles and videos. The links it
+          finds are presented as references that have not been verified yet.
         </p>
         <button
           z-button
           zType="outline"
           class="mt-5 min-h-11"
           (click)="discoverRequested.emit()"
+          i18n
         >
-          Pesquisar com o assistente ↗
+          Search with the assistant ↗
         </button>
       </div>
       } }
@@ -270,14 +285,15 @@
     @if (selectedReviews().length) {
     <div
       class="mb-2 flex gap-2 overflow-x-auto pb-1 md:max-h-24 md:flex-wrap md:overflow-y-auto"
-      aria-label="Relatos selecionados"
+      i18n-aria-label
+      aria-label="Selected reports"
     >
       @for (review of selectedReviews(); track review.id) {<button
         z-button
         zType="secondary"
         zSize="sm"
         class="min-h-11 max-w-[80%] shrink-0 md:max-w-full"
-        [attr.aria-label]="'Remover seleção: ' + review.title"
+        [attr.aria-label]="removeSelectionLabel(review.title)"
         (click)="selectionToggled.emit(review.id)"
       >
         <span class="truncate">{{ review.title }}</span> ×</button
@@ -286,11 +302,11 @@
     }
     <div class="flex items-center justify-between gap-3">
       <p class="text-xs text-muted-foreground">
-        <span role="status"
-          >{{ selectedReviews().length }} de 8 selecionados</span
+        <span role="status" i18n
+          >{{ selectedReviews().length }} of 8 selected</span
         >
-        <span class="mt-1 hidden md:block"
-          >Revise a pergunta no chat antes de enviar.</span
+        <span class="mt-1 hidden md:block" i18n
+          >Review the question in the chat before sending.</span
         >
       </p>
       <button
@@ -298,8 +314,9 @@
         class="min-h-11"
         [zDisabled]="!selectedReviews().length || loading()"
         (click)="askRequested.emit()"
+        i18n
       >
-        Levar ao chat{{ selectedReviews().length ? ' (' +
+        Take to the chat{{ selectedReviews().length ? ' (' +
         selectedReviews().length + ')' : '' }} ↗
       </button>
     </div>

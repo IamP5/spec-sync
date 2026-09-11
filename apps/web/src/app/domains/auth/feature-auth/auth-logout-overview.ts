@@ -16,11 +16,12 @@ import { AuthSessionCoordinator } from '../api/authentication';
       class="min-h-9 w-full rounded-md px-3"
       (click)="store.logout()"
       [disabled]="store.logoutPending()"
+      i18n
     >
       Sign out
     </button>
     @if (store.error()) {
-      <p role="alert" class="px-3 text-sm text-destructive">
+      <p role="alert" class="px-3 text-sm text-destructive" i18n>
         We couldn’t sign you out. Please try again.
       </p>
     }

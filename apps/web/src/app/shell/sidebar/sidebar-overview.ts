@@ -59,23 +59,29 @@ import { AccountMenuOverview } from '../account-menu/account-menu-overview';
         <a
           class="sidebar-expanded text-lg font-semibold"
           routerLink="/"
+          i18n-aria-label
           aria-label="SpecSync home"
           (click)="onNavigate()"
           >SpecSync</a
         >
-        <button z-sidebar-trigger aria-label="Toggle sidebar"></button>
+        <button
+          z-sidebar-trigger
+          i18n-aria-label
+          aria-label="Toggle sidebar"
+        ></button>
       </div>
       <a
         z-sidebar-menu-button
         routerLink="/"
         data-action="new-chat"
+        i18n-aria-label
         aria-label="New chat"
         (click)="onNavigate()"
         ><ng-icon
           name="lucideSquarePen"
           class="size-4 shrink-0"
           aria-hidden="true"
-        /><span class="sidebar-expanded">New chat</span></a
+        /><span class="sidebar-expanded" i18n>New chat</span></a
       >
       @if (session.authenticated()) {
         <a z-sidebar-menu-button routerLink="/ingestion" (click)="onNavigate()"
@@ -83,7 +89,7 @@ import { AccountMenuOverview } from '../account-menu/account-menu-overview';
             name="lucideFileInput"
             class="size-4 shrink-0"
             aria-hidden="true"
-          /><span class="sidebar-expanded">Vehicle ingestion</span></a
+          /><span class="sidebar-expanded" i18n>Vehicle ingestion</span></a
         >
       }
     </z-sidebar-header>
@@ -99,7 +105,7 @@ import { AccountMenuOverview } from '../account-menu/account-menu-overview';
         </z-sidebar-footer>
       }
     } @else {
-      <p class="sidebar-expanded p-4 text-sm text-muted-foreground">
+      <p class="sidebar-expanded p-4 text-sm text-muted-foreground" i18n>
         Sign in to open your conversations.
       </p>
       <div class="mt-auto p-3">
@@ -107,6 +113,7 @@ import { AccountMenuOverview } from '../account-menu/account-menu-overview';
           z-button
           type="button"
           class="w-full px-2"
+          i18n-aria-label
           aria-label="Sign in"
           (click)="login()"
         >
@@ -115,7 +122,7 @@ import { AccountMenuOverview } from '../account-menu/account-menu-overview';
             class="size-4 shrink-0"
             aria-hidden="true"
           />
-          <span class="sidebar-expanded">Sign in</span>
+          <span class="sidebar-expanded" i18n>Sign in</span>
         </button>
       </div>
     }`,
@@ -145,7 +152,7 @@ export class SidebarOverview {
   }
   protected login() {
     this.dialog = this.dialogs.create({
-      zTitle: 'Welcome to SpecSync',
+      zTitle: $localize`Welcome to SpecSync`,
       zContent: AuthLoginOverview,
       zHideFooter: true,
       zWidth: '24rem',

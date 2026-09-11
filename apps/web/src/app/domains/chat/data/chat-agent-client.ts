@@ -1,5 +1,12 @@
 import type { AbstractAgent, Message } from '@ag-ui/client';
-import { computed, inject, Injectable, Signal, signal } from '@angular/core';
+import {
+  computed,
+  inject,
+  Injectable,
+  LOCALE_ID,
+  Signal,
+  signal,
+} from '@angular/core';
 import { CopilotKit, injectAgentStore } from '@copilotkit/angular';
 import { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
@@ -17,6 +24,7 @@ import {
 } from './chat-agent';
 import {
   CHAT_EFFORT_PROPERTY,
+  CHAT_LOCALE_PROPERTY,
   CHAT_MODE_PROPERTY,
   CHAT_ROLE_MODELS_PROPERTY,
 } from './chat-model';
@@ -47,6 +55,7 @@ export class ChatAgentClient {
   private readonly authenticate = inject(BEFORE_CHAT_REQUEST);
   private readonly copilotKit = inject(CopilotKit);
   private readonly ingestion = inject(IngestionActivity);
+  private readonly locale = inject(LOCALE_ID);
   private readonly agentStore = injectAgentStore(CHAT_AGENT_ID);
   private readonly _placements = signal<Map<string, string>>(new Map());
   private readonly _threadId = signal(createId());
@@ -238,7 +247,10 @@ export class ChatAgentClient {
       );
     this.executingGeneration = generation;
     const running = this.copilotKit.core
-      .runAgent({ agent, forwardedProps: forwardedPropsOf(options) })
+      .runAgent({
+        agent,
+        forwardedProps: forwardedPropsOf(options, this.locale),
+      })
       .then(() => undefined)
       .finally(() => {
         for (const contextId of contextIds)
@@ -313,16 +325,20 @@ export class ChatAgentClient {
   }
 }
 
-/** The run options as forwarded properties; nothing when nothing was picked. */
+/**
+ * The run options as forwarded properties. The locale always travels with a
+ * run, so the agent answers in the language the interface is running in.
+ */
 function forwardedPropsOf(
   options: ChatRunOptions,
+  locale: string,
 ): Record<string, unknown> | undefined {
-  const props: Record<string, unknown> = {};
+  const props: Record<string, unknown> = { [CHAT_LOCALE_PROPERTY]: locale };
   if (options.mode) props[CHAT_MODE_PROPERTY] = options.mode;
   if (options.roleModels && Object.keys(options.roleModels).length)
     props[CHAT_ROLE_MODELS_PROPERTY] = options.roleModels;
   if (options.effort) props[CHAT_EFFORT_PROPERTY] = options.effort;
-  return Object.keys(props).length ? props : undefined;
+  return props;
 }
 
 function lastIndexOfRole(messages: Message[], role: Message['role']): number {

@@ -92,7 +92,7 @@ export class IngestionClient {
                   error instanceof HttpErrorResponse &&
                   typeof error.error?.error === 'string'
                     ? error.error.error
-                    : 'Não foi possível publicar. Atualize a revisão e tente novamente.',
+                    : $localize`Could not publish. Refresh the review and try again.`,
                 ),
             ),
           ),

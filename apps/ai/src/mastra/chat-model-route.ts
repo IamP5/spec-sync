@@ -6,6 +6,7 @@ import {
   creditsEnabled,
   type ModelTariff,
 } from './credits/credits-client';
+import { CHAT_LOCALE_KEY } from './language';
 import {
   type AutoModeSignals,
   CHAT_EFFORT_KEY,
@@ -54,6 +55,13 @@ export const CHAT_MODEL_PROPERTY = 'model';
 /** Key of the CopilotKit property that carries the picked reasoning effort. */
 export const CHAT_EFFORT_PROPERTY = 'effort';
 
+/**
+ * Key of the CopilotKit property that carries the language the browser is
+ * running in, as a BCP 47 tag. The agent answers in it; an unknown tag is
+ * ignored (see `language.ts`).
+ */
+export const CHAT_LOCALE_PROPERTY = 'locale';
+
 /** The reference turn every mode estimate is priced on: uncached input tokens. */
 export const REFERENCE_INPUT_TOKENS = 8_000;
 
@@ -70,6 +78,8 @@ export interface RequestedRun {
   roleModels?: Record<string, string>;
   model?: string;
   effort?: string;
+  /** BCP 47 tag of the interface the run was started from. */
+  locale?: string;
   runId?: string;
   threadId?: string;
   /** Signals the auto heuristic reads off the run's messages. */
@@ -253,9 +263,10 @@ function pricedOrCheapest(
 
 /**
  * `setContext` hook of the CopilotKit route: reads the mode, the advanced role
- * overrides and the reasoning effort the browser asked for and stores them in
- * the request context, where every role resolution picks them up
- * (`modelForRole`, `chatProviderOptionsFor`).
+ * overrides, the reasoning effort and the interface language the browser asked
+ * for and stores them in the request context, where every role resolution
+ * picks them up (`modelForRole`, `chatProviderOptionsFor`) and where the agent
+ * reads the language (`languageInstruction`).
  *
  * Auto is resolved here, before the agent's model resolver runs, so the
  * routing decision is made once and is already pinned when the run is admitted
@@ -271,11 +282,13 @@ export async function setChatModelContext(
   c: ContextWithMastra,
   requestContext: RequestContext,
 ): Promise<void> {
-  const { mode, roleModels, model, effort, signals } = await requestedRun(
-    c.req.raw,
-  );
+  const { mode, roleModels, model, effort, locale, signals } =
+    await requestedRun(c.req.raw);
   if (effort) {
     requestContext.set(CHAT_EFFORT_KEY, effort);
+  }
+  if (locale) {
+    requestContext.set(CHAT_LOCALE_KEY, locale);
   }
   const overrides = { ...roleModels };
   // One release of compatibility: a browser that only knows `model` meant a
@@ -312,6 +325,7 @@ export async function requestedRun(request: Request): Promise<RequestedRun> {
       roleModels: roleModelsOf(props),
       model: stringProperty(props, CHAT_MODEL_PROPERTY),
       effort: stringProperty(props, CHAT_EFFORT_PROPERTY),
+      locale: stringProperty(props, CHAT_LOCALE_PROPERTY),
       runId: stringProperty(body, 'runId'),
       threadId: stringProperty(body, 'threadId'),
       signals: autoModeSignals(body),

@@ -118,7 +118,7 @@ import { VehicleCatalogItems } from './vehicle-catalog-items';
           >
             <span>
               <span class="block text-lg font-semibold">+{{ hidden() }}</span>
-              <span class="block text-xs text-muted-foreground">more</span>
+              <span class="block text-xs text-muted-foreground" i18n>more</span>
             </span>
           </button>
         } @else if (nextPageSize()) {
@@ -129,10 +129,10 @@ import { VehicleCatalogItems } from './vehicle-catalog-items';
           >
             <span>
               <ng-icon name="lucideArrowRight" aria-hidden="true" />
-              <span class="block text-xs font-medium"
+              <span class="block text-xs font-medium" i18n
                 >Load next {{ nextPageSize() }}</span
               >
-              <span class="block text-xs text-muted-foreground"
+              <span class="block text-xs text-muted-foreground" i18n
                 >from the catalog</span
               >
             </span>

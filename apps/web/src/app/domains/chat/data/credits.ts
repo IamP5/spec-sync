@@ -13,11 +13,30 @@ export const MICRO_PER_CREDIT = 1_000_000;
 /** Below a hundredth of a credit an amount is named instead of shown. */
 const SMALLEST_SHOWN = 0.01;
 
-const whole = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
-const fraction = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+/**
+ * One pair of number formats per locale. The document runs in a single
+ * language, so this holds one entry in practice; the map only keeps the
+ * function pure for the callers that pass a different one.
+ */
+const formats = new Map<
+  string,
+  { whole: Intl.NumberFormat; fraction: Intl.NumberFormat }
+>();
+
+function formatsFor(locale: string) {
+  let format = formats.get(locale);
+  if (!format) {
+    format = {
+      whole: new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }),
+      fraction: new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    };
+    formats.set(locale, format);
+  }
+  return format;
+}
 
 const modelPriceSchema = z.object({
   provider: z.string().min(1),
@@ -97,13 +116,27 @@ export function walletOf(
  * The word "credits" is not part of the amount; it is added where no label
  * already implies it.
  */
-export function formatCredits(micro: number): string {
+/**
+ * Whether an amount is too small to show, so callers that wrap it can leave
+ * out an approximation sign that "less than" already implies.
+ */
+export function isBelowSmallestShown(micro: number): boolean {
+  return (
+    Number.isFinite(micro) &&
+    micro > 0 &&
+    micro / MICRO_PER_CREDIT < SMALLEST_SHOWN
+  );
+}
+
+export function formatCredits(micro: number, locale = 'en-US'): string {
+  const { whole, fraction } = formatsFor(locale);
   if (!Number.isFinite(micro) || micro <= 0) {
     return whole.format(0);
   }
   const credits = micro / MICRO_PER_CREDIT;
   if (credits < SMALLEST_SHOWN) {
-    return `less than ${fraction.format(SMALLEST_SHOWN)}`;
+    const smallest = fraction.format(SMALLEST_SHOWN);
+    return $localize`less than ${smallest}:amount:`;
   }
   if (credits < 1) {
     return fraction.format(credits);

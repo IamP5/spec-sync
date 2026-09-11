@@ -17,7 +17,7 @@ import { ZardButtonComponent } from '@/ui/components/button';
 import { ZardSpinnerComponent } from '@/ui/components/spinner';
 
 import type { IngestionStatus } from '../../data/ingestion-contracts';
-import { RUN_STEPS, runStage } from '../ingestion-presentation';
+import { runStage, runSteps } from '../ingestion-presentation';
 
 /** Progress of one run: the four steps, the current badge and what blocks it. */
 @Component({
@@ -39,12 +39,12 @@ import { RUN_STEPS, runStage } from '../ingestion-presentation';
         stage().label
       }}</z-badge>
       @if (status() === 'PUBLISHED') {
-        <z-badge zType="secondary" data-role="projection-status">
+        <z-badge zType="secondary" data-role="projection-status" i18n>
           Graph {{ projectionLabel() }}
         </z-badge>
       }
       @if (attempts() > 1 && !stage().terminal) {
-        <span class="text-xs text-muted-foreground"
+        <span class="text-xs text-muted-foreground" i18n
           >Attempt {{ attempts() }}</span
         >
       }
@@ -55,13 +55,18 @@ import { RUN_STEPS, runStage } from '../ingestion-presentation';
         type="button"
         class="ml-auto"
         (click)="refreshRequested.emit()"
+        i18n-aria-label
         aria-label="Refresh status"
       >
         <ng-icon name="lucideRefreshCw" aria-hidden="true" />
-        Refresh
+        <span i18n>Refresh</span>
       </button>
     </div>
-    <ol class="mt-3 grid grid-cols-4 gap-2" aria-label="Import progress">
+    <ol
+      class="mt-3 grid grid-cols-4 gap-2"
+      i18n-aria-label
+      aria-label="Import progress"
+    >
       @for (step of steps; track step; let index = $index) {
         <li
           class="flex flex-col gap-1.5 text-xs"
@@ -84,7 +89,11 @@ import { RUN_STEPS, runStage } from '../ingestion-presentation';
             ) {
               <ng-icon name="lucideCheck" class="size-3" aria-hidden="true" />
             } @else if (index === stage().step) {
-              <z-spinner class="size-3" zAriaLabel="In progress" />
+              <z-spinner
+                class="size-3"
+                i18n-zAriaLabel
+                zAriaLabel="In progress"
+              />
             }
             {{ step }}
           </span>
@@ -92,7 +101,7 @@ import { RUN_STEPS, runStage } from '../ingestion-presentation';
       }
     </ol>
     @if (status() === 'QUEUED' || status() === 'PROCESSING') {
-      <p class="mt-3 text-sm text-muted-foreground" role="status">
+      <p class="mt-3 text-sm text-muted-foreground" role="status" i18n>
         The source is being captured and read. PDFs are transcribed page by
         page, then each configuration is extracted and checked against the text.
         This can take a few minutes; progress is saved and this view refreshes
@@ -127,15 +136,15 @@ export class IngestionRunStatusPane {
   readonly attempts = input(0);
   readonly refreshRequested = output<void>();
 
-  protected readonly steps = RUN_STEPS;
+  protected readonly steps = runSteps();
   protected readonly stage = computed(() => runStage(this.status()));
   protected readonly projectionLabel = computed(
     () =>
       (
         ({
-          PENDING: 'update pending',
-          CURRENT: 'up to date',
-          UNCHANGED: 'unchanged',
+          PENDING: $localize`update pending`,
+          CURRENT: $localize`up to date`,
+          UNCHANGED: $localize`unchanged`,
         }) as Record<string, string>
       )[this.projectionStatus()] ?? this.projectionStatus().toLowerCase(),
   );

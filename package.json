@@ -72,6 +72,7 @@
     "@angular/compiler": "~22.1.0",
     "@angular/core": "~22.1.0",
     "@angular/forms": "~22.1.0",
+    "@angular/localize": "~22.1.0",
     "@angular/platform-browser": "~22.1.0",
     "@angular/router": "~22.1.0",
     "@ng-icons/core": "^36.0.0",

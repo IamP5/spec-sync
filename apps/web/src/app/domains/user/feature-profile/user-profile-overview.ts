@@ -26,23 +26,23 @@ import { UserDetailStore } from './user-detail-store';
         class="shrink-0 rounded-full animate-in fade-in duration-300"
         [zSrc]="photoShown() ? (user()?.photoUrl ?? '') : ''"
         [zFallback]="photoShown() ? '' : initials()"
-        [zAlt]="user()?.displayName || 'User'"
+        [zAlt]="user()?.displayName || anonymous"
       />
       <span
         class="sidebar-expanded grid min-w-0 text-left leading-tight animate-in fade-in duration-300"
       >
         <span class="truncate text-sm font-medium">{{
-          user()?.displayName || 'User'
+          user()?.displayName || anonymous
         }}</span>
         <span class="truncate text-xs text-muted-foreground">{{
           user()?.email
         }}</span>
       </span>
       @if (store.userError()) {
-        <span role="alert" class="text-xs">Profile unavailable.</span>
+        <span role="alert" class="text-xs" i18n>Profile unavailable.</span>
       }
     } @else {
-      <span class="sr-only" role="status">Loading your account…</span>
+      <span class="sr-only" role="status" i18n>Loading your account…</span>
       <z-skeleton
         class="size-8 shrink-0 rounded-full"
         data-role="profile-loading"
@@ -62,12 +62,14 @@ import { UserDetailStore } from './user-detail-store';
   `,
 })
 export class UserProfileOverview {
+  /** Stands in for a profile that has no name yet. */
+  protected readonly anonymous = $localize`User`;
   protected readonly store = inject(UserDetailStore);
   protected readonly user = this.store.userValue;
   protected readonly ready = this.store.ready;
   protected readonly photoShown = this.store.photoShown;
   protected readonly initials = computed(() =>
-    (this.user()?.displayName ?? 'User')
+    (this.user()?.displayName ?? this.anonymous)
       .trim()
       .split(/\s+/)
       .slice(0, 2)

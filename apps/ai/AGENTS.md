@@ -84,7 +84,7 @@ apps/ai/
   never a second HTTP server.
 - Names are part of the contract with `apps/web`: agent id `chat`, route
   `/copilotkit`, the catalog route `/chat/models` and the `mode`,
-  `roleModels` and `effort` properties — plus `model`, kept for one release
+  `roleModels`, `effort` and `locale` properties — plus `model`, kept for one release
   (`chat-model-route.ts`), the thread routes under
   `/chat/threads` (`threads/routes.ts`), the credits route `/chat/credits`
   (`credits/credits-route.ts`) and its error message format, vehicle tool names in
@@ -111,6 +111,12 @@ apps/ai/
   accepted for one release as a synonym for `roleModels.chat`. An override is
   ignored (never fatal) when it names a model outside `SPECSYNC_CHAT_MODELS`,
   one that cannot do the role's job, or one the wallet cannot price.
+- The browser also sends the language its interface runs in
+  (`forwardedProps.locale`, a BCP 47 tag). `setChatModelContext` stores it and
+  the agent's instructions name that language, so a Portuguese interface gets a
+  Portuguese answer whatever language the user types in. A tag `language.ts`
+  does not know is ignored and the agent follows the conversation instead;
+  adding a locale to the web app means adding it there too.
 - The picked reasoning effort (`forwardedProps.effort`,
   `auto`/`low`/`medium`/`high` from `chatEfforts()`) becomes a Gemini thinking
   level (3.x) or thinking budget (2.5) or an OpenAI/Anthropic

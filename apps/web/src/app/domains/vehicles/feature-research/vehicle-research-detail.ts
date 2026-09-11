@@ -60,6 +60,24 @@ import { ResearchResultPane } from './ui/research-result-pane';
   templateUrl: './vehicle-research-detail.html',
 })
 export class VehicleResearchDetail {
+  protected readonly refreshFailed = $localize`The progress could not be updated. The research continues; we will try again.`;
+  protected readonly backToResults = $localize`Back to the research results`;
+  protected readonly seePublication = $localize`See the catalog publication`;
+  protected readonly reviewAndImport = $localize`Review and import into the catalog`;
+  protected readonly evidenceTitle = $localize`Research evidence`;
+  protected readonly peopleTitle = $localize`Interested people`;
+  protected readonly myProfileTitle = $localize`Your profile on this research`;
+  protected readonly joinTitle = $localize`Join the conversation`;
+  protected readonly profileShared = $localize`Profile shared.`;
+  protected readonly profileRemoved = $localize`Your profile was removed.`;
+  protected readonly savingLabel = $localize`Saving…`;
+  protected readonly saveProfileLabel = $localize`Save profile`;
+  protected readonly shareProfileLabel = $localize`Share my profile`;
+
+  protected contactLabel(name: string): string {
+    return $localize`Open ${name}:name:'s contact in another tab`;
+  }
+
   protected readonly people = inject(ResearchInterestSearchStore);
   protected readonly participation = inject(ResearchInterestDetailStore);
   protected readonly profileModel = linkedSignal({

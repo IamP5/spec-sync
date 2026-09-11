@@ -47,6 +47,12 @@ The binding rules live in the docs; this section only names the red lines.
   browser persists a conversation.
 - Add design-system components with the Zard CLI; never hand-edit
   `libs/ui` to add application logic.
+- User-visible text is written in English (the source locale) and marked for
+  translation (`i18n`, `i18n-{attribute}`, ICU, `$localize`); formatting goes
+  through `LOCALE_ID`, never a hardcoded locale tag. After changing such text,
+  run `nx run web:extract-i18n` and translate the new ids in
+  `src/i18n/messages.pt-BR.json` and `messages.es-419.json`. See
+  `docs/adr/0008-runtime-translation.md`.
 - The theme lives in `libs/ui/styles.css`: Ford blue for primary actions
   and focus only, neutral gray surfaces, hover fills and borders, and a
   `--radius` of 0.75rem (controls `rounded-lg` 12px, menu items and small
@@ -58,6 +64,7 @@ The binding rules live in the docs; this section only names the red lines.
 
 - Lint (Sheriff + Nx boundaries): `npm exec -- nx run-many -t lint -p web,ui`
 - Architecture tests (tsarch): `npm exec -- nx run web:test-arch`
+- Translation completeness: `npm exec -- nx run web:check-i18n`
 - Everything incl. unit tests and build: `npm run verify`
 - The checks are declared in `apps/web/checks.mjs`. The agent Stop hooks and
   the pre-commit hook run the fast ones whenever files under `apps/web` or

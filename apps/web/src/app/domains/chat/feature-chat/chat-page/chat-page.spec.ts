@@ -157,7 +157,7 @@ describe('ChatPage', () => {
     const card = fixture.nativeElement.querySelector(
       'app-vehicle-comparison-card',
     );
-    expect(card?.textContent).toContain('Opcional');
+    expect(card?.textContent).toContain('Optional');
     expect(card?.textContent).toContain('Black');
     expect(card?.querySelectorAll('.comparison-legend li').length).toBe(2);
   });

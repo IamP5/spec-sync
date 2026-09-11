@@ -81,6 +81,9 @@ export class VehicleIngestionLaunchEdit {
   readonly cancellable = input(false, { transform: booleanAttribute });
   readonly started = output<IngestionRun>();
   readonly cancelled = output<void>();
+  protected readonly sourceUrlRequired = $localize`A source URL is required.`;
+  protected readonly startingLabel = $localize`Starting…`;
+  protected readonly startLabel = $localize`Start extraction`;
 
   protected readonly store = inject(IngestionDetailStore);
   protected readonly hasKey = this.store.hasKey;
@@ -107,7 +110,10 @@ export class VehicleIngestionLaunchEdit {
     validate(p.sourceUrl, ({ value }) =>
       /^https:\/\//.test(value().trim())
         ? undefined
-        : { kind: 'https', message: 'Use an HTTPS manufacturer URL.' },
+        : {
+            kind: 'https',
+            message: $localize`Use an HTTPS manufacturer URL.`,
+          },
     );
     required(p.brand);
     required(p.model);
@@ -118,7 +124,7 @@ export class VehicleIngestionLaunchEdit {
         ? undefined
         : {
             kind: 'limit',
-            message: `Import at most ${MAX_INGESTION_CONFIGURATIONS} configurations per run.`,
+            message: $localize`Import at most ${MAX_INGESTION_CONFIGURATIONS}:limit: configurations per run.`,
           },
     );
   });

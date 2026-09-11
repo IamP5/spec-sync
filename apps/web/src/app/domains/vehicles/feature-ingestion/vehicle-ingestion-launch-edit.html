@@ -1,8 +1,8 @@
 <form (submit)="start($event)" class="space-y-4" novalidate>
   @if (!compact()) {
   <div>
-    <h2 class="text-lg font-semibold">Import specifications</h2>
-    <p class="mt-1 text-sm text-muted-foreground">
+    <h2 class="text-lg font-semibold" i18n>Import specifications</h2>
+    <p class="mt-1 text-sm text-muted-foreground" i18n>
       Brazilian market. One official Ford, Toyota or Nissan HTML page or PDF (up
       to 24 pages) per run. A brochure that lists several versions imports each
       of them; name the configurations to import, or leave the list empty to
@@ -11,7 +11,7 @@
   </div>
   }
   <label class="block text-sm">
-    <span class="mb-1 block font-medium">Official source URL</span>
+    <span class="mb-1 block font-medium" i18n>Official source URL</span>
     <input
       z-input
       type="url"
@@ -21,41 +21,43 @@
     @if (launchForm.sourceUrl().touched() &&
     launchForm.sourceUrl().errors().length) {
     <span class="mt-1 block text-xs text-destructive">
-      {{ launchForm.sourceUrl().errors()[0].message || 'A source URL is
-      required.' }}
+      {{ launchForm.sourceUrl().errors()[0].message || sourceUrlRequired }}
     </span>
     }
   </label>
   <div class="grid gap-4 sm:grid-cols-3">
     <label class="block text-sm">
-      <span class="mb-1 block font-medium">Brand</span>
+      <span class="mb-1 block font-medium" i18n>Brand</span>
       <input z-input [formField]="launchForm.brand" placeholder="Ford" />
     </label>
     <label class="block text-sm">
-      <span class="mb-1 block font-medium">Model</span>
+      <span class="mb-1 block font-medium" i18n>Model</span>
       <input z-input [formField]="launchForm.model" placeholder="Ranger" />
     </label>
     <label class="block text-sm">
-      <span class="mb-1 block font-medium">Model year</span>
+      <span class="mb-1 block font-medium" i18n>Model year</span>
       <input z-input type="number" [formField]="launchForm.modelYear" />
     </label>
   </div>
   <label class="block text-sm">
     <span class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-      <span class="font-medium">Configurations to import</span>
+      <span class="font-medium" i18n>Configurations to import</span>
       <span
         class="text-xs text-muted-foreground"
         data-role="configuration-count"
       >
-        @if (configurationCount()) { {{ configurationCount() }} of {{
-        maxConfigurations }} } @else { Empty: every configuration the source
-        presents }
+        @if (configurationCount()) {
+        <span i18n>{{ configurationCount() }} of {{ maxConfigurations }}</span>
+        } @else {
+        <span i18n>Empty: every configuration the source presents</span>
+        }
       </span>
     </span>
     <textarea
       z-textarea
       rows="3"
       [formField]="launchForm.configurations"
+      i18n-placeholder
       placeholder="One per line, e.g.&#10;Limited 3.0 V6 AT Diesel&#10;XLT 2.0 AT Diesel"
     ></textarea>
     @if (launchForm.configurations().errors().length) {
@@ -68,16 +70,17 @@
   <label class="block text-sm">
     <span class="mb-1 flex items-center gap-1 font-medium">
       <ng-icon name="lucideKeyRound" aria-hidden="true" />
-      Curator key
+      <span i18n>Curator key</span>
     </span>
     <input
       z-input
       type="password"
       autocomplete="off"
       [formField]="launchForm.key"
+      i18n-placeholder
       placeholder="Required to start an import"
     />
-    <span class="mt-1 block text-xs text-muted-foreground">
+    <span class="mt-1 block text-xs text-muted-foreground" i18n>
       Kept in memory for this page load and sent only to the API.
     </span>
   </label>
@@ -97,7 +100,7 @@
       [zDisabled]="launchForm().invalid() || busy() || (!hasKey() && !model().key.trim())"
     >
       <ng-icon name="lucidePlay" aria-hidden="true" />
-      {{ busy() ? 'Starting…' : 'Start extraction' }}
+      {{ busy() ? startingLabel : startLabel }}
     </button>
     @if (cancellable()) {
     <button
@@ -107,6 +110,7 @@
       data-action="cancel"
       [zDisabled]="busy()"
       (click)="cancelled.emit()"
+      i18n
     >
       Not now
     </button>

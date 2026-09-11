@@ -7,7 +7,7 @@ import type {
 import { InjectionToken } from '@angular/core';
 import type { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
-import { toolLabel } from '../util/tool-label';
+import { toolLabel, type ToolStatus } from '../util/tool-label';
 import type { ChatMode, RoleModels } from './chat-model';
 
 /**
@@ -236,8 +236,8 @@ export function toolActivities(messages: Message[], running: boolean) {
                         call.function.name,
                       )
                     : running && index > lastUserIndex
-                      ? 'Running'
-                      : 'Incomplete',
+                      ? 'running'
+                      : 'incomplete',
                   input: formatToolData(call.function.arguments),
                   result: result ? formatToolData(result.content) : '',
                 };
@@ -258,26 +258,30 @@ function formatToolData(value: string): string {
   }
 }
 
-function toolOutcome(content: string, error: boolean, name: string): string {
-  if (error) return 'Failed';
+function toolOutcome(
+  content: string,
+  error: boolean,
+  name: string,
+): ToolStatus {
+  if (error) return 'failed';
   try {
     const data: unknown = JSON.parse(content);
     if (data && typeof data === 'object') {
       const status = 'status' in data ? data.status : undefined;
-      if (status === 'PARTIAL') return 'Partially completed';
-      if (status === 'EMPTY') return 'No matches';
+      if (status === 'PARTIAL') return 'partial';
+      if (status === 'EMPTY') return 'empty';
       if (status === 'ERROR' || status === 'UNAVAILABLE' || status === 'FAILED')
-        return 'Failed';
+        return 'failed';
       if (
         name === 'searchVehicleConfigurations' &&
         'items' in data &&
         Array.isArray(data.items) &&
         !data.items.length
       )
-        return 'No matches';
+        return 'empty';
     }
   } catch {
     // A completed tool may legitimately return plain text.
   }
-  return 'Completed';
+  return 'completed';
 }

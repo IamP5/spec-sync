@@ -69,7 +69,7 @@ describe('KnowledgeResultCard specification discovery', () => {
     });
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.textContent).toContain('Fontes de especificações');
+    expect(element.textContent).toContain('Specification sources');
     expect(
       element.querySelector('[aria-label="Source discovery warnings"]')
         ?.textContent,
@@ -217,8 +217,8 @@ it('labels external specification sources without presenting them as manufacture
   });
   await fixture.whenStable();
   const element = fixture.nativeElement as HTMLElement;
-  expect(element.textContent).toContain('Site externo');
-  expect(element.textContent).not.toContain('Fontes oficiais');
+  expect(element.textContent).toContain('External site');
+  expect(element.textContent).not.toContain('Manufacturer website');
   expect(element.querySelector('a')?.href).toBe(
     'https://www.webmotors.com.br/catalogo/byd/shark',
   );

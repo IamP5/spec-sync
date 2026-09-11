@@ -19,9 +19,8 @@
   (zAfterClose)="afterReviewsClosed()"
   class="specsync-vehicle-drawer overflow-hidden md:w-[min(44rem,calc(100vw-3rem))]!"
 >
-  <z-drawer-title class="sr-only"
-    >Avaliações sobre {{ reviewContext()?.row?.attribute?.label
-    }}</z-drawer-title
+  <z-drawer-title class="sr-only" i18n
+    >Reviews about {{ reviewContext()?.row?.attribute?.label }}</z-drawer-title
   >
   @if (reviewContext(); as context) {
   <app-vehicle-reviews-search

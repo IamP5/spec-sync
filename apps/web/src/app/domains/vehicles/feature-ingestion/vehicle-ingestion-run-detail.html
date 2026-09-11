@@ -1,28 +1,30 @@
 @if (researchId() && !hasKey()) {
-<p role="status">Entre na sua conta para revisar esta pesquisa.</p>
+<p role="status" i18n>Sign in to review this research.</p>
 } @else if (!hasKey()) {
 <form
   (submit)="connect($event)"
   class="flex flex-wrap items-end gap-2 rounded-xl border p-4"
+  i18n-aria-label
   aria-label="Curator access"
 >
   <label class="min-w-0 flex-1 text-sm">
     <span class="mb-1 flex items-center gap-1 font-medium">
       <ng-icon name="lucideKeyRound" aria-hidden="true" />
-      Curator key
+      <span i18n>Curator key</span>
     </span>
     <input
       z-input
       type="password"
       autocomplete="off"
       [formField]="keyForm.key"
+      i18n-placeholder
       placeholder="Enter your curator key to open this import"
     />
   </label>
-  <button z-button type="submit" [zDisabled]="keyForm().invalid()">
+  <button z-button type="submit" [zDisabled]="keyForm().invalid()" i18n>
     Connect
   </button>
-  <p class="w-full text-xs text-muted-foreground">
+  <p class="w-full text-xs text-muted-foreground" i18n>
     The key stays in memory for this page load and is only sent to the API.
   </p>
 </form>
@@ -36,11 +38,15 @@
       <h3 class="font-semibold">{{ title() }}</h3>
       }
       <p class="mt-1 text-sm text-muted-foreground">
-        @if (run.draft) { {{ run.draft.configurations.length }} configuration(s)
-        from {{ run.draft.source.title }} } @else if
-        (run.request.configurations.length) { {{
-        run.request.configurations.join(', ') }} } @else { Every configuration
-        the source presents }
+        @if (run.draft) {
+        <span i18n
+          >{{ run.draft.configurations.length }} configuration(s) from {{
+          run.draft.source.title }}</span
+        >
+        } @else if (run.request.configurations.length) { {{
+        run.request.configurations.join(', ') }} } @else {
+        <span i18n>Every configuration the source presents</span>
+        }
       </p>
     </div>
     @if (!stage()?.terminal && !researchId()) {
@@ -54,7 +60,7 @@
       (click)="reject()"
     >
       <ng-icon name="lucideX" aria-hidden="true" />
-      Reject import
+      <span i18n>Reject import</span>
     </button>
     }
   </header>
@@ -76,7 +82,7 @@
     {{ error() }}
   </p>
   } @if (run.status === 'PUBLISHED') {
-  <p class="rounded-lg border p-3 text-sm" role="status">
+  <p class="rounded-lg border p-3 text-sm" role="status" i18n>
     Selected specifications are in the catalog. Previous evidence is retained;
     the comparison and graph tools see the new values once the graph update is
     current.
@@ -128,7 +134,7 @@
       (clearRequested)="clearSelection(index)"
     />
     } @empty {
-    <p class="rounded-xl border p-4 text-sm text-muted-foreground">
+    <p class="rounded-xl border p-4 text-sm text-muted-foreground" i18n>
       No configuration of this source matched the request. Nothing can be
       published; start a new import naming the configurations the source
       presents.
@@ -136,24 +142,31 @@
     } } @if (reviewing()) {
     <section
       class="space-y-3 rounded-xl border p-4"
+      i18n-aria-label
       aria-label="Publish decision"
     >
       <label class="block text-sm">
-        <span class="mb-1 block font-medium">Review reason</span>
+        <span class="mb-1 block font-medium" i18n>Review reason</span>
         <textarea
           z-textarea
           rows="3"
           [formField]="reasonForm.reason"
+          i18n-placeholder
           placeholder="Explain applicability and why these claims should replace or add to the current specifications."
         ></textarea>
       </label>
-      <p class="text-sm text-muted-foreground">
+      <p class="text-sm text-muted-foreground" i18n>
         One claim per attribute per configuration. Selected claims replace the
         accepted values; previous evidence is kept. Unselected and conflicting
         claims stay outside the catalog.
       </p>
       @if (unconfirmed().length) {
-      <p class="text-sm text-destructive" role="status" data-role="unconfirmed">
+      <p
+        class="text-sm text-destructive"
+        role="status"
+        data-role="unconfirmed"
+        i18n
+      >
         Confirm the identity of {{ unconfirmed().join(', ') }} before publishing
         its claims.
       </p>
@@ -166,7 +179,7 @@
           [zDisabled]="!canPublish()"
         >
           <ng-icon name="lucideSend" aria-hidden="true" />
-          {{ store.publishIsPending() ? 'Publishing…' : 'Publish selected' }}
+          {{ store.publishIsPending() ? publishingLabel : publishLabel }}
           <z-badge zType="secondary" data-role="publish-count"
             >{{ selectedTotal() }}</z-badge
           >
@@ -178,7 +191,12 @@
   }
 </div>
 } @else if (loading()) {
-<div class="space-y-3" aria-busy="true" aria-label="Loading import">
+<div
+  class="space-y-3"
+  aria-busy="true"
+  i18n-aria-label
+  aria-label="Loading import"
+>
   <z-skeleton class="h-6 w-1/3" />
   <z-skeleton class="h-4 w-2/3" />
   <z-skeleton class="h-24 w-full" />

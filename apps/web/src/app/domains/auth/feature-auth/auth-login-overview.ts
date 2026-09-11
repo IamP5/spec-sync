@@ -9,8 +9,8 @@ import { AuthSessionCoordinator } from '../api/authentication';
   imports: [ZardButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="space-y-4 text-center" aria-label="Sign in">
-      <p class="text-sm text-muted-foreground">
+    <section class="space-y-4 text-center" i18n-aria-label aria-label="Sign in">
+      <p class="text-sm text-muted-foreground" i18n>
         Sign in to send your message and open your conversations.
       </p>
       <button
@@ -19,11 +19,12 @@ import { AuthSessionCoordinator } from '../api/authentication';
         class="w-full"
         [disabled]="auth.pending()"
         (click)="auth.login()"
+        i18n
       >
         Continue with Google
       </button>
       @if (auth.pending()) {
-        <p role="status" class="text-sm">Checking your session…</p>
+        <p role="status" class="text-sm" i18n>Checking your session…</p>
       }
       @if (auth.signInError(); as message) {
         <p role="alert" class="text-sm text-destructive">

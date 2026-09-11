@@ -23,7 +23,7 @@ import { VehicleResearchDetail } from './vehicle-research-detail';
         (toggle)="onToggle($event)"
         data-research-history
       >
-        <summary class="cursor-pointer font-medium">
+        <summary class="cursor-pointer font-medium" i18n>
           Your vehicle research
           @if (store.requests().length) {
             ({{ store.requests().length }})
@@ -31,7 +31,7 @@ import { VehicleResearchDetail } from './vehicle-research-detail';
         </summary>
         @if (expanded()) {
           <div class="mt-3 max-h-[50vh] space-y-3 overflow-y-auto">
-            <p class="text-xs text-muted-foreground">
+            <p class="text-xs text-muted-foreground" i18n>
               Research persists across chats and page refreshes. Open a request
               to follow its progress.
             </p>
@@ -42,17 +42,18 @@ import { VehicleResearchDetail } from './vehicle-research-detail';
               type="button"
               [zDisabled]="store.researchIsLoading()"
               (click)="store.reload()"
+              i18n
             >
               Refresh requests
             </button>
             @if (store.researchError()) {
-              <p role="alert">
+              <p role="alert" i18n>
                 Could not load your research requests. Try refreshing.
               </p>
             } @else if (store.researchIsLoading()) {
-              <p role="status">Loading research requests…</p>
+              <p role="status" i18n>Loading research requests…</p>
             } @else if (!store.requests().length) {
-              <p class="text-muted-foreground">
+              <p class="text-muted-foreground" i18n>
                 No research requests yet. Ask SpecSync to research a vehicle's
                 specifications.
               </p>
@@ -67,7 +68,7 @@ import { VehicleResearchDetail } from './vehicle-research-detail';
                   {{ request.request.modelYear }} ·
                   {{
                     request.requestStatus === 'CANCELLED'
-                      ? 'Not following'
+                      ? notFollowing
                       : request.status
                   }}
                 </summary>
@@ -87,6 +88,7 @@ import { VehicleResearchDetail } from './vehicle-research-detail';
 })
 export class VehicleResearchSearch {
   protected readonly store = inject(ResearchSearchStore);
+  protected readonly notFollowing = $localize`Not following`;
   protected readonly expanded = signal(false);
   protected readonly openRequests = signal<ReadonlySet<string>>(new Set());
 
