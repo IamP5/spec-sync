@@ -1,5 +1,6 @@
 import type { Message } from '@ag-ui/client';
 
+import { workspaceFixture } from '../../../testing/vehicle-workspace-fixtures';
 import type { Comparison } from '../../vehicles/api/contracts';
 import { comparisonSelection } from './comparison-selection';
 
@@ -47,7 +48,10 @@ const matrix: Comparison = {
   ],
   rows: [{ attribute, cells: [cell, { ...cell, configurationId: second }] }],
 };
-function messages(result: unknown): Message[] {
+function messages(
+  result: unknown,
+  name = 'compareVehicleConfigurations',
+): Message[] {
   return [
     {
       id: 'assistant',
@@ -56,7 +60,7 @@ function messages(result: unknown): Message[] {
         {
           id: 'call',
           type: 'function',
-          function: { name: 'compareVehicleConfigurations', arguments: '{}' },
+          function: { name, arguments: '{}' },
         },
       ],
     },
@@ -69,6 +73,46 @@ function messages(result: unknown): Message[] {
   ];
 }
 describe('comparison context restoration', () => {
+  const comparisonTile = {
+    type: 'comparison' as const,
+    title: 'Comparison',
+    args: { configurationIds: [id, second], attributes: ['camera_360'] },
+    result: matrix,
+  };
+
+  it('restores follow-up context from the single successful workspace comparison', () => {
+    const workspace = workspaceFixture([comparisonTile]);
+    expect(
+      comparisonSelection(messages(workspace, 'renderVehicleWorkspace')),
+    ).toEqual({
+      version: 1,
+      configurationIds: [id, second],
+      attributeCodes: ['camera_360'],
+      lastComparisonToolCallId: 'call',
+    });
+  });
+
+  it('clears ambiguous selection when a workspace contains multiple comparisons', () => {
+    const workspace = workspaceFixture([comparisonTile, comparisonTile]);
+    expect(
+      comparisonSelection([
+        ...messages(matrix),
+        ...messages(workspace, 'renderVehicleWorkspace'),
+      ]),
+    ).toBeUndefined();
+  });
+
+  it('preserves earlier comparison context if a workspace is malformed or unavailable', () => {
+    expect(
+      comparisonSelection([
+        ...messages(matrix),
+        ...messages(
+          { ...workspaceFixture([comparisonTile]), operations: [] },
+          'renderVehicleWorkspace',
+        ),
+      ])?.configurationIds,
+    ).toEqual([id, second]);
+  });
   it('reconstructs selection from a stored successful result', () => {
     expect(comparisonSelection(messages(matrix))).toEqual({
       version: 1,

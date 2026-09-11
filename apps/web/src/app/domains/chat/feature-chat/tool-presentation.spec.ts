@@ -39,7 +39,7 @@ const rendered = (messages: Message[]) =>
   );
 
 describe('tool display projection', () => {
-  it('keeps protocol input immutable while replacing empty catalogs and searches with compact summaries', () => {
+  it('leaves catalog rendering to its component while retaining legacy discovery summaries', () => {
     const messages = [
       user('u1'),
       ...tool(
@@ -63,13 +63,10 @@ describe('tool display projection', () => {
     ];
     const snapshot = structuredClone(messages);
     const views = [...toolPresentation(messages).values()];
-    expect(rendered(messages)).toHaveLength(0);
+    expect(rendered(messages).map((call) => call.id)).toEqual(['c1']);
     expect(
       views.flatMap((view) => view.notes).map((note) => note.text),
-    ).toEqual([
-      'No catalog configurations found for Ford F-150 · 2026.',
-      'No external links found for RAM 1500 (2 searches).',
-    ]);
+    ).toEqual(['No external links found for RAM 1500 (2 searches).']);
     expect(messages).toEqual(snapshot);
   });
 

@@ -12,6 +12,7 @@ import { ChatVehicleIngestionEdit } from '../tool-adapters/chat-vehicle-ingestio
 import { ChatVehicleIngestionPlanEdit } from '../tool-adapters/chat-vehicle-ingestion-plan-edit';
 import { ChatVehicleResearchDetail } from '../tool-adapters/chat-vehicle-research-detail';
 import { ChatVehicleSourceOverview } from '../tool-adapters/chat-vehicle-source-overview';
+import { ChatVehicleWorkspaceOverview } from '../tool-adapters/chat-vehicle-workspace-overview';
 import { KnowledgeResultCard } from '../ui/knowledge-result-card';
 import { ToolCallCard } from '../ui/tool-call-card';
 
@@ -25,6 +26,12 @@ export const START_INGESTION_TOOL = 'startVehicleIngestion';
 
 /** Render server-owned results directly; no second model-authored presentation payload. */
 export function registerChatTools(): void {
+  registerRenderToolCall({
+    name: 'renderVehicleWorkspace',
+    args: z.record(z.unknown()),
+    component: ChatVehicleWorkspaceOverview,
+    agentId: CHAT_AGENT_ID,
+  });
   for (const name of [
     'researchVehicleSpecifications',
     'getVehicleResearch',

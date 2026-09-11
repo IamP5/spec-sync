@@ -86,19 +86,6 @@ export function toolPresentation(
           ['ERROR', 'UNAVAILABLE'].includes(String(data['status']));
         if (internalTools.has(name) && !failed) continue;
         if (
-          result &&
-          !failed &&
-          name === 'searchVehicleConfigurations' &&
-          Array.isArray(data['items']) &&
-          !data['items'].length
-        ) {
-          view.notes.push({
-            id: call.id,
-            text: `No catalog configurations found for ${scope(args)}.`,
-          });
-          continue;
-        }
-        if (
           [
             'discoverVehicleContent',
             'discoverVehicleSpecificationSources',

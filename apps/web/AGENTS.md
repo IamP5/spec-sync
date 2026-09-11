@@ -18,6 +18,9 @@ code following Angular and TypeScript best practices.
 
 ## Architecture (red lines)
 
+- For AI tool/component contracts and AG-UI/CopilotKit/A2UI presentation,
+  read `docs/adr/0001-agentic-ui-contracts.md` from the workspace root.
+
 The binding rules live in the docs; this section only names the red lines.
 
 - Read `apps/web/docs/architecture-boundaries.md` before changing code under

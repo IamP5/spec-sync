@@ -22,6 +22,7 @@ export {
   type Comparison,
   comparisonSchema,
   failureSchema,
+  knowledgeSchema,
   type VehicleConfiguration,
 } from '../../data/vehicle-contracts';
 export type {

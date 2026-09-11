@@ -3,39 +3,31 @@ import { z } from 'zod';
 
 import { catalogRequest, withToolFailure } from '../catalog/api-client';
 import {
+  catalogSearchInputSchema,
+  catalogSearchOutputSchema,
+  searchCatalog,
+} from '../catalog/catalog-search';
+import {
   attributeSchema,
   comparisonSchema,
-  configurationSchema,
   failureSchema,
   knowledgeSchema,
-  searchSchema,
   selectionSchema,
   singleSelectionSchema,
 } from '../catalog/contracts';
 import { retrieveReviews } from '../catalog/review-search';
 import { attributeCodeSchema, retrieveGraph } from '../graph/retrieval';
 
-const pageSchema = z.object({
-  items: z.array(configurationSchema),
-  limit: z.number(),
-  offset: z.number(),
-  hasMore: z.boolean(),
-});
 export const searchVehicleConfigurations = createTool({
   id: 'searchVehicleConfigurations',
   description:
-    'Find catalog configurations by name. Search each vehicle separately; broaden literal queries when empty. Return market, year and identity status; never select an ambiguous trim silently.',
-  inputSchema: searchSchema,
-  outputSchema: z.union([pageSchema, failureSchema]),
-  execute: (input, context) =>
-    withToolFailure(() =>
-      catalogRequest(
-        '/api/vehicle-configurations',
-        input,
-        pageSchema,
-        context?.abortSignal,
-      ),
-    ),
+    'Find and display ONE interactive vehicle catalog. Put ALL vehicles named in the request into the searches array in ONE call, for example searches: [{q: "BYD Shark"}, {q: "Ford Ranger"}]. The server retrieves and returns their authoritative configurations together; CopilotKit renders that single result. Do not issue one tool call per vehicle or copy facts into a separate UI tool. Broaden only searches reported empty, preserve requested market/year, and never select an ambiguous trim silently. For more results, pass the returned nextSearches as searches.',
+  inputSchema: catalogSearchInputSchema,
+  outputSchema: catalogSearchOutputSchema,
+  inputExamples: [
+    { input: { searches: [{ q: 'BYD Shark' }, { q: 'Ford Ranger' }] } },
+  ],
+  execute: (input, context) => searchCatalog(input, context?.abortSignal),
 });
 export const listComparisonAttributes = createTool({
   id: 'listComparisonAttributes',

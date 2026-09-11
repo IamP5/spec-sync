@@ -7,6 +7,7 @@ import type {
 import { InjectionToken } from '@angular/core';
 import type { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
+import { toolLabel } from '../util/tool-label';
 import type { ChatMode, RoleModels } from './chat-model';
 
 /**
@@ -227,7 +228,7 @@ export function toolActivities(messages: Message[], running: boolean) {
                 return {
                   id: call.id,
                   name: call.function.name,
-                  label: call.function.name,
+                  label: toolLabel(call.function.name),
                   status: result
                     ? toolOutcome(
                         result.content,
@@ -263,6 +264,7 @@ function toolOutcome(content: string, error: boolean, name: string): string {
     const data: unknown = JSON.parse(content);
     if (data && typeof data === 'object') {
       const status = 'status' in data ? data.status : undefined;
+      if (status === 'PARTIAL') return 'Partially completed';
       if (status === 'EMPTY') return 'No matches';
       if (status === 'ERROR' || status === 'UNAVAILABLE' || status === 'FAILED')
         return 'Failed';

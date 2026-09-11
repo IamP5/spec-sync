@@ -37,7 +37,6 @@ import {
   lucideCopy,
   lucideFileInput,
   lucideFileSearch,
-  lucideMessageCircleQuestion,
   lucidePenLine,
   lucideRefreshCw,
   lucideSquare,
@@ -87,6 +86,7 @@ import {
 } from '../../data/chat-model';
 import { MarkdownPipe } from '../../util/markdown-pipe';
 import { revealText } from '../../util/text-reveal';
+import { toolLabel } from '../../util/tool-label';
 import { ChatCoordinator } from '../chat-coordinator';
 import { CHAT_CARD_ACTIONS } from '../tool-adapters/chat-card-actions';
 import { CreditsPill } from '../ui/credits-pill';
@@ -132,9 +132,10 @@ const SUGGESTIONS = [
       'Import the official specifications of the Ford Ranger 2026 (Brazil): find the manufacturer PDF or page, show me which versions it lists, and start a reviewed import for the ones I choose.',
   },
   {
-    icon: 'lucideMessageCircleQuestion',
-    label: 'What can you do?',
-    prompt: 'What can you help me with?',
+    icon: 'lucideCarFront',
+    label: 'Build a research workspace',
+    prompt:
+      'Start a research workspace by showing Ford Ranger and Toyota Hilux together in one interactive catalog, Brazil, model year 2026. Let me inspect configurations and choose what to compare.',
   },
 ] as const;
 
@@ -200,6 +201,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
         return {
           draft: (prompt: string) => page.prepareDraft(prompt),
           send: (prompt: string) => page.sendFromCard(prompt),
+          canSend: () => page.canSendFromCard(),
         };
       },
     },
@@ -214,7 +216,6 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
       lucideCopy,
       lucideFileInput,
       lucideFileSearch,
-      lucideMessageCircleQuestion,
       lucidePenLine,
       lucideRefreshCw,
       lucideSquare,
@@ -589,7 +590,24 @@ export class ChatPage {
   }
 
   sendFromCard(prompt: string): void {
-    if (!this.streaming()) void this.requestSend(prompt);
+    const content = prompt.trim();
+    if (
+      !this.canSendFromCard() ||
+      !content ||
+      content.length > MAX_PROMPT_LENGTH
+    )
+      return;
+    // A card action is independent of the draft being composed.
+    void this.send(content);
+  }
+
+  private canSendFromCard(): boolean {
+    return (
+      this.connection.ready() &&
+      !this.streaming() &&
+      !this.loading() &&
+      !this.composerBlocked()
+    );
   }
 
   protected onSuggestion(prompt: string): void {
@@ -744,6 +762,15 @@ export class ChatPage {
   }
 
   private async requestSend(prompt: string): Promise<void> {
+    prompt = prompt.trim();
+    if (
+      !prompt ||
+      prompt.length > MAX_PROMPT_LENGTH ||
+      this.streaming() ||
+      this.loading() ||
+      this.composerBlocked()
+    )
+      return;
     if (!this.connection.ready()) {
       this.model.set({ prompt });
       this.pendingPrompt.set(prompt);
@@ -823,7 +850,8 @@ function toErrorMessage(error: ChatAgentError | undefined): string {
 function runStatus(turns: ChatTurn[]): string {
   const last = lastOf(turns);
   if (last?.role === 'assistant') {
-    return last.toolCalls?.length ? 'Working with tools' : 'Writing a response';
+    const call = last.toolCalls?.[last.toolCalls.length - 1];
+    return call ? toolLabel(call.function.name) : 'Writing a response';
   }
   return 'Thinking';
 }

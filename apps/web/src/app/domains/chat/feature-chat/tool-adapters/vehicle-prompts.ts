@@ -1,4 +1,5 @@
 import type {
+  CatalogPage,
   IngestionStartArgs,
   VehicleConfiguration,
   VehicleQuestion,
@@ -18,7 +19,10 @@ export function vehicleComparisonPrompt(
 export function catalogPagePrompt(
   question: Extract<VehicleQuestion, { kind: 'catalog-page' }>,
   args: Record<string, unknown> = {},
+  nextSearches?: CatalogPage['nextSearches'],
 ): string {
+  if (nextSearches?.length)
+    return `Show the next catalog page for these searches. Call searchVehicleConfigurations once with ${JSON.stringify({ searches: nextSearches })}. Its result renders one catalog containing all returned vehicles.`;
   const scope = ['q', 'market', 'modelYear']
     .filter((key) => args[key] !== undefined && args[key] !== '')
     .map((key) => `${key} ${JSON.stringify(args[key])}`);

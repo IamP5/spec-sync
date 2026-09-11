@@ -120,6 +120,64 @@ describe('ChatVehicleCatalogOverview', () => {
     expect(draft).not.toHaveBeenCalled();
   });
 
+  it('passes server-provided continuation queries to one catalog tool call', async () => {
+    const nextSearches = [
+      { q: 'Ranger', market: 'BR', offset: 8, limit: 20 },
+      { q: 'Hilux', modelYear: 2026, offset: 2, limit: 6 },
+    ];
+    fixture.componentRef.setInput('toolCall', {
+      name: 'searchVehicleConfigurations',
+      status: 'complete',
+      args: { searches: [{ q: 'Ranger' }, { q: 'Hilux' }] },
+      result: JSON.stringify({
+        items: configurations,
+        limit: 26,
+        offset: 0,
+        hasMore: true,
+        status: 'OK',
+        notices: [],
+        nextSearches,
+      }),
+    });
+    await fixture.whenStable();
+    buttonNamed(fixture.nativeElement, 'Load next 26 from the catalog').click();
+    expect(send).toHaveBeenCalledOnce();
+    const prompt = String(send.mock.calls[0]?.[0]);
+    expect(prompt).toContain('Call searchVehicleConfigurations once with');
+    expect(
+      JSON.parse(
+        prompt.slice(prompt.indexOf('{'), prompt.lastIndexOf('}') + 1),
+      ),
+    ).toEqual({ searches: nextSearches });
+  });
+
+  it('shows explicit partial failures even when successful searches returned no vehicles', async () => {
+    fixture.componentRef.setInput('toolCall', {
+      name: 'searchVehicleConfigurations',
+      status: 'complete',
+      args: { searches: [{ q: 'Shark' }, { q: 'Ranger' }] },
+      result: JSON.stringify({
+        items: [],
+        limit: 40,
+        offset: 0,
+        hasMore: false,
+        status: 'PARTIAL',
+        nextSearches: [],
+        notices: [
+          'No configurations found for Shark.',
+          'Ranger: Catalog request failed (503).',
+        ],
+      }),
+    });
+    await fixture.whenStable();
+    expect(fixture.nativeElement.textContent).toContain(
+      'Ranger: Catalog request failed (503).',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'No configurations found for this search',
+    );
+  });
+
   it('compares only the explicit shortlist through the current conversation', async () => {
     const element = fixture.nativeElement as HTMLElement;
     const shortlistButtons = element.querySelectorAll<HTMLButtonElement>(

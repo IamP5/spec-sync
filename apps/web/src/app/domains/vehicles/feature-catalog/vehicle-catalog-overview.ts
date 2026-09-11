@@ -8,6 +8,7 @@ import {
   OnChanges,
   output,
   signal,
+  SimpleChanges,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { form } from '@angular/forms/signals';
@@ -50,6 +51,8 @@ export class VehicleCatalogOverview implements OnChanges {
   readonly page = input<CatalogPage>();
   readonly failure = input<string>();
   readonly complete = input(false);
+  readonly shortlist = input<VehicleConfiguration[] | undefined>();
+  readonly shortlistChanged = output<VehicleConfiguration[]>();
   readonly questionRequested = output<VehicleQuestion>();
   readonly comparisonRequested = output<VehicleConfiguration[]>();
 
@@ -92,10 +95,12 @@ export class VehicleCatalogOverview implements OnChanges {
       this.summaries(),
     ),
   );
-  protected readonly shortlistedConfigurations = computed(() =>
-    this.configurations().filter((vehicle) =>
-      this.shortlistedIds().has(vehicle.id),
-    ),
+  protected readonly shortlistedConfigurations = computed(
+    () =>
+      this.shortlist() ??
+      this.configurations().filter((vehicle) =>
+        this.shortlistedIds().has(vehicle.id),
+      ),
   );
   protected readonly activeFilterCount = computed(
     () =>
@@ -115,23 +120,29 @@ export class VehicleCatalogOverview implements OnChanges {
 
   protected toggleShortlist(vehicle: VehicleConfiguration): void {
     this.shortlistMessage.set('');
-    const next = new Set(this.shortlistedIds());
+    const next = new Map(
+      this.shortlistedConfigurations().map((item) => [item.id, item]),
+    );
     if (next.has(vehicle.id)) next.delete(vehicle.id);
-    else if (next.size < MAX_SHORTLIST) next.add(vehicle.id);
+    else if (next.size < MAX_SHORTLIST) next.set(vehicle.id, vehicle);
     else {
       this.shortlistMessage.set(
         `Choose up to ${MAX_SHORTLIST} configurations for one comparison.`,
       );
       return;
     }
-    this.shortlistedIds.set(next);
+    const selected = [...next.values()];
+    if (this.shortlist() === undefined)
+      this.shortlistedIds.set(new Set(next.keys()));
+    this.shortlistChanged.emit(selected);
   }
 
   protected clearSearch(): void {
     this.filters.update((filters) => ({ ...filters, query: '' }));
   }
 
-  ngOnChanges(): void {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['page']) return;
     const page = this.page();
     if (page) this.searchStore.load(page.items.map(({ id }) => id));
   }

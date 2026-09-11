@@ -4,6 +4,7 @@ import { InjectionToken } from '@angular/core';
 export interface ChatCardActions {
   draft: (prompt: string) => void;
   send: (prompt: string) => void;
+  canSend?: () => boolean;
 }
 
 export const CHAT_CARD_ACTIONS = new InjectionToken<ChatCardActions>(

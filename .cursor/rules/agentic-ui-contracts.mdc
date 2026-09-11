@@ -1,0 +1,18 @@
+---
+description: Explicit AI tool and component contracts; prevent frontend reconstruction of agent intent
+alwaysApply: true
+---
+
+# Agentic UI contracts
+
+Before changing agent instructions, tools, AG-UI/CopilotKit rendering, A2UI/DSL,
+or tool-result presentation, read `docs/adr/0001-agentic-ui-contracts.md`.
+
+Make the AI choose the correct tool with complete typed intent. Return
+authoritative component data from that tool and render its validated contract.
+Fix incorrect calls at the tool/schema/instruction boundary. Do not merge,
+rewrite, suppress or fabricate semantic tool results to compensate in the UI.
+JSON decoding and schema validation remain required.
+
+Use `docs/research/agentic-ui-contract-audit-2026-09-10.md` to distinguish
+existing migration debt from approved protocol and component behavior.

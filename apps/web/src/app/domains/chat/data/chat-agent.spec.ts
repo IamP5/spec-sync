@@ -113,6 +113,26 @@ describe('textOf', () => {
 });
 
 describe('toolActivities', () => {
+  it('shows a human label and distinguishes partial workspace success', () => {
+    const messages: Message[] = [
+      {
+        id: 'a',
+        role: 'assistant',
+        toolCalls: [call('workspace', 'renderVehicleWorkspace')],
+      },
+      {
+        id: 'r',
+        role: 'tool',
+        toolCallId: 'workspace',
+        content: '{"status":"PARTIAL"}',
+      },
+    ];
+    expect(toolActivities(messages, false).get('a')?.[0]).toMatchObject({
+      label: 'Building your research workspace',
+      name: 'renderVehicleWorkspace',
+      status: 'Partially completed',
+    });
+  });
   const thread: Message[] = [
     { id: 'u1', role: 'user', content: 'first' },
     { id: 'a1', role: 'assistant', toolCalls: [call('old', 'check')] },
