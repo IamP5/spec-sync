@@ -1,9 +1,30 @@
 import { execSync } from 'node:child_process';
+import process from 'node:process';
 
 import {
   projects as registeredProjects,
   workspacePaths,
 } from './checks/projects.mjs';
+
+// Git exports repository-local settings into hooks. Child tools may operate on
+// other repositories, so they must discover their own index and object store.
+const localGitVariables = new Set([
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_CONFIG',
+  'GIT_CONFIG_PARAMETERS',
+  'GIT_CONFIG_COUNT',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_IMPLICIT_WORK_TREE',
+  'GIT_GRAFT_FILE',
+  'GIT_INDEX_FILE',
+  'GIT_NO_REPLACE_OBJECTS',
+  'GIT_REPLACE_REF_BASE',
+  'GIT_PREFIX',
+  'GIT_SHALLOW_FILE',
+  'GIT_COMMON_DIR',
+]);
 
 // Picks the projects whose checks must run for a set of changed files.
 // `changedFiles === undefined` (unknown) selects every project; a change to a
@@ -47,7 +68,17 @@ export function runChecks({
       : project.fastSteps;
     for (const step of steps) {
       try {
-        execSync(step, capture ? { encoding: 'utf8' } : { stdio: 'inherit' });
+        const env = Object.fromEntries(
+          Object.entries(process.env).filter(
+            ([name]) =>
+              !localGitVariables.has(name) &&
+              !/^GIT_CONFIG_(KEY|VALUE)_/.test(name),
+          ),
+        );
+        execSync(step, {
+          env,
+          ...(capture ? { encoding: 'utf8' } : { stdio: 'inherit' }),
+        });
       } catch (error) {
         const out = capture
           ? [error.stdout, error.stderr].filter(Boolean).join('\n').trim()

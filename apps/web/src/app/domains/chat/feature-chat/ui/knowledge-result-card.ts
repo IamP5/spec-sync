@@ -16,6 +16,7 @@ const schema = z.object({
   status: z.string().optional(),
   message: z.string().optional(),
   items: z.array(z.record(z.unknown())).optional(),
+  warnings: z.unknown().optional(),
 });
 @Component({
   selector: 'app-knowledge-result-card',
@@ -28,20 +29,50 @@ const schema = z.object({
         <strong>{{ title() }}</strong>
         @if (result(); as data) {
           <p class="my-2 text-muted-foreground" role="status">
-            {{ data.message }}
+            {{
+              emptyContent()
+                ? 'No external links found for this search.'
+                : data.message
+            }}
           </p>
+          @if (specificationDiscovery()) {
+            @if (data.items?.length) {
+              <p class="mb-3 text-xs text-muted-foreground">
+                Source candidates only. Applicability to the requested vehicle
+                and model year has not been verified.
+              </p>
+            }
+            @if (discoveryWarnings().length) {
+              <ul
+                class="mb-3 list-disc space-y-1 pl-5 text-muted-foreground"
+                aria-label="Source discovery warnings"
+              >
+                @for (warning of discoveryWarnings(); track $index) {
+                  <li>{{ warning }}</li>
+                }
+              </ul>
+            }
+          }
           @if (data.items?.length) {
             <ul class="space-y-4">
               @for (item of data.items; track $index) {
                 <li class="border-l-2 pl-3">
+                  @if (specificationDiscovery() && item['sourceType']) {
+                    <p class="mb-1 text-xs text-muted-foreground">
+                      {{ sourceTypeLabel(item['sourceType']) }}
+                    </p>
+                  }
                   @if (link(item); as href) {
                     <a
                       class="font-medium underline"
                       [href]="href"
                       target="_blank"
                       rel="noopener noreferrer"
-                      >{{ label(item) }}</a
-                    >
+                      >{{ label(item) }}
+                      @if (specificationDiscovery()) {
+                        <span class="sr-only">(opens in a new tab)</span>
+                      }
+                    </a>
                   } @else {
                     <strong>{{ label(item) }}</strong>
                   }
@@ -59,12 +90,35 @@ const schema = z.object({
                       }}
                     </p>
                   }
+                  @if (specificationDiscovery()) {
+                    @if (item['availability'] === 'OVERSIZE') {
+                      <p class="mt-1 text-xs text-muted-foreground">
+                        Document exceeds the current reading limit; another
+                        source may be used.
+                      </p>
+                    } @else if (item['availability'] === 'UNREACHABLE') {
+                      <p class="mt-1 text-xs text-muted-foreground">
+                        Source could not be reached; another source may be used.
+                      </p>
+                    }
+                    @if (yearHint(item); as year) {
+                      <p class="mt-1 text-xs text-muted-foreground">
+                        Year mentioned in the title or URL: {{ year }}.
+                        Model-year applicability is unverified.
+                      </p>
+                    }
+                    @if (item['modelMatch'] === false) {
+                      <p class="mt-1 text-xs text-muted-foreground">
+                        Model match is not confirmed by the link text.
+                      </p>
+                    }
+                  }
                   @if (item['excerpt']) {
                     <blockquote class="my-2">
                       {{ format(item['excerpt']) }}
                     </blockquote>
                   }
-                  @if (item['market']) {
+                  @if (!specificationDiscovery() && item['market']) {
                     <p class="text-xs">
                       {{ format(item['market']) }} ·
                       {{ format(item['modelYear']) }} ·
@@ -92,7 +146,7 @@ const schema = z.object({
                       Conditions: {{ format(item['conditions']) }}
                     </p>
                   }
-                  @if (item['availability']) {
+                  @if (!specificationDiscovery() && item['availability']) {
                     <p>{{ format(item['availability']) }}</p>
                   }
                   @if (item['packages']) {
@@ -135,6 +189,13 @@ export class KnowledgeResultCard
   protected readonly result = computed(() =>
     parseResult(this.toolCall().result, schema),
   );
+  protected readonly specificationDiscovery = computed(
+    () => this.toolCall().name === 'discoverVehicleSpecificationSources',
+  );
+  protected readonly discoveryWarnings = computed(() => {
+    const warnings = z.array(z.string()).safeParse(this.result()?.warnings);
+    return warnings.success ? warnings.data : [];
+  });
   protected readonly internal = computed(() =>
     [
       'searchVehicleConfigurations',
@@ -147,10 +208,31 @@ export class KnowledgeResultCard
       ['ERROR', 'UNAVAILABLE'].includes(this.result()?.status ?? '') ||
       (this.toolCall().status === 'complete' && !this.result()),
   );
+  protected readonly emptyContent = computed(
+    () =>
+      this.toolCall().name === 'discoverVehicleContent' &&
+      this.result()?.status === 'EMPTY',
+  );
   protected readonly title = computed(() =>
-    toolTitle(this.toolCall().name ?? ''),
+    this.emptyContent()
+      ? 'External content search'
+      : toolTitle(this.toolCall().name ?? ''),
   );
   protected readonly format = displayValue;
+  protected yearHint(item: Record<string, unknown>): number | undefined {
+    const value = item['yearHint'];
+    return typeof value === 'number' && Number.isInteger(value)
+      ? value
+      : undefined;
+  }
+  protected sourceTypeLabel(value: unknown): string {
+    return value === 'MANUFACTURER_WEBSITE'
+      ? 'Site da montadora'
+      : value === 'LINKED_FROM_MANUFACTURER'
+        ? 'Documento vinculado pelo site da montadora'
+        : 'Site externo — confirme autoria e evidências';
+  }
+
   protected label(item: Record<string, unknown>) {
     return displayValue(
       item['title'] ??
@@ -190,6 +272,7 @@ function toolTitle(name: string): string {
         getRelatedReviews: 'Avaliações relacionadas',
         getEvidenceExcerpt: 'Trecho e contexto da fonte',
         discoverVehicleContent: 'Artigos, blogs e vídeos encontrados',
+        discoverVehicleSpecificationSources: 'Fontes de especificações',
       } as Record<string, string>
     )[name] ?? 'Resultado da consulta'
   );

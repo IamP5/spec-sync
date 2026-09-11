@@ -4,6 +4,8 @@ import type {
   MastraMessagePart,
 } from '@mastra/core/agent/message-list';
 
+import { canonicalHistory } from './canonical-history';
+
 export const CONTINUATION_SUFFIX = '-agui-text';
 
 export function continuationIdOf(id: string): string {
@@ -11,7 +13,7 @@ export function continuationIdOf(id: string): string {
 }
 
 export function toAGUIMessages(stored: MastraDBMessage[]): Message[] {
-  return stored.flatMap((message) =>
+  return canonicalHistory(stored).flatMap((message) =>
     message.role === 'user'
       ? userMessagesOf(message)
       : message.role === 'assistant'

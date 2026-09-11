@@ -29,6 +29,7 @@ import {
   storedThread,
 } from '../../../../testing/fake-threads';
 import { matrix } from '../../../../testing/vehicle-fixtures';
+import { workspaceFixture } from '../../../../testing/vehicle-workspace-fixtures';
 import { UserPreferencesCoordinator } from '../../../user/api/preferences';
 import { ChatThread } from '../../data/thread';
 import { TEXT_REVEAL_ENABLED } from '../../util/text-reveal';
@@ -159,6 +160,160 @@ describe('ChatPage', () => {
     expect(card?.textContent).toContain('Opcional');
     expect(card?.textContent).toContain('Black');
     expect(card?.querySelectorAll('.comparison-legend li').length).toBe(2);
+  });
+
+  it('renders an A2UI workspace through CopilotKit and restores it from saved history', async () => {
+    const workspace = workspaceFixture();
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'renderVehicleWorkspace',
+        {},
+        workspace,
+        'Your workspace is ready.',
+      ),
+    );
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'Build a research workspace');
+    const store = TestBed.inject(ConversationDetailStore);
+    await settled(store);
+    await fixture.whenStable();
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(
+      element.querySelector('app-chat-vehicle-workspace-overview')?.textContent,
+    ).toContain(workspace.title);
+    expect(
+      element.querySelector('app-vehicle-comparison-card')?.textContent,
+    ).toContain('Black');
+    expect(
+      element.querySelector('[data-role="tool-activity"] summary')?.textContent,
+    ).toContain('Building your research workspace');
+
+    const id = store.threadId();
+    TestBed.inject(FakeThreadClient).seed(
+      storedThread(id, 'Saved workspace', 1, store.messages()),
+    );
+    store.reset();
+    fixture.componentRef.setInput('threadId', id);
+    await fixture.whenStable();
+    await fixture.whenStable();
+    expect(
+      element.querySelectorAll('app-chat-vehicle-workspace-overview'),
+    ).toHaveLength(1);
+    expect(
+      element.querySelector('app-vehicle-comparison-card')?.textContent,
+    ).toContain('Black');
+    expect(agent.runs).toHaveLength(1);
+  });
+
+  it('renders one server catalog containing Shark and Ranger through CopilotKit with saved replay', async () => {
+    const shark = {
+      ...matrix.configurations[0],
+      id: 'c28c64e4-801a-5d29-b4c2-083a888a79f3',
+      brand: 'BYD',
+      model: 'Shark',
+      name: 'GS',
+    };
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'searchVehicleConfigurations',
+        { searches: [{ q: 'BYD Shark' }, { q: 'Ford Ranger' }] },
+        {
+          items: [shark, ...matrix.configurations],
+          offset: 0,
+          limit: 40,
+          hasMore: false,
+          status: 'OK',
+          nextSearches: [],
+          notices: [],
+        },
+        'Select vehicles to compare.',
+      ),
+    );
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'Compare Shark and Ranger');
+    const store = TestBed.inject(ConversationDetailStore);
+    await settled(store);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('app-vehicle-catalog-card')).toHaveLength(
+      1,
+    );
+    expect(element.querySelectorAll('[data-configuration-id]')).toHaveLength(3);
+    expect(
+      element.querySelector('app-vehicle-catalog-card')?.textContent,
+    ).toContain('Shark');
+    expect(
+      element.querySelector('app-vehicle-catalog-card')?.textContent,
+    ).toContain('Ranger');
+
+    const id = store.threadId();
+    TestBed.inject(FakeThreadClient).seed(
+      storedThread(id, 'Shark and Ranger', 1, store.messages()),
+    );
+    store.reset();
+    fixture.componentRef.setInput('threadId', id);
+    await fixture.whenStable();
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-vehicle-catalog-card')).toHaveLength(
+      1,
+    );
+    expect(element.querySelectorAll('[data-configuration-id]')).toHaveLength(3);
+    expect(
+      store.messages().filter((message) => message.role === 'tool'),
+    ).toHaveLength(1);
+
+    const add = element.querySelectorAll<HTMLButtonElement>(
+      '[data-action="add-shortlist"]',
+    );
+    add[0].click();
+    await fixture.whenStable();
+    add[1].click();
+    await fixture.whenStable();
+    agent.replyWith((input) => textReply(input, 'Comparing your selection.'));
+    element
+      .querySelector<HTMLButtonElement>('[data-action="compare-shortlist"]')
+      ?.click();
+    await settled(store);
+    const prompt = agent.runs[1]?.messages
+      .filter((message) => message.role === 'user')
+      .pop()?.content;
+    expect(prompt).toContain(shark.id);
+    expect(prompt).toContain(matrix.configurations[0].id);
+  });
+
+  it('renders compact empty results through real CopilotKit while retaining inspectable activity', async () => {
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'searchVehicleConfigurations',
+        { q: 'Ford F-150', modelYear: 2026 },
+        { items: [], limit: 20, offset: 0, hasMore: false },
+        'The catalog has no matching configurations.',
+      ),
+    );
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'Find Ford F-150');
+    await settled(TestBed.inject(ConversationDetailStore));
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('app-vehicle-catalog-card')).toBeNull();
+    expect(
+      element.querySelector('app-chat-vehicle-catalog-overview')?.textContent,
+    ).toContain('Ford F-150 · 2026');
+    expect(
+      element.querySelector('[data-role="tool-activity"]')?.textContent,
+    ).toContain('searchVehicleConfigurations');
+    expect(
+      TestBed.inject(ConversationDetailStore)
+        .messages()
+        .some((message) => message.role === 'tool'),
+    ).toBe(true);
   });
 
   it('renders the empty conversation and the prompt', async () => {
@@ -645,6 +800,47 @@ describe('ChatPage', () => {
     const replies = element.querySelectorAll('[data-role="assistant"]');
     expect(replies).toHaveLength(1);
     expect(replies[0].textContent).toContain('second');
+  });
+
+  it('preserves a draft while a card sends an independent follow-up', async () => {
+    agent.replyWith((input) => textReply(input, 'Ready'));
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    await sendPrompt(fixture.nativeElement, 'Find vehicles');
+    const store = TestBed.inject(ConversationDetailStore);
+    await settled(store);
+    await fixture.whenStable();
+
+    fixture.componentInstance.prepareDraft('My unfinished question');
+    fixture.componentInstance.sendFromCard('Compare my selected vehicles');
+    await settled(store);
+    await fixture.whenStable();
+
+    const run = agent.runs[agent.runs.length - 1];
+    expect(run.messages[run.messages.length - 1]?.content).toBe(
+      'Compare my selected vehicles',
+    );
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLTextAreaElement>(
+        '#prompt',
+      )?.value,
+    ).toBe('My unfinished question');
+  });
+
+  it('rejects empty and oversized card prompts without changing the draft', async () => {
+    const fixture = TestBed.createComponent(ChatPage);
+    await fixture.whenStable();
+    fixture.componentInstance.prepareDraft('Keep this draft');
+    fixture.componentInstance.sendFromCard('   ');
+    fixture.componentInstance.sendFromCard('x'.repeat(4001));
+    await fixture.whenStable();
+
+    expect(agent.runs).toHaveLength(0);
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLTextAreaElement>(
+        '#prompt',
+      )?.value,
+    ).toBe('Keep this draft');
   });
 
   it('marks a stopped reply', async () => {

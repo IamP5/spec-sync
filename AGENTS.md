@@ -81,6 +81,14 @@ in this file are workspace-wide only.
   Sheriff or tsarch rule, or an Nx boundary to make a check pass.
 - Commits follow Conventional Commits (commitlint runs on `commit-msg`).
 
+## Agentic UI contracts
+
+- Before changing AI tool selection, component payloads, AG-UI/CopilotKit,
+  A2UI/DSL or transcript presentation, read
+  `docs/adr/0001-agentic-ui-contracts.md`. Fix incorrect tool/component usage
+  through explicit contracts and agent instructions; do not reconstruct the
+  intended interaction by merging or rewriting tool responses in the browser.
+
 ## Comments
 
 - Write all code comments and inline documentation in English, regardless of

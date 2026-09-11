@@ -26,9 +26,9 @@ public class IngestionConfiguration {
     @Bean
     @Order(1)
     public SecurityFilterChain ingestionSecurity(HttpSecurity http, IngestionProperties properties) throws Exception {
-        http.securityMatcher("/api/ingestions/**")
+        http.securityMatcher("/api/ingestions/**", "/api/ontology/**")
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(c -> c.ignoringRequestMatchers("/api/ingestions/**"))
+                .csrf(c -> c.ignoringRequestMatchers("/api/ingestions/**", "/api/ontology/**"))
                 .authorizeHttpRequests(a -> a.anyRequest().hasRole("INGESTION"))
                 .exceptionHandling(e -> e.authenticationEntryPoint((request, response, ex) -> {
                     response.setStatus(401);

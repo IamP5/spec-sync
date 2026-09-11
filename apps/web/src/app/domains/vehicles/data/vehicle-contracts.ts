@@ -63,6 +63,23 @@ export const catalogPageSchema = z.object({
   limit: z.number().int(),
   offset: z.number().int(),
   hasMore: z.boolean(),
+  status: z.enum(['OK', 'PARTIAL']).optional(),
+  notices: z.array(z.string()).optional(),
+  nextSearches: z
+    .array(
+      z.object({
+        q: z.string().max(100),
+        market: z
+          .string()
+          .regex(/^[A-Z]{2}$/)
+          .optional(),
+        modelYear: z.number().int().min(1900).max(2200).optional(),
+        limit: z.number().int().min(1).max(20),
+        offset: z.number().int().min(0).max(100000),
+      }),
+    )
+    .max(5)
+    .optional(),
 });
 export const knowledgeSchema = z.object({
   status: z.enum(['OK', 'EMPTY', 'UNAVAILABLE']),

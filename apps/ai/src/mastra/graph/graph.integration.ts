@@ -49,17 +49,54 @@ beforeAll(async () => {
   `,
     { rejected: `${marker}-rejected` },
   );
+  await fixture(`
+    MATCH (attribute:SpecSyncCatalog:AttributeDefinition {code:'payload'})
+    CREATE (:SpecSyncCatalog:ManufacturerTerm {test_run:$marker,id:$marker,term:'Carga útil de teste',brand:'Ford',market:'BR',model:'F-150',model_year:2026})-[:TERM_FOR]->(attribute)
+  `);
 });
 afterAll(async () => {
   try {
     if (fixtureDriver)
-      await fixture(
-        'MATCH (n:SpecSyncReview {test_run:$marker}) DETACH DELETE n',
-      );
+      await fixture('MATCH (n {test_run:$marker}) DETACH DELETE n');
   } finally {
     await closeGraph();
     await fixtureDriver?.close();
     vi.unstubAllEnvs();
+  }
+});
+it('requires the evidenced manufacturer, market, model and year for scoped terminology', async () => {
+  const scope = {
+    q: 'Carga útil de teste',
+    brand: 'Ford',
+    market: 'BR',
+    model: 'F-150',
+    modelYear: 2026,
+  };
+  expect(await retrieveGraph('concepts', scope)).toMatchObject({
+    status: 'OK',
+    items: [
+      {
+        code: 'payload',
+        manufacturerTerms: [{ term: scope.q, brand: 'Ford' }],
+      },
+    ],
+  });
+  expect(
+    await retrieveGraph('concepts', { ...scope, model: 'F150' }),
+  ).toMatchObject({ status: 'OK', items: [{ code: 'payload' }] });
+  for (const override of [
+    { brand: 'RAM' },
+    { market: 'US' },
+    { model: 'Ranger' },
+    { modelYear: 2025 },
+    { brand: undefined },
+    { model: undefined },
+    { market: undefined },
+    { modelYear: undefined },
+  ]) {
+    expect(
+      await retrieveGraph('concepts', { ...scope, ...override }),
+    ).toMatchObject({ status: 'EMPTY', items: [] });
   }
 });
 it('resolves terminology and accepted optional equipment with package evidence', async () => {

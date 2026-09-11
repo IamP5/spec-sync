@@ -13,6 +13,10 @@ public interface IngestionGateway {
 
     Ingestion.Run publish(UUID id, String owner, Ingestion.Review review);
 
+    default Ingestion.Run publish(UUID id, String owner, Ingestion.Review review, String reviewer) {
+        return publish(id, owner, review);
+    }
+
     Ingestion.Run reject(UUID id, String owner);
 
     Optional<Ingestion.Work> claim();

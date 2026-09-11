@@ -1,5 +1,5 @@
 {
-  "gatewayUrl": "http://localhost:3000",
+  "gatewayUrl": "same-origin",
   "firebase": {
     "apiKey": "YOUR_IDENTITY_PLATFORM_BROWSER_API_KEY",
     "authDomain": "fiap-challenge-ford.firebaseapp.com",

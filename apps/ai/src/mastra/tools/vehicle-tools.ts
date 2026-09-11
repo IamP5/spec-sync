@@ -3,39 +3,31 @@ import { z } from 'zod';
 
 import { catalogRequest, withToolFailure } from '../catalog/api-client';
 import {
+  catalogSearchInputSchema,
+  catalogSearchOutputSchema,
+  searchCatalog,
+} from '../catalog/catalog-search';
+import {
   attributeSchema,
   comparisonSchema,
-  configurationSchema,
   failureSchema,
   knowledgeSchema,
-  searchSchema,
   selectionSchema,
   singleSelectionSchema,
 } from '../catalog/contracts';
 import { retrieveReviews } from '../catalog/review-search';
 import { attributeCodeSchema, retrieveGraph } from '../graph/retrieval';
 
-const pageSchema = z.object({
-  items: z.array(configurationSchema),
-  limit: z.number(),
-  offset: z.number(),
-  hasMore: z.boolean(),
-});
 export const searchVehicleConfigurations = createTool({
   id: 'searchVehicleConfigurations',
   description:
-    'Find catalog configurations by name. Search each vehicle separately; broaden literal queries when empty. Return market, year and identity status; never select an ambiguous trim silently.',
-  inputSchema: searchSchema,
-  outputSchema: z.union([pageSchema, failureSchema]),
-  execute: (input, context) =>
-    withToolFailure(() =>
-      catalogRequest(
-        '/api/vehicle-configurations',
-        input,
-        pageSchema,
-        context?.abortSignal,
-      ),
-    ),
+    'Find and display ONE interactive vehicle catalog. Put ALL vehicles named in the request into the searches array in ONE call, for example searches: [{q: "BYD Shark"}, {q: "Ford Ranger"}]. The server retrieves and returns their authoritative configurations together; CopilotKit renders that single result. Do not issue one tool call per vehicle or copy facts into a separate UI tool. Broaden only searches reported empty, preserve requested market/year, and never select an ambiguous trim silently. For more results, pass the returned nextSearches as searches.',
+  inputSchema: catalogSearchInputSchema,
+  outputSchema: catalogSearchOutputSchema,
+  inputExamples: [
+    { input: { searches: [{ q: 'BYD Shark' }, { q: 'Ford Ranger' }] } },
+  ],
+  execute: (input, context) => searchCatalog(input, context?.abortSignal),
 });
 export const listComparisonAttributes = createTool({
   id: 'listComparisonAttributes',
@@ -90,12 +82,19 @@ export const getVehicleSpecifications = createTool({
 });
 const conceptInput = z.object({
   q: z.string().max(500),
+  brand: z.string().max(150).optional(),
+  model: z.string().max(150).optional(),
+  market: z
+    .string()
+    .regex(/^[A-Z]{2}$/)
+    .optional(),
+  modelYear: z.number().int().min(1900).max(2200).optional(),
   limit: z.number().int().min(1).max(30).default(10),
 });
 export const resolveComparisonConcepts = createTool({
   id: 'resolveComparisonConcepts',
   description:
-    'Resolve terminology against curated graph attribute definitions and aliases. No match is not proof of functional inequivalence; use listComparisonAttributes as fallback.',
+    'Resolve terminology against curated graph attribute definitions and aliases. Pass brand, model, market and modelYear when resolving manufacturer wording; manufacturer terms remain scoped and are not global synonyms. No match is not proof of functional inequivalence; use listComparisonAttributes as fallback.',
   inputSchema: conceptInput,
   outputSchema: z.union([knowledgeSchema, failureSchema]),
   execute: (input, context) =>

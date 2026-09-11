@@ -108,6 +108,9 @@ const assembleStep = createStep({
       source,
       configurations: inputData,
       warnings: identified.warnings,
+      ontologyRevision: identified.ontologyRevision,
+      normalizationRevision: identified.normalizationRevision,
+      readerRevision: source.parserVersion,
     });
   },
 });
@@ -122,7 +125,7 @@ const assembleStep = createStep({
 export const vehicleIngestionWorkflow = createWorkflow({
   id: VEHICLE_INGESTION_WORKFLOW_ID,
   description:
-    'Reviewed vehicle specification import: capture an official source, identify its configurations and extract evidenced claims',
+    'Reviewed vehicle specification import: capture a source document, identify its configurations and extract evidenced claims',
   inputSchema: extractionInput,
   outputSchema: draftSchema,
 })
@@ -135,6 +138,9 @@ export const vehicleIngestionWorkflow = createWorkflow({
       attributes: inputData.attributes,
       scope,
       legend: inputData.legend,
+      terminology: inputData.terminology,
+      attributeValues: inputData.attributeValues,
+      readerRevision: inputData.source.parserVersion,
     })),
   )
   .foreach(extractStep, { concurrency: 2 })

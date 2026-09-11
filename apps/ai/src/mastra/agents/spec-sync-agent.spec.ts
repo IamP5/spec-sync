@@ -47,8 +47,12 @@ vi.mock('../models', async (importOriginal) => ({
 
 const { CREDITS_RUN_KEY, CreditsRun } = await import('../credits/credits-run');
 type CreditsRun = InstanceType<typeof CreditsRun>;
-const { chatDefaultOptions, chatModelWithCredits, MAX_CHAT_STEPS } =
-  await import('./spec-sync-agent');
+const {
+  chatDefaultOptions,
+  chatModelWithCredits,
+  MAX_CHAT_STEPS,
+  specSyncAgent,
+} = await import('./spec-sync-agent');
 
 let modelCalls = 0;
 
@@ -177,6 +181,25 @@ beforeEach(() => {
 });
 
 describe('chat agent with credits', () => {
+  it('registers the workspace tool with grounded retrieval and reuse instructions', async () => {
+    const tools = await specSyncAgent.listTools();
+    expect(tools['renderVehicleWorkspace']?.id).toBe('renderVehicleWorkspace');
+    const instructions = await specSyncAgent.getInstructions();
+    expect(instructions).toContain('Use renderVehicleWorkspace');
+    expect(instructions).toContain(
+      'requires 1–12 relevant supported attributes',
+    );
+    expect(instructions).toContain(
+      'Never omit attributes or supply an empty array',
+    );
+    expect(instructions).toContain(
+      'Never make a second call just to decorate existing results',
+    );
+    expect(instructions).toContain(
+      'Review panels contain opinions, not verified specifications',
+    );
+  });
+
   it('admits once and charges every step under its own key', async () => {
     const run = new CreditsRun('u-1', 'r-1', 't-1');
     const text = await drain(agent(scriptedModel(1)), contextWithRun(run));

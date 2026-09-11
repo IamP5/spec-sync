@@ -1,4 +1,5 @@
 import { projectReviews, seedAttributeAliases } from './reviews.mjs';
+import { ontologyProjectionStatements } from '../src/mastra/graph/ontology-projection.mjs';
 
 import { pathToFileURL } from 'node:url';
 
@@ -35,7 +36,10 @@ export async function project() {
   const fingerprint = sha256(JSON.stringify(snapshot));
   // Schema commands are separate from data writes. The actual replacement is one transaction.
   for (const statement of projectionConstraints) await neo4j([statement]);
-  await neo4j(projectionStatements(snapshot, fingerprint));
+  await neo4j([
+    ...projectionStatements(snapshot, fingerprint),
+    ...ontologyProjectionStatements(snapshot),
+  ]);
   const after = sha256(
     JSON.stringify(JSON.parse(await postgres(snapshotSql()))),
   );

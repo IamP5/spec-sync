@@ -10,16 +10,46 @@ export function isChatThreadPath(path: string): boolean {
   return path === '/ai/chat/threads' || path.startsWith('/ai/chat/threads/');
 }
 
+function isResearchRoute(path: string, method: string): boolean {
+  const review =
+    /^\/ai\/chat\/research\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/review(\/source|\/publish)?$/i.exec(
+      path,
+    );
+  if (review) return method === (review[1] === '/publish' ? 'POST' : 'GET');
+  if (
+    /^\/ai\/chat\/research\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/interests$/i.test(
+      path,
+    )
+  )
+    return ['GET', 'POST'].includes(method);
+  if (path === '/ai/chat/research') return ['GET', 'POST'].includes(method);
+  if (
+    /^\/ai\/chat\/research\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/replay$/i.test(
+      path,
+    )
+  )
+    return method === 'POST';
+  return (
+    /^\/ai\/chat\/research\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      path,
+    ) && ['GET', 'DELETE'].includes(method)
+  );
+}
+
 export function createGateway(
   config: GatewayConfig,
   identity: IdentityService,
   fetcher: typeof fetch = fetch,
 ) {
   const app = new Hono();
+  const frontendOrigins = [
+    config.frontendOrigin,
+    ...(config.additionalFrontendOrigins ?? []),
+  ];
   app.use(
     '*',
     cors({
-      origin: config.frontendOrigin,
+      origin: frontendOrigins,
       allowMethods: [
         'GET',
         'HEAD',
@@ -48,7 +78,7 @@ export function createGateway(
     if (config.publicOrigin.startsWith('https:'))
       c.header('Strict-Transport-Security', 'max-age=31536000');
     const origin = c.req.header('Origin');
-    if (origin && origin !== config.frontendOrigin)
+    if (origin && !frontendOrigins.includes(origin))
       return c.json({ error: 'Invalid request origin' }, 403);
     return next();
   });
@@ -81,6 +111,9 @@ export function createGateway(
             ['GET', 'POST'].includes(c.req.method)) ||
           (path === '/ai/chat/models' && c.req.method === 'GET') ||
           (path === '/ai/chat/credits' && c.req.method === 'GET') ||
+          isResearchRoute(path, c.req.method) ||
+          (/^\/ai\/chat\/threads\/[^/]+\/research-updates$/.test(path) &&
+            c.req.method === 'POST') ||
           (isChatThreadPath(path) &&
             ['GET', 'PATCH', 'DELETE'].includes(c.req.method))
         )

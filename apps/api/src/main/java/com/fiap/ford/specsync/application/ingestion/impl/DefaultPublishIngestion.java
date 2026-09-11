@@ -15,7 +15,7 @@ public class DefaultPublishIngestion extends PublishIngestion {
 
     @Override
     public Output execute(Input input) {
-        return new StdOutput(gateway.publish(input.id(), input.owner(), input.review()));
+        return new StdOutput(gateway.publish(input.id(), input.owner(), input.review(), input.reviewer()));
     }
 
     record StdOutput(Ingestion.Run result) implements Output {}

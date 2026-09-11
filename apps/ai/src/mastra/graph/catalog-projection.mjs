@@ -1,4 +1,22 @@
 export function projectionStatements(snapshot, fingerprint) {
+  // New definitions introduce unknown cells, never an inferred absence of equipment.
+  const cells = [...snapshot.accepted_specification];
+  const existing = new Set(
+    cells.map((cell) => `${cell.configuration_id}/${cell.attribute_id}`),
+  );
+  for (const configuration of snapshot.vehicle_configuration)
+    for (const attribute of snapshot.attribute_definition) {
+      const id = `${configuration.id}/${attribute.id}`;
+      if (!existing.has(id))
+        cells.push({
+          configuration_id: configuration.id,
+          attribute_id: attribute.id,
+          knowledge_status: 'NOT_REPORTED',
+          assertion_id: null,
+          reason: 'No accepted source assertion for this attribute.',
+        });
+    }
+  snapshot = { ...snapshot, accepted_specification: cells };
   const statements = [
     { statement: 'MATCH (p:SpecSyncReview:ReviewProjection) DELETE p' },
     { statement: 'MATCH (n:SpecSyncCatalog) DETACH DELETE n' },
@@ -168,6 +186,11 @@ export const projectionConstraints = [
   'FeaturePackage',
   'SpecificationCell',
   'CatalogProjection',
+  'ManufacturerTerm',
+  'OntologyRevision',
+  'AttributeValue',
+  'OntologyProposal',
+  'OntologyProposalEvidence',
 ].map((label) => ({
   statement: `CREATE CONSTRAINT specsync_${label.toLowerCase()}_id IF NOT EXISTS FOR (n:${label}) REQUIRE n.id IS UNIQUE`,
 }));

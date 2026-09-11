@@ -1,27 +1,23 @@
 import { fileURLToPath } from 'node:url';
 
-import { registerCopilotKit } from '@ag-ui/mastra/copilotkit';
 import { Mastra } from '@mastra/core/mastra';
 import { LibSQLStore } from '@mastra/libsql';
 import { PinoLogger } from '@mastra/loggers';
 
-import { CHAT_AGENT_ID, specSyncAgent } from './agents/spec-sync-agent';
-import { chatModelRoutes, setChatModelContext } from './chat-model-route';
+import { specSyncAgent } from './agents/spec-sync-agent';
+import { chatModelRoutes } from './chat-model-route';
+import { chatRuntimeRoute } from './chat-runtime-route';
 import { chatCreditsRoutes } from './credits/credits-route';
-import { setChatCreditsContext } from './credits/credits-run';
-import { requireVerifiedUser, setChatIdentityContext } from './identity';
 import { ingestionRoutes } from './ingestion/routes';
 import { vehicleIngestionWorkflow } from './ingestion/workflow';
 import { postgresStorage } from './memory';
+import { researchRoutes } from './research/routes';
+import { sharedVehicleResearchWorkflow } from './research/workflow';
 import { chatThreadRoutes } from './threads/routes';
 
 const production = process.env['NODE_ENV'] === 'production';
 
-/**
- * Path of the CopilotKit runtime route. The web app reaches it as
- * `/ai/copilotkit` (the Hono gateway strips the `/ai` prefix). Rename only together with `ChatAgentClient` in apps/web.
- */
-export const COPILOTKIT_PATH = '/copilotkit';
+export { COPILOTKIT_PATH } from './chat-runtime-route';
 
 // The bundle runs as apps/ai/.mastra/output/index.mjs, so the dev database
 // lands in the git-ignored .mastra folder. Neither a relative `file:` URL nor
@@ -51,7 +47,10 @@ const devDatabase = `file:${fileURLToPath(new URL('../dev.db', import.meta.url))
 export const mastra = new Mastra({
   agents: { [specSyncAgent.id]: specSyncAgent },
   // Bounded ingestion pipeline; the API owns run status, review and publication.
-  workflows: { [vehicleIngestionWorkflow.id]: vehicleIngestionWorkflow },
+  workflows: {
+    [vehicleIngestionWorkflow.id]: vehicleIngestionWorkflow,
+    [sharedVehicleResearchWorkflow.id]: sharedVehicleResearchWorkflow,
+  },
   storage:
     postgresStorage() ??
     (production
@@ -64,24 +63,11 @@ export const mastra = new Mastra({
   server: {
     apiRoutes: [
       ...ingestionRoutes,
+      ...researchRoutes,
       ...chatModelRoutes,
       ...chatThreadRoutes,
       ...chatCreditsRoutes,
-      {
-        ...registerCopilotKit({
-          path: COPILOTKIT_PATH,
-          // Fallback scope; setChatIdentityContext replaces it per request with
-          // the resource id of the user whose gateway token verified.
-          resourceId: CHAT_AGENT_ID,
-          setContext: async (c, requestContext) => {
-            await setChatIdentityContext(c, requestContext);
-            await setChatModelContext(c, requestContext);
-            // After the identity: the wallet is keyed by the verified uid.
-            await setChatCreditsContext(c, requestContext);
-          },
-        }),
-        middleware: requireVerifiedUser,
-      },
+      chatRuntimeRoute,
     ],
   },
   bundler: {

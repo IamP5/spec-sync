@@ -1,0 +1,640 @@
+/** Preferred first-party Brazil entry points, not an allowlist. Evidence: docs/research/official-manufacturer-domains-brazil-2026-09-10.md. */
+interface ManufacturerSource {
+  name: string;
+  aliases: readonly string[];
+  sites: readonly { url: string; paths?: readonly string[] }[];
+  documentDomains?: readonly string[];
+}
+
+export const OFFICIAL_MANUFACTURERS: readonly ManufacturerSource[] = [
+  {
+    name: 'Agrale',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.agrale.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Aston Martin',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.astonmartin.com/en/dealers/aston-martin-sao-paulo',
+      },
+    ],
+  },
+  {
+    name: 'Audi',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.audi.com.br/pt/',
+      },
+    ],
+  },
+  {
+    name: 'Avatr',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://avatr.caoachangan.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'BMW',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.bmw.com.br/pt/index.html',
+      },
+    ],
+  },
+  {
+    name: 'Busscar',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://busscar.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'BYD',
+    aliases: ['byd-auto'],
+    sites: [
+      {
+        url: 'https://www.byd.com/br',
+        paths: ['/br/car/{model}'],
+      },
+      {
+        url: 'https://www.byd.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'CAOA Changan',
+    aliases: ['Changan'],
+    sites: [
+      {
+        url: 'https://caoachangan.com.br/',
+        paths: ['/novos/{model}'],
+      },
+    ],
+  },
+  {
+    name: 'CAOA Chery',
+    aliases: ['Chery'],
+    sites: [
+      {
+        url: 'https://caoachery.com.br/',
+        paths: ['/novos/{model}'],
+      },
+    ],
+  },
+  {
+    name: 'Caio',
+    aliases: ['Caio Induscar'],
+    sites: [
+      {
+        url: 'https://www.caio.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Chevrolet',
+    aliases: ['GM', 'General Motors'],
+    sites: [
+      {
+        url: 'https://www.chevrolet.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Citroën',
+    aliases: ['Citroen'],
+    sites: [
+      {
+        url: 'https://www.citroen.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'DAF',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.dafcaminhoes.com.br/pt-br',
+      },
+    ],
+  },
+  {
+    name: 'Denza',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.denza.com/br',
+      },
+    ],
+  },
+  {
+    name: 'Effa',
+    aliases: ['Effa Motors'],
+    sites: [
+      {
+        url: 'https://www.effamotors.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Fiat',
+    aliases: ['Abarth'],
+    sites: [
+      {
+        url: 'https://www.fiat.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Ford',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.ford.com.br/',
+        paths: [
+          '/picapes/{model}/',
+          '/suvs/{model}/',
+          '/carros/{model}/',
+          '/utilitarios/{model}/',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Foton',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.fotondobrasil.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'GAC',
+    aliases: ['Aion', 'Hyptec'],
+    sites: [
+      {
+        url: 'https://www.gacgroup.com/pt-br',
+      },
+    ],
+  },
+  {
+    name: 'Geely',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.geelybrasil.com.br/',
+        paths: ['/{model}'],
+      },
+    ],
+  },
+  {
+    name: 'GWM',
+    aliases: [
+      'Great Wall',
+      'Great Wall Motors',
+      'Haval',
+      'Ora',
+      'Tank',
+      'Poer',
+      'Wey',
+    ],
+    sites: [
+      {
+        url: 'https://www.gwmmotors.com.br/pt',
+        paths: ['/pt/modelos/{model}'],
+      },
+    ],
+  },
+  {
+    name: 'Higer',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://higer.com.br/produtos/',
+      },
+    ],
+  },
+  {
+    name: 'Honda',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.honda.com.br/automoveis/',
+      },
+    ],
+  },
+  {
+    name: 'Hyundai',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.hyundai.com.br/',
+      },
+      {
+        url: 'https://hyundai.caoa.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Iveco',
+    aliases: ['Iveco Bus'],
+    sites: [
+      {
+        url: 'https://www.iveco.com/brasil/',
+      },
+    ],
+  },
+  {
+    name: 'JAC',
+    aliases: ['JAC Motors'],
+    sites: [
+      {
+        url: 'https://www.jacmotors.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Jaguar',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.jaguar.com/pt-br/jdx/index.html',
+      },
+      {
+        url: 'https://www.jaguarbrasil.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Jeep',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.jeep.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Jetour',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://jetourbr.com/',
+      },
+    ],
+  },
+  {
+    name: 'Kia',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.kia.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Lamborghini',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.lamborghini.com/en-en/dealerships/lamborghini-s%C3%A3o-paulo?lang=en',
+      },
+    ],
+  },
+  {
+    name: 'Land Rover',
+    aliases: ['Range Rover', 'Defender', 'Discovery'],
+    sites: [
+      {
+        url: 'https://www.landrover.com.br/index.html',
+      },
+      {
+        url: 'https://www.rangerover.com/pt-br/index.html',
+      },
+    ],
+  },
+  {
+    name: 'Leapmotor',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.leapmotor.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Lexus',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.lexus.com.br/pt.html',
+      },
+    ],
+  },
+  {
+    name: 'Marcopolo',
+    aliases: ['Neobus'],
+    sites: [
+      {
+        url: 'https://onibus.marcopolo.com.br/',
+      },
+      {
+        url: 'https://www.marcopolo.com.br/neobus/',
+      },
+    ],
+  },
+  {
+    name: 'Mascarello',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://mascarello.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Maserati',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.maserati.com/br/pt',
+      },
+    ],
+  },
+  {
+    name: 'McLaren',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.mclaren.com/cars/br_pt',
+      },
+    ],
+  },
+  {
+    name: 'Mercedes-Benz',
+    aliases: ['Mercedes Benz', 'Mercedes', 'Mercedes-AMG', 'Mercedes-Maybach'],
+    sites: [
+      {
+        url: 'https://www2.mercedes-benz.com.br/',
+      },
+      {
+        url: 'https://www.mercedes-benz-trucks.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'MG',
+    aliases: ['MG Motor'],
+    sites: [
+      {
+        url: 'https://www.mgmotoroficial.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'MINI',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.mini.com.br/pt_BR/home.html',
+      },
+    ],
+  },
+  {
+    name: 'Mitsubishi',
+    aliases: ['Mitsubishi Motors'],
+    sites: [
+      {
+        url: 'https://www.mitsubishimotors.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Neta',
+    aliases: ['Neta Auto'],
+    sites: [
+      {
+        url: 'https://netaauto.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Nissan',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.nissan.com.br/',
+        paths: [
+          '/veiculos/modelos/{model}.html',
+          '/veiculos/modelos/novo-{model}.html',
+          '/veiculos/modelos/nova-{model}.html',
+        ],
+      },
+    ],
+  },
+  {
+    name: 'Omoda',
+    aliases: ['Omoda Jaecoo', 'Omoda & Jaecoo'],
+    sites: [
+      {
+        url: 'https://omodajaecoo.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Peugeot',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://carros.peugeot.com.br/',
+      },
+      {
+        url: 'https://www.peugeot.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Porsche',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.porsche.com/brazil/pt/',
+      },
+    ],
+  },
+  {
+    name: 'RAM',
+    aliases: ['ram-trucks', 'dodge-ram'],
+    sites: [
+      {
+        url: 'https://www.ram.com.br/',
+        paths: ['/{model}.html', '/picapes/{model}.html'],
+      },
+    ],
+  },
+  {
+    name: 'Renault',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.renault.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Riddara',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.riddara.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Rolls-Royce',
+    aliases: ['Rolls Royce'],
+    sites: [
+      {
+        url: 'https://www.rolls-roycemotorcars.com/saopaolo/en_GB/showroom.html',
+      },
+    ],
+  },
+  {
+    name: 'Scania',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.scania.com/br/pt/home.html',
+      },
+    ],
+  },
+  {
+    name: 'Shineray',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.shineray.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Subaru',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.subaru.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Suzuki',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.suzukiveiculos.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Toyota',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.toyota.com.br/',
+        paths: ['/modelos/{model}'],
+      },
+    ],
+  },
+  {
+    name: 'Volkswagen',
+    aliases: [
+      'VW',
+      'Volkswagen Caminhões e Ônibus',
+      'Volkswagen Caminhoes e Onibus',
+      'VWCO',
+    ],
+    sites: [
+      {
+        url: 'https://www.vw.com.br/pt.html',
+      },
+      {
+        url: 'https://www.vwco.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Volare',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.volare.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Volvo',
+    aliases: ['Volvo Cars', 'Volvo Trucks', 'Volvo Caminhões', 'Volvo Buses'],
+    sites: [
+      {
+        url: 'https://www.volvocars.com/br/',
+      },
+      {
+        url: 'https://www.volvotrucks.com.br/pt-br/',
+      },
+      {
+        url: 'https://www.volvobuses.com/br/',
+      },
+    ],
+  },
+  {
+    name: 'Zeekr',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://www.zeekrlife.com/pt-br/',
+      },
+    ],
+  },
+  {
+    name: 'Jaecoo',
+    aliases: [],
+    sites: [
+      {
+        url: 'https://omodajaecoo.com.br/',
+      },
+    ],
+  },
+  {
+    name: 'Farizon',
+    aliases: [],
+    sites: [{ url: 'https://www.farizontimber.com.br/' }],
+  },
+  {
+    name: 'Eletra',
+    aliases: [],
+    sites: [{ url: 'https://www.eletrabus.com/' }],
+  },
+  {
+    name: 'Cadillac',
+    aliases: [],
+    sites: [{ url: 'https://www.cadillacbrasil.com.br/' }],
+  },
+  {
+    name: 'Ferrari',
+    aliases: [],
+    sites: [{ url: 'https://www.ferrari.com/it-CH/auto/concessionari' }],
+  },
+];

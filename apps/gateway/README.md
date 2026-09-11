@@ -44,9 +44,14 @@ node apps/gateway/ops/set-user-roles.mjs PROJECT_ID UID reviewer
   model, so Mastra's own `/api/memory` routes and every wallet mutation stay
   unreachable from the browser.
 - Unknown routes, frontend assets, AI Studio and internal workers are not exposed.
+- Shared vehicle research uses `/ai/chat/research` GET/POST and
+  `/ai/chat/research/<request UUID>` GET/DELETE. AI verifies the signed user token;
+  the API scopes each subscription to that UID. Worker leases and checkpoints
+  are private service calls, with a separate research key.
 - Hono's official `hono/proxy` helper handles forwarding with streaming and cancellation.
   The wrapper filters headers, forbids upstream redirects and prevents shared caching.
-- Hono's official CORS middleware allows exactly `FRONTEND_ORIGIN`, including preflight
+- Hono's official CORS middleware allows `FRONTEND_ORIGIN` and the exact, optional
+  comma-separated `ADDITIONAL_FRONTEND_ORIGINS`, including preflight
   and the headers needed for streaming and curator workflows. CORS is not authentication;
   even non-browser clients must supply valid tokens.
 - The gateway adds an ADC Cloud Run ID token in `X-Serverless-Authorization` for the
@@ -80,7 +85,7 @@ These local records do not synchronize between devices.
 ## Local development
 
 ```sh
-cp apps/gateway/.env.example apps/gateway/.env.local
+cp apps/gateway/.env.example apps/gateway/.env
 cp apps/web/public/app-config.example.json apps/web/public/app-config.json
 # Fill in the public Identity Platform API key in app-config.json.
 gcloud auth application-default login
@@ -88,7 +93,17 @@ npm exec -- nx serve gateway
 npm exec -- nx serve web
 ```
 
-Open `http://localhost:4200`; the browser calls gateway `http://localhost:3000` directly.
+Open `http://localhost:4200`. The local example uses `gatewayUrl: "same-origin"`:
+Angular proxies `/auth`, `/user`, `/api` and `/ai` to the local gateway. An explicit
+HTTPS gateway URL remains supported for deployments with separate public services.
+
+For a phone on Tailscale, open `https://macbook-pro.taila2e389.ts.net:8443`.
+The browser must use that origin, not `localhost` on the phone. The exact Tailscale
+origin is listed in `.env.example`; restart the gateway after changing its origins.
+The development Terraform configuration authorizes this hostname in Identity
+Platform and its HTTPS origin in the browser key's allowed referrers. All gateway
+requests still require a valid signed Google ID token.
+
 Add localhost to Identity Platform and the browser key's allowed referrers. The gateway
 uses project ADC to verify users; production forbids the authentication emulator and
 requires HTTPS and Cloud Run workload authentication.

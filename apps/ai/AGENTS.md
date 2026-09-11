@@ -41,6 +41,10 @@ apps/ai/
 
 ## Rules (red lines)
 
+- Before changing user-facing tools, agent tool-selection instructions or
+  AG-UI/A2UI result contracts, read the workspace-root
+  `docs/adr/0001-agentic-ui-contracts.md`.
+
 - Every model call goes through OpenRouter (`openrouter/<vendor>/<model>`,
   key from `OPENROUTER_API_KEY`) **except Google Search grounding**, which
   stays on Vertex AI because `vertex.tools.googleSearch({})` has no OpenRouter

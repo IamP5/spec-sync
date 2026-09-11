@@ -6,6 +6,8 @@ import type { RequestContext } from '@mastra/core/request-context';
 import ipaddr from 'ipaddr.js';
 import { type DefaultTreeAdapterMap, parse } from 'parse5';
 
+import { embeddedHtmlContent } from './html-content';
+import { DEFAULT_MANUFACTURER_DOMAINS } from './manufacturers';
 import {
   transcribePdf,
   type TranscriptionUsageSink,
@@ -15,20 +17,22 @@ export const sha256 = (bytes: string | Uint8Array) =>
   createHash('sha256').update(bytes).digest('hex');
 export const MAX_BYTES = 5_000_000;
 const MAX_TEXT = 150_000;
-const defaults = ['ford.com.br', 'toyota.com.br', 'nissan.com.br'];
-export function validateSourceUrl(value: string, domains = defaults): URL {
+export function validateSourceUrl(value: string): URL {
   const url = new URL(value);
   if (
     url.protocol !== 'https:' ||
     url.username ||
     url.password ||
     (url.port && url.port !== '443') ||
-    !domains.some(
-      (domain) =>
-        url.hostname === domain || url.hostname.endsWith(`.${domain}`),
-    )
+    url.hostname === 'localhost' ||
+    url.hostname.endsWith('.localhost') ||
+    !url.hostname.includes('.') ||
+    (ipaddr.isValid(url.hostname.replace(/^\[|\]$/g, '')) &&
+      !publicAddress(url.hostname.replace(/^\[|\]$/g, '')))
   )
-    throw new Error('Use an HTTPS URL on an approved manufacturer domain.');
+    throw new Error(
+      'Use a public HTTPS source URL without credentials or a custom port.',
+    );
   return url;
 }
 export function publicAddress(address: string): boolean {
@@ -42,7 +46,14 @@ export function publicAddress(address: string): boolean {
 async function download(
   url: URL,
   signal: AbortSignal,
-): Promise<{ bytes: Buffer; mime: string; redirect?: string }> {
+  metadataOnly = false,
+): Promise<{
+  bytes: Buffer;
+  mime: string;
+  redirect?: string;
+  byteLength?: number;
+}> {
+  signal.throwIfAborted();
   const addresses = await lookup(url.hostname, { all: true, family: 4 });
   const address = addresses[0]?.address;
   if (!address || !addresses.every((item) => publicAddress(item.address)))
@@ -78,6 +89,17 @@ async function download(
         if (response.statusCode !== 200) {
           response.destroy();
           reject(new Error(`Source returned HTTP ${response.statusCode}.`));
+          return;
+        }
+        if (metadataOnly) {
+          const length = response.headers['content-length'];
+          const byteLength =
+            length && /^\d+$/.test(length) ? Number(length) : undefined;
+          const mime =
+            response.headers['content-type']?.split(';')[0]?.trim() ?? '';
+          // Use GET because some official sites reject HEAD. Stop before consuming the body.
+          response.destroy();
+          resolve({ bytes: Buffer.alloc(0), mime, byteLength });
           return;
         }
         if (Number(response.headers['content-length'] ?? 0) > MAX_BYTES) {
@@ -152,6 +174,8 @@ export function htmlText(html: string): { text: string; title: string } {
     if ('tagName' in node && blocks.has(node.tagName)) output += '\n';
   }
   visit(doc);
+  const embedded = embeddedHtmlContent(doc);
+  if (embedded) output += `\n${embedded}`;
   return {
     title,
     text: output
@@ -200,13 +224,14 @@ export interface CapturedSource {
   pageCount: number;
 }
 
-/** Approved source domains, overridable per deployment. */
+/** Preferred discovery seeds only. They never restrict source URLs or redirects. */
 export function sourceDomains(): string[] {
   return (
-    process.env['SPECSYNC_INGESTION_SOURCE_DOMAINS'] ?? defaults.join(',')
+    process.env['SPECSYNC_INGESTION_SOURCE_DOMAINS'] ??
+    DEFAULT_MANUFACTURER_DOMAINS.join(',')
   )
     .split(',')
-    .map((domain) => domain.trim())
+    .map((domain) => domain.trim().toLowerCase())
     .filter(Boolean);
 }
 
@@ -216,21 +241,42 @@ export interface DownloadedSource {
   mime: string;
 }
 
+/** Inspect response headers using the same pinned DNS and redirect policy as capture. */
+export async function probeSourceMetadata(
+  value: string,
+  signal: AbortSignal,
+): Promise<{ url: string; mime: string; byteLength: number | null }> {
+  let url = validateSourceUrl(value);
+  const deadline = AbortSignal.any([signal, AbortSignal.timeout(6000)]);
+  for (let redirects = 0; redirects <= 4; redirects++) {
+    const response = await download(url, deadline, true);
+    if (response.redirect) {
+      url = validateSourceUrl(new URL(response.redirect, url).href);
+      continue;
+    }
+    return {
+      url: url.href,
+      mime: response.mime,
+      byteLength: response.byteLength ?? null,
+    };
+  }
+  throw new Error('Source redirects too many times.');
+}
+
 /**
- * Downloads one approved manufacturer document, following at most four
- * redirects and checking every hop against the approved domains.
+ * Downloads a public document, following at most four redirects. Every hop
+ * retains HTTPS validation, public-address checks and pinned DNS resolution.
  */
 export async function downloadSource(
   value: string,
   signal: AbortSignal,
-  domains = sourceDomains(),
 ): Promise<DownloadedSource> {
-  let url = validateSourceUrl(value, domains);
+  let url = validateSourceUrl(value);
   const deadline = AbortSignal.any([signal, AbortSignal.timeout(45000)]);
   for (let redirects = 0; redirects <= 4; redirects++) {
     const response = await download(url, deadline);
     if (response.redirect) {
-      url = validateSourceUrl(new URL(response.redirect, url).href, domains);
+      url = validateSourceUrl(new URL(response.redirect, url).href);
       continue;
     }
     return { url, bytes: response.bytes, mime: response.mime };
@@ -239,10 +285,11 @@ export async function downloadSource(
 }
 
 /**
- * Downloads one approved manufacturer document and turns it into line-based
+ * Downloads a public source document and turns it into line-based
  * evidence text: HTML keeps table separators, headings and footnotes; PDFs are
- * rendered and visually transcribed (embedded text alone misses image-based
- * specification tables). The returned text is what every evidence line range
+ * rendered for visual extraction of vehicle facts (embedded text alone can
+ * miss image-based tables or contain text hidden by later document artwork).
+ * The returned text is what every evidence line range
  * refers to, so it is hashed and stored verbatim by the API.
  */
 export async function captureSource(
@@ -250,6 +297,7 @@ export async function captureSource(
   signal: AbortSignal,
   onUsage?: TranscriptionUsageSink,
   requestContext?: RequestContext,
+  assertOwnership?: () => Promise<void>,
 ): Promise<CapturedSource> {
   const { url, bytes, mime } = await downloadSource(value, signal);
   let text: string, title: string, parserVersion: string;
@@ -269,6 +317,7 @@ export async function captureSource(
       signal,
       onUsage,
       requestContext,
+      assertOwnership,
     );
     text = transcript.text;
     parserVersion = transcript.parserVersion;
@@ -277,14 +326,13 @@ export async function captureSource(
     );
   } else if (mime === 'text/html') {
     ({ text, title } = htmlText(bytes.toString('utf8')));
-    parserVersion = 'specsync-source-v1';
+    parserVersion = 'specsync-source-v2-embedded-html';
     signal.throwIfAborted();
     if (text.trim().length < 100)
       throw new Error(
         'No usable source text. Scanned PDFs require manual review.',
       );
-  } else
-    throw new Error('Only manufacturer HTML pages and PDFs are supported.');
+  } else throw new Error('Only HTML pages and PDFs are supported.');
   if (text.length > MAX_TEXT)
     throw new Error(
       'Source text exceeds 150,000 characters. Use a smaller document.',

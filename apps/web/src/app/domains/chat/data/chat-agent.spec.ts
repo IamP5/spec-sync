@@ -113,6 +113,26 @@ describe('textOf', () => {
 });
 
 describe('toolActivities', () => {
+  it('shows a human label and distinguishes partial workspace success', () => {
+    const messages: Message[] = [
+      {
+        id: 'a',
+        role: 'assistant',
+        toolCalls: [call('workspace', 'renderVehicleWorkspace')],
+      },
+      {
+        id: 'r',
+        role: 'tool',
+        toolCallId: 'workspace',
+        content: '{"status":"PARTIAL"}',
+      },
+    ];
+    expect(toolActivities(messages, false).get('a')?.[0]).toMatchObject({
+      label: 'Building your research workspace',
+      name: 'renderVehicleWorkspace',
+      status: 'Partially completed',
+    });
+  });
   const thread: Message[] = [
     { id: 'u1', role: 'user', content: 'first' },
     { id: 'a1', role: 'assistant', toolCalls: [call('old', 'check')] },
@@ -200,4 +220,34 @@ describe('creditsErrorOf', () => {
       creditsErrorOf('INSUFFICIENT_CREDITS without a colon'),
     ).toBeUndefined();
   });
+});
+
+it('distinguishes empty and failed business results from successful execution', () => {
+  for (const [status, expected] of [
+    ['EMPTY', 'No matches'],
+    ['UNAVAILABLE', 'Failed'],
+    ['FAILED', 'Failed'],
+    ['QUEUED', 'Completed'],
+  ]) {
+    const messages: Message[] = [
+      {
+        id: 'a',
+        role: 'assistant',
+        toolCalls: [
+          {
+            id: 'c',
+            type: 'function',
+            function: { name: 'getVehicleResearch', arguments: '{}' },
+          },
+        ],
+      },
+      {
+        id: 'r',
+        role: 'tool',
+        toolCallId: 'c',
+        content: JSON.stringify({ status }),
+      },
+    ];
+    expect(toolActivities(messages, false).get('a')?.[0].status).toBe(expected);
+  }
 });

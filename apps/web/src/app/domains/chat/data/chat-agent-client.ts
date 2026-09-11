@@ -1,6 +1,7 @@
 import type { AbstractAgent, Message } from '@ag-ui/client';
 import { computed, inject, Injectable, Signal, signal } from '@angular/core';
 import { CopilotKit, injectAgentStore } from '@copilotkit/angular';
+import { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
 import { SESSION } from '../../auth/api/session';
 import { createId } from '../util/create-id';
@@ -21,6 +22,13 @@ import {
 } from './chat-model';
 import { comparisonSelection } from './comparison-selection';
 import { IngestionActivity } from './ingestion-activity';
+
+const RUN_ERROR_CODES = new Set([
+  CopilotKitCoreErrorCode.AGENT_RUN_FAILED,
+  CopilotKitCoreErrorCode.AGENT_RUN_FAILED_EVENT,
+  CopilotKitCoreErrorCode.AGENT_RUN_ERROR_EVENT,
+  CopilotKitCoreErrorCode.AGENT_THREAD_LOCKED,
+]);
 
 /**
  * Data access for the chat agent. It is a thin adapter over the AG-UI client
@@ -73,6 +81,9 @@ export class ChatAgentClient {
   /** Agents whose event stream is already watched (the proxy may be replaced). */
   private activeAgent?: AbstractAgent;
   private readonly tracked = new WeakSet<AbstractAgent>();
+  private requestGeneration = 0;
+  private executingGeneration?: number;
+  private runtimeRun?: Promise<void>;
 
   /** Appends the user's turn to the thread without running the agent. */
   append(content: string): void {
@@ -115,12 +126,20 @@ export class ChatAgentClient {
 
   /** Aborts the run in flight and keeps whatever arrived so far. */
   stop(): void {
+    this.requestGeneration++;
     const agent = this.activeAgent;
-    if (agent) this.copilotKit.core.stopAgent({ agent });
+    if (agent) {
+      this.copilotKit.core.stopAgent({ agent });
+      // A stopped thread may be cached or sent again before its old run
+      // resolves. Preserve the tool ordering already received at cancellation.
+      const normalized = normalizeThread(agent.messages, this._placements());
+      if (normalized !== agent.messages) agent.setMessages(normalized);
+    }
   }
 
   /** Clears the thread and starts a new one. */
   reset(): void {
+    this.stop();
     this.activeAgent?.setMessages([]);
     this.activeAgent?.setState({});
     this.load(createId(), []);
@@ -128,6 +147,7 @@ export class ChatAgentClient {
 
   /** Replaces the thread with a stored one, e.g. when the user reopens it. */
   load(threadId: string, messages: Message[]): void {
+    this.stop();
     this._placements.set(new Map());
     this._threadId.set(threadId);
     if (!this.available()) return;
@@ -139,11 +159,29 @@ export class ChatAgentClient {
     agent.setState(selection ? { comparison: selection } : {});
   }
 
+  /** Appends server-persisted completion messages without restarting the model or replacing the transcript. */
+  appendPersisted(messages: Message[]): void {
+    if (!this.available() || this.isRunning()) return;
+    const agent = this.agentStore().agent;
+    const ids = new Set(agent.messages.map((message) => message.id));
+    for (const message of messages) {
+      if (!ids.has(message.id)) {
+        agent.addMessage(message);
+        ids.add(message.id);
+      }
+    }
+  }
+
   /** Subscribes to client failures. Returns the function that unsubscribes. */
   onError(handler: (error: ChatAgentError) => void): () => void {
     const subscription = this.copilotKit.core.subscribe({
-      onError: ({ code, error }) => {
-        if (this.available())
+      onError: ({ code, error, context }) => {
+        if (
+          this.available() &&
+          (!context['agentId'] || context['agentId'] === CHAT_AGENT_ID) &&
+          (!RUN_ERROR_CODES.has(code) ||
+            this.executingGeneration === this.requestGeneration)
+        )
           handler({ code, error, credits: creditsErrorOf(error?.message) });
       },
     });
@@ -162,10 +200,21 @@ export class ChatAgentClient {
     agent: AbstractAgent,
     options: ChatRunOptions,
   ): Promise<void> {
+    const generation = ++this.requestGeneration;
+    const threadId = this._threadId();
+    this.activeAgent = agent;
     const scope = this.session.scope();
     if (!scope) throw new Error('Sign in to continue.');
+    const current = () =>
+      generation === this.requestGeneration &&
+      threadId === this._threadId() &&
+      this.session.isCurrent(scope);
     await this.authenticate();
-    if (!this.session.isCurrent(scope)) return;
+    if (!current()) return;
+    // An aborted transport can still be unwinding. Do not start another run
+    // on the shared agent until its previous execution has released it.
+    await this.runtimeRun?.catch(() => undefined);
+    if (!current()) return;
     this.track(agent);
     const selection = comparisonSelection(agent.messages);
     agent.setState(selection ? { comparison: selection } : {});
@@ -187,16 +236,23 @@ export class ChatAgentClient {
           agentIds: [CHAT_AGENT_ID],
         }),
       );
-    try {
-      await this.copilotKit.core.runAgent({
-        agent,
-        forwardedProps: forwardedPropsOf(options),
+    this.executingGeneration = generation;
+    const running = this.copilotKit.core
+      .runAgent({ agent, forwardedProps: forwardedPropsOf(options) })
+      .then(() => undefined)
+      .finally(() => {
+        for (const contextId of contextIds)
+          this.copilotKit.core.removeContext(contextId);
+        if (this.executingGeneration === generation)
+          this.executingGeneration = undefined;
       });
+    this.runtimeRun = running;
+    try {
+      await running;
     } finally {
-      for (const contextId of contextIds)
-        this.copilotKit.core.removeContext(contextId);
+      if (this.runtimeRun === running) this.runtimeRun = undefined;
     }
-    if (!this.session.isCurrent(scope)) return;
+    if (!current()) return;
     const nextSelection = comparisonSelection(agent.messages);
     agent.setState(nextSelection ? { comparison: nextSelection } : {});
     const normalized = normalizeThread(agent.messages, this._placements());
@@ -219,8 +275,10 @@ export class ChatAgentClient {
   private placementTracker() {
     // Parent message id → continuation message id, for the current run.
     const continuations = new Map<string, string>();
+    let generation = this.requestGeneration;
     return {
       onRunStartedEvent: () => {
+        generation = this.requestGeneration;
         continuations.clear();
       },
       onTextMessageStartEvent: ({
@@ -228,7 +286,10 @@ export class ChatAgentClient {
       }: {
         event: { messageId: string };
       }) => {
-        if (event.messageId.endsWith(CONTINUATION_SUFFIX)) {
+        if (
+          generation === this.requestGeneration &&
+          event.messageId.endsWith(CONTINUATION_SUFFIX)
+        ) {
           continuations.set(
             event.messageId.slice(0, -CONTINUATION_SUFFIX.length),
             event.messageId,
@@ -240,6 +301,7 @@ export class ChatAgentClient {
       }: {
         event: { toolCallId: string; parentMessageId?: string };
       }) => {
+        if (generation !== this.requestGeneration) return;
         const host = continuations.get(event.parentMessageId ?? '');
         if (host) {
           this._placements.update((placements) =>

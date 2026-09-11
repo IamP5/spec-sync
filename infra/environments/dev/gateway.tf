@@ -10,12 +10,15 @@ locals {
   gateway_origin = "https://${local.gateway_host}"
   web_host       = "${local.name}-web-${data.google_project.current.number}.${var.region}.run.app"
   web_origin     = var.domain != "" ? "https://${var.domain}" : "https://${local.web_host}"
+  # Private development access through the Mac's Tailscale HTTPS proxy.
+  tailscale_web_host   = "macbook-pro.taila2e389.ts.net"
+  tailscale_web_origin = "https://${local.tailscale_web_host}:8443"
 }
 
 resource "google_identity_platform_config" "default" {
   project = var.project_id
   authorized_domains = distinct(concat(
-    [local.web_host, "${var.project_id}.firebaseapp.com", "localhost"],
+    [local.web_host, "${var.project_id}.firebaseapp.com", "localhost", local.tailscale_web_host],
     var.domain != "" ? [var.domain] : [],
   ))
   depends_on = [module.services]
@@ -51,7 +54,7 @@ resource "google_apikeys_key" "identity" {
   project      = var.project_id
   restrictions {
     browser_key_restrictions {
-      allowed_referrers = ["${local.web_origin}/*", "https://${var.project_id}.firebaseapp.com/*", "http://localhost:4200/*"]
+      allowed_referrers = ["${local.web_origin}/*", "https://${var.project_id}.firebaseapp.com/*", "http://localhost:4200/*", "${local.tailscale_web_origin}/*"]
     }
     api_targets {
       service = "identitytoolkit.googleapis.com"

@@ -116,3 +116,15 @@ variable "vpc_access" {
   })
   default = null
 }
+
+variable "cpu_idle" {
+  description = "Throttle CPU outside requests. Disable for a resident scheduled worker."
+  type        = bool
+  default     = true
+}
+
+variable "request_timeout" {
+  description = "Maximum request duration, including bounded AI research attempts."
+  type        = string
+  default     = "300s"
+}

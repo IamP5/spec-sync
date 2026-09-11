@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { knowledgeSchema } from '../catalog/contracts';
+import { canonicalScope } from '../ingestion/manufacturers';
 import { type GraphItem, type GraphQuery, withGraphRead } from './connection';
 import {
   CAPABILITIES,
@@ -13,6 +14,8 @@ export const attributeCodeSchema = z.string().regex(/^[a-z][a-z0-9_]{0,79}$/);
 const querySchema = z.object({
   q: z.string().trim().max(500).default(''),
   limit: z.number().int().min(1).max(30).default(10),
+  brand: z.string().trim().min(1).max(200).optional(),
+  model: z.string().trim().min(1).max(200).optional(),
   attributeCode: attributeCodeSchema.optional(),
   market: z
     .string()
@@ -88,6 +91,10 @@ export async function retrieveKnowledge(
     limit: operation === 'evidence' ? 1 : q.limit,
     attributeCode: q.attributeCode ?? null,
     market: q.market ?? null,
+    brand: q.brand ?? null,
+    model: q.model
+      ? canonicalScope(q.brand ?? '', q.model, q.modelYear ?? 0).model
+      : null,
     year: q.modelYear ?? null,
     optional: q.includeOptional,
     configurationId: q.configurationId ?? null,

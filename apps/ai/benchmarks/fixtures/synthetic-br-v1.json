@@ -1,0 +1,1142 @@
+{
+  "schemaVersion": 1,
+  "id": "specsync-synthetic-br",
+  "revision": "v1",
+  "synthetic": true,
+  "description": "Fabricated contract fixtures, not real specifications or a representative Brazilian accuracy benchmark. Includes explicit parsed request filters; does not test discovery, OCR, natural-language parsing, or production deduplication.",
+  "cases": [
+    {
+      "id": "pickup-multi-trim",
+      "tags": ["pickup", "multi-trim", "optional", "unknown"],
+      "input": {
+        "query": "Quero os dados do Serra Topo 2026 no Brasil.",
+        "requested": {
+          "market": "BR",
+          "make": "Fabrica Ficticia",
+          "model": "Serra",
+          "modelYear": 2026,
+          "trim": "Topo"
+        },
+        "sources": [
+          {
+            "id": "synthetic-pickup-multi-trim",
+            "revision": "v1",
+            "sha256": "11c7989ea1e5d6ffb64636d7ebc7928044227a0dadafd7604a1d68b487195f27",
+            "url": "https://fixtures.invalid/pickup-multi-trim.tsv",
+            "format": "synthetic-tsv-v1",
+            "text": "# SYNTHETIC TEST DATA: fabricated brands, configurations and values; never use as vehicle facts.\nvehicle\tserra-base-2026\tFabrica Ficticia\tSerra\t2026\tBase\tpickup\nvehicle\tserra-topo-2026\tFabrica Ficticia\tSerra\t2026\tTopo\tpickup\ncolumns\tserra-base-2026\tserra-topo-2026\nspec\tpower\tkW\t{\"fuel\":\"diesel\"}\t[\"131\",\"value\"]\t[\"151\",\"value\"]\nspec\ttorque\tNm\t{\"fuel\":\"diesel\"}\t[\"330\",\"value\"]\t[\"450\",\"value\"]\nspec\tairbags\t-\t{}\t[null,\"standard\"]\t[null,\"optional\"]\nspec\turbanConsumption\tkm/L\t{\"fuel\":\"diesel\"}\t[null,\"not-stated\"]\t[null,\"not-stated\"]"
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "resolved",
+          "vehicleIds": ["serra-topo-2026"]
+        },
+        "variants": [
+          {
+            "id": "serra-base-2026",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Serra",
+            "modelYear": 2026,
+            "trim": "Base",
+            "bodyType": "pickup"
+          },
+          {
+            "id": "serra-topo-2026",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Serra",
+            "modelYear": 2026,
+            "trim": "Topo",
+            "bodyType": "pickup"
+          }
+        ],
+        "claims": [
+          {
+            "vehicleId": "serra-base-2026",
+            "field": "power",
+            "rawValue": "131",
+            "unit": "kW",
+            "qualifiers": {
+              "fuel": "diesel"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-pickup-multi-trim",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tpower\tkW\t{\"fuel\":\"diesel\"}\t[\"131\",\"value\"]\t[\"151\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "serra-topo-2026",
+            "field": "power",
+            "rawValue": "151",
+            "unit": "kW",
+            "qualifiers": {
+              "fuel": "diesel"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-pickup-multi-trim",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tpower\tkW\t{\"fuel\":\"diesel\"}\t[\"131\",\"value\"]\t[\"151\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "serra-base-2026",
+            "field": "torque",
+            "rawValue": "330",
+            "unit": "Nm",
+            "qualifiers": {
+              "fuel": "diesel"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-pickup-multi-trim",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\ttorque\tNm\t{\"fuel\":\"diesel\"}\t[\"330\",\"value\"]\t[\"450\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "serra-topo-2026",
+            "field": "torque",
+            "rawValue": "450",
+            "unit": "Nm",
+            "qualifiers": {
+              "fuel": "diesel"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-pickup-multi-trim",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\ttorque\tNm\t{\"fuel\":\"diesel\"}\t[\"330\",\"value\"]\t[\"450\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "serra-base-2026",
+            "field": "airbags",
+            "rawValue": null,
+            "unit": null,
+            "qualifiers": {},
+            "availability": "standard",
+            "evidence": [
+              {
+                "sourceId": "synthetic-pickup-multi-trim",
+                "revision": "v1",
+                "lineStart": 7,
+                "lineEnd": 7,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tairbags\t-\t{}\t[null,\"standard\"]\t[null,\"optional\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "serra-topo-2026",
+            "field": "airbags",
+            "rawValue": null,
+            "unit": null,
+            "qualifiers": {},
+            "availability": "optional",
+            "evidence": [
+              {
+                "sourceId": "synthetic-pickup-multi-trim",
+                "revision": "v1",
+                "lineStart": 7,
+                "lineEnd": 7,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tairbags\t-\t{}\t[null,\"standard\"]\t[null,\"optional\"]"
+              }
+            ]
+          }
+        ],
+        "abstentions": [
+          {
+            "vehicleId": "serra-base-2026",
+            "field": "urbanConsumption",
+            "qualifiers": {
+              "fuel": "diesel"
+            },
+            "reason": "not-stated",
+            "evidence": [
+              {
+                "sourceId": "synthetic-pickup-multi-trim",
+                "revision": "v1",
+                "lineStart": 8,
+                "lineEnd": 8,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\turbanConsumption\tkm/L\t{\"fuel\":\"diesel\"}\t[null,\"not-stated\"]\t[null,\"not-stated\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "serra-topo-2026",
+            "field": "urbanConsumption",
+            "qualifiers": {
+              "fuel": "diesel"
+            },
+            "reason": "not-stated",
+            "evidence": [
+              {
+                "sourceId": "synthetic-pickup-multi-trim",
+                "revision": "v1",
+                "lineStart": 8,
+                "lineEnd": 8,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\turbanConsumption\tkm/L\t{\"fuel\":\"diesel\"}\t[null,\"not-stated\"]\t[null,\"not-stated\"]"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "sedan-legacy",
+      "tags": ["sedan", "legacy-year", "unavailable"],
+      "input": {
+        "query": "Quero os dados do Cedro GL 1998 no Brasil.",
+        "requested": {
+          "market": "BR",
+          "make": "Fabrica Ficticia",
+          "model": "Cedro",
+          "modelYear": 1998,
+          "trim": "GL"
+        },
+        "sources": [
+          {
+            "id": "synthetic-sedan-legacy",
+            "revision": "v1",
+            "sha256": "5a3fcd06b3abdd4ae42184ba443b2f05b1e0fbbafcabc3dd4797aa94873acf2a",
+            "url": "https://fixtures.invalid/sedan-legacy.tsv",
+            "format": "synthetic-tsv-v1",
+            "text": "# SYNTHETIC TEST DATA: fabricated brands, configurations and values; never use as vehicle facts.\nvehicle\tcedro-gl-1998\tFabrica Ficticia\tCedro\t1998\tGL\tsedan\nvehicle\tcedro-glx-1998\tFabrica Ficticia\tCedro\t1998\tGLX\tsedan\ncolumns\tcedro-gl-1998\tcedro-glx-1998\nspec\tdisplacement\tcm3\t{\"fuel\":\"gasoline\"}\t[\"1590\",\"value\"]\t[\"1820\",\"value\"]\nspec\tairbags\t-\t{}\t[null,\"unavailable\"]\t[null,\"optional\"]"
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "resolved",
+          "vehicleIds": ["cedro-gl-1998"]
+        },
+        "variants": [
+          {
+            "id": "cedro-gl-1998",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Cedro",
+            "modelYear": 1998,
+            "trim": "GL",
+            "bodyType": "sedan"
+          },
+          {
+            "id": "cedro-glx-1998",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Cedro",
+            "modelYear": 1998,
+            "trim": "GLX",
+            "bodyType": "sedan"
+          }
+        ],
+        "claims": [
+          {
+            "vehicleId": "cedro-gl-1998",
+            "field": "displacement",
+            "rawValue": "1590",
+            "unit": "cm3",
+            "qualifiers": {
+              "fuel": "gasoline"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-sedan-legacy",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tdisplacement\tcm3\t{\"fuel\":\"gasoline\"}\t[\"1590\",\"value\"]\t[\"1820\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "cedro-glx-1998",
+            "field": "displacement",
+            "rawValue": "1820",
+            "unit": "cm3",
+            "qualifiers": {
+              "fuel": "gasoline"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-sedan-legacy",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tdisplacement\tcm3\t{\"fuel\":\"gasoline\"}\t[\"1590\",\"value\"]\t[\"1820\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "cedro-gl-1998",
+            "field": "airbags",
+            "rawValue": null,
+            "unit": null,
+            "qualifiers": {},
+            "availability": "unavailable",
+            "evidence": [
+              {
+                "sourceId": "synthetic-sedan-legacy",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tairbags\t-\t{}\t[null,\"unavailable\"]\t[null,\"optional\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "cedro-glx-1998",
+            "field": "airbags",
+            "rawValue": null,
+            "unit": null,
+            "qualifiers": {},
+            "availability": "optional",
+            "evidence": [
+              {
+                "sourceId": "synthetic-sedan-legacy",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tairbags\t-\t{}\t[null,\"unavailable\"]\t[null,\"optional\"]"
+              }
+            ]
+          }
+        ],
+        "abstentions": []
+      }
+    },
+    {
+      "id": "motorcycle-legacy",
+      "tags": ["motorcycle", "legacy-year"],
+      "input": {
+        "query": "Quero os dados do Trilha 150 2004 no Brasil.",
+        "requested": {
+          "market": "BR",
+          "make": "Fabrica Ficticia",
+          "model": "Trilha",
+          "modelYear": 2004,
+          "trim": "150"
+        },
+        "sources": [
+          {
+            "id": "synthetic-motorcycle-legacy",
+            "revision": "v1",
+            "sha256": "dc247e4cc0d33a50d1142d98840ac4d83cc1e6d7f81b4b0119477202f0d90e57",
+            "url": "https://fixtures.invalid/motorcycle-legacy.tsv",
+            "format": "synthetic-tsv-v1",
+            "text": "# SYNTHETIC TEST DATA: fabricated brands, configurations and values; never use as vehicle facts.\nvehicle\ttrilha-125-2004\tFabrica Ficticia\tTrilha\t2004\t125\tmotorcycle\nvehicle\ttrilha-150-2004\tFabrica Ficticia\tTrilha\t2004\t150\tmotorcycle\ncolumns\ttrilha-125-2004\ttrilha-150-2004\nspec\tdisplacement\tcm3\t{\"fuel\":\"gasoline\"}\t[\"123\",\"value\"]\t[\"147\",\"value\"]\nspec\tseats\tcount\t{}\t[\"2\",\"value\"]\t[\"2\",\"value\"]"
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "resolved",
+          "vehicleIds": ["trilha-150-2004"]
+        },
+        "variants": [
+          {
+            "id": "trilha-125-2004",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Trilha",
+            "modelYear": 2004,
+            "trim": "125",
+            "bodyType": "motorcycle"
+          },
+          {
+            "id": "trilha-150-2004",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Trilha",
+            "modelYear": 2004,
+            "trim": "150",
+            "bodyType": "motorcycle"
+          }
+        ],
+        "claims": [
+          {
+            "vehicleId": "trilha-125-2004",
+            "field": "displacement",
+            "rawValue": "123",
+            "unit": "cm3",
+            "qualifiers": {
+              "fuel": "gasoline"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-motorcycle-legacy",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tdisplacement\tcm3\t{\"fuel\":\"gasoline\"}\t[\"123\",\"value\"]\t[\"147\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "trilha-150-2004",
+            "field": "displacement",
+            "rawValue": "147",
+            "unit": "cm3",
+            "qualifiers": {
+              "fuel": "gasoline"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-motorcycle-legacy",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tdisplacement\tcm3\t{\"fuel\":\"gasoline\"}\t[\"123\",\"value\"]\t[\"147\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "trilha-125-2004",
+            "field": "seats",
+            "rawValue": "2",
+            "unit": "count",
+            "qualifiers": {},
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-motorcycle-legacy",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tseats\tcount\t{}\t[\"2\",\"value\"]\t[\"2\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "trilha-150-2004",
+            "field": "seats",
+            "rawValue": "2",
+            "unit": "count",
+            "qualifiers": {},
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-motorcycle-legacy",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tseats\tcount\t{}\t[\"2\",\"value\"]\t[\"2\",\"value\"]"
+              }
+            ]
+          }
+        ],
+        "abstentions": []
+      }
+    },
+    {
+      "id": "bus-configurations",
+      "tags": ["bus", "commercial", "multi-trim"],
+      "input": {
+        "query": "Quero os dados do Horizonte City 2012 no Brasil.",
+        "requested": {
+          "market": "BR",
+          "make": "Fabrica Ficticia",
+          "model": "Horizonte",
+          "modelYear": 2012,
+          "trim": "City"
+        },
+        "sources": [
+          {
+            "id": "synthetic-bus-configurations",
+            "revision": "v1",
+            "sha256": "4ac232257f839d491d324718301b7e6083d74c31cfe5b3f1badd3450ea4c4b8b",
+            "url": "https://fixtures.invalid/bus-configurations.tsv",
+            "format": "synthetic-tsv-v1",
+            "text": "# SYNTHETIC TEST DATA: fabricated brands, configurations and values; never use as vehicle facts.\nvehicle\thorizonte-city-2012\tFabrica Ficticia\tHorizonte\t2012\tCity\tbus\nvehicle\thorizonte-road-2012\tFabrica Ficticia\tHorizonte\t2012\tRoad\tbus\ncolumns\thorizonte-city-2012\thorizonte-road-2012\nspec\tlength\tmm\t{}\t[\"9100\",\"value\"]\t[\"12010\",\"value\"]\nspec\tseats\tcount\t{\"layout\":\"seated\"}\t[\"29\",\"value\"]\t[\"41\",\"value\"]"
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "resolved",
+          "vehicleIds": ["horizonte-city-2012"]
+        },
+        "variants": [
+          {
+            "id": "horizonte-city-2012",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Horizonte",
+            "modelYear": 2012,
+            "trim": "City",
+            "bodyType": "bus"
+          },
+          {
+            "id": "horizonte-road-2012",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Horizonte",
+            "modelYear": 2012,
+            "trim": "Road",
+            "bodyType": "bus"
+          }
+        ],
+        "claims": [
+          {
+            "vehicleId": "horizonte-city-2012",
+            "field": "length",
+            "rawValue": "9100",
+            "unit": "mm",
+            "qualifiers": {},
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-bus-configurations",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tlength\tmm\t{}\t[\"9100\",\"value\"]\t[\"12010\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "horizonte-road-2012",
+            "field": "length",
+            "rawValue": "12010",
+            "unit": "mm",
+            "qualifiers": {},
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-bus-configurations",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tlength\tmm\t{}\t[\"9100\",\"value\"]\t[\"12010\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "horizonte-city-2012",
+            "field": "seats",
+            "rawValue": "29",
+            "unit": "count",
+            "qualifiers": {
+              "layout": "seated"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-bus-configurations",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tseats\tcount\t{\"layout\":\"seated\"}\t[\"29\",\"value\"]\t[\"41\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "horizonte-road-2012",
+            "field": "seats",
+            "rawValue": "41",
+            "unit": "count",
+            "qualifiers": {
+              "layout": "seated"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-bus-configurations",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tseats\tcount\t{\"layout\":\"seated\"}\t[\"29\",\"value\"]\t[\"41\",\"value\"]"
+              }
+            ]
+          }
+        ],
+        "abstentions": []
+      }
+    },
+    {
+      "id": "truck-configurations",
+      "tags": ["truck", "heavy-commercial"],
+      "input": {
+        "query": "Quero os dados do Carga 6x2 2020 no Brasil.",
+        "requested": {
+          "market": "BR",
+          "make": "Fabrica Ficticia",
+          "model": "Carga",
+          "modelYear": 2020,
+          "trim": "6x2"
+        },
+        "sources": [
+          {
+            "id": "synthetic-truck-configurations",
+            "revision": "v1",
+            "sha256": "79b4bc624d6bcbe20032223fef07cf62b84aecdff16eb7a3b9a34ba1ee989f47",
+            "url": "https://fixtures.invalid/truck-configurations.tsv",
+            "format": "synthetic-tsv-v1",
+            "text": "# SYNTHETIC TEST DATA: fabricated brands, configurations and values; never use as vehicle facts.\nvehicle\tcarga-4x2-2020\tFabrica Ficticia\tCarga\t2020\t4x2\ttruck\nvehicle\tcarga-6x2-2020\tFabrica Ficticia\tCarga\t2020\t6x2\ttruck\ncolumns\tcarga-4x2-2020\tcarga-6x2-2020\nspec\tgrossMass\tkg\t{\"condition\":\"rated\"}\t[\"12100\",\"value\"]\t[\"23100\",\"value\"]\nspec\taxles\tcount\t{}\t[\"2\",\"value\"]\t[\"3\",\"value\"]"
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "resolved",
+          "vehicleIds": ["carga-6x2-2020"]
+        },
+        "variants": [
+          {
+            "id": "carga-4x2-2020",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Carga",
+            "modelYear": 2020,
+            "trim": "4x2",
+            "bodyType": "truck"
+          },
+          {
+            "id": "carga-6x2-2020",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Carga",
+            "modelYear": 2020,
+            "trim": "6x2",
+            "bodyType": "truck"
+          }
+        ],
+        "claims": [
+          {
+            "vehicleId": "carga-4x2-2020",
+            "field": "grossMass",
+            "rawValue": "12100",
+            "unit": "kg",
+            "qualifiers": {
+              "condition": "rated"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-truck-configurations",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tgrossMass\tkg\t{\"condition\":\"rated\"}\t[\"12100\",\"value\"]\t[\"23100\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "carga-6x2-2020",
+            "field": "grossMass",
+            "rawValue": "23100",
+            "unit": "kg",
+            "qualifiers": {
+              "condition": "rated"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-truck-configurations",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tgrossMass\tkg\t{\"condition\":\"rated\"}\t[\"12100\",\"value\"]\t[\"23100\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "carga-4x2-2020",
+            "field": "axles",
+            "rawValue": "2",
+            "unit": "count",
+            "qualifiers": {},
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-truck-configurations",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\taxles\tcount\t{}\t[\"2\",\"value\"]\t[\"3\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "carga-6x2-2020",
+            "field": "axles",
+            "rawValue": "3",
+            "unit": "count",
+            "qualifiers": {},
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-truck-configurations",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\taxles\tcount\t{}\t[\"2\",\"value\"]\t[\"3\",\"value\"]"
+              }
+            ]
+          }
+        ],
+        "abstentions": []
+      }
+    },
+    {
+      "id": "suv-year-ambiguity",
+      "tags": ["suv", "ambiguous-year", "clarification"],
+      "input": {
+        "query": "Quero os dados do Vereda Plus  no Brasil.",
+        "requested": {
+          "market": "BR",
+          "make": "Fabrica Ficticia",
+          "model": "Vereda",
+          "modelYear": null,
+          "trim": "Plus"
+        },
+        "sources": [
+          {
+            "id": "synthetic-suv-year-ambiguity",
+            "revision": "v1",
+            "sha256": "403d737c21cdf8657a267f3f48a1b00ee51e5ec604bc9c9be2cecf1561b60e96",
+            "url": "https://fixtures.invalid/suv-year-ambiguity.tsv",
+            "format": "synthetic-tsv-v1",
+            "text": "# SYNTHETIC TEST DATA: fabricated brands, configurations and values; never use as vehicle facts.\nvehicle\tvereda-plus-2015\tFabrica Ficticia\tVereda\t2015\tPlus\tsuv\nvehicle\tvereda-plus-2026\tFabrica Ficticia\tVereda\t2026\tPlus\tsuv\ncolumns\tvereda-plus-2015\tvereda-plus-2026\nspec\tpower\tkW\t{\"fuel\":\"gasoline\"}\t[\"101\",\"value\"]\t[\"121\",\"value\"]\nspec\tpower\tkW\t{\"fuel\":\"ethanol\"}\t[\"111\",\"value\"]\t[\"131\",\"value\"]"
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "needs-clarification",
+          "vehicleIds": ["vereda-plus-2015", "vereda-plus-2026"]
+        },
+        "variants": [
+          {
+            "id": "vereda-plus-2015",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Vereda",
+            "modelYear": 2015,
+            "trim": "Plus",
+            "bodyType": "suv"
+          },
+          {
+            "id": "vereda-plus-2026",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Vereda",
+            "modelYear": 2026,
+            "trim": "Plus",
+            "bodyType": "suv"
+          }
+        ],
+        "claims": [
+          {
+            "vehicleId": "vereda-plus-2015",
+            "field": "power",
+            "rawValue": "101",
+            "unit": "kW",
+            "qualifiers": {
+              "fuel": "gasoline"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-suv-year-ambiguity",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tpower\tkW\t{\"fuel\":\"gasoline\"}\t[\"101\",\"value\"]\t[\"121\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "vereda-plus-2026",
+            "field": "power",
+            "rawValue": "121",
+            "unit": "kW",
+            "qualifiers": {
+              "fuel": "gasoline"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-suv-year-ambiguity",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tpower\tkW\t{\"fuel\":\"gasoline\"}\t[\"101\",\"value\"]\t[\"121\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "vereda-plus-2015",
+            "field": "power",
+            "rawValue": "111",
+            "unit": "kW",
+            "qualifiers": {
+              "fuel": "ethanol"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-suv-year-ambiguity",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tpower\tkW\t{\"fuel\":\"ethanol\"}\t[\"111\",\"value\"]\t[\"131\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "vereda-plus-2026",
+            "field": "power",
+            "rawValue": "131",
+            "unit": "kW",
+            "qualifiers": {
+              "fuel": "ethanol"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-suv-year-ambiguity",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tpower\tkW\t{\"fuel\":\"ethanol\"}\t[\"111\",\"value\"]\t[\"131\",\"value\"]"
+              }
+            ]
+          }
+        ],
+        "abstentions": []
+      }
+    },
+    {
+      "id": "van-conflicting-rows",
+      "tags": [
+        "van",
+        "light-commercial",
+        "conflict",
+        "within-document-conflict"
+      ],
+      "input": {
+        "query": "Quero os dados do Entrega Cargo 2023 no Brasil.",
+        "requested": {
+          "market": "BR",
+          "make": "Fabrica Ficticia",
+          "model": "Entrega",
+          "modelYear": 2023,
+          "trim": "Cargo"
+        },
+        "sources": [
+          {
+            "id": "synthetic-van-conflicting-sources",
+            "revision": "v1",
+            "sha256": "7dd684cf2c80415ce4c9cb082c01057f0bc2637b41f34da4475c7e3ef274eb92",
+            "url": "https://fixtures.invalid/van-conflicting-sources.tsv",
+            "format": "synthetic-tsv-v1",
+            "text": "# SYNTHETIC TEST DATA: fabricated brands, configurations and values; never use as vehicle facts.\nvehicle\tentrega-cargo-2023\tFabrica Ficticia\tEntrega\t2023\tCargo\tvan\nvehicle\tentrega-passenger-2023\tFabrica Ficticia\tEntrega\t2023\tPassenger\tvan\ncolumns\tentrega-cargo-2023\tentrega-passenger-2023\nspec\tpayload\tkg\t{\"condition\":\"rated\"}\t[\"910\",\"value\"]\t[\"720\",\"value\"]\nspec\tpayload\tkg\t{\"condition\":\"rated\"}\t[\"950\",\"value\"]\t[\"720\",\"value\"]\nspec\tseats\tcount\t{}\t[\"2\",\"value\"]\t[\"8\",\"value\"]"
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "resolved",
+          "vehicleIds": ["entrega-cargo-2023"]
+        },
+        "variants": [
+          {
+            "id": "entrega-cargo-2023",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Entrega",
+            "modelYear": 2023,
+            "trim": "Cargo",
+            "bodyType": "van"
+          },
+          {
+            "id": "entrega-passenger-2023",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Entrega",
+            "modelYear": 2023,
+            "trim": "Passenger",
+            "bodyType": "van"
+          }
+        ],
+        "claims": [
+          {
+            "vehicleId": "entrega-passenger-2023",
+            "field": "payload",
+            "rawValue": "720",
+            "unit": "kg",
+            "qualifiers": {
+              "condition": "rated"
+            },
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-van-conflicting-sources",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tpayload\tkg\t{\"condition\":\"rated\"}\t[\"910\",\"value\"]\t[\"720\",\"value\"]"
+              },
+              {
+                "sourceId": "synthetic-van-conflicting-sources",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tpayload\tkg\t{\"condition\":\"rated\"}\t[\"950\",\"value\"]\t[\"720\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "entrega-cargo-2023",
+            "field": "seats",
+            "rawValue": "2",
+            "unit": "count",
+            "qualifiers": {},
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-van-conflicting-sources",
+                "revision": "v1",
+                "lineStart": 7,
+                "lineEnd": 7,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tseats\tcount\t{}\t[\"2\",\"value\"]\t[\"8\",\"value\"]"
+              }
+            ]
+          },
+          {
+            "vehicleId": "entrega-passenger-2023",
+            "field": "seats",
+            "rawValue": "8",
+            "unit": "count",
+            "qualifiers": {},
+            "availability": "value",
+            "evidence": [
+              {
+                "sourceId": "synthetic-van-conflicting-sources",
+                "revision": "v1",
+                "lineStart": 7,
+                "lineEnd": 7,
+                "headerLine": 4,
+                "column": 2,
+                "quote": "spec\tseats\tcount\t{}\t[\"2\",\"value\"]\t[\"8\",\"value\"]"
+              }
+            ]
+          }
+        ],
+        "abstentions": [
+          {
+            "vehicleId": "entrega-cargo-2023",
+            "field": "payload",
+            "qualifiers": {
+              "condition": "rated"
+            },
+            "reason": "conflicting",
+            "evidence": [
+              {
+                "sourceId": "synthetic-van-conflicting-sources",
+                "revision": "v1",
+                "lineStart": 5,
+                "lineEnd": 5,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tpayload\tkg\t{\"condition\":\"rated\"}\t[\"910\",\"value\"]\t[\"720\",\"value\"]"
+              },
+              {
+                "sourceId": "synthetic-van-conflicting-sources",
+                "revision": "v1",
+                "lineStart": 6,
+                "lineEnd": 6,
+                "headerLine": 4,
+                "column": 1,
+                "quote": "spec\tpayload\tkg\t{\"condition\":\"rated\"}\t[\"950\",\"value\"]\t[\"720\",\"value\"]"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "all-unknown",
+      "tags": ["van", "all-abstention"],
+      "input": {
+        "query": "Dados disponiveis do Vazio Base 2021.",
+        "requested": {
+          "market": "BR",
+          "make": "Fabrica Ficticia",
+          "model": "Vazio",
+          "modelYear": 2021,
+          "trim": "Base"
+        },
+        "sources": [
+          {
+            "id": "synthetic-all-unknown",
+            "revision": "v1",
+            "sha256": "9ca30d145bc3fb29687553c14959f1cc60000bb1c6b2e9d6961c43b5afc7495f",
+            "url": "https://fixtures.invalid/all-unknown.tsv",
+            "format": "synthetic-tsv-v1",
+            "text": "# SYNTHETIC TEST DATA: fabricated, no real specifications.\nvehicle\tvazio-2021\tFabrica Ficticia\tVazio\t2021\tBase\tvan\ncolumns\tvazio-2021\nspec\tpayload\tkg\t{}\t[null,\"not-stated\"]"
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "resolved",
+          "vehicleIds": ["vazio-2021"]
+        },
+        "variants": [
+          {
+            "id": "vazio-2021",
+            "market": "BR",
+            "make": "Fabrica Ficticia",
+            "model": "Vazio",
+            "modelYear": 2021,
+            "trim": "Base",
+            "bodyType": "van"
+          }
+        ],
+        "claims": [],
+        "abstentions": [
+          {
+            "vehicleId": "vazio-2021",
+            "field": "payload",
+            "qualifiers": {},
+            "reason": "not-stated",
+            "evidence": [
+              {
+                "sourceId": "synthetic-all-unknown",
+                "revision": "v1",
+                "lineStart": 4,
+                "lineEnd": 4,
+                "headerLine": 3,
+                "column": 1,
+                "quote": "spec\tpayload\tkg\t{}\t[null,\"not-stated\"]"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "vehicle-not-found",
+      "tags": ["not-found", "negative"],
+      "input": {
+        "query": "Dados do veiculo Inexistente 1990.",
+        "requested": {
+          "market": "BR",
+          "make": "Fabrica Ficticia",
+          "model": "Inexistente",
+          "modelYear": 1990,
+          "trim": null
+        },
+        "sources": [
+          {
+            "id": "synthetic-empty",
+            "revision": "v1",
+            "sha256": "7710189a359d32c3b2af899d3995956f48dc044cbc031bd6d039b3fa5ce78f66",
+            "url": "https://fixtures.invalid/empty.tsv",
+            "format": "synthetic-tsv-v1",
+            "text": "# SYNTHETIC TEST DATA: this source contains no vehicle records."
+          }
+        ]
+      },
+      "gold": {
+        "resolution": {
+          "status": "not-found",
+          "vehicleIds": []
+        },
+        "variants": [],
+        "claims": [],
+        "abstentions": []
+      }
+    }
+  ],
+  "provenance": "synthetic"
+}

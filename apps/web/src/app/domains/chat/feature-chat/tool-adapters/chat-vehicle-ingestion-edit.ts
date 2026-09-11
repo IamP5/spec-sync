@@ -4,6 +4,7 @@ import {
   computed,
   inject,
   input,
+  signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
@@ -51,14 +52,16 @@ import { parseResult } from '../../util/parse-result';
     <z-card class="rounded-xl p-4 text-sm shadow-none">
       @if (result(); as result) {
         @if (result.status === 'STARTED') {
-          <app-vehicle-ingestion-run-detail
-            [runId]="result.runId"
-            compact
-            (runChanged)="report($event)"
-          />
+          @if (startedHere()) {
+            <app-vehicle-ingestion-run-detail
+              [runId]="result.runId"
+              compact
+              (runChanged)="report($event)"
+            />
+          }
           <p class="mt-3 text-xs text-muted-foreground">
             <a class="underline" [routerLink]="['/ingestion', result.runId]"
-              >Open this import on the ingestion page</a
+              >Ver importação anterior</a
             >
           </p>
         } @else {
@@ -93,6 +96,7 @@ export class ChatVehicleIngestionEdit
   readonly toolCall =
     input.required<HumanInTheLoopToolCall<IngestionStartArgs>>();
   private readonly activity = inject(IngestionActivity);
+  protected readonly startedHere = signal(false);
   // CopilotKit passes a new tool-call object on every agent event; the
   // prefill only changes when its content does, so the form keeps its edits.
   protected readonly prefill = computed<IngestionLaunchPrefill>(
@@ -104,6 +108,7 @@ export class ChatVehicleIngestionEdit
   );
 
   protected onStarted(run: IngestionRun): void {
+    this.startedHere.set(true);
     this.respond({
       status: 'STARTED',
       runId: run.id,

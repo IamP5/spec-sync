@@ -8,19 +8,27 @@ vi.mock('@mastra/core/agent', () => ({
   },
 }));
 
-const { downloadSource, wellKnownModelPages, captureSourceCached } = vi.hoisted(
-  () => ({
-    downloadSource: vi.fn(),
-    wellKnownModelPages: vi.fn(),
-    captureSourceCached: vi.fn(),
-  }),
-);
+const {
+  downloadSource,
+  probeSourceMetadata,
+  wellKnownModelPages,
+  captureSourceCached,
+} = vi.hoisted(() => ({
+  downloadSource: vi.fn(),
+  probeSourceMetadata: vi.fn(),
+  wellKnownModelPages: vi.fn(),
+  captureSourceCached: vi.fn(),
+}));
 vi.mock('../ingestion/source', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../ingestion/source')>()),
   downloadSource,
+  probeSourceMetadata,
   captureSourceCached,
 }));
-vi.mock('../ingestion/site-index', () => ({ wellKnownModelPages }));
+vi.mock('../ingestion/site-index', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../ingestion/site-index')>()),
+  wellKnownModelPages,
+}));
 
 const { identifyConfigurations, recordToolUsage } = vi.hoisted(() => ({
   identifyConfigurations: vi.fn(),
@@ -48,227 +56,309 @@ afterEach(() => {
   vi.unstubAllGlobals();
   generate.mockReset();
   downloadSource.mockReset();
+  probeSourceMetadata.mockReset();
   wellKnownModelPages.mockReset();
   captureSourceCached.mockReset();
   identifyConfigurations.mockReset();
   recordToolUsage.mockReset();
+  vi.unstubAllEnvs();
 });
-beforeEach(() => wellKnownModelPages.mockResolvedValue([]));
-
-it('resolves grounding redirects, keeps approved pages and lists the brochures they link', async () => {
-  generate.mockResolvedValue({
-    text: 'Veja o site oficial.',
-    sources: [
-      {
-        payload: {
-          sourceType: 'url',
-          title: 'mercadolivre.com.br',
-          url: redirect('ml'),
-        },
-      },
-      {
-        payload: {
-          sourceType: 'url',
-          title: 'ford.com.br',
-          url: redirect('ford'),
-        },
-      },
-      {
-        payload: {
-          sourceType: 'url',
-          title: 'ford.com.br',
-          url: redirect('ford-dup'),
-        },
-      },
-      {
-        payload: {
-          sourceType: 'url',
-          title: 'ford.com.br',
-          url: redirect('pdf'),
-        },
-      },
-    ],
-  });
-  const locations: Record<string, string> = {
-    ml: 'https://www.mercadolivre.com.br/ranger',
-    ford: 'https://www.ford.com.br/picapes/ranger/compare-as-versoes/',
-    'ford-dup': 'https://www.ford.com.br/picapes/ranger/compare-as-versoes/',
-    pdf: 'https://www.ford.com.br/content/dam/ficha-tecnica.pdf',
-  };
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async (url: string) => {
-      const location = locations[url.split('/').pop() ?? ''];
-      return new Response(null, {
-        status: location ? 302 : 404,
-        headers: location ? { location } : {},
-      });
-    }),
-  );
-  downloadSource.mockImplementation(async (value: string) => ({
-    url: new URL(value),
-    mime: 'text/html',
-    bytes: Buffer.from(
-      '<a href="/content/dam/ranger/fbr-ranger-ebook.pdf">E-book</a><a href="/content/dam/ranger/fbr-ranger-ficha-tecnica.pdf">Ficha técnica</a>',
-    ),
+beforeEach(() => {
+  wellKnownModelPages.mockResolvedValue([]);
+  probeSourceMetadata.mockImplementation(async (url: string) => ({
+    url,
+    mime: 'application/pdf',
+    byteLength: 1234,
   }));
-  const result = await discoverVehicleSpecificationSources.execute?.(
-    { brand: 'Ford', model: 'Ranger', modelYear: 2026 },
-    context,
-  );
-  expect(result).toMatchObject({
-    status: 'OK',
-    items: [
-      {
-        title: 'Ficha técnica',
-        url: 'https://www.ford.com.br/content/dam/ranger/fbr-ranger-ficha-tecnica.pdf',
-        documentType: 'PDF',
-      },
-      {
-        title: 'E-book',
-        url: 'https://www.ford.com.br/content/dam/ranger/fbr-ranger-ebook.pdf',
-        documentType: 'PDF',
-      },
-      {
-        title: 'ford.com.br/picapes/ranger/compare-as-versoes',
-        url: 'https://www.ford.com.br/picapes/ranger/compare-as-versoes/',
-        documentType: 'HTML',
-      },
-      {
-        title: 'ford.com.br/content/dam/ficha-tecnica.pdf',
-        url: 'https://www.ford.com.br/content/dam/ficha-tecnica.pdf',
-        documentType: 'PDF',
-      },
-    ],
-  });
-  expect((result as { message: string }).message).toContain(
-    '3 brochure PDF(s) and 1 page(s)',
-  );
-  // Only HTML pages are read for links; the PDF citation is not downloaded.
-  expect(downloadSource).toHaveBeenCalledTimes(1);
-  expect(generate.mock.calls[0]?.[0]).toBe(
-    JSON.stringify({ brand: 'Ford', model: 'Ranger', modelYear: 2026 }),
-  );
 });
 
-it('reports EMPTY with guidance when no approved page is behind the citations', async () => {
-  generate.mockResolvedValue({
-    text: '',
-    sources: [
-      {
-        payload: { sourceType: 'url', title: 'scribd.com', url: redirect('s') },
-      },
-    ],
-  });
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(
-      async () =>
-        new Response(null, {
-          status: 302,
-          headers: { location: 'https://scribd.com/doc' },
-        }),
+import { discoveryResultSchema } from '../ingestion/source-discovery';
+const discover = async (brand = 'Ford', model = 'Ranger', modelYear = 2026) =>
+  discoveryResultSchema.parse(
+    await discoverVehicleSpecificationSources.execute?.(
+      { brand, model, modelYear },
+      context,
     ),
   );
-  const result = await discoverVehicleSpecificationSources.execute?.(
-    { brand: 'Ford', model: 'Ranger', modelYear: 2026 },
-    context,
-  );
-  expect(result).toMatchObject({ status: 'EMPTY', items: [] });
-  expect((result as { message: string }).message).toContain(
-    'official manufacturer URL',
-  );
-  expect(downloadSource).not.toHaveBeenCalled();
+const grounded = (url: string, title = '') => ({
+  payload: { sourceType: 'url', url, title },
+});
+const html = (url: string, body: string) => ({
+  url: new URL(url),
+  mime: 'text/html',
+  bytes: Buffer.from(body),
 });
 
-it('keeps the pages when reading them for brochures fails', async () => {
-  generate.mockResolvedValue({
-    text: '',
-    sources: [
-      {
-        payload: {
-          sourceType: 'url',
-          title: 'ford.com.br',
-          url: redirect('f'),
-        },
-      },
-    ],
-  });
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(
-      async () =>
-        new Response(null, {
-          status: 302,
-          headers: { location: 'https://www.ford.com.br/picapes/ranger/' },
-        }),
-    ),
-  );
-  downloadSource.mockRejectedValue(new Error('Source returned HTTP 403.'));
-  const result = await discoverVehicleSpecificationSources.execute?.(
-    { brand: 'Ford', model: 'Ranger', modelYear: 2026 },
-    context,
-  );
-  expect(result).toMatchObject({
-    status: 'OK',
-    items: [
-      { url: 'https://www.ford.com.br/picapes/ranger/', documentType: 'HTML' },
-    ],
-  });
-});
-
-it('reports ERROR only when both web search and the site index fail', async () => {
-  generate.mockRejectedValue(new Error('quota'));
-  const result = await discoverVehicleSpecificationSources.execute?.(
-    { brand: 'Ford', model: 'Ranger', modelYear: 2026 },
-    context,
-  );
-  expect(result).toMatchObject({ status: 'ERROR', items: [] });
-});
-
-it('lists the sitemap pages and their brochures even when web search fails', async () => {
-  generate.mockRejectedValue(new Error('quota'));
+it('uses a published model brochure without paying for grounding and normalizes F150', async () => {
   wellKnownModelPages.mockResolvedValue([
     {
-      url: 'https://www.ford.com.br/picapes/ranger/compare-as-versoes/',
-      html: '<a href="/content/dam/ranger/fbr-ranger-ficha-tecnica.pdf">Ficha técnica</a>',
+      url: 'https://www.ford.com.br/picapes/f-150/',
+      html: '<a href="/docs/f-150-ficha-tecnica.pdf">Ficha técnica</a>',
     },
-    { url: 'https://www.ford.com.br/picapes/ranger/' },
   ]);
-  downloadSource.mockResolvedValue({
-    url: new URL('https://www.ford.com.br/picapes/ranger/'),
-    mime: 'text/html',
-    bytes: Buffer.from(
-      '<a href="/content/dam/ranger/fbr-ranger-ficha-tecnica.pdf">same</a>',
-    ),
+  const result = await discover('Ford', 'F150');
+  expect(generate).not.toHaveBeenCalled();
+  expect(downloadSource).not.toHaveBeenCalled();
+  expect(result.resolvedScope).toEqual({
+    brand: 'Ford',
+    model: 'F-150',
+    modelYear: 2026,
+    market: 'BR',
   });
-  const result = await discoverVehicleSpecificationSources.execute?.(
-    { brand: 'Ford', model: 'Ranger', modelYear: 2026 },
-    context,
+  expect(result.items[0]).toMatchObject({
+    documentType: 'PDF',
+    applicability: 'UNVERIFIED',
+    yearHint: null,
+    availability: 'READABLE',
+  });
+  expect(result.diagnostics.search).toBe('SKIPPED');
+});
+
+it('resolves grounded redirects, preserves external sources and filters manuals', async () => {
+  generate.mockResolvedValue({
+    sources: [grounded(redirect('foreign')), grounded(redirect('ford'))],
+  });
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      async (url: string) =>
+        new Response(null, {
+          status: 302,
+          headers: {
+            location: url.endsWith('ford')
+              ? 'https://www.ford.com.br/picapes/ranger/'
+              : 'https://files.example.org/ranger.pdf',
+          },
+        }),
+    ),
   );
-  expect(result).toMatchObject({
-    status: 'OK',
-    items: [
-      {
-        title: 'Ficha técnica',
-        url: 'https://www.ford.com.br/content/dam/ranger/fbr-ranger-ficha-tecnica.pdf',
-        documentType: 'PDF',
-      },
-      {
-        title: 'ford.com.br/picapes/ranger/compare-as-versoes',
-        url: 'https://www.ford.com.br/picapes/ranger/compare-as-versoes/',
-        documentType: 'HTML',
-      },
-      { title: 'ford.com.br/picapes/ranger', documentType: 'HTML' },
+  downloadSource.mockImplementation(async (url: string) =>
+    html(
+      url,
+      '<a href="/docs/ranger-manual.pdf">Manual</a><a href="/docs/ranger-ficha-2026.pdf">Ficha técnica</a>',
+    ),
+  );
+  const result = await discover();
+  expect(result.items).toHaveLength(3);
+  expect(result.items[0]).toMatchObject({
+    url: 'https://www.ford.com.br/docs/ranger-ficha-2026.pdf',
+    yearHint: 2026,
+    applicability: 'UNVERIFIED',
+  });
+  expect(result.diagnostics.search).toBe('COMPLETED');
+  expect(recordToolUsage).toHaveBeenCalledOnce();
+});
+
+it.each(['Ram1500', ' RAM1500 ', ' Ram 1500 '])(
+  'finds a grounded official RAM PDF for %s even if official pages cannot be read',
+  async (model) => {
+    wellKnownModelPages.mockRejectedValue(new Error('HTTP 403'));
+    generate.mockResolvedValue({
+      sources: [
+        grounded(
+          'https://www.ram.com.br/docs/catalogo-1500-2026.pdf',
+          'RAM 1500 catálogo 2026',
+        ),
+      ],
+    });
+    const result = await discover('RAM', model);
+    expect(result.status).toBe('OK');
+    expect(result.resolvedScope.model).toBe('1500');
+    expect(result.items[0]).toMatchObject({
+      url: 'https://www.ram.com.br/docs/catalogo-1500-2026.pdf',
+      documentType: 'PDF',
+      availability: 'READABLE',
+      applicability: 'UNVERIFIED',
+    });
+    expect(downloadSource).not.toHaveBeenCalled();
+    expect(JSON.parse(generate.mock.calls[0]?.[0])).toMatchObject({
+      preferredManufacturerDomains: ['ram.com.br'],
+      model: '1500',
+      modelYear: 2026,
+    });
+  },
+);
+
+it('coalesces observed redirect destinations before applying the ten-item result budget', async () => {
+  const canonical = 'https://www.ford.com.br/picapes/f-150/lariat/';
+  generate.mockResolvedValue({
+    sources: [
+      grounded('https://www.ford.com.br/picapes/f-150/alias-one/', 'F150'),
+      grounded('https://www.ford.com.br/picapes/f-150/alias-two/', 'F150'),
+      ...Array.from({ length: 9 }, (_, index) =>
+        grounded(
+          `https://www.ford.com.br/picapes/f-150/details-${index}/`,
+          'F150',
+        ),
+      ),
     ],
   });
-  // The page whose body the site index already holds is not downloaded again.
-  expect(downloadSource).toHaveBeenCalledTimes(1);
-  expect(wellKnownModelPages).toHaveBeenCalledWith(
-    'Ford',
-    'Ranger',
-    expect.any(AbortSignal),
+  downloadSource.mockImplementation(async (url: string) =>
+    html(url.includes('/alias-') ? canonical : url, '<p>F150</p>'),
   );
+  const result = await discover('Ford', 'F150');
+  expect(result.items.filter((item) => item.url === canonical)).toHaveLength(1);
+  expect(result.items).toHaveLength(10);
+  expect(result.items.some((item) => item.url.endsWith('/details-8/'))).toBe(
+    true,
+  );
+});
+
+it('follows observed specification-page links and deduplicates tracking URLs', async () => {
+  wellKnownModelPages.mockResolvedValue([
+    {
+      url: 'https://www.ford.com.br/picapes/ranger/',
+      html: '<a href="/ranger/ficha.html?utm_source=a">Ficha técnica</a><a href="/ranger/ficha.html?utm_source=b">Ficha técnica</a><a href="https://127.0.0.1/ranger/ficha.html">Ficha técnica</a>',
+    },
+  ]);
+  downloadSource.mockImplementation(async (url: string) =>
+    html(url, '<a href="/docs/ranger-catalogo.pdf">Catálogo</a>'),
+  );
+  const result = await discover();
+  expect(downloadSource).toHaveBeenCalledOnce();
+  expect(generate).not.toHaveBeenCalled();
+  expect(result.items[0]?.url).toBe(
+    'https://www.ford.com.br/docs/ranger-catalogo.pdf',
+  );
+});
+
+it('retains readable HTML above oversized RAM brochures without downloading PDF bodies', async () => {
+  wellKnownModelPages.mockResolvedValue([
+    {
+      url: 'https://www.ram.com.br/picapes/1500.html',
+      html: '<a href="/catalogo-1500-2025.pdf">Catálogo 2025</a>',
+    },
+  ]);
+  probeSourceMetadata.mockImplementation(async (url: string) => ({
+    url,
+    mime: 'application/pdf',
+    byteLength: 24_000_000,
+  }));
+  generate.mockResolvedValue({ sources: [] });
+  const result = await discover('RAM', '1500');
+  expect(result.items[0]).toMatchObject({
+    documentType: 'HTML',
+    availability: 'READABLE',
+    yearHint: null,
+  });
+  expect(result.items[1]).toMatchObject({
+    documentType: 'PDF',
+    availability: 'OVERSIZE',
+    byteLength: 24_000_000,
+    yearHint: 2025,
+  });
+  expect(result.warnings.join(' ')).toContain('5 MB');
+  expect(result.warnings.join(' ')).toContain('another model year');
+  expect(downloadSource).not.toHaveBeenCalled();
+  expect(generate).toHaveBeenCalledTimes(2);
+});
+
+it('reports partial failures without hiding grounded links or exposing backend errors', async () => {
+  generate.mockResolvedValue({
+    sources: [grounded('https://www.ford.com.br/picapes/ranger/', 'Ranger')],
+  });
+  downloadSource.mockRejectedValue(new Error('private response secrets'));
+  const result = await discover();
+  expect(result.items[0]?.availability).toBe('UNREACHABLE');
+  expect(result.diagnostics.pageFailures).toBe(1);
+  expect(result.warnings).not.toHaveLength(0);
+  expect(JSON.stringify(result)).not.toContain('private response secrets');
+});
+
+it('searches the public web for unlisted brands and falls back to reputable secondary sources', async () => {
+  vi.stubEnv('SPECSYNC_INGESTION_SOURCE_DOMAINS', 'ford.com.br');
+  generate.mockResolvedValueOnce({ sources: [] }).mockResolvedValueOnce({
+    sources: [
+      grounded(
+        'https://www.webmotors.com.br/catalogo/byd/shark/ficha-tecnica-2024',
+        'BYD Shark ficha técnica 2024',
+      ),
+    ],
+  });
+  downloadSource.mockImplementation(async (url: string) =>
+    html(url, '<h1>BYD Shark 2024 ficha técnica</h1>'),
+  );
+  const result = await discover('BYD', 'Shark', 2024);
+  expect(result.status).toBe('OK');
+  expect(result.items[0]).toMatchObject({
+    sourceType: 'EXTERNAL_WEBSITE',
+    applicability: 'UNVERIFIED',
+    availability: 'READABLE',
+  });
+  expect(result.warnings.join(' ')).not.toContain('approved domain');
+  expect(
+    generate.mock.calls.map((call) => JSON.parse(call[0]).searchStage),
+  ).toEqual(['official', 'secondary']);
+  expect(
+    JSON.parse(generate.mock.calls[0]?.[0]).preferredManufacturerDomains,
+  ).toEqual([]);
+  expect(wellKnownModelPages).not.toHaveBeenCalled();
+});
+
+it('distinguishes unavailable grounding from an empty discovery and preserves cancellation', async () => {
+  generate.mockRejectedValue(new Error('quota details'));
+  expect((await discover()).status).toBe('ERROR');
+  const abortSignal = AbortSignal.abort(new Error('cancelled'));
+  await expect(
+    discoverVehicleSpecificationSources.execute?.(
+      { brand: 'Ford', model: 'Ranger', modelYear: 2026 },
+      { ...context, abortSignal },
+    ),
+  ).rejects.toThrow('cancelled');
+  expect(generate).toHaveBeenCalledTimes(2);
+});
+
+it('does not substitute unrelated models from the same approved manufacturer', async () => {
+  generate.mockResolvedValue({
+    sources: [
+      grounded(
+        'https://www.ford.com.br/docs/ranger-ficha-2026.pdf',
+        'Ranger ficha técnica',
+      ),
+    ],
+  });
+  const result = await discover('Ford', 'F150');
+  expect(result.status).toBe('EMPTY');
+  expect(result.items).toEqual([]);
+  expect(result.warnings.join(' ')).toContain(
+    'none matched the requested model',
+  );
+  expect(probeSourceMetadata).not.toHaveBeenCalled();
+});
+
+it('rechecks model scope when an official page redirects to another model', async () => {
+  generate.mockResolvedValue({
+    sources: [grounded('https://www.ford.com.br/picapes/f-150/', 'F150 2026')],
+  });
+  downloadSource.mockResolvedValue(
+    html(
+      'https://www.ford.com.br/picapes/ranger/',
+      '<a href="/docs/ranger-ficha-2026.pdf">Ficha técnica</a>',
+    ),
+  );
+  const result = await discover('Ford', 'F150');
+  expect(result.status).toBe('EMPTY');
+  expect(result.items).toEqual([]);
+  expect(probeSourceMetadata).not.toHaveBeenCalled();
+});
+
+it('does not retain a requested-year hint after a brochure redirects to an older year', async () => {
+  generate.mockResolvedValue({
+    sources: [
+      grounded('https://www.ford.com.br/f-150-2026.pdf', 'F150 catálogo 2026'),
+    ],
+  });
+  probeSourceMetadata.mockResolvedValue({
+    url: 'https://www.ford.com.br/f-150-2025.pdf',
+    mime: 'application/pdf',
+    byteLength: 1234,
+  });
+  const result = await discover('Ford', 'F150');
+  expect(result.items[0]).toMatchObject({
+    yearHint: 2025,
+    applicability: 'UNVERIFIED',
+  });
+  expect(result.warnings.join(' ')).toContain('another model year');
 });
 
 it('charges a PDF preview for the pages it transcribed and for the identification', async () => {
@@ -352,4 +442,56 @@ it('charges nothing for a transcription the capture cache served', async () => {
     undefined,
     { inputTokens: 500, outputTokens: 50 },
   ]);
+});
+
+it('discovers the official BYD Shark brochure while preserving a conflicting requested year', async () => {
+  const pdf =
+    'https://www.byd.com/material/__CN/byd-site/br/fichas-tecnicas-2026/update-13-07-2026/07-13-2026---ficha-txiunica/BYD_Shark_V2.pdf';
+  wellKnownModelPages.mockResolvedValue([
+    {
+      url: 'https://www.byd.com/br/car/shark',
+      html: `<h1>BYD Shark</h1><a href="${pdf}">FICHA TÉCNICA</a>`,
+    },
+  ]);
+  generate.mockResolvedValue({ sources: [] });
+  const result = await discover('BYD', 'Shark', 2024);
+  expect(result.status).toBe('OK');
+  expect(result.resolvedScope).toEqual({
+    brand: 'BYD',
+    model: 'Shark',
+    modelYear: 2024,
+    market: 'BR',
+  });
+  expect(result.items).toContainEqual(
+    expect.objectContaining({
+      url: pdf,
+      yearHint: 2026,
+      applicability: 'UNVERIFIED',
+      availability: 'READABLE',
+    }),
+  );
+  expect(result.warnings.join(' ')).toContain('another model year');
+  expect(result.warnings.join(' ')).not.toContain(
+    'no configured approved domain',
+  );
+});
+
+it('follows an official model page to a PDF on previously unknown shared hosting', async () => {
+  const url =
+    'https://shared-files.example.org/new-folder/specification-ex5.pdf';
+  wellKnownModelPages.mockResolvedValue([
+    {
+      url: 'https://www.geelybrasil.com.br/ex5',
+      html: `<h1>Geely EX5</h1><a href="${url}">Ficha técnica</a>`,
+    },
+  ]);
+  const result = await discover('Geely', 'EX5');
+  expect(result.items[0]).toMatchObject({
+    url,
+    sourceType: 'LINKED_FROM_MANUFACTURER',
+    linkedFrom: 'https://www.geelybrasil.com.br/ex5',
+    availability: 'READABLE',
+    applicability: 'UNVERIFIED',
+  });
+  expect(generate).not.toHaveBeenCalled();
 });

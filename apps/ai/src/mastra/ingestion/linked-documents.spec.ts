@@ -1,10 +1,10 @@
 import { expect, it } from 'vitest';
 
-import { linkedPdfs } from './linked-documents';
+import { linkedPdfs, linkedSpecificationPages } from './linked-documents';
 
 const base = 'https://www.ford.com.br/picapes/ranger/compare-as-versoes/';
 
-it('lists PDFs on approved domains from markup and embedded JSON, brochures first', () => {
+it('lists linked PDFs including external hosting from markup and embedded JSON, brochures first', () => {
   const html = [
     '<a href="/content/dam/br/pdf/fbr-ranger-manual-de-implementador.pdf">Manual</a>',
     '{"file":"\\/content\\/dam\\/br\\/pdf\\/fbr-ranger-ficha-tecnica.pdf?v=2#p1"}',
@@ -22,6 +22,11 @@ it('lists PDFs on approved domains from markup and embedded JSON, brochures firs
     {
       title: 'catalogo-ranger.PDF',
       url: 'https://www.ford.com.br/picapes/ranger/catalogo-ranger.PDF',
+      specification: true,
+    },
+    {
+      title: 'elsewhere',
+      url: 'https://cdn.example.com/other-ficha-tecnica.pdf',
       specification: true,
     },
     {
@@ -74,4 +79,40 @@ it('uses link labels when the file names carry no meaning', () => {
 
 it('returns nothing for pages without PDF references', () => {
   expect(linkedPdfs('<p>no documents</p>', base, ['ford.com.br'])).toEqual([]);
+});
+
+it('reads entity-encoded component JSON while excluding footer and rescue documents from specification ranking', () => {
+  const html =
+    '<prox-master-links data-links="[{&#34;label&#34;:&#34;Catálogo&#34;,&#34;url&#34;:&#34;\\u002fdocs\\u002fcatalogo-1500.pdf&#34;}]"></prox-master-links><prox-common-footer data-links="[{&#34;url&#34;:&#34;/docs/ficha-global.pdf&#34;}]"></prox-common-footer><a href="/docs/ficha-de-resgate.pdf">Ficha de resgate</a>';
+  expect(
+    linkedPdfs(html, 'https://www.ram.com.br/picapes/1500.html', [
+      'ram.com.br',
+    ]),
+  ).toEqual([
+    {
+      title: 'Catálogo',
+      url: 'https://www.ram.com.br/docs/catalogo-1500.pdf',
+      specification: true,
+    },
+    {
+      title: 'Ficha de resgate',
+      url: 'https://www.ram.com.br/docs/ficha-de-resgate.pdf',
+      specification: false,
+    },
+  ]);
+});
+
+it('follows relevant observed page links including secondary sites outside navigation', () => {
+  expect(
+    linkedSpecificationPages(
+      '<nav><a href="/ranger/other.html">Ranger</a></nav><a href="/ficha.html">Ficha técnica</a><a href="https://www.webmotors.com.br/ranger.html">Ranger</a><a href="/news/ranger.html">Ranger notícia</a>',
+      base,
+      'Ranger',
+      'Ford',
+      ['ford.com.br'],
+    ),
+  ).toEqual([
+    { title: 'Ficha técnica', url: 'https://www.ford.com.br/ficha.html' },
+    { title: 'Ranger', url: 'https://www.webmotors.com.br/ranger.html' },
+  ]);
 });

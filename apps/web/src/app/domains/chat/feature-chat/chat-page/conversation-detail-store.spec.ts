@@ -1,6 +1,9 @@
 import { BaseEvent, EventType } from '@ag-ui/client';
 import { TestBed } from '@angular/core/testing';
+import { CopilotKit } from '@copilotkit/angular';
+import { CopilotKitCoreErrorCode } from '@copilotkit/core';
 import { Dispatcher } from '@ngrx/signals/events';
+import { of, Subject } from 'rxjs';
 
 import {
   failedRun,
@@ -16,20 +19,296 @@ import {
   storedThread,
 } from '../../../../testing/fake-threads';
 import { matrix } from '../../../../testing/vehicle-fixtures';
+import { BEFORE_CHAT_REQUEST } from '../../data/chat-agent';
 import { threadEvents } from '../../data/thread-events';
 import { ConversationDetailStore } from './conversation-detail-store';
 
 describe('ConversationDetailStore', () => {
   let agent: FakeChatAgent;
   let threads: FakeThreadClient;
+  let authenticate: ReturnType<typeof vi.fn<() => Promise<void>>>;
 
   beforeEach(() => {
     localStorage.clear();
     agent = new FakeChatAgent();
+    authenticate = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
     TestBed.configureTestingModule({
-      providers: [...provideFakeChatAgent(agent), ...provideFakeThreads()],
+      providers: [
+        ...provideFakeChatAgent(agent),
+        ...provideFakeThreads(),
+        { provide: BEFORE_CHAT_REQUEST, useValue: authenticate },
+      ],
     });
     threads = TestBed.inject(FakeThreadClient);
+  });
+
+  it('appends persisted completion without another model run or duplicate messages', async () => {
+    const update = {
+      id: 'research-ready-test',
+      role: 'assistant' as const,
+      content: 'Pesquisa concluída. Revise os dados.',
+    };
+    const client = vi
+      .spyOn(threads, 'researchUpdates')
+      .mockImplementation((id) => of(storedThread(id, '', 1, [update])));
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'researchVehicleSpecifications',
+        {},
+        { id: 'private-request' },
+        'Pesquisando',
+      ),
+    );
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Pesquisar Ranger');
+    TestBed.tick();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(client).toHaveBeenCalled();
+    expect(
+      store.messages().filter((message) => message.id === update.id),
+    ).toHaveLength(1);
+    expect(agent.runs).toHaveLength(1);
+    const id = store.threadId();
+    store.reset();
+    await store.open(id);
+    TestBed.tick();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(
+      store.messages().filter((message) => message.id === update.id),
+    ).toHaveLength(1);
+    expect(agent.runs).toHaveLength(1);
+  });
+
+  it('ignores a completion response after switching conversations', async () => {
+    const pending = new Subject<ReturnType<typeof storedThread>>();
+    vi.spyOn(threads, 'researchUpdates').mockReturnValue(pending);
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'researchVehicleSpecifications',
+        {},
+        { id: 'private-request' },
+        'Pesquisando',
+      ),
+    );
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Pesquisar Ranger');
+    TestBed.tick();
+    const old = store.threadId();
+    store.reset();
+    pending.next(
+      storedThread(old, '', 1, [
+        { id: 'research-ready-old', role: 'assistant', content: 'Ready' },
+      ]),
+    );
+    pending.complete();
+    await Promise.resolve();
+    expect(store.messages()).toEqual([]);
+  });
+
+  it.each(['stop', 'reset', 'open'] as const)(
+    'does not start a run after %s while authentication is pending',
+    async (action) => {
+      const authentication = deferred<void>();
+      authenticate.mockImplementation(() => authentication.promise);
+      threads.seed(
+        storedThread('saved', 'Saved', 1, [
+          { id: 'saved-message', role: 'user', content: 'A saved question' },
+        ]),
+      );
+      const store = TestBed.inject(ConversationDetailStore);
+      const sending = store.send('Old question');
+      if (action === 'open') await store.open('saved');
+      else store[action]();
+      const messages = agent.messages;
+
+      authentication.resolve();
+      await sending;
+
+      expect(agent.runs).toHaveLength(0);
+      expect(store.messages()).toEqual(messages);
+      expect(store.status()).toBe('idle');
+      if (action === 'open') expect(store.threadId()).toBe('saved');
+    },
+  );
+
+  it.each(['resolve', 'reject'] as const)(
+    'keeps a newer run streaming when stopped authentication later %ss',
+    async (completion) => {
+      const previous = deferred<void>();
+      const current = deferred<void>();
+      authenticate
+        .mockImplementationOnce(() => previous.promise)
+        .mockImplementationOnce(() => current.promise);
+      agent.replyWith((input) => textReply(input, 'Current reply'));
+      const store = TestBed.inject(ConversationDetailStore);
+      const first = store.send('First');
+      store.stop();
+      const second = store.send('Second');
+
+      if (completion === 'reject')
+        previous.reject(new Error('Old auth failure'));
+      else previous.resolve();
+      await first;
+
+      expect(store.status()).toBe('streaming');
+      expect(store.error()).toBeUndefined();
+      current.resolve();
+      await second;
+      expect(agent.runs).toHaveLength(1);
+      expect(store.status()).toBe('idle');
+      expect(store.turns()[store.turns().length - 1]?.content).toBe(
+        'Current reply',
+      );
+    },
+  );
+
+  it('shows an authentication failure and retries the existing user turn', async () => {
+    authenticate.mockRejectedValueOnce(new Error('Token refresh failed'));
+    const store = TestBed.inject(ConversationDetailStore);
+
+    await expect(store.send('My question')).resolves.toBeUndefined();
+
+    expect(store.status()).toBe('error');
+    expect(store.error()?.error.message).toBe('Token refresh failed');
+    expect(agent.runs).toHaveLength(0);
+    agent.replyWith((input) => textReply(input, 'Recovered'));
+    await store.regenerate();
+    expect(store.status()).toBe('idle');
+    expect(store.turns().map((turn) => turn.content)).toEqual([
+      'My question',
+      'Recovered',
+    ]);
+  });
+
+  it('records a rejected runtime promise as a retryable error', async () => {
+    vi.spyOn(TestBed.inject(CopilotKit).core, 'runAgent').mockRejectedValue(
+      new Error('Transport disconnected'),
+    );
+    const store = TestBed.inject(ConversationDetailStore);
+
+    await expect(store.send('My question')).resolves.toBeUndefined();
+
+    expect(store.status()).toBe('error');
+    expect(store.error()).toMatchObject({
+      code: CopilotKitCoreErrorCode.AGENT_RUN_FAILED,
+      error: new Error('Transport disconnected'),
+    });
+  });
+
+  it('waits for a stopped transport to finish before starting the next run', async () => {
+    const previous = deferred<{ newMessages: never[]; result: undefined }>();
+    const current = deferred<{ newMessages: never[]; result: undefined }>();
+    const runAgent = vi
+      .spyOn(TestBed.inject(CopilotKit).core, 'runAgent')
+      .mockImplementationOnce(() => previous.promise)
+      .mockImplementationOnce(() => current.promise);
+    const store = TestBed.inject(ConversationDetailStore);
+    const first = store.send('First');
+    await vi.waitFor(() => expect(runAgent).toHaveBeenCalledTimes(1));
+    store.stop();
+    const second = store.send('Second');
+    await Promise.resolve();
+    expect(runAgent).toHaveBeenCalledTimes(1);
+
+    previous.resolve({ newMessages: [], result: undefined });
+    await first;
+    await vi.waitFor(() => expect(runAgent).toHaveBeenCalledTimes(2));
+    expect(store.status()).toBe('streaming');
+
+    current.resolve({ newMessages: [], result: undefined });
+    await second;
+    expect(store.status()).toBe('idle');
+  });
+
+  it.each(['success', 'failure'] as const)(
+    'ignores stale navigation %s while the newer conversation is loading',
+    async (result) => {
+      const previous = new Subject<ReturnType<typeof storedThread>>();
+      const current = new Subject<ReturnType<typeof storedThread>>();
+      vi.spyOn(threads, 'find').mockImplementation((id) =>
+        id === 'first' ? previous : current,
+      );
+      const store = TestBed.inject(ConversationDetailStore);
+      const first = store.open('first');
+      const second = store.open('second');
+
+      if (result === 'failure') previous.error(new Error('Old read failed'));
+      else previous.next(storedThread('first', 'First', 1, []));
+      await expect(first).resolves.toBe(true);
+      expect(store.loading()).toBe(true);
+      expect(store.threadId()).not.toBe('first');
+
+      current.next(storedThread('second', 'Second', 2, []));
+      await expect(second).resolves.toBe(true);
+      expect(store.loading()).toBe(false);
+      expect(store.threadId()).toBe('second');
+    },
+  );
+
+  it('keeps the newer conversation after an older read returns last', async () => {
+    const previous = new Subject<ReturnType<typeof storedThread>>();
+    vi.spyOn(threads, 'find').mockImplementation((id) =>
+      id === 'first' ? previous : of(storedThread('second', 'Second', 2, [])),
+    );
+    const store = TestBed.inject(ConversationDetailStore);
+    const first = store.open('first');
+    await store.open('second');
+
+    previous.next(storedThread('first', 'First', 1, []));
+    await first;
+
+    expect(store.threadId()).toBe('second');
+    expect(store.title()).toBe('Second');
+  });
+
+  it('does not reopen a conversation after a reset during its read', async () => {
+    const pending = new Subject<ReturnType<typeof storedThread>>();
+    vi.spyOn(threads, 'find').mockReturnValue(pending);
+    const store = TestBed.inject(ConversationDetailStore);
+    const opening = store.open('saved');
+    store.reset();
+    const emptyThread = store.threadId();
+
+    pending.next(storedThread('saved', 'Saved', 1, []));
+    await opening;
+
+    expect(store.threadId()).toBe(emptyThread);
+    expect(store.isEmpty()).toBe(true);
+    expect(store.loading()).toBe(false);
+  });
+
+  it('cancels a pending navigation when returning to the current conversation', async () => {
+    const pending = new Subject<ReturnType<typeof storedThread>>();
+    vi.spyOn(threads, 'find').mockReturnValue(pending);
+    const store = TestBed.inject(ConversationDetailStore);
+    const current = store.threadId();
+    const opening = store.open('other');
+
+    await expect(store.open(current)).resolves.toBe(true);
+    expect(store.loading()).toBe(false);
+    pending.next(storedThread('other', 'Other', 1, []));
+    await opening;
+
+    expect(store.threadId()).toBe(current);
+    expect(store.isEmpty()).toBe(true);
+  });
+
+  it('keeps the first send running when its route selects the current thread', async () => {
+    const authentication = deferred<void>();
+    authenticate.mockImplementation(() => authentication.promise);
+    agent.replyWith((input) => textReply(input, 'Reply'));
+    const store = TestBed.inject(ConversationDetailStore);
+    const sending = store.send('First question');
+
+    await expect(store.open(store.threadId())).resolves.toBe(true);
+    expect(store.status()).toBe('streaming');
+    authentication.resolve();
+    await sending;
+
+    expect(agent.runs).toHaveLength(1);
+    expect(store.status()).toBe('idle');
   });
 
   it('restores explicit comparison selection and keeps it isolated between threads', async () => {
@@ -407,3 +686,13 @@ describe('ConversationDetailStore', () => {
     expect(agent.runs[0].tools).toEqual([]);
   });
 });
+
+function deferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+}

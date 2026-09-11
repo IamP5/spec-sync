@@ -191,3 +191,53 @@ describe('toAGUIMessages', () => {
     });
   });
 });
+
+describe('replayed tool history', () => {
+  it('keeps the native result in its original later turn and removes the equivalent serialized copy', () => {
+    const original = toolPart(
+      'call-2',
+      'getVehicleResearch',
+      { id: 'research-2' },
+      { id: 'research-2', status: 'REVIEW' },
+    );
+    const copy = toolPart(
+      'call-2',
+      'getVehicleResearch',
+      { id: 'research-2' },
+      JSON.stringify({ status: 'REVIEW', id: 'research-2' }),
+    );
+    const rows = [
+      row('a1', 'assistant', [copy]),
+      row('u2', 'user', [{ type: 'text', text: 'Open research' }]),
+      row('a2', 'assistant', [original]),
+    ];
+    const messages = toAGUIMessages(rows);
+    expect(messages.map((m) => m.id)).toEqual(['u2', 'a2', 'call-2-result']);
+    expect(rows[0]?.content.parts).toHaveLength(1);
+  });
+
+  it('preserves different calls that intentionally reopen the same research', () => {
+    const messages = toAGUIMessages([
+      row('a1', 'assistant', [
+        toolPart('c1', 'getVehicleResearch', {}, { id: 'same' }),
+      ]),
+      row('a2', 'assistant', [
+        toolPart('c2', 'getVehicleResearch', {}, { id: 'same' }),
+      ]),
+    ]);
+    expect(messages.filter((m) => m.role === 'assistant')).toHaveLength(2);
+  });
+
+  it('does not silently pick a result for conflicting call identities', () => {
+    expect(() =>
+      toAGUIMessages([
+        row('a1', 'assistant', [
+          toolPart('same-call', 'getVehicleResearch', {}, { id: 'one' }),
+        ]),
+        row('a2', 'assistant', [
+          toolPart('same-call', 'getVehicleResearch', {}, { id: 'two' }),
+        ]),
+      ]),
+    ).toThrow('Conflicting stored tool call');
+  });
+});

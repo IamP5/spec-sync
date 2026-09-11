@@ -44,6 +44,24 @@
         "cwd": "apps/ai"
       }
     },
+    "benchmark": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node apps/ai/benchmarks/run.mjs"
+      },
+      "metadata": {
+        "description": "Vehicle research evaluation; offline synthetic baseline by default, explicit model or replay candidates supported"
+      }
+    },
+    "benchmark-test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "node --test apps/ai/benchmarks/*.test.mjs"
+      }
+    },
     "deploy": {
       "executor": "nx:run-commands",
       "options": {
@@ -89,8 +107,10 @@
       "executor": "nx:run-commands",
       "cache": true,
       "inputs": [
-        "{projectRoot}/data/**/*",
-        "{workspaceRoot}/apps/api/data/**/*"
+        "default",
+        "^production",
+        "{workspaceRoot}/apps/api/data/**/*",
+        "{workspaceRoot}/apps/api/src/main/resources/db/migration/**/*"
       ],
       "options": {
         "command": "node --test apps/ai/data/foundation.test.mjs"
@@ -130,6 +150,29 @@
       "options": {
         "command": "vitest run --config vitest.smoke.config.mts",
         "cwd": "apps/ai"
+      }
+    },
+    "research-integration": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": [{ "target": "bootJar", "projects": ["api"] }],
+      "options": {
+        "command": "node --test apps/ai/data/research.integration.test.mjs"
+      }
+    },
+    "ontology-integration": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "dependsOn": [{ "target": "bootJar", "projects": ["api"] }],
+      "options": {
+        "command": "node --test apps/ai/data/ontology.integration.test.mjs"
+      }
+    },
+    "ontology-benchmark": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node apps/ai/benchmarks/ontology-eval.mjs"
       }
     },
     "ingestion-integration": {

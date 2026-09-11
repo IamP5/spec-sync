@@ -1,5 +1,6 @@
-import { computed, DestroyRef, inject } from '@angular/core';
+import { computed, DestroyRef, effect, inject, untracked } from '@angular/core';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
+import { CopilotKitCoreErrorCode } from '@copilotkit/core';
 import {
   patchState,
   signalStore,
@@ -23,6 +24,7 @@ import { SESSION } from '../../../auth/api/session';
 import {
   ChatAgentError,
   type ChatRunOptions,
+  creditsErrorOf,
   isChatTurn,
   normalizeThread,
   toolActivities,
@@ -31,6 +33,7 @@ import { ChatAgentClient } from '../../data/chat-agent-client';
 import { ChatThread, threadTitleOf } from '../../data/thread';
 import { ThreadClient } from '../../data/thread-client';
 import { threadEvents } from '../../data/thread-events';
+import { toolPresentation } from '../tool-presentation';
 
 export type ConversationStatus = 'idle' | 'streaming' | 'error';
 
@@ -90,6 +93,14 @@ export const ConversationDetailStore = signalStore(
         store._chatAgentClient.placements(),
       ).filter(isChatTurn),
     ),
+    toolPresentation: computed(() =>
+      toolPresentation(
+        normalizeThread(
+          store._chatAgentClient.messages(),
+          store._chatAgentClient.placements(),
+        ),
+      ),
+    ),
     toolActivities: computed(() =>
       toolActivities(
         store._chatAgentClient.messages(),
@@ -101,13 +112,64 @@ export const ConversationDetailStore = signalStore(
   })),
 
   withMethods((store) => {
+    let runGeneration = 0;
+    let openGeneration = 0;
+    let checkingResearch = false;
+    async function refreshResearch(): Promise<void> {
+      const scope = store._session.scope();
+      if (checkingResearch || !scope || store.loading() || store.isStreaming())
+        return;
+      if (
+        !store
+          .messages()
+          .some(
+            (message) =>
+              message.role === 'assistant' &&
+              message.toolCalls?.some((call) =>
+                [
+                  'researchVehicleSpecifications',
+                  'getVehicleResearch',
+                  'replayVehicleResearch',
+                  'reviewVehicleResearch',
+                ].includes(call.function.name),
+              ),
+          )
+      )
+        return;
+      const id = store.threadId();
+      const before = store.messages();
+      checkingResearch = true;
+      try {
+        const updates = await firstValueFrom(
+          store._threadClient.researchUpdates(id),
+        );
+        if (
+          store._session.isCurrent(scope) &&
+          store.threadId() === id &&
+          !store.isStreaming() &&
+          store.messages() === before
+        ) {
+          store._chatAgentClient.appendPersisted(updates.messages);
+        }
+      } catch {
+        /* A later refresh retries transient completion delivery failures. */
+      } finally {
+        checkingResearch = false;
+      }
+    }
+
     async function run(work: () => Promise<void>): Promise<void> {
-      if (store.status() === 'streaming') {
+      if (store.status() === 'streaming' || store.loading()) {
         return;
       }
       const scope = store._session.scope();
       if (!scope) return;
       const id = store.threadId();
+      const generation = ++runGeneration;
+      const current = () =>
+        generation === runGeneration &&
+        id === store.threadId() &&
+        store._session.isCurrent(scope);
       patchState(store, {
         status: 'streaming',
         error: undefined,
@@ -115,8 +177,21 @@ export const ConversationDetailStore = signalStore(
       });
       try {
         await work();
+      } catch (cause) {
+        if (current() && store.status() !== 'error') {
+          const error =
+            cause instanceof Error ? cause : new Error(String(cause));
+          patchState(store, {
+            status: 'error',
+            error: {
+              code: CopilotKitCoreErrorCode.AGENT_RUN_FAILED,
+              error,
+              credits: creditsErrorOf(error.message),
+            },
+          });
+        }
       } finally {
-        if (store._session.isCurrent(scope)) {
+        if (current()) {
           if (store.status() === 'streaming') {
             patchState(store, { status: 'idle' });
           }
@@ -146,6 +221,8 @@ export const ConversationDetailStore = signalStore(
 
     /** Drops the open conversation without keeping it. */
     function discard(): void {
+      runGeneration++;
+      openGeneration++;
       store._chatAgentClient.stop();
       store._chatAgentClient.reset();
       patchState(store, {
@@ -160,6 +237,7 @@ export const ConversationDetailStore = signalStore(
 
     /** Replaces the open conversation with `thread`, keeping the one left behind. */
     function show(thread: ChatThread): void {
+      runGeneration++;
       store._chatAgentClient.stop();
       keep();
       store._chatAgentClient.load(thread.id, thread.messages);
@@ -169,6 +247,7 @@ export const ConversationDetailStore = signalStore(
         stopped: false,
         title: thread.title,
         createdAt: thread.createdAt,
+        loading: false,
       });
     }
 
@@ -205,6 +284,7 @@ export const ConversationDetailStore = signalStore(
 
       /** Aborts the reply in flight and keeps whatever text arrived so far. */
       stop(): void {
+        runGeneration++;
         store._chatAgentClient.stop();
         if (store.status() === 'streaming') {
           patchState(store, { status: 'idle', stopped: true });
@@ -223,27 +303,40 @@ export const ConversationDetailStore = signalStore(
        * this user.
        */
       async open(id: string): Promise<boolean> {
+        const generation = ++openGeneration;
         const scope = store._session.scope();
         if (!scope) {
           return false;
+        }
+        if (id === store.threadId()) {
+          patchState(store, { loading: false });
+          return true;
         }
         const kept = store._threads()[id];
         if (kept) {
           show(kept);
           return true;
         }
-        patchState(store, { loading: true });
+        runGeneration++;
+        store._chatAgentClient.stop();
+        patchState(store, { loading: true, status: 'idle' });
         try {
           const thread = await firstValueFrom(store._threadClient.find(id));
+          // A newer navigation owns the route. Treat the superseded request
+          // as handled so its caller does not redirect the newer conversation.
+          if (generation !== openGeneration) return true;
           if (!thread || !store._session.isCurrent(scope)) {
             return false;
           }
           show(thread);
           return true;
         } catch {
-          return false;
+          return generation !== openGeneration;
         } finally {
-          if (store._session.isCurrent(scope)) {
+          if (
+            generation === openGeneration &&
+            store._session.isCurrent(scope)
+          ) {
             patchState(store, { loading: false });
           }
         }
@@ -257,6 +350,7 @@ export const ConversationDetailStore = signalStore(
       },
 
       _discard: discard,
+      _refreshResearch: refreshResearch,
     };
   }),
 
@@ -284,6 +378,19 @@ export const ConversationDetailStore = signalStore(
   })),
   withHooks({
     onInit(store) {
+      effect((onCleanup) => {
+        const scope = store._session.scope();
+        store.threadId();
+        if (!scope || store.loading() || store.isStreaming()) return;
+        untracked(() => {
+          void store._refreshResearch();
+        });
+        const timer = setInterval(() => {
+          void store._refreshResearch();
+        }, 8000);
+        onCleanup(() => clearInterval(timer));
+      });
+
       // Run failures do not reject `send()`; the client reports them here.
       const unsubscribe = store._chatAgentClient.onError((error) =>
         patchState(store, { status: 'error', error }),

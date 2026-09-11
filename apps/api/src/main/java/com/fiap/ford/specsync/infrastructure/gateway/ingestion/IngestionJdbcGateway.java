@@ -5,6 +5,7 @@ import static com.fiap.ford.specsync.domain.ingestion.Ingestion.require;
 import com.fiap.ford.specsync.domain.catalog.Catalog;
 import com.fiap.ford.specsync.domain.exceptions.DomainException;
 import com.fiap.ford.specsync.domain.ingestion.*;
+import com.fiap.ford.specsync.domain.ontology.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.Timestamp;
@@ -22,9 +23,11 @@ import tools.jackson.databind.json.JsonMapper;
 public class IngestionJdbcGateway implements IngestionGateway {
     private static final int MAX_WARNINGS = 50;
     private final NamedParameterJdbcTemplate jdbc;
+    private final OntologyGateway ontology;
     private final JsonMapper json = JsonMapper.builder().build();
 
-    public IngestionJdbcGateway(DataSource source) {
+    public IngestionJdbcGateway(DataSource source, OntologyGateway ontology) {
+        this.ontology = Objects.requireNonNull(ontology);
         jdbc = new NamedParameterJdbcTemplate(Objects.requireNonNull(source));
     }
 
@@ -192,27 +195,44 @@ public class IngestionJdbcGateway implements IngestionGateway {
     @Override
     @Transactional
     public Optional<Ingestion.Work> claim() {
+        // Use the same authority-first lock order as creation and ontology activation, including
+        // legacy queued work whose ontology snapshot is first pinned when it is claimed.
+        jdbc.queryForObject("SELECT revision FROM ingestion.catalog_version FOR SHARE", Map.of(), Long.class);
         jdbc.update(
                 "UPDATE ingestion.run SET status='FAILED',error='Processing retry limit reached',lease_token=NULL WHERE status='PROCESSING' AND lease_until<now() AND attempts>=3",
                 Map.of());
         var rows = jdbc.queryForList(
-                "SELECT id,request FROM ingestion.run WHERE (status='QUEUED' OR (status='PROCESSING' AND lease_until<now())) AND attempts<3 ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED",
+                "SELECT id,request,ontology_context FROM ingestion.run WHERE (status='QUEUED' OR (status='PROCESSING' AND lease_until<now())) AND attempts<3 ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED",
                 Map.of());
         if (rows.isEmpty()) return Optional.empty();
         var row = rows.getFirst();
         UUID token = UUID.randomUUID();
         UUID id = (UUID) row.get("id");
+        var context = row.get("ontology_context") == null
+                ? ontology.context()
+                : decode(row.get("ontology_context"), Ontology.Context.class);
+        jdbc.update(
+                "UPDATE ingestion.run SET ontology_context=CAST(:context AS jsonb) WHERE id=:id AND ontology_context IS NULL",
+                Map.of("id", id, "context", encode(context)));
         jdbc.update(
                 "UPDATE ingestion.run SET status='PROCESSING',attempts=attempts+1,lease_token=:token,lease_until=now()+interval '5 minutes',updated_at=now() WHERE id=:id",
                 Map.of("token", token, "id", id));
-        return Optional.of(new Ingestion.Work(id, token, decode(row.get("request"), Ingestion.Request.class)));
+        var policies = jdbc.queryForList(
+                "SELECT policy_version FROM research.work WHERE run_id=:id", Map.of("id", id), String.class);
+        return Optional.of(new Ingestion.Work(
+                id,
+                token,
+                decode(row.get("request"), Ingestion.Request.class),
+                policies.isEmpty() ? null : policies.getFirst(),
+                context));
     }
 
     @Override
     @Transactional
     public void fail(Ingestion.Work work, String error) {
+        jdbc.queryForList("SELECT id FROM ingestion.run WHERE id=:id FOR UPDATE", Map.of("id", work.id()));
         jdbc.update(
-                "UPDATE ingestion.run SET status=CASE WHEN attempts>=3 THEN 'FAILED' ELSE 'QUEUED' END,error=:error,lease_token=NULL,updated_at=now() WHERE id=:id AND lease_token=:token AND status='PROCESSING'",
+                "UPDATE ingestion.run SET status=CASE WHEN attempts>=3 THEN 'FAILED' ELSE 'QUEUED' END,error=:error,lease_token=NULL,updated_at=now() WHERE id=:id AND lease_token=:token AND status='PROCESSING' AND lease_until>clock_timestamp()",
                 Map.of("id", work.id(), "token", work.leaseToken(), "error", error));
     }
 
@@ -228,9 +248,14 @@ public class IngestionJdbcGateway implements IngestionGateway {
     @Transactional
     public void complete(Ingestion.Work work, Ingestion.Draft extracted) {
         var rows = jdbc.queryForList(
-                "SELECT id FROM ingestion.run WHERE id=:id AND lease_token=:token AND status='PROCESSING' AND lease_until>now() FOR UPDATE",
+                "SELECT id FROM ingestion.run WHERE id=:id FOR UPDATE",
                 Map.of("id", work.id(), "token", work.leaseToken()));
         require(!rows.isEmpty(), "Expired processing attempt");
+        Boolean current = jdbc.queryForObject(
+                "SELECT lease_token=:token AND status='PROCESSING' AND lease_until>clock_timestamp() FROM ingestion.run WHERE id=:id",
+                Map.of("id", work.id(), "token", work.leaseToken()),
+                Boolean.class);
+        require(Boolean.TRUE.equals(current), "Expired processing attempt");
         var source = extracted.source();
         require(source != null, "Source capture required");
         byte[] original = Base64.getDecoder().decode(source.originalBase64());
@@ -248,17 +273,18 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 extracted.configurations() != null && extracted.configurations().size() <= Ingestion.MAX_CONFIGURATIONS,
                 "Maximum " + Ingestion.MAX_CONFIGURATIONS + " configurations per source");
         var attributes = new HashMap<String, Catalog.Attribute>();
-        jdbc.query("SELECT * FROM catalog.attribute_definition", Map.of(), rs -> {
-            attributes.put(
-                    rs.getString("code"),
-                    new Catalog.Attribute(
-                            (UUID) rs.getObject("id"),
-                            rs.getString("code"),
-                            rs.getString("label"),
-                            rs.getString("description"),
-                            rs.getString("value_type"),
-                            rs.getString("unit")));
-        });
+        require(work.ontology() != null, "Pinned ontology context is required");
+        work.ontology().attributes().forEach(attribute -> attributes.put(attribute.code(), attribute));
+        require(
+                extracted.ontologyRevision() == 0
+                        || extracted.ontologyRevision() == work.ontology().ontologyRevision(),
+                "Extractor ontology revision mismatch");
+        require(
+                extracted.normalizationRevision() == null
+                        || extracted
+                                .normalizationRevision()
+                                .equals(work.ontology().normalizationRevision()),
+                "Extractor normalization revision mismatch");
         var names = new HashSet<String>();
         var configurations = new ArrayList<Ingestion.ConfigurationDraft>();
         for (var configuration : extracted.configurations()) {
@@ -281,14 +307,93 @@ public class IngestionJdbcGateway implements IngestionGateway {
                     configuration.claims() != null && configuration.claims().size() <= Ingestion.MAX_CLAIMS,
                     "Maximum " + Ingestion.MAX_CLAIMS + " claims per configuration");
             var claims = new ArrayList<Ingestion.Claim>();
-            for (var claim : configuration.claims()) claims.add(validate(source, attributes, claim));
+            for (var claim : configuration.claims()) claims.add(validate(source, attributes, claim, work.ontology()));
+            require(
+                    configuration.unmappedObservations().size() <= Ingestion.MAX_CLAIMS,
+                    "Too many unmapped observations");
+            var unmapped = new ArrayList<Ontology.Observation>();
+            for (var observation : configuration.unmappedObservations()) {
+                require(
+                        observation.originalTerm() != null
+                                && !observation.originalTerm().isBlank()
+                                && observation.originalTerm().length() <= 150,
+                        "A short observed source term is required");
+                require(
+                        observation.rawValue() != null
+                                && !observation.rawValue().isBlank()
+                                && observation.rawValue().length() <= 2000,
+                        "A bounded raw observation is required");
+                require(
+                        Ingestion.exactExcerpt(
+                                source.text(), observation.lineStart(), observation.lineEnd(), observation.excerpt()),
+                        "Unmapped evidence must match source lines");
+                require(
+                        observation.excerpt().contains(observation.originalTerm())
+                                && observation.excerpt().contains(observation.rawValue()),
+                        "Unmapped source term and value must occur in evidence");
+                require(
+                        observation.locator() != null
+                                && !observation.locator().isBlank()
+                                && observation.locator().length() <= 500,
+                        "An observation source location is required");
+                String origin = observation.termOrigin() == null
+                        ? (source.mimeType().equals("application/pdf") ? "DERIVED_TEXT" : "SOURCE_TEXT")
+                        : observation.termOrigin();
+                require(
+                        Set.of("SOURCE_TEXT", "VISUAL_LABEL", "DERIVED_TEXT").contains(origin),
+                        "Unknown source term origin");
+                if (source.mimeType().equals("application/pdf")) {
+                    if (!Ontology.retainsOriginalTerms(source.parserVersion())
+                            || !observation.excerpt().contains("originalTerm: " + observation.originalTerm()))
+                        origin = "DERIVED_TEXT";
+                }
+                var checked = new Ontology.Observation(
+                        observation.originalTerm(),
+                        observation.rawValue(),
+                        observation.sourceUnit(),
+                        observation.qualifiers() == null ? Map.of() : observation.qualifiers(),
+                        observation.lineStart(),
+                        observation.lineEnd(),
+                        observation.excerpt(),
+                        observation.locator(),
+                        observation.proposal(),
+                        origin);
+                var resolved = Ontology.resolve(work.ontology(), work.request(), checked);
+                if (resolved.isPresent()
+                        && claims.stream().noneMatch(c -> c.attributeCode().equals(resolved.get()))) {
+                    var attribute = attributes.get(resolved.get());
+                    var claim = new Ingestion.Claim(
+                            resolved.get(),
+                            attribute.label(),
+                            attribute.unit(),
+                            checked.rawValue(),
+                            checked.sourceUnit(),
+                            null,
+                            attribute.valueType().equals("LIST") ? List.of(checked.rawValue()) : null,
+                            checked.qualifiers(),
+                            checked.lineStart(),
+                            checked.lineEnd(),
+                            checked.excerpt(),
+                            checked.locator(),
+                            null,
+                            List.of(),
+                            origin.equals("DERIVED_TEXT") ? null : checked.originalTerm());
+                    var normalized = validate(source, attributes, claim, work.ontology());
+                    if (normalized.issues().isEmpty()) {
+                        claims.add(normalized);
+                        continue;
+                    }
+                }
+                unmapped.add(checked);
+            }
             configurations.add(new Ingestion.ConfigurationDraft(
                     configuration.name().trim(),
                     configuration.identityLineStart(),
                     configuration.identityLineEnd(),
                     configuration.identityExcerpt(),
                     List.copyOf(claims),
-                    warnings(configuration.warnings())));
+                    warnings(configuration.warnings()),
+                    List.copyOf(unmapped)));
         }
         var params = new HashMap<String, Object>();
         params.put("id", work.id());
@@ -312,7 +417,14 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 source.text(),
                 source.textSha256(),
                 source.parserVersion());
-        var draft = new Ingestion.Draft(storedSource, List.copyOf(configurations), warnings(extracted.warnings()));
+        var draft = new Ingestion.Draft(
+                storedSource,
+                List.copyOf(configurations),
+                warnings(extracted.warnings()),
+                work.ontology().ontologyRevision(),
+                work.ontology().normalizationRevision(),
+                source.parserVersion());
+        ontology.observe(work, draft);
         String encoded = encode(draft);
         params.put("draft", encoded);
         params.put("hash", hash(encoded.getBytes(StandardCharsets.UTF_8)));
@@ -323,9 +435,13 @@ public class IngestionJdbcGateway implements IngestionGateway {
 
     /** Deterministic checks and normalization of one proposed claim; problems become review issues. */
     private static Ingestion.Claim validate(
-            Ingestion.Source source, Map<String, Catalog.Attribute> attributes, Ingestion.Claim claim) {
+            Ingestion.Source source,
+            Map<String, Catalog.Attribute> attributes,
+            Ingestion.Claim claim,
+            Ontology.Context context) {
         var issues = new ArrayList<String>();
         Object value = null;
+        var qualifiers = new HashMap<String, String>(claim.qualifiers() == null ? Map.of() : claim.qualifiers());
         var attribute = attributes.get(claim.attributeCode());
         if (attribute == null) issues.add("Unknown attribute");
         if (!Ingestion.exactExcerpt(source.text(), claim.lineStart(), claim.lineEnd(), claim.excerpt()))
@@ -347,7 +463,22 @@ public class IngestionJdbcGateway implements IngestionGateway {
         if (attribute != null)
             try {
                 value = switch (attribute.valueType()) {
-                    case "NUMBER" -> Ingestion.normalizeNumber(claim.rawValue(), claim.rawUnit(), attribute.unit());
+                    case "NUMBER" -> {
+                        var number = Ingestion.normalizeNumber(claim.rawValue(), claim.rawUnit(), attribute.unit());
+                        if (Set.of("passenger_capacity", "towing_capacity", "cargo_bed_volume")
+                                .contains(attribute.code()))
+                            require(number.signum() >= 0, "Capacity cannot be negative");
+                        if (attribute.code().equals("passenger_capacity")) {
+                            require(number.stripTrailingZeros().scale() <= 0, "Passenger capacity must be an integer");
+                            qualifiers.putIfAbsent("driverIncluded", "UNKNOWN");
+                            require(
+                                    Set.of("YES", "NO", "UNKNOWN").contains(qualifiers.get("driverIncluded")),
+                                    "Driver inclusion must be explicit or UNKNOWN");
+                        }
+                        if (attribute.code().equals("towing_capacity"))
+                            qualifiers.putIfAbsent("brakingCondition", "UNKNOWN");
+                        yield number;
+                    }
                     case "TEXT" -> claim.rawValue();
                     case "LIST" -> {
                         require(
@@ -355,7 +486,7 @@ public class IngestionJdbcGateway implements IngestionGateway {
                                         && !claim.listValue().isEmpty()
                                         && claim.listValue().stream().allMatch(v -> v != null && !v.isBlank()),
                                 "List items are required");
-                        yield claim.listValue();
+                        yield Ontology.normalizeVocabulary(context, attribute.code(), claim.listValue());
                     }
                     case "AVAILABILITY" -> {
                         require(
@@ -378,13 +509,14 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 claim.rawUnit(),
                 attribute != null && attribute.valueType().equals("AVAILABILITY") ? claim.availability() : null,
                 claim.listValue(),
-                claim.qualifiers() == null ? Map.of() : claim.qualifiers(),
+                Map.copyOf(qualifiers),
                 claim.lineStart(),
                 claim.lineEnd(),
                 claim.excerpt(),
                 claim.locator(),
                 value,
-                List.copyOf(issues));
+                List.copyOf(issues),
+                Ontology.originalTerm(source, claim.excerpt(), claim.originalTerm()));
     }
 
     @Override
@@ -401,6 +533,13 @@ public class IngestionJdbcGateway implements IngestionGateway {
     @Override
     @Transactional
     public Ingestion.Run publish(UUID id, String owner, Ingestion.Review review) {
+        return publish(id, owner, review, owner);
+    }
+
+    @Override
+    @Transactional
+    public Ingestion.Run publish(UUID id, String owner, Ingestion.Review review, String reviewer) {
+        require(reviewer != null && !reviewer.isBlank(), "Reviewer identity is required");
         long revision =
                 jdbc.queryForObject("SELECT revision FROM ingestion.catalog_version FOR UPDATE", Map.of(), Long.class);
         var saved = row(id, owner, true);
@@ -457,7 +596,18 @@ public class IngestionJdbcGateway implements IngestionGateway {
             if (config == null)
                 config = createConfiguration(request, configuration.name(), identityId, review.reason());
             ids.put(configuration.name(), config);
-            for (var claim : selected) changed |= publishClaim(id, owner, review, sourceId, config, claim, revision);
+            for (var claim : selected)
+                changed |= publishClaim(
+                        id,
+                        reviewer,
+                        review,
+                        sourceId,
+                        config,
+                        claim,
+                        revision,
+                        draft.normalizationRevision(),
+                        draft.ontologyRevision(),
+                        draft.readerRevision());
         }
         if (changed) {
             jdbc.update("UPDATE ingestion.catalog_version SET revision=revision+1", Map.of());
@@ -514,7 +664,10 @@ public class IngestionJdbcGateway implements IngestionGateway {
             UUID sourceId,
             UUID config,
             Ingestion.Claim claim,
-            long revision) {
+            long revision,
+            String normalizationRevision,
+            long ontologyRevision,
+            String readerRevision) {
         UUID evidence = stableId("evidence:" + sourceId + ":" + claim.lineStart() + ":" + claim.lineEnd());
         evidence(evidence, sourceId, claim.lineStart(), claim.lineEnd(), claim.excerpt(), claim.locator());
         var attribute = jdbc.queryForMap(
@@ -523,7 +676,10 @@ public class IngestionJdbcGateway implements IngestionGateway {
         UUID attr = (UUID) attribute.get("id");
         var q = new TreeMap<String, Object>(claim.qualifiers());
         q.put("originalUnit", Objects.toString(claim.rawUnit(), ""));
-        q.put("normalizerVersion", "2");
+        q.put("normalizerVersion", Objects.toString(normalizationRevision, "unknown"));
+        q.put("ontologyRevision", ontologyRevision);
+        q.put("readerRevision", Objects.toString(readerRevision, "unknown"));
+        if (claim.originalTerm() != null) q.put("originalTerm", claim.originalTerm());
         UUID assertion = stableId("assertion:" + config + ":" + attr + ":" + sourceId + ":" + evidence + ":"
                 + encode(Arrays.asList(claim.value(), claim.availability(), claim.rawValue(), q)));
         if (jdbc.queryForObject(
@@ -603,6 +759,11 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 "configuration_package",
                 "seed_dataset",
                 "attribute_alias",
+                "attribute_value",
+                "manufacturer_term",
+                "ontology_revision",
+                "ontology_proposal",
+                "ontology_proposal_evidence",
                 "review_source_revision",
                 "review_chunk",
                 "review_aspect",

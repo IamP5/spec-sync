@@ -10,7 +10,9 @@ import { ChatVehicleCatalogOverview } from '../tool-adapters/chat-vehicle-catalo
 import { ChatVehicleComparisonOverview } from '../tool-adapters/chat-vehicle-comparison-overview';
 import { ChatVehicleIngestionEdit } from '../tool-adapters/chat-vehicle-ingestion-edit';
 import { ChatVehicleIngestionPlanEdit } from '../tool-adapters/chat-vehicle-ingestion-plan-edit';
+import { ChatVehicleResearchDetail } from '../tool-adapters/chat-vehicle-research-detail';
 import { ChatVehicleSourceOverview } from '../tool-adapters/chat-vehicle-source-overview';
+import { ChatVehicleWorkspaceOverview } from '../tool-adapters/chat-vehicle-workspace-overview';
 import { KnowledgeResultCard } from '../ui/knowledge-result-card';
 import { ToolCallCard } from '../ui/tool-call-card';
 
@@ -24,6 +26,24 @@ export const START_INGESTION_TOOL = 'startVehicleIngestion';
 
 /** Render server-owned results directly; no second model-authored presentation payload. */
 export function registerChatTools(): void {
+  registerRenderToolCall({
+    name: 'renderVehicleWorkspace',
+    args: z.record(z.unknown()),
+    component: ChatVehicleWorkspaceOverview,
+    agentId: CHAT_AGENT_ID,
+  });
+  for (const name of [
+    'researchVehicleSpecifications',
+    'getVehicleResearch',
+    'replayVehicleResearch',
+    'reviewVehicleResearch',
+  ])
+    registerRenderToolCall({
+      name,
+      args: z.record(z.unknown()),
+      component: ChatVehicleResearchDetail,
+      agentId: CHAT_AGENT_ID,
+    });
   registerRenderToolCall({
     name: 'searchVehicleConfigurations',
     args: z.record(z.unknown()),
@@ -71,7 +91,7 @@ export function registerChatTools(): void {
   registerHumanInTheLoop({
     name: START_INGESTION_TOOL,
     description:
-      'Start a reviewed vehicle specification import in the browser. The curator confirms the scope and enters the curator key there; you receive the run id and status. Call it after the source and configurations are agreed. Arguments: sourceUrl (official manufacturer HTML page or PDF), brand, model, modelYear, configurations (names to import; empty imports every configuration the source presents, up to 8).',
+      'Legacy standalone ingestion only. Never use for existing or new chat research: use researchVehicleSpecifications followed by reviewVehicleResearch, which requires no curator key. The curator confirms the scope and enters the curator key there; you receive the run id and status. Call it after the source and configurations are agreed. Arguments: sourceUrl (official manufacturer HTML page or PDF), brand, model, modelYear, configurations (names to import; empty imports every configuration the source presents, up to 8).',
     parameters: ingestionStartArgsSchema,
     component: ChatVehicleIngestionEdit,
     agentId: CHAT_AGENT_ID,

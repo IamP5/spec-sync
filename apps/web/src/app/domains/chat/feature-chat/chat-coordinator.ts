@@ -91,9 +91,6 @@ export class ChatCoordinator {
 
   /** Opens a stored thread; false when the service has no thread with that id. */
   open(id: string): Promise<boolean> {
-    if (this.conversation.threadId() === id) {
-      return Promise.resolve(true);
-    }
     return this.conversation.open(id);
   }
 

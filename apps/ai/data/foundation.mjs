@@ -224,7 +224,15 @@ export function seedSql(dataset, digest) {
 }
 
 export function snapshotSql() {
-  const entries = [...tableNames, 'seed_dataset'].map(
+  const entries = [
+    ...tableNames,
+    'seed_dataset',
+    'ontology_revision',
+    'manufacturer_term',
+    'attribute_value',
+    'ontology_proposal',
+    'ontology_proposal_evidence',
+  ].map(
     (name) =>
       `${sqlLiteral(name)}, (SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text), '[]'::jsonb) FROM catalog.${name} t)`,
   );

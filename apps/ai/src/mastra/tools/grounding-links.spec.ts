@@ -21,6 +21,51 @@ it('only treats the Google grounding host as a redirect link', () => {
     false,
   );
   expect(isGroundingRedirect('not a url')).toBe(false);
+  expect(
+    isGroundingRedirect(redirect.replace('https://', 'https://user@')),
+  ).toBe(false);
+  expect(isGroundingRedirect(redirect.replace('.com/', '.com:8443/'))).toBe(
+    false,
+  );
+  expect(
+    isGroundingRedirect('https://vertexaisearch.cloud.google.com/unrelated'),
+  ).toBe(false);
+});
+
+it('uses one bounded GET fallback when HEAD does not expose the redirect', async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(new Response(null, { status: 405 }))
+    .mockResolvedValueOnce(
+      new Response('unused body', {
+        status: 302,
+        headers: { location: 'https://www.ram.com.br/picapes/1500.html' },
+      }),
+    );
+  vi.stubGlobal('fetch', fetch);
+  await expect(resolveGroundingUrl(redirect)).resolves.toBe(
+    'https://www.ram.com.br/picapes/1500.html',
+  );
+  expect(
+    fetch.mock.calls.map(([url, options]) => [
+      url,
+      options.method,
+      options.redirect,
+    ]),
+  ).toEqual([
+    [redirect, 'HEAD', 'manual'],
+    [redirect, 'GET', 'manual'],
+  ]);
+  expect(fetch.mock.calls[0]?.[1].signal).toBe(fetch.mock.calls[1]?.[1].signal);
+});
+
+it('does not perform redirect requests after cancellation', async () => {
+  const fetch = vi.fn();
+  vi.stubGlobal('fetch', fetch);
+  await expect(
+    resolveGroundingUrl(redirect, AbortSignal.abort()),
+  ).resolves.toBeUndefined();
+  expect(fetch).not.toHaveBeenCalled();
 });
 
 it('reads the real page from the redirect without following it', async () => {

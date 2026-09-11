@@ -1,6 +1,10 @@
 import { noopObserve } from '@mastra/core/tools';
 import { afterEach, expect, it, vi } from 'vitest';
 
+import {
+  catalogSearchInputSchema,
+  searchCatalog,
+} from '../catalog/catalog-search';
 import { type GraphQuery } from '../graph/connection';
 import {
   findConfigurationsByCapabilities,
@@ -62,11 +66,141 @@ it('continues using the authoritative API for catalog operations', async () => {
     );
   vi.stubGlobal('fetch', fetch);
   await searchVehicleConfigurations.execute?.(
-    { q: 'Ranger', limit: 20, offset: 0 },
+    { searches: [{ q: 'Ranger', limit: 20, offset: 0 }] },
     { observe: noopObserve },
   );
   expect(fetch).toHaveBeenCalledOnce();
   expect((fetch.mock.calls[0]?.[0] as URL).pathname).toBe(
     '/api/vehicle-configurations',
   );
+});
+
+it('returns both vehicles from one tool call with independent continuation scopes and no duplicated IDs', async () => {
+  const ranger = {
+    id: 'f94a2350-0a1a-5ad3-aef8-3c0c472c72a1',
+    brand: 'Ford',
+    model: 'Ranger',
+    name: 'Limited',
+    market: 'BR',
+    modelYear: 2026,
+    identityStatus: 'PROVISIONAL',
+    identityNote: 'Check year',
+    identityEvidenceId: null,
+  };
+  const shark = {
+    ...ranger,
+    id: 'f94a2350-0a1a-5ad3-aef8-3c0c472c72a2',
+    brand: 'BYD',
+    model: 'Shark',
+    name: 'GS',
+    modelYear: 2025,
+  };
+  const fetch = vi.fn(
+    async (url: URL) =>
+      new Response(
+        JSON.stringify({
+          items:
+            url.searchParams.get('q') === 'Shark' ? [shark, ranger] : [ranger],
+          limit: 6,
+          offset: Number(url.searchParams.get('offset')),
+          hasMore: url.searchParams.get('q') === 'Ranger',
+        }),
+      ),
+  );
+  vi.stubGlobal('fetch', fetch);
+  const rangerQuery = {
+    q: 'Ranger',
+    market: 'BR',
+    modelYear: 2026,
+    limit: 6,
+    offset: 4,
+  };
+  const result = await searchVehicleConfigurations.execute?.(
+    {
+      searches: [
+        { q: 'Shark', market: 'BR', modelYear: 2025, limit: 6, offset: 0 },
+        rangerQuery,
+        rangerQuery,
+      ],
+    },
+    { observe: noopObserve },
+  );
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(result).toMatchObject({
+    status: 'OK',
+    items: [shark, ranger],
+    nextSearches: [{ ...rangerQuery, offset: 5 }],
+    hasMore: true,
+  });
+});
+
+it('preserves successful configurations while explicitly reporting failed and empty queries', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: URL) =>
+      url.searchParams.get('q') === 'Ranger'
+        ? new Response('', { status: 503 })
+        : new Response(
+            JSON.stringify({ items: [], limit: 20, offset: 0, hasMore: false }),
+          ),
+    ),
+  );
+  const result = await searchVehicleConfigurations.execute?.(
+    {
+      searches: [
+        { q: 'Shark', limit: 20, offset: 0 },
+        { q: 'Ranger', limit: 20, offset: 0 },
+      ],
+    },
+    { observe: noopObserve },
+  );
+  expect(result).toMatchObject({
+    status: 'PARTIAL',
+    items: [],
+    notices: [
+      'No configurations found for Shark.',
+      'Ranger: Catalog request failed (503).',
+    ],
+  });
+});
+
+it('keeps total failure distinct from an empty catalog', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => new Response('', { status: 503 })),
+  );
+  expect(
+    await searchVehicleConfigurations.execute?.(
+      { searches: [{ q: 'Ranger', limit: 20, offset: 0 }] },
+      { observe: noopObserve },
+    ),
+  ).toMatchObject({ status: 'ERROR', retryable: true });
+});
+
+it('bounds complete search intent and rejects cancelled runs before retrieval', async () => {
+  expect(catalogSearchInputSchema.safeParse({ q: 'Ranger' }).success).toBe(
+    false,
+  );
+  expect(catalogSearchInputSchema.safeParse({ searches: [] }).success).toBe(
+    false,
+  );
+  expect(
+    catalogSearchInputSchema.safeParse({
+      searches: Array.from({ length: 6 }, () => ({ q: 'Ranger' })),
+    }).success,
+  ).toBe(false);
+  expect(
+    catalogSearchInputSchema.safeParse({
+      searches: [{ q: 'Ranger', limit: 21 }],
+    }).success,
+  ).toBe(false);
+  const fetch = vi.fn();
+  vi.stubGlobal('fetch', fetch);
+  await expect(
+    searchCatalog(
+      { searches: [{ q: 'Ranger', limit: 20, offset: 0 }] },
+      AbortSignal.abort(),
+    ),
+  ).rejects.toThrow();
+  expect(fetch).not.toHaveBeenCalled();
 });
