@@ -55,10 +55,14 @@ The binding rules live in the docs; this section only names the red lines.
   `docs/adr/0008-runtime-translation.md`.
 - The theme lives in `libs/ui/styles.css`: Ford blue for primary actions
   and focus only, neutral gray surfaces, hover fills and borders, and a
-  `--radius` of 0.75rem (controls `rounded-lg` 12px, menu items and small
-  controls `rounded-md` 10px, panels `rounded-xl` 16px, pills
-  `rounded-full`). Its header records the ChatGPT measurements the values
-  follow; keep new surfaces on the tokens instead of ad-hoc colours or radii.
+  `--radius` of 0.75rem with a concentric shape scale in 4px steps
+  (`rounded-xs` 4px … `rounded-lg` 12px controls … `rounded-xl` 16px cards
+  … `rounded-3xl` 24px composer/drawers, `rounded-full` capsules). Shapes
+  follow Apple's three types: fixed radius, capsule (half the height), and
+  concentric (parent radius minus padding); fixed shapes from 16px up get
+  continuous corners from the base layer. Its header records the ChatGPT
+  measurements and the scale; keep new surfaces on the tokens instead of
+  ad-hoc colours or radii, and derive a nested radius from the parent's.
 
 ## Checks
 

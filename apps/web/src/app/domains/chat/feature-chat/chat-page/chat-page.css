@@ -163,14 +163,166 @@
 }
 
 /* CDK autosizing also supports Safari versions without field-sizing. */
+/* One line at rest; the textarea grows with the draft up to max-height. */
 .chat-prompt {
   field-sizing: fixed;
   box-sizing: content-box;
   width: auto;
-  min-height: 2.75rem;
+  min-height: 1.5rem;
   max-height: 11.75rem;
   padding-inline: 0;
   margin-inline: 0.75rem;
+  transition:
+    margin-inline-end var(--composer-motion),
+    height var(--composer-motion),
+    min-height var(--composer-motion),
+    padding var(--composer-motion);
+}
+
+/* An empty prompt is exactly one line, whatever CDK autosize measured inline. */
+.chat-prompt:placeholder-shown {
+  height: 1lh !important;
+}
+
+/*
+ * While the reader scrolls through earlier messages the composer folds to a
+ * narrow single-line pill with the send button; the options row collapses.
+ * Layout properties (width, radius, heights) tween with a short ease-out and
+ * never overshoot their container. The scale and the options row spring back
+ * on expand with a real underdamped spring (damping ratio 0.35) expressed as
+ * a CSS linear() curve: the composer pops to about 102% and settles. Both
+ * directions are plain transitions, so a change of mind mid-motion retargets.
+ *
+ * Corners follow the design-system shape rules (libs/ui/styles.css): the
+ * expanded composer is a fixed 3xl shape (24px) whose 8px padding leaves inner
+ * surfaces concentric at xl (16px); the compact state is a capsule, expressed
+ * with the 4xl radius (above half its height) so the radius can still tween.
+ * Fixed shapes get continuous corners from the base layer.
+ */
+.chat-composer {
+  --composer-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --composer-spring: linear(
+    0,
+    0.095,
+    0.328,
+    0.617,
+    0.895,
+    1.115,
+    1.254,
+    1.307,
+    1.291,
+    1.226,
+    1.139,
+    1.05,
+    0.977,
+    0.929,
+    0.907,
+    0.907,
+    0.925,
+    0.951,
+    0.979,
+    1.003,
+    1.019,
+    1.028,
+    1.029,
+    1.025,
+    1.017,
+    1.008,
+    1.001,
+    0.995,
+    0.992,
+    0.991,
+    0.992,
+    0.994,
+    1
+  );
+  --composer-motion: 280ms var(--composer-ease);
+  --composer-pop: 560ms var(--composer-spring);
+  position: relative;
+  width: 100%;
+  margin-inline: auto;
+  border-radius: var(--radius-3xl);
+  transform-origin: bottom center;
+  transition:
+    width var(--composer-motion),
+    padding var(--composer-motion),
+    border-radius var(--composer-motion),
+    transform var(--composer-pop),
+    opacity var(--composer-motion),
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.chat-composer-compact {
+  --composer-motion: 240ms var(--composer-ease);
+  --composer-pop: 240ms var(--composer-ease);
+  width: min(100%, 36rem);
+  padding: 0.25rem;
+  border-radius: var(--radius-4xl);
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+.chat-composer-actions {
+  height: 2rem;
+  padding-right: 2.5rem;
+  transition: height var(--composer-motion);
+}
+
+/* The options settle in from slightly below with the same spring. */
+.chat-composer-actions > :not(button) {
+  transition:
+    opacity 160ms ease,
+    visibility 160ms ease,
+    transform var(--composer-pop);
+}
+
+.chat-composer-actions > button {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  transition:
+    bottom var(--composer-motion),
+    right var(--composer-motion),
+    width var(--composer-motion),
+    height var(--composer-motion),
+    background-color var(--composer-motion),
+    color var(--composer-motion);
+}
+
+/* On the compact line the send button becomes a quiet return hint. */
+.chat-composer-compact .chat-composer-actions > button {
+  right: 0.375rem;
+  bottom: calc(50% - 0.875rem);
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: transparent;
+  color: var(--muted-foreground);
+  box-shadow: none;
+}
+
+.chat-composer-compact .chat-prompt {
+  margin-inline-end: 2.5rem;
+}
+
+.chat-composer-compact .chat-composer-actions {
+  height: 0;
+}
+
+.chat-composer-compact .chat-composer-actions > :not(button) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(0.375rem);
+}
+
+@media (min-width: 640px) {
+  /* CDK autosize writes the prompt height inline; the single compact line must win. */
+  .chat-composer-compact .chat-prompt {
+    height: 1lh !important;
+    min-height: 0;
+    padding-block: calc((2.125rem - 1lh) / 2);
+  }
 }
 
 @media (max-width: 639px) {
@@ -187,8 +339,6 @@
   }
 
   .chat-composer {
-    position: relative;
-    border-radius: 1.75rem;
     padding: 0.25rem;
     box-shadow:
       0 8px 28px -8px rgb(0 0 0 / 20%),
@@ -201,24 +351,15 @@
     padding: 0.625rem 0;
     margin-inline: 1rem;
     line-height: 1.5rem;
-    transition: margin-inline-end 180ms ease;
   }
 
   /* Options row under the prompt, like ChatGPT: the picker left, send right. */
   .chat-composer-actions {
     height: 2.75rem;
     padding: 0 3rem 0 0.375rem;
-    transition: height 180ms ease;
-  }
-
-  .chat-composer-actions > div {
-    transition:
-      opacity 120ms ease,
-      visibility 120ms ease;
   }
 
   .chat-composer-actions > button {
-    position: absolute;
     right: 0.25rem;
     bottom: 0.25rem;
     width: 2.75rem;
@@ -230,14 +371,13 @@
     margin-inline-end: 3.5rem;
   }
 
-  .chat-composer-compact .chat-composer-actions {
-    height: 0;
-  }
-
-  .chat-composer-compact .chat-composer-actions > div {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
+  .chat-composer-compact .chat-composer-actions > button {
+    right: 0.25rem;
+    bottom: 0.25rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    background-color: var(--primary);
+    color: var(--primary-foreground);
   }
 
   .chat-composer-actions .chat-run-options {

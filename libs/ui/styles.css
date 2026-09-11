@@ -37,9 +37,23 @@
  * (#212121 panels, #303030 muted fills) with neutral grays lifted for
  * contrast, while the brand blues stay put so they still read as CTAs.
  *
- * Shape: `--radius` is 0.75rem, so controls (`rounded-lg`) are 12px, small
- * controls and menu items (`rounded-md`) 10px, panels (`rounded-xl`) 16px
- * and pills `rounded-full`, matching the composer of the chat.
+ * Shape follows the three shape types of Apple's 2025 design system
+ * (WWDC25 "Get to know the new design system"): fixed shapes with a constant
+ * radius, capsules whose radius is half their height, and concentric shapes
+ * whose radius is the parent's radius minus the padding between them.
+ * `--radius` is 0.75rem (12px) and every step above it is a 4px spacing
+ * step, so a nested surface stays concentric by subtracting its padding:
+ *   xs 4px   kbd, checkbox, chips inside an 8px control with 4px padding
+ *   sm 8px   menu items inside a 12px menu with 4px padding
+ *   md 10px  small/dense controls (rounded rectangles, as on macOS)
+ *   lg 12px  default controls: buttons, inputs, popovers   (`--radius`)
+ *   xl 16px  cards, dialogs, sticky panels
+ *   2xl 20px option popovers and catalog cards
+ *   3xl 24px the chat composer, drawers, message bubbles
+ *   4xl 32px a surface that must read as a capsule while its height animates
+ *   full     capsules: pills, icon buttons, badges, switches, avatars
+ * Fixed shapes of 16px and above get continuous (squircle) corners through
+ * `corner-shape` where the browser supports it; capsules stay true capsules.
  *
  * Mode-dependent tokens live in :root/.dark and are mirrored into
  * `@theme inline` via var() so Tailwind utilities flip with the cascade.
@@ -187,10 +201,15 @@
   --color-warning: var(--warning);
   --color-info: var(--info);
 
+  /* Concentric radius scale: 4px spacing steps around --radius (see header). */
+  --radius-xs: calc(var(--radius) - 8px);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 20px);
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -205,6 +224,16 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+
+  /*
+   * Continuous corners on fixed shapes from 16px up (superellipse(2), the
+   * squircle Apple uses); below that the difference is invisible and capsules
+   * (`rounded-full`) must stay circular. Browsers without corner-shape keep
+   * plain round corners. Opt out per element with `corner-round`.
+   */
+  :where(.rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-4xl) {
+    corner-shape: squircle;
   }
   html {
     color-scheme: light dark;
@@ -224,6 +253,15 @@
     -moz-appearance: textfield;
     appearance: textfield;
   }
+}
+
+/* Shape utilities: corner-squircle / corner-round (capsules never need them). */
+@utility corner-squircle {
+  corner-shape: squircle;
+}
+
+@utility corner-round {
+  corner-shape: round;
 }
 
 ::-webkit-scrollbar {

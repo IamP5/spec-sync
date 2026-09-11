@@ -36,6 +36,7 @@ import {
   lucideCarFront,
   lucideCheck,
   lucideCopy,
+  lucideCornerDownLeft,
   lucideFileInput,
   lucideFileSearch,
   lucidePenLine,
@@ -211,6 +212,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     provideIcons({
       lucideArrowDown,
       lucideArrowUp,
+      lucideCornerDownLeft,
       lucideBrain,
       lucideCarFront,
       lucideCheck,
@@ -767,6 +769,16 @@ export class ChatPage {
         this.readingEarlier.set(true);
       this.lastScrollTop = element.scrollTop;
     }
+  }
+
+  /**
+   * Focusing the composer ends the reading pause. Leaving it (to a picker's
+   * overlay, or by clicking elsewhere) keeps it expanded until the transcript
+   * is scrolled again, so opening an option never folds the composer away.
+   */
+  protected onComposerFocus(): void {
+    this.composerFocused.set(true);
+    this.readingEarlier.set(false);
   }
 
   protected onComposerBlur(event: FocusEvent): void {

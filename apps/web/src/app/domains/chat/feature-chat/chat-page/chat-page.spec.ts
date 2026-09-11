@@ -941,7 +941,7 @@ describe('ChatPage', () => {
     expect(log.scrollTop).toBe(1200);
   });
 
-  it('compacts while reading earlier messages and expands for typing, drafts and the latest message', async () => {
+  it('compacts while reading earlier messages and expands for typing, drafts, options and the latest message', async () => {
     agent.replyWith((input) => textReply(input, 'Initial answer'));
     const fixture = TestBed.createComponent(ChatPage);
     await fixture.whenStable();
@@ -975,6 +975,13 @@ describe('ChatPage', () => {
     await fixture.whenStable();
     expect(isCompact()).toBe(false);
     expect(log.scrollTop).toBe(400);
+    // An option's overlay takes focus outside the form; stay expanded.
+    prompt.dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: log }),
+    );
+    await fixture.whenStable();
+    expect(isCompact()).toBe(false);
+    prompt.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     prompt.value = 'Keep this draft';
     prompt.dispatchEvent(new Event('input', { bubbles: true }));
     prompt.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
@@ -984,6 +991,10 @@ describe('ChatPage', () => {
 
     prompt.value = '';
     prompt.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    expect(isCompact()).toBe(false);
+
+    log.dispatchEvent(new Event('scroll'));
     await fixture.whenStable();
     expect(isCompact()).toBe(true);
     log.scrollTop = 900;

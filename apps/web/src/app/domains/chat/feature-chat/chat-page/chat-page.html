@@ -131,13 +131,13 @@
     }
     <form
       (submit)="onSubmit($event)"
-      (focusin)="composerFocused.set(true)"
+      (focusin)="onComposerFocus()"
       (focusout)="onComposerBlur($event)"
       novalidate
     >
       <label for="prompt" class="sr-only" i18n>Message</label>
       <div
-        class="chat-composer flex flex-col rounded-2xl border border-border bg-card/95 p-2 backdrop-blur-xl shadow-[0_2px_12px_-4px_rgb(0_0_0/10%)] transition-[border-color,box-shadow] focus-within:border-ring focus-within:shadow-sm"
+        class="chat-composer flex flex-col rounded-3xl border border-border bg-card/95 p-2 backdrop-blur-xl shadow-[0_2px_12px_-4px_rgb(0_0_0/10%)] transition-[border-color,box-shadow] focus-within:border-ring focus-within:shadow-sm"
         [class.chat-composer-compact]="compactComposer()"
       >
         <textarea
@@ -232,7 +232,10 @@
             i18n-aria-label
             aria-label="Send message"
           >
-            <ng-icon name="lucideArrowUp" aria-hidden="true" />
+            <ng-icon
+              [name]="compactComposer() ? 'lucideCornerDownLeft' : 'lucideArrowUp'"
+              aria-hidden="true"
+            />
           </button>
           }
         </div>
