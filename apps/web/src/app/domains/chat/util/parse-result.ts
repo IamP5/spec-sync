@@ -1,9 +1,9 @@
 import type { z } from 'zod';
 
-export function parseResult<T>(
+export function parseResult<Schema extends z.ZodTypeAny>(
   value: unknown,
-  schema: z.ZodType<T>,
-): T | undefined {
+  schema: Schema,
+): z.output<Schema> | undefined {
   try {
     const parsed = schema.safeParse(
       typeof value === 'string' ? JSON.parse(value) : value,

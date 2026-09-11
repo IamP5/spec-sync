@@ -7,6 +7,7 @@ import {
   effectiveMode,
   effectiveRoleModels,
 } from '../data/chat-model';
+import type { WorkspaceAction } from '../data/competitive-workspace-actions';
 import { ConversationDetailStore } from './chat-page/conversation-detail-store';
 import { CreditsDetailStore } from './chat-page/credits-detail-store';
 import { ModelSearchStore } from './chat-page/model-search-store';
@@ -65,10 +66,13 @@ export class ChatCoordinator {
    * starts; after the first reply the list is read again for the title the
    * service generated for it.
    */
-  async send(prompt: string): Promise<void> {
+  async send(prompt: string, workspaceAction?: WorkspaceAction): Promise<void> {
     const first = this.conversation.isEmpty();
     try {
-      await this.conversation.send(prompt, this.runOptions());
+      await this.conversation.send(prompt, {
+        ...this.runOptions(),
+        workspaceAction,
+      });
     } finally {
       this.afterRun();
     }

@@ -147,7 +147,7 @@ export async function retrieveKnowledge(
     const evidence = await query(
       `
       MATCH (e:SpecSyncCatalog:Evidence {id:$q})-[:FROM_REVISION]->(s:SourceRevision)
-      RETURN {evidenceId:e.id, excerpt:e.excerpt, locator:e.locator, title:s.title,
+      RETURN {recordType:'specification-excerpt', evidenceId:e.id, excerpt:e.excerpt, locator:e.locator, title:s.title,
         path:s.path, provenance:s.provenance, upstreamUrls:s.upstream_urls} AS item`,
       params,
     );

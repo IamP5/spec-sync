@@ -1,8 +1,22 @@
 import type { AssistantMessage, ToolMessage } from '@ag-ui/core';
-import type { MastraDBMessage } from '@mastra/core/agent/message-list';
+import {
+  type MastraDBMessage,
+  MessageList,
+} from '@mastra/core/agent/message-list';
 import { describe, expect, it } from 'vitest';
 
 import { CONTINUATION_SUFFIX, toAGUIMessages } from './messages';
+import { RESEARCH_COMPLETION_PART } from './research-completion';
+
+const completion = {
+  version: 1,
+  requestId: 'b0bf3b8d-12fb-45ae-83d4-5b41b61c559a',
+  workId: 'b98e8caa-d7e5-4440-8a9c-f5c267ab3fb1',
+  status: 'REVIEW',
+  vehicle: { brand: 'Ford', model: 'Ranger', market: 'BR', modelYear: 2025 },
+  counts: { configurations: 2, claims: 40, warnings: 3 },
+  updatedAt: '2026-09-10T12:00:00Z',
+};
 
 function row(
   id: string,
@@ -39,10 +53,115 @@ const toolPart = (
 });
 
 describe('toAGUIMessages', () => {
+  it('replays a native Mastra data part as one activity while retaining text for the model', () => {
+    const stored = row('research-ready-1', 'assistant', [
+      { type: 'text', text: 'Ford Ranger research is ready for review.' },
+      { type: RESEARCH_COMPLETION_PART, data: completion },
+    ]);
+    const list = new MessageList({ threadId: 't-1', resourceId: 'user:u-1' });
+    list.add(stored, 'memory');
+    expect(toAGUIMessages(list.get.all.db())).toEqual([
+      {
+        id: stored.id,
+        role: 'activity',
+        activityType: 'specsync.research-completion',
+        content: completion,
+      },
+    ]);
+    expect(list.get.all.aiV5.model()).toEqual([
+      {
+        role: 'assistant',
+        content: [
+          { type: 'text', text: 'Ford Ranger research is ready for review.' },
+        ],
+      },
+    ]);
+    expect(list.get.all.db()[0]?.content.parts).toContainEqual({
+      type: RESEARCH_COMPLETION_PART,
+      data: completion,
+    });
+  });
+
+  it('falls back to canonical text for an unsupported completion payload', () => {
+    expect(
+      toAGUIMessages([
+        row('invalid', 'assistant', [
+          { type: 'text', text: 'Research finished.' },
+          {
+            type: RESEARCH_COMPLETION_PART,
+            data: { ...completion, version: 2 },
+          },
+        ]),
+      ]),
+    ).toEqual([
+      { id: 'invalid', role: 'assistant', content: 'Research finished.' },
+    ]);
+  });
+
+  it('does not reclassify real tool calls or user input as completion events', () => {
+    const part = { type: RESEARCH_COMPLETION_PART, data: completion };
+    const messages = toAGUIMessages([
+      row('user', 'user', [{ type: 'text', text: 'Continue' }, part]),
+      row('mixed', 'assistant', [
+        part,
+        toolPart(
+          'real',
+          'getVehicleResearch',
+          {},
+          { id: completion.requestId },
+        ),
+      ]),
+    ]);
+    expect(messages.map((message) => message.role)).toEqual([
+      'user',
+      'assistant',
+      'tool',
+    ]);
+    expect(messages[1]).toMatchObject({ toolCalls: [{ id: 'real' }] });
+  });
+
   it('keeps the stored id of a user turn', () => {
     expect(
       toAGUIMessages([row('m-1', 'user', [{ type: 'text', text: 'Hello' }])]),
     ).toEqual([{ id: 'm-1', role: 'user', content: 'Hello' }]);
+  });
+
+  it('replays only the validated workspace action metadata of a user turn', () => {
+    const action = {
+      version: 1,
+      actionId: 'b0bf3b8d-12fb-45ae-83d4-5b41b61c559a',
+      surfaceId: 'competitive-b98e8caa-d7e5-4440-8a9c-f5c267ab3fb1',
+      expectedRevision: 2,
+      componentId: 'evidence',
+      action: 'retryPanel',
+      values: {},
+    };
+    const stored = row('user-action', 'user', [
+      { type: 'text', text: 'Retry evidence' },
+    ]);
+    stored.content.metadata = {
+      specsyncWorkspaceAction: action,
+      unrelated: 'private metadata',
+    };
+    expect(toAGUIMessages([stored])).toEqual([
+      {
+        id: 'user-action',
+        role: 'user',
+        content: 'Retry evidence',
+        metadata: { specsyncWorkspaceAction: action },
+      },
+    ]);
+    stored.content.metadata['specsyncWorkspaceAction'] = {
+      ...action,
+      values: { arbitrary: 'command' },
+    };
+    expect(toAGUIMessages([stored])).toEqual([
+      {
+        id: 'user-action',
+        role: 'user',
+        content: 'Retry evidence',
+      },
+    ]);
   });
 
   it('drops rows without renderable parts', () => {

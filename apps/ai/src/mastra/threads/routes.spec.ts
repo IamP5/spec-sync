@@ -160,6 +160,53 @@ describe('chat thread routes', () => {
     expect(body.messages).toEqual([{ id: 'm-1', role: 'user', content: 'Hi' }]);
   });
 
+  it('reopens a saved research completion through the same typed activity contract', async () => {
+    seed('mine-completion', 'user:u-1');
+    const content = {
+      version: 1,
+      requestId: 'b0bf3b8d-12fb-45ae-83d4-5b41b61c559a',
+      workId: 'b98e8caa-d7e5-4440-8a9c-f5c267ab3fb1',
+      status: 'REVIEW',
+      vehicle: {
+        brand: 'Ford',
+        model: 'Ranger',
+        market: 'BR',
+        modelYear: 2025,
+      },
+      counts: { configurations: 2, claims: 40, warnings: 3 },
+      updatedAt: '2026-09-10T12:00:00Z',
+    };
+    messages.set('mine-completion', [
+      {
+        id: 'research-ready-saved',
+        role: 'assistant',
+        threadId: 'mine-completion',
+        resourceId: 'user:u-1',
+        createdAt: new Date(),
+        content: {
+          format: 2,
+          parts: [
+            { type: 'text', text: 'Research is ready for review.' },
+            { type: 'data-specsync-research-completion', data: content },
+          ],
+        },
+      },
+    ]);
+    const response = await route(
+      '/chat/threads/:threadId',
+      'GET',
+    )(context({ threadId: 'mine-completion' }));
+    const body = (await response.json()) as { messages: Message[] };
+    expect(body.messages).toEqual([
+      {
+        id: 'research-ready-saved',
+        role: 'activity',
+        activityType: 'specsync.research-completion',
+        content,
+      },
+    ]);
+  });
+
   it('hides another user thread behind a 404', async () => {
     seed('theirs', 'user:u-2');
     const response = await route(

@@ -284,11 +284,17 @@ describe('ChatVehicleWorkspaceOverview', () => {
             projectionVersion: null,
             items: [
               {
+                id: '00000000-0000-4000-8000-000000000001',
+                evidenceId: '00000000-0000-4000-8000-000000000002',
+                scope: 'MODEL',
                 title: '<script>bad()</script>',
                 excerpt: '<img onerror="bad()">',
                 url: 'javascript:bad()',
               },
               {
+                id: '00000000-0000-4000-8000-000000000003',
+                evidenceId: '00000000-0000-4000-8000-000000000004',
+                scope: 'CONFIGURATION',
                 title: 'Road test',
                 excerpt: 'A sourced passage.',
                 url: 'https://example.com/review',

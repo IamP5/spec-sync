@@ -50,6 +50,13 @@ factual vehicle payloads. One tool result renders one catalog component.
 - Keep normal feature behavior in Angular: filtering, sorting, explicit
   selection, accessibility, pagination and authenticated actions. Those are
   declared component interactions, not an attempt to infer agent intent.
+- A runtime surface may be revised only through its explicit surface ID,
+  supported version and revision contract. UI actions carry typed intent and an
+  action ID; the server validates ownership and the referenced revision before
+  another model run. The browser projects validated revisions while preserving
+  the real tool history. It must retain the last successful, uncontested view
+  when an update fails or conflicts; it must not infer replacement from adjacent
+  results or matching business data.
 
 ### Parsing that remains necessary
 
@@ -78,8 +85,8 @@ The multi-search catalog fixes the source contract. Historic conversations keep
 their real recorded calls; they are not rewritten to appear compliant. A new
 agent run is needed to obtain the new single-result catalog.
 
-Existing presentation heuristics are documented in the
-[contract audit](../research/agentic-ui-contract-audit-2026-09-10.md). They are
-migration debt, not precedents for new work. Replace them with explicit contracts
-and replay coverage before removing their current UX behavior. This ADR is an
-agent/review rule; it does not claim static lint can verify model tool choice.
+The migration of the identified presentation heuristics is documented in the
+[contract audit](../research/agentic-ui-contract-audit-2026-09-10.md). Historical
+compatibility decoders must name the exact earlier contract and cannot become
+precedents for new inference. This ADR is an agent/review rule; it does not claim
+static lint can verify model tool choice.

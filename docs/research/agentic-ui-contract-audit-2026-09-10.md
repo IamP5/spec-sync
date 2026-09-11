@@ -12,17 +12,19 @@ in one invocation, supplies one authoritative catalog, and carries notices and
 continuation queries. The attempted browser aggregation was removed. No
 historical calls are merged or rewritten.
 
-## Remaining migration work
+## Migration completed in the Ford analyst workspace change
 
-| Location                                                                 | Existing behavior                                                                                                                                                                                                                                              | Required direction                                                                                                                                                                                                                                              |
-| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web/src/app/domains/chat/feature-chat/tool-presentation.ts`        | Hides internal tools, groups empty discoveries into authored summaries, replaces source cards when research starts, and suppresses research/review cards by inspecting neighboring calls and IDs. Raw history is retained, but presentation infers a workflow. | Explicit render policy plus typed empty/source states and surface identity or supersession. Preserve failure visibility and saved replay during migration. The empty-catalog summarizer has been removed; the registered catalog component now owns that state. |
-| `apps/web/src/app/domains/chat/feature-chat/ui/knowledge-result-card.ts` | Accepts `Record<string, unknown>` items, chooses labels using title/name/label/code fallbacks, changes layout by field presence, and independently hides tools by name.                                                                                        | Dedicated or discriminated evidence, discovery and capability contracts; declare rendering at registration. Keep link safety and provenance checks.                                                                                                             |
-| `apps/ai/src/mastra/threads/research-updates.ts`                         | Polls completed research and persists assistant text plus a synthetic `reviewVehicleResearch` invocation/result without executing that tool through an agent run. The browser then appends these persisted messages.                                           | Explicit persisted research-completion events/state with a declared component, or a real agent continuation that calls the review tool. Maintain ownership, idempotency and delivery after reopening.                                                           |
+| Location                      | Previous behavior                                                                        | Current contract                                                                                                                                                                                                                               |
+| ----------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tool-presentation.ts`        | Inferred summaries and supersession from adjacent calls, result fields and research IDs. | Declared background tool policy and exact invocation-ID deduplication only. Every independent user-facing result remains visible, including empty results and failures.                                                                        |
+| `knowledge-result-card.ts`    | Guessed labels and layout from arbitrary fields.                                         | The registered operation selects a dedicated result schema. Reviews, concepts, capabilities and excerpts have explicit discriminators; exact historical schemas remain readable. Unsafe links and unsupported payloads are rejected.           |
+| `threads/research-updates.ts` | Synthesized a review tool invocation to mount the review UI.                             | Persists an explicit research-completion data part, transported as an AG-UI activity and rendered directly. Ownership checks, deterministic completion IDs and replay remain covered. Existing historical invocations are retained as history. |
 
-These findings are recorded, not fully migrated in this change. Replacing all
-three requires coordinated contracts for research completion, evidence rendering
-and historical conversations. The new rule prohibits extending those patterns.
+The revisioned competitive workspace adds a separate explicit projection of one
+declared surface. It does not merge independent tool calls. See the
+[implementation report](ford-competitive-workspaces-2026-09-10.md) for lifecycle
+limits and verification. The earlier catalog verification below remains a record
+of the original audit, not the test count for this implementation.
 
 ## Patterns that are not the rejected approach
 

@@ -46,7 +46,7 @@ export const REVIEW_EXPANSION = `
 `;
 
 export const REVIEW_RETURN = `
- RETURN {id:o.id, evidenceId:chunk.id, excerpt:substring(chunk.text,o.start_offset,o.end_offset-o.start_offset),
+ RETURN {recordType:'review-passage', id:o.id, evidenceId:chunk.id, excerpt:substring(chunk.text,o.start_offset,o.end_offset-o.start_offset),
  context:chunk.text, title:revision.title, url:revision.url, mediaType:revision.media_type,
  author:revision.author, publishedOn:revision.published_on, capturedOn:revision.captured_on,
  startSeconds:chunk.start_seconds, endSeconds:chunk.end_seconds, locator:chunk.locator,

@@ -6,6 +6,11 @@ import { Dispatcher } from '@ngrx/signals/events';
 import { of, Subject } from 'rxjs';
 
 import {
+  competitiveWorkspaceFixture,
+  competitiveWorkspaceMessages,
+  reviseCompetitiveWorkspace,
+} from '../../../../testing/competitive-workspace-fixtures';
+import {
   failedRun,
   FakeChatAgent,
   provideFakeChatAgent,
@@ -20,6 +25,10 @@ import {
 } from '../../../../testing/fake-threads';
 import { matrix } from '../../../../testing/vehicle-fixtures';
 import { BEFORE_CHAT_REQUEST } from '../../data/chat-agent';
+import {
+  WORKSPACE_ACTION_METADATA_KEY,
+  type WorkspaceAction,
+} from '../../data/competitive-workspace-actions';
 import { threadEvents } from '../../data/thread-events';
 import { ConversationDetailStore } from './conversation-detail-store';
 
@@ -40,6 +49,70 @@ describe('ConversationDetailStore', () => {
       ],
     });
     threads = TestBed.inject(FakeThreadClient);
+  });
+
+  it('preserves an acknowledged workspace revision when an action turn is regenerated', async () => {
+    const initial = competitiveWorkspaceFixture(),
+      next = reviseCompetitiveWorkspace(initial);
+    const action: WorkspaceAction = {
+      version: 1,
+      actionId: '59a65285-b6e6-44e7-981b-bddf1b7a6239',
+      surfaceId: initial.surfaceId,
+      expectedRevision: 1,
+      componentId: 'brief',
+      action: 'applyBrief',
+      values: initial.snapshot.plan.context,
+    };
+    next.actionId = action.actionId;
+    const messages = [
+      ...competitiveWorkspaceMessages(initial),
+      {
+        id: 'action-user',
+        role: 'user' as const,
+        content: 'Apply my analysis brief',
+        metadata: { [WORKSPACE_ACTION_METADATA_KEY]: action },
+      },
+      ...competitiveWorkspaceMessages(next, 'update'),
+    ];
+    const store = TestBed.inject(ConversationDetailStore);
+    agent.setMessages(messages);
+    await settled(store);
+    await store.regenerate();
+    expect(agent.runs).toHaveLength(0);
+    expect(store.messages()).toEqual(messages);
+    expect(
+      store.workspaceSurfaces().get(initial.surfaceId)?.workspace.revision,
+    ).toBe(2);
+    expect(store.error()?.error.message).toContain('already been applied');
+  });
+
+  it('forwards exact typed actions through authenticated send and retry, then clears them for ordinary turns', async () => {
+    const initial = competitiveWorkspaceFixture();
+    const action: WorkspaceAction = {
+      version: 1,
+      actionId: '59a65285-b6e6-44e7-981b-bddf1b7a6239',
+      surfaceId: initial.surfaceId,
+      expectedRevision: 1,
+      componentId: 'brief',
+      action: 'applyBrief',
+      values: initial.snapshot.plan.context,
+    };
+    agent.replyWith((input) => textReply(input, 'No update yet'));
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Apply brief', { workspaceAction: action });
+    expect(authenticate).toHaveBeenCalled();
+    expect(agent.runs[0].forwardedProps).toMatchObject({
+      workspaceAction: action,
+    });
+    expect(
+      store.messages().find((message) => message.role === 'user')?.metadata,
+    ).toEqual({ [WORKSPACE_ACTION_METADATA_KEY]: action });
+    await store.regenerate();
+    expect(agent.runs[1].forwardedProps).toMatchObject({
+      workspaceAction: action,
+    });
+    await store.send('A separate question');
+    expect(agent.runs[2].forwardedProps?.['workspaceAction']).toBeUndefined();
   });
 
   it('appends persisted completion without another model run or duplicate messages', async () => {

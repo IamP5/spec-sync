@@ -5,180 +5,254 @@ import {
   input,
 } from '@angular/core';
 import { AngularToolCall, ToolRenderer } from '@copilotkit/angular';
-import { z } from 'zod';
 
 import { ZardCardComponent } from '@/ui/components/card';
 
-import { displayValue, safeSourceUrl } from '../../util/knowledge-display';
-import { parseResult } from '../../util/parse-result';
+import { knowledgeView, reviewExcerpt } from '../../data/knowledge-view';
+import { safeSourceUrl } from '../../util/knowledge-display';
+import { ReviewEvidencePane } from './review-evidence-pane';
 
-const schema = z.object({
-  status: z.string().optional(),
-  message: z.string().optional(),
-  items: z.array(z.record(z.unknown())).optional(),
-  warnings: z.unknown().optional(),
-});
 @Component({
   selector: 'app-knowledge-result-card',
-  imports: [ZardCardComponent],
+  imports: [ZardCardComponent, ReviewEvidencePane],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block', '[class.hidden]': 'internal() && !failed()' },
+  host: { class: 'block' },
   template: `
-    @if (!internal() || failed()) {
-      <z-card class="rounded-xl p-4 text-sm shadow-none">
-        <strong>{{ title() }}</strong>
-        @if (result(); as data) {
-          <p class="my-2 text-muted-foreground" role="status">
-            {{
-              emptyContent()
-                ? 'No external links found for this search.'
-                : data.message
-            }}
-          </p>
-          @if (specificationDiscovery()) {
-            @if (data.items?.length) {
-              <p class="mb-3 text-xs text-muted-foreground">
-                Source candidates only. Applicability to the requested vehicle
-                and model year has not been verified.
-              </p>
-            }
-            @if (discoveryWarnings().length) {
+    <z-card class="rounded-xl p-4 text-sm shadow-none">
+      @if (view(); as view) {
+        @switch (view.kind) {
+          @case ('reviews') {
+            <app-review-evidence-pane [result]="view.data" />
+          }
+          @case ('sources') {
+            <strong>Fontes de especificações</strong>
+            <p class="my-2 text-muted-foreground" role="status">
+              {{
+                view.data.status === 'EMPTY'
+                  ? 'No specification sources found for this search.'
+                  : view.data.message
+              }}
+            </p>
+            <p class="mb-3 text-xs text-muted-foreground">
+              Source candidates only. Applicability to the requested vehicle and
+              model year has not been verified.
+            </p>
+            @if (view.data.warnings.length) {
               <ul
                 class="mb-3 list-disc space-y-1 pl-5 text-muted-foreground"
                 aria-label="Source discovery warnings"
               >
-                @for (warning of discoveryWarnings(); track $index) {
+                @for (warning of view.data.warnings; track $index) {
                   <li>{{ warning }}</li>
                 }
               </ul>
             }
-          }
-          @if (data.items?.length) {
             <ul class="space-y-4">
-              @for (item of data.items; track $index) {
-                <li class="border-l-2 pl-3">
-                  @if (specificationDiscovery() && item['sourceType']) {
-                    <p class="mb-1 text-xs text-muted-foreground">
-                      {{ sourceTypeLabel(item['sourceType']) }}
+              @for (item of view.data.items; track item.url) {
+                <li class="space-y-1 border-l-2 pl-3">
+                  @if (item.sourceType) {
+                    <p class="text-xs text-muted-foreground">
+                      {{ sourceTypeLabel(item.sourceType) }}
                     </p>
                   }
-                  @if (link(item); as href) {
+                  @if (safeUrl(item.url); as url) {
                     <a
                       class="font-medium underline"
-                      [href]="href"
+                      [href]="url"
                       target="_blank"
                       rel="noopener noreferrer"
-                      >{{ label(item) }}
-                      @if (specificationDiscovery()) {
-                        <span class="sr-only">(opens in a new tab)</span>
-                      }
-                    </a>
+                      >{{ item.title
+                      }}<span class="sr-only"> (opens in a new tab)</span></a
+                    >
                   } @else {
-                    <strong>{{ label(item) }}</strong>
+                    <strong>{{ item.title }}</strong>
                   }
-                  @if (item['verification']) {
-                    <p class="text-xs">
-                      Discovered link · content not verified or ingested
-                    </p>
-                  }
-                  @if (item['documentType']) {
+                  @if (item.documentType) {
                     <p class="text-xs">
                       {{
-                        item['documentType'] === 'PDF'
+                        item.documentType === 'PDF'
                           ? 'Brochure PDF · not yet read'
                           : 'Web page · not yet read'
                       }}
                     </p>
                   }
-                  @if (specificationDiscovery()) {
-                    @if (item['availability'] === 'OVERSIZE') {
-                      <p class="mt-1 text-xs text-muted-foreground">
-                        Document exceeds the current reading limit; another
-                        source may be used.
-                      </p>
-                    } @else if (item['availability'] === 'UNREACHABLE') {
-                      <p class="mt-1 text-xs text-muted-foreground">
-                        Source could not be reached; another source may be used.
-                      </p>
-                    }
-                    @if (yearHint(item); as year) {
-                      <p class="mt-1 text-xs text-muted-foreground">
-                        Year mentioned in the title or URL: {{ year }}.
-                        Model-year applicability is unverified.
-                      </p>
-                    }
-                    @if (item['modelMatch'] === false) {
-                      <p class="mt-1 text-xs text-muted-foreground">
-                        Model match is not confirmed by the link text.
-                      </p>
-                    }
-                  }
-                  @if (item['excerpt']) {
-                    <blockquote class="my-2">
-                      {{ format(item['excerpt']) }}
-                    </blockquote>
-                  }
-                  @if (!specificationDiscovery() && item['market']) {
-                    <p class="text-xs">
-                      {{ format(item['market']) }} ·
-                      {{ format(item['modelYear']) }} ·
-                      {{ format(item['identityStatus']) }}
+                  @if (item.availability === 'OVERSIZE') {
+                    <p class="text-xs text-muted-foreground">
+                      Document exceeds the current reading limit; another source
+                      may be used.
                     </p>
                   }
-                  @if (item['author'] || item['publishedOn']) {
-                    <p class="text-xs">
-                      {{ format(item['author']) }} ·
-                      {{ format(item['publishedOn']) }}
+                  @if (item.availability === 'UNREACHABLE') {
+                    <p class="text-xs text-muted-foreground">
+                      Source could not be reached; another source may be used.
                     </p>
                   }
-                  @if (item['scope']) {
-                    <p class="text-xs">
-                      Scope: {{ format(item['scope']) }} ·
-                      {{ format(item['kind']) }} ·
-                      {{ format(item['sentiment']) }}
+                  @if (item.yearHint !== null && item.yearHint !== undefined) {
+                    <p class="text-xs text-muted-foreground">
+                      Year mentioned in the title or URL: {{ item.yearHint }}.
+                      Model-year applicability is unverified.
                     </p>
                   }
-                  @if (item['locator']) {
-                    <p class="text-xs">{{ format(item['locator']) }}</p>
-                  }
-                  @if (item['conditions']) {
-                    <p class="text-xs">
-                      Conditions: {{ format(item['conditions']) }}
+                  @if (item.modelMatch === false) {
+                    <p class="text-xs text-muted-foreground">
+                      Model match is not confirmed by the link text.
                     </p>
-                  }
-                  @if (!specificationDiscovery() && item['availability']) {
-                    <p>{{ format(item['availability']) }}</p>
-                  }
-                  @if (item['packages']) {
-                    <p class="text-xs">
-                      Packages: {{ format(item['packages']) }}
-                    </p>
-                  }
-                  @if (item['context']) {
-                    <details>
-                      <summary class="cursor-pointer underline">
-                        Passage context
-                      </summary>
-                      <p>{{ format(item['context']) }}</p>
-                    </details>
                   }
                 </li>
               }
             </ul>
-          } @else if (!data.message) {
-            <p>No matching results.</p>
           }
-        } @else {
-          <p role="status">
-            {{
-              toolCall().status === 'complete'
-                ? 'No valid result returned.'
-                : 'Retrieving information…'
-            }}
-          </p>
+          @case ('content') {
+            <strong>External source discovery</strong>
+            <p class="my-2 text-muted-foreground" role="status">
+              {{
+                view.data.status === 'EMPTY'
+                  ? 'No external links found for this search.'
+                  : view.data.message
+              }}
+            </p>
+            <ul class="space-y-3">
+              @for (item of view.data.items; track item.url) {
+                <li>
+                  @if (safeUrl(item.url); as url) {
+                    <a
+                      class="font-medium underline"
+                      [href]="url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >{{ item.title
+                      }}<span class="sr-only"> (opens in a new tab)</span></a
+                    >
+                  } @else {
+                    <strong>{{ item.title }}</strong>
+                  }
+                  <p class="text-xs text-muted-foreground">
+                    Discovered link · content not verified or ingested
+                  </p>
+                </li>
+              }
+            </ul>
+          }
+          @case ('capabilities') {
+            <strong>Configurations with the requested equipment</strong>
+            <p class="my-2 text-muted-foreground" role="status">
+              {{ view.data.message }}
+            </p>
+            <ul class="space-y-3">
+              @for (item of view.data.items; track item.observationId) {
+                <li class="space-y-1 border-l-2 pl-3">
+                  <strong>{{ item.name }}</strong>
+                  <p class="text-xs">
+                    {{ item.market }} · {{ item.modelYear }} ·
+                    {{ item.identityStatus }}
+                  </p>
+                  <p>
+                    {{ item.attributeCode }} ·
+                    {{
+                      item.availability === 'OPTIONAL'
+                        ? 'Optional equipment'
+                        : 'Standard equipment'
+                    }}
+                  </p>
+                  @for (pack of item.packages; track $index) {
+                    <p class="text-xs">
+                      Package: {{ pack.name }} · {{ pack.availability }}
+                    </p>
+                  }
+                  @if (item.qualifiersJson) {
+                    <p class="text-xs whitespace-pre-wrap">
+                      Conditions: {{ item.qualifiersJson }}
+                    </p>
+                  }
+                  <p class="text-xs text-muted-foreground">
+                    {{ item.evidenceIds.length }} source references · confirm
+                    specifications in the catalog.
+                  </p>
+                </li>
+              }
+            </ul>
+          }
+          @case ('concepts') {
+            <strong>Canonical specifications</strong>
+            <p class="my-2 text-muted-foreground" role="status">
+              {{ view.data.message }}
+            </p>
+            <ul class="space-y-3">
+              @for (item of view.data.items; track item.id) {
+                <li>
+                  <strong>{{ item.label }}</strong>
+                  <p>{{ item.description }}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ item.code }} · {{ item.unit }}
+                  </p>
+                </li>
+              }
+            </ul>
+          }
+          @case ('attributes') {
+            <strong>Available comparison attributes</strong>
+            <ul class="mt-3 space-y-2">
+              @for (item of view.data.items; track item.id) {
+                <li>
+                  <strong>{{ item.label }}</strong>
+                  <p class="text-xs">
+                    {{ item.description }} · {{ item.unit }}
+                  </p>
+                </li>
+              }
+            </ul>
+          }
+          @case ('excerpts') {
+            <strong>Source excerpt and context</strong>
+            <p class="my-2 text-muted-foreground" role="status">
+              {{ view.data.message }}
+            </p>
+            <ul class="space-y-4">
+              @for (item of view.data.items; track item.evidenceId) {
+                <li class="space-y-2 border-l-2 pl-3">
+                  @if (item.recordType === 'specification-excerpt') {
+                    <strong>{{ item.title }}</strong>
+                    <blockquote class="whitespace-pre-wrap">
+                      {{ item.excerpt }}
+                    </blockquote>
+                    <p class="text-xs">{{ item.locator }}</p>
+                    <p class="text-xs">{{ item.provenance }}</p>
+                    @for (source of item.upstreamUrls; track source) {
+                      @if (safeUrl(source); as url) {
+                        <a
+                          class="mr-3 text-xs underline"
+                          [href]="url"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          >Upstream source<span class="sr-only">
+                            (opens in a new tab)</span
+                          ></a
+                        >
+                      }
+                    }
+                  } @else {
+                    <app-review-evidence-pane
+                      [result]="reviewExcerpt(view.data, item)"
+                    />
+                  }
+                </li>
+              }
+            </ul>
+          }
+          @case ('failure') {
+            <p role="status">{{ view.data.message }}</p>
+          }
         }
-      </z-card>
-    }
+      } @else {
+        <p role="status">
+          {{
+            toolCall().status === 'complete'
+              ? 'No valid result returned for this tool.'
+              : 'Retrieving information…'
+          }}
+        </p>
+      }
+    </z-card>
   `,
 })
 export class KnowledgeResultCard
@@ -186,94 +260,21 @@ export class KnowledgeResultCard
 {
   readonly toolCall =
     input.required<AngularToolCall<Record<string, unknown>>>();
-  protected readonly result = computed(() =>
-    parseResult(this.toolCall().result, schema),
+  protected readonly view = computed(() =>
+    knowledgeView(this.toolCall().name ?? '', this.toolCall().result),
   );
-  protected readonly specificationDiscovery = computed(
-    () => this.toolCall().name === 'discoverVehicleSpecificationSources',
-  );
-  protected readonly discoveryWarnings = computed(() => {
-    const warnings = z.array(z.string()).safeParse(this.result()?.warnings);
-    return warnings.success ? warnings.data : [];
-  });
-  protected readonly internal = computed(() =>
-    [
-      'searchVehicleConfigurations',
-      'listComparisonAttributes',
-      'resolveComparisonConcepts',
-    ].includes(this.toolCall().name ?? ''),
-  );
-  protected readonly failed = computed(
-    () =>
-      ['ERROR', 'UNAVAILABLE'].includes(this.result()?.status ?? '') ||
-      (this.toolCall().status === 'complete' && !this.result()),
-  );
-  protected readonly emptyContent = computed(
-    () =>
-      this.toolCall().name === 'discoverVehicleContent' &&
-      this.result()?.status === 'EMPTY',
-  );
-  protected readonly title = computed(() =>
-    this.emptyContent()
-      ? 'External content search'
-      : toolTitle(this.toolCall().name ?? ''),
-  );
-  protected readonly format = displayValue;
-  protected yearHint(item: Record<string, unknown>): number | undefined {
-    const value = item['yearHint'];
-    return typeof value === 'number' && Number.isInteger(value)
-      ? value
-      : undefined;
+  protected readonly safeUrl = safeSourceUrl;
+  protected readonly reviewExcerpt = reviewExcerpt;
+  protected sourceTypeLabel(
+    type:
+      | 'MANUFACTURER_WEBSITE'
+      | 'LINKED_FROM_MANUFACTURER'
+      | 'EXTERNAL_WEBSITE',
+  ) {
+    return {
+      MANUFACTURER_WEBSITE: 'Site do fabricante',
+      LINKED_FROM_MANUFACTURER: 'Documento indicado pelo fabricante',
+      EXTERNAL_WEBSITE: 'Site externo',
+    }[type];
   }
-  protected sourceTypeLabel(value: unknown): string {
-    return value === 'MANUFACTURER_WEBSITE'
-      ? 'Site da montadora'
-      : value === 'LINKED_FROM_MANUFACTURER'
-        ? 'Documento vinculado pelo site da montadora'
-        : 'Site externo — confirme autoria e evidências';
-  }
-
-  protected label(item: Record<string, unknown>) {
-    return displayValue(
-      item['title'] ??
-        item['name'] ??
-        item['label'] ??
-        item['code'] ??
-        'Evidence',
-    );
-  }
-  protected link(item: Record<string, unknown>) {
-    const href = safeSourceUrl(item['url']);
-    if (!href) return undefined;
-    const url = new URL(href);
-    const seconds = item['startSeconds'];
-    if (
-      typeof seconds === 'number' &&
-      seconds >= 0 &&
-      (url.hostname === 'www.youtube.com' ||
-        url.hostname === 'youtube.com' ||
-        url.hostname === 'youtu.be')
-    )
-      url.searchParams.set('t', String(Math.floor(seconds)));
-    return url.href;
-  }
-}
-
-function toolTitle(name: string): string {
-  return (
-    (
-      {
-        searchVehicleConfigurations: 'Busca de veículos',
-        listComparisonAttributes: 'Especificações disponíveis',
-        resolveComparisonConcepts: 'Identificação de especificações',
-        findConfigurationsByCapabilities:
-          'Veículos com os equipamentos solicitados',
-        searchReviewEvidence: 'Avaliações e relatos',
-        getRelatedReviews: 'Avaliações relacionadas',
-        getEvidenceExcerpt: 'Trecho e contexto da fonte',
-        discoverVehicleContent: 'Artigos, blogs e vídeos encontrados',
-        discoverVehicleSpecificationSources: 'Fontes de especificações',
-      } as Record<string, string>
-    )[name] ?? 'Resultado da consulta'
-  );
 }

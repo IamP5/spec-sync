@@ -5,6 +5,7 @@ import { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
 import { SESSION } from '../../auth/api/session';
 import { createId } from '../util/create-id';
+import { parseResult } from '../util/parse-result';
 import {
   BEFORE_CHAT_REQUEST,
   CHAT_AGENT_ID,
@@ -21,6 +22,12 @@ import {
   CHAT_ROLE_MODELS_PROPERTY,
 } from './chat-model';
 import { comparisonSelection } from './comparison-selection';
+import {
+  WORKSPACE_ACTION_METADATA_KEY,
+  type WorkspaceAction,
+  workspaceActionSchema,
+} from './competitive-workspace-actions';
+import { competitiveWorkspaceSchema } from './competitive-workspace-contracts';
 import { IngestionActivity } from './ingestion-activity';
 
 const RUN_ERROR_CODES = new Set([
@@ -86,7 +93,7 @@ export class ChatAgentClient {
   private runtimeRun?: Promise<void>;
 
   /** Appends the user's turn to the thread without running the agent. */
-  append(content: string): void {
+  append(content: string, workspaceAction?: WorkspaceAction): void {
     const agent = this.agentStore().agent;
     this.activeAgent = agent;
     agent.threadId = this._threadId();
@@ -94,6 +101,9 @@ export class ChatAgentClient {
       id: createId(),
       role: 'user',
       content,
+      ...(workspaceAction
+        ? { metadata: { [WORKSPACE_ACTION_METADATA_KEY]: workspaceAction } }
+        : {}),
     });
   }
 
@@ -118,6 +128,11 @@ export class ChatAgentClient {
     if (lastUser < 0) {
       return;
     }
+    const action = latestWorkspaceAction(agent.messages);
+    if (action && acknowledgedWorkspaceAction(agent.messages, action.actionId))
+      throw new Error(
+        'This workspace action has already been applied. Use the analysis controls to make another change.',
+      );
     if (lastUser < agent.messages.length - 1) {
       agent.setMessages(agent.messages.slice(0, lastUser + 1));
     }
@@ -238,7 +253,14 @@ export class ChatAgentClient {
       );
     this.executingGeneration = generation;
     const running = this.copilotKit.core
-      .runAgent({ agent, forwardedProps: forwardedPropsOf(options) })
+      .runAgent({
+        agent,
+        forwardedProps: forwardedPropsOf({
+          ...options,
+          workspaceAction:
+            options.workspaceAction ?? latestWorkspaceAction(agent.messages),
+        }),
+      })
       .then(() => undefined)
       .finally(() => {
         for (const contextId of contextIds)
@@ -322,7 +344,19 @@ function forwardedPropsOf(
   if (options.roleModels && Object.keys(options.roleModels).length)
     props[CHAT_ROLE_MODELS_PROPERTY] = options.roleModels;
   if (options.effort) props[CHAT_EFFORT_PROPERTY] = options.effort;
+  if (options.workspaceAction)
+    props['workspaceAction'] = options.workspaceAction;
   return Object.keys(props).length ? props : undefined;
+}
+
+function latestWorkspaceAction(
+  messages: Message[],
+): WorkspaceAction | undefined {
+  const latest = messages[lastIndexOfRole(messages, 'user')];
+  const parsed = workspaceActionSchema.safeParse(
+    latest?.metadata?.[WORKSPACE_ACTION_METADATA_KEY],
+  );
+  return parsed.success ? parsed.data : undefined;
 }
 
 function lastIndexOfRole(messages: Message[], role: Message['role']): number {
@@ -332,4 +366,26 @@ function lastIndexOfRole(messages: Message[], role: Message['role']): number {
     }
   }
   return -1;
+}
+
+function acknowledgedWorkspaceAction(
+  messages: Message[],
+  actionId: string,
+): boolean {
+  const calls = new Set(
+    messages.flatMap((message) =>
+      message.role === 'assistant'
+        ? (message.toolCalls ?? [])
+            .filter(
+              (call) => call.function.name === 'renderCompetitiveWorkspace',
+            )
+            .map((call) => call.id)
+        : [],
+    ),
+  );
+  return messages.some((message) => {
+    if (message.role !== 'tool' || !calls.has(message.toolCallId)) return false;
+    const workspace = parseResult(message.content, competitiveWorkspaceSchema);
+    return workspace?.actionId === actionId && workspace.status !== 'ERROR';
+  });
 }
