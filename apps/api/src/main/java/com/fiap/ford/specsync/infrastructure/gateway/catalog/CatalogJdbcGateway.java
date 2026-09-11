@@ -29,10 +29,15 @@ import tools.jackson.databind.json.JsonMapper;
 @Repository
 public class CatalogJdbcGateway implements CatalogGateway {
     private static final String CONFIGURATIONS = """
-        SELECT c.*, b.name AS brand, m.name AS model
+        SELECT c.*, b.name AS brand, m.name AS model,
+            i.storage_bucket AS image_bucket, i.storage_object AS image_object,
+            i.sha256 AS image_sha256, i.width AS image_width, i.height AS image_height,
+            i.alt_text AS image_alt_text, i.match_scope AS image_match_scope,
+            i.source_page_url AS image_source_page_url
         FROM catalog.vehicle_configuration c
         JOIN catalog.vehicle_model m ON m.id = c.model_id
         JOIN catalog.brand b ON b.id = m.brand_id
+        LEFT JOIN catalog.vehicle_image i ON i.configuration_id = c.id
         """;
     private final NamedParameterJdbcTemplate jdbc;
     private final JsonMapper json;
@@ -186,7 +191,28 @@ public class CatalogJdbcGateway implements CatalogGateway {
                 rs.getObject("model_year", Integer.class),
                 rs.getString("identity_status"),
                 rs.getString("identity_note"),
-                uuid(rs, "identity_evidence_id"));
+                uuid(rs, "identity_evidence_id"),
+                image(rs));
+    }
+
+    private Catalog.Image image(ResultSet rs) throws SQLException {
+        var sha256 = rs.getString("image_sha256");
+        if (sha256 == null || !sha256.matches("[a-f0-9]{64}")) return null;
+        var bucket = rs.getString("image_bucket");
+        var object = rs.getString("image_object");
+        // Only vehicle image buckets are public; never advertise private file objects.
+        if (bucket == null
+                || !bucket.matches("[a-z0-9][a-z0-9._-]*-vehicle-images")
+                || object == null
+                || !object.matches("vehicles/primary/" + sha256 + "/[a-zA-Z0-9._-]+")) return null;
+        return new Catalog.Image(
+                "https://storage.googleapis.com/" + bucket + "/" + object,
+                sha256,
+                rs.getInt("image_width"),
+                rs.getInt("image_height"),
+                rs.getString("image_alt_text"),
+                rs.getString("image_match_scope"),
+                rs.getString("image_source_page_url"));
     }
 
     private Catalog.Attribute attribute(ResultSet rs) throws SQLException {

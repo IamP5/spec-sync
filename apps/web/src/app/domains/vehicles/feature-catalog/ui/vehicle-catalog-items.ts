@@ -27,6 +27,14 @@ export abstract class VehicleCatalogItems {
     { label: 'Reference price', code: 'reference_price' },
   ] as const;
 
+  protected image(vehicle: VehicleConfiguration) {
+    return (
+      vehicle.primaryImage ??
+      this.summaries()?.configurations.find(({ id }) => id === vehicle.id)
+        ?.primaryImage
+    );
+  }
+
   protected fact(vehicle: VehicleConfiguration, code: string) {
     return catalogFact(this.summaries(), vehicle.id, code);
   }

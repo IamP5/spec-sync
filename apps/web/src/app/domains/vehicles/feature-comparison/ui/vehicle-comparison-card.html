@@ -26,6 +26,11 @@
       class="flex min-w-0 items-center gap-2"
       [attr.data-configuration-id]="configuration.id"
     >
+      <app-vehicle-image
+        [image]="configuration.primaryImage ?? images()?.[configuration.id]"
+        class="h-12 w-[4.8rem] shrink-0 rounded-lg"
+        [compact]="true"
+      />
       @if (numbered()) {
       <button
         type="button"

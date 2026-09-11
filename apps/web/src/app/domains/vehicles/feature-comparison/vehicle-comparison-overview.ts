@@ -5,6 +5,7 @@ import {
   computed,
   inject,
   input,
+  type OnChanges,
   output,
   signal,
 } from '@angular/core';
@@ -24,6 +25,7 @@ import type {
 } from '../data/vehicle-interactions';
 import { VehicleReviewsSearch } from '../feature-reviews';
 import { VehicleComparisonCard } from './ui/vehicle-comparison-card';
+import { VehicleComparisonLookupStore } from './vehicle-comparison-lookup-store';
 
 @Component({
   selector: 'app-vehicle-comparison-overview',
@@ -33,11 +35,14 @@ import { VehicleComparisonCard } from './ui/vehicle-comparison-card';
     ZardDrawerComponent,
     ZardDrawerTitleComponent,
   ],
+  providers: [VehicleComparisonLookupStore],
   templateUrl: './vehicle-comparison-overview.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block min-w-0 w-full' },
 })
-export class VehicleComparisonOverview {
+export class VehicleComparisonOverview implements OnChanges {
+  private readonly lookup = inject(VehicleComparisonLookupStore);
+  protected readonly images = this.lookup.imagesValue;
   readonly comparison = input<Comparison>();
   readonly failure = input<string>();
   readonly complete = input(false);
@@ -58,6 +63,14 @@ export class VehicleComparisonOverview {
   protected readonly rows = computed(() =>
     filterRows(this.comparison(), this.differencesOnly(), this.filters().query),
   );
+
+  ngOnChanges(): void {
+    this.lookup.load(
+      (this.comparison()?.configurations ?? [])
+        .filter(({ primaryImage }) => !primaryImage)
+        .map(({ id }) => id),
+    );
+  }
 
   protected reset(): void {
     this.filters.set({ query: '' });

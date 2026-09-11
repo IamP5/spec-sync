@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCarFront, lucideCheck, lucidePlus } from '@ng-icons/lucide';
+import { lucideCheck, lucidePlus } from '@ng-icons/lucide';
 
 import { ZardSkeletonComponent } from '@/ui/components/skeleton';
 
+import { VehicleImage } from '../../ui/vehicle-image';
 import { VehicleCatalogItems } from './vehicle-catalog-items';
 
 /**
@@ -13,8 +14,8 @@ import { VehicleCatalogItems } from './vehicle-catalog-items';
  */
 @Component({
   selector: 'app-vehicle-catalog-list',
-  imports: [NgIcon, ZardSkeletonComponent],
-  viewProviders: [provideIcons({ lucideCarFront, lucideCheck, lucidePlus })],
+  imports: [NgIcon, ZardSkeletonComponent, VehicleImage],
+  viewProviders: [provideIcons({ lucideCheck, lucidePlus })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block min-w-0 w-full' },
   template: `
@@ -30,12 +31,11 @@ import { VehicleCatalogItems } from './vehicle-catalog-items';
             [attr.aria-label]="detailsLabel(vehicle)"
             (click)="vehicleSelected.emit(vehicle)"
           >
-            <span
-              class="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground"
-              aria-label="Vehicle image not available"
-            >
-              <ng-icon name="lucideCarFront" aria-hidden="true" />
-            </span>
+            <app-vehicle-image
+              [image]="image(vehicle)"
+              class="aspect-[16/10] w-20 shrink-0 rounded-lg sm:w-24"
+              [compact]="true"
+            />
             <span class="min-w-0 flex-1">
               <span class="flex items-center gap-2">
                 <span class="truncate font-medium"

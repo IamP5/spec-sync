@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.fiap.ford.specsync.domain.catalog.Catalog;
 import com.fiap.ford.specsync.domain.catalog.CatalogSearch;
 import com.fiap.ford.specsync.domain.catalog.ComparisonSelection;
+import com.fiap.ford.specsync.domain.catalog.SpecificationSelection;
 import com.fiap.ford.specsync.domain.exceptions.DomainException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -47,6 +48,7 @@ class CatalogJdbcGatewayIT {
                 "source_revision (id uuid primary key, path varchar, sha256 varchar, title varchar, provenance varchar, upstream_urls varchar, captured_on date, published_on date)",
                 "evidence (id uuid primary key, source_revision_id uuid, line_start int, line_end int, excerpt varchar, locator varchar)",
                 "vehicle_configuration (id uuid primary key, model_id uuid, name varchar, market varchar, model_year int, identity_status varchar, identity_evidence_id uuid, identity_note varchar)",
+                "vehicle_image (configuration_id uuid primary key, storage_bucket varchar, storage_object varchar, sha256 varchar, width int, height int, alt_text varchar, match_scope varchar, source_page_url varchar)",
                 "attribute_definition (id uuid primary key, code varchar, label varchar, description varchar, value_type varchar, unit varchar)",
                 "spec_assertion (id uuid primary key, configuration_id uuid, attribute_id uuid, value_type varchar, value varchar, availability varchar, qualifiers varchar, raw_value varchar, review_status varchar)",
                 "assertion_evidence (assertion_id uuid, evidence_id uuid)",
@@ -95,6 +97,70 @@ class CatalogJdbcGatewayIT {
                 .findFirst()
                 .orElseThrow()
                 .id();
+    }
+
+    @Test
+    void deliversPublicPrimaryImageThroughSearchSpecificationsAndComparison() {
+        var configurationId = id("Black");
+        var sha = "a".repeat(64);
+        var object = "vehicles/primary/" + sha + "/ranger.jpg";
+        jdbc.update(
+                "INSERT INTO catalog.vehicle_image VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                configurationId,
+                "specsync-dev-vehicle-images",
+                object,
+                sha,
+                1280,
+                509,
+                "Ford Ranger Black",
+                "ILLUSTRATIVE",
+                "https://www.ford.com.br/picapes/ranger/");
+        var image = gateway.search(new CatalogSearch("Black", null, null, 20, 0))
+                .items()
+                .getFirst()
+                .primaryImage();
+        assertNotNull(image);
+        assertEquals("https://storage.googleapis.com/specsync-dev-vehicle-images/" + object, image.url());
+        assertEquals(1280, image.width());
+        assertEquals(509, image.height());
+        assertEquals("ILLUSTRATIVE", image.matchScope());
+        assertEquals(
+                image,
+                gateway.specifications(new SpecificationSelection(List.of(configurationId), null))
+                        .configurations()
+                        .getFirst()
+                        .primaryImage());
+        var comparison = gateway.compare(new ComparisonSelection(List.of(configurationId, id("Limited")), null));
+        assertEquals(image, comparison.configurations().getFirst().primaryImage());
+        assertNull(comparison.configurations().getLast().primaryImage());
+    }
+
+    @Test
+    void omitsImagesOutsidePublicVehicleStorageWithoutHidingTheConfiguration() {
+        var sha = "a".repeat(64);
+        jdbc.update(
+                "INSERT INTO catalog.vehicle_image VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                id("Black"),
+                "specsync-dev-files",
+                "vehicles/primary/" + sha + "/ranger.jpg",
+                sha,
+                1280,
+                509,
+                "Ford Ranger Black",
+                "ILLUSTRATIVE",
+                "https://www.ford.com.br/");
+        assertNull(gateway.search(new CatalogSearch("Black", null, null, 20, 0))
+                .items()
+                .getFirst()
+                .primaryImage());
+        jdbc.update(
+                "UPDATE catalog.vehicle_image SET storage_bucket = ?, storage_object = ?",
+                "specsync-dev-vehicle-images",
+                "private/document.pdf");
+        assertNull(gateway.search(new CatalogSearch("Black", null, null, 20, 0))
+                .items()
+                .getFirst()
+                .primaryImage());
     }
 
     @Test

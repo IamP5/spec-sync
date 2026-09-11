@@ -103,6 +103,18 @@ module "files" {
   }
 }
 
+module "vehicle_images" {
+  source = "../../modules/storage-bucket"
+
+  name                     = "${var.project_id}-${local.name}-vehicle-images"
+  location                 = var.region
+  labels                   = local.labels
+  public_access_prevention = "inherited"
+  iam_members = {
+    "allUsers" = "roles/storage.objectViewer"
+  }
+}
+
 # --- API (Spring Boot) -------------------------------------------------------
 module "api" {
   source = "../../modules/cloud-run-service"

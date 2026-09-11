@@ -2,7 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, resource, type Signal } from '@angular/core';
 import { firstValueFrom, fromEvent, takeUntil } from 'rxjs';
 
-import { type Comparison, comparisonSchema } from './vehicle-contracts';
+import {
+  type Comparison,
+  comparisonSchema,
+  type VehicleImageMetadata,
+} from './vehicle-contracts';
 
 export const CATALOG_HIGHLIGHT_CODES = [
   'reference_price',
@@ -23,6 +27,28 @@ export class VehicleCatalogClient {
       params: () => joinedIds(configurationIds()),
       loader: ({ params, abortSignal }) =>
         loadSummaries(this.http, params.split(','), abortSignal),
+    });
+  }
+
+  imagesResource(configurationIds: Signal<readonly string[]>) {
+    return resource({
+      params: () => joinedIds(configurationIds()),
+      loader: async ({
+        params,
+        abortSignal,
+      }): Promise<Record<string, VehicleImageMetadata | null>> => {
+        const result = await loadSummaries(
+          this.http,
+          params.split(','),
+          abortSignal,
+        );
+        return Object.fromEntries(
+          result.configurations.map(({ id, primaryImage }) => [
+            id,
+            primaryImage ?? null,
+          ]),
+        );
+      },
     });
   }
 

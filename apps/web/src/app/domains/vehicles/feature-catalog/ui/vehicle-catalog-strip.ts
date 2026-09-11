@@ -5,15 +5,11 @@ import {
   output,
 } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideArrowRight,
-  lucideCarFront,
-  lucideCheck,
-  lucidePlus,
-} from '@ng-icons/lucide';
+import { lucideArrowRight, lucideCheck, lucidePlus } from '@ng-icons/lucide';
 
 import { ZardSkeletonComponent } from '@/ui/components/skeleton';
 
+import { VehicleImage } from '../../ui/vehicle-image';
 import { VehicleCatalogItems } from './vehicle-catalog-items';
 
 /**
@@ -24,10 +20,8 @@ import { VehicleCatalogItems } from './vehicle-catalog-items';
  */
 @Component({
   selector: 'app-vehicle-catalog-strip',
-  imports: [NgIcon, ZardSkeletonComponent],
-  viewProviders: [
-    provideIcons({ lucideArrowRight, lucideCarFront, lucideCheck, lucidePlus }),
-  ],
+  imports: [NgIcon, ZardSkeletonComponent, VehicleImage],
+  viewProviders: [provideIcons({ lucideArrowRight, lucideCheck, lucidePlus })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block min-w-0 w-full' },
   template: `
@@ -47,12 +41,8 @@ import { VehicleCatalogItems } from './vehicle-catalog-items';
               [attr.aria-label]="detailsLabel(vehicle)"
               (click)="vehicleSelected.emit(vehicle)"
             >
-              <span
-                class="grid aspect-[4/3] w-full place-items-center rounded-2xl bg-muted text-3xl text-muted-foreground"
-                aria-label="Vehicle image not available"
-              >
-                <ng-icon name="lucideCarFront" aria-hidden="true" />
-              </span>
+            <app-vehicle-image [image]="image(vehicle)"
+              class="aspect-[16/10] w-full rounded-2xl text-3xl" />
               <span class="mt-2 block px-1">
                 <span class="block truncate text-xs text-muted-foreground"
                   >{{ vehicle.brand }} · {{ vehicle.modelYear }}
@@ -99,30 +89,31 @@ import { VehicleCatalogItems } from './vehicle-catalog-items';
             </button>
             <button
               type="button"
-              class="absolute top-2 right-2 inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-xs font-medium shadow-sm backdrop-blur"
-              [class.bg-background/90]="!isShortlisted(vehicle)"
-              [class.hover:bg-background]="!isShortlisted(vehicle)"
+              class="absolute top-2 right-2 inline-flex size-7 items-center justify-center rounded-full border border-foreground/10 backdrop-blur-md transition-[background-color,color,border-color,transform] duration-200 ease-out outline-none hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95 motion-reduce:transition-none motion-reduce:active:scale-100"
+              [class.bg-background/80]="!isShortlisted(vehicle)"
+              [class.hover:bg-background/95]="!isShortlisted(vehicle)"
               [class.bg-primary]="isShortlisted(vehicle)"
               [class.text-primary-foreground]="isShortlisted(vehicle)"
               [attr.data-action]="
                 isShortlisted(vehicle) ? 'remove-shortlist' : 'add-shortlist'
               "
               [attr.aria-label]="shortlistLabel(vehicle)"
+              [attr.title]="shortlistLabel(vehicle)"
               [attr.aria-pressed]="isShortlisted(vehicle)"
               (click)="toggle($event, vehicle)"
             >
               <ng-icon
                 [name]="isShortlisted(vehicle) ? 'lucideCheck' : 'lucidePlus'"
+                class="size-3.5!"
                 aria-hidden="true"
               />
-              {{ isShortlisted(vehicle) ? 'Added' : 'Compare' }}
             </button>
           </article>
         }
         @if (hidden()) {
           <button
             type="button"
-            class="grid aspect-[4/3] w-40 shrink-0 snap-start place-items-center self-start rounded-2xl border border-dashed border-border text-center hover:bg-muted/50"
+            class="grid aspect-[16/10] w-40 shrink-0 snap-start place-items-center self-start rounded-2xl border border-dashed border-border text-center hover:bg-muted/50"
             (click)="moreRequested.emit()"
           >
             <span>
@@ -133,7 +124,7 @@ import { VehicleCatalogItems } from './vehicle-catalog-items';
         } @else if (nextPageSize()) {
           <button
             type="button"
-            class="grid aspect-[4/3] w-40 shrink-0 snap-start place-items-center self-start rounded-2xl border border-dashed border-border px-3 text-center hover:bg-muted/50"
+            class="grid aspect-[16/10] w-40 shrink-0 snap-start place-items-center self-start rounded-2xl border border-dashed border-border px-3 text-center hover:bg-muted/50"
             (click)="nextPageRequested.emit()"
           >
             <span>

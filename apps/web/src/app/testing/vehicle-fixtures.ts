@@ -43,3 +43,13 @@ export const matrix: Comparison = {
   ],
   rows: [{ attribute, cells: [cell, { ...cell, configurationId: second }] }],
 };
+
+export const vehiclePhoto = {
+  url: `https://storage.googleapis.com/specsync-dev-vehicle-images/vehicles/primary/${'a'.repeat(64)}/ranger.jpg`,
+  sha256: 'a'.repeat(64),
+  width: 1440,
+  height: 573,
+  altText: 'Ford Ranger illustrative manufacturer image',
+  matchScope: 'ILLUSTRATIVE' as const,
+  sourcePageUrl: 'https://www.ford.com.br/picapes/ranger/',
+};

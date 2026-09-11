@@ -2,6 +2,16 @@ variable "name" {
   type = string
 }
 
+variable "public_access_prevention" {
+  description = "Keep enforced unless explicitly publishing a dedicated public bucket."
+  type        = string
+  default     = "enforced"
+  validation {
+    condition     = contains(["enforced", "inherited"], var.public_access_prevention)
+    error_message = "Public access prevention must be enforced or inherited."
+  }
+}
+
 variable "location" {
   type = string
 }

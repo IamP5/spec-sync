@@ -19,7 +19,12 @@ public final class Catalog {
             Integer modelYear,
             String identityStatus,
             String identityNote,
-            UUID identityEvidenceId)
+            UUID identityEvidenceId,
+            Image primaryImage)
+            implements ValueObject {}
+
+    public record Image(
+            String url, String sha256, int width, int height, String altText, String matchScope, String sourcePageUrl)
             implements ValueObject {}
 
     public record Attribute(UUID id, String code, String label, String description, String valueType, String unit)

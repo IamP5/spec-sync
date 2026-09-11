@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 
+import { vehiclePhoto } from '../../../testing/vehicle-fixtures';
 import type { Comparison } from '../data/vehicle-contracts';
 import { VehicleCatalogOverview } from './vehicle-catalog-overview';
 
@@ -59,6 +60,34 @@ describe('VehicleCatalogOverview', () => {
   });
 
   afterEach(() => vi.unstubAllGlobals());
+
+  it('loads photos for a saved catalog and places the detail photo behind the name', async () => {
+    const recorded = JSON.stringify(configurations);
+    const element = fixture.nativeElement as HTMLElement;
+    expect(
+      element.querySelectorAll('app-vehicle-catalog-strip img'),
+    ).toHaveLength(3);
+    element
+      .querySelector<HTMLButtonElement>('[aria-label="Show as list"]')
+      ?.click();
+    await fixture.whenStable();
+    expect(
+      element.querySelectorAll('app-vehicle-catalog-list img'),
+    ).toHaveLength(3);
+    element
+      .querySelector<HTMLButtonElement>(
+        '[aria-label="Open Ford Ranger Black details"]',
+      )
+      ?.click();
+    await fixture.whenStable();
+    const pane = document.querySelector('app-vehicle-detail-pane');
+    expect(pane?.querySelector('header img')?.getAttribute('src')).toBe(
+      vehiclePhoto.url,
+    );
+    expect(pane?.querySelectorAll('img')).toHaveLength(1);
+    expect(pane?.querySelector('header')?.textContent).toContain('Ranger');
+    expect(JSON.stringify(configurations)).toBe(recorded);
+  });
 
   it('opens a small page as a card strip and lets the reader switch to the list', async () => {
     const element = fixture.nativeElement as HTMLElement;
@@ -346,7 +375,10 @@ const configurations = [
 ];
 
 const summary: Comparison = {
-  configurations,
+  configurations: configurations.map((vehicle) => ({
+    ...vehicle,
+    primaryImage: vehiclePhoto,
+  })),
   rows: [
     numericRow('power_max', 'Power', 'cv', [170, 250, 204]),
     numericRow('torque_max', 'Torque', 'Nm', [405, 600, 499]),
@@ -362,7 +394,7 @@ const summary: Comparison = {
 };
 
 const detail: Comparison = {
-  configurations: [configurations[0]],
+  configurations: [{ ...configurations[0], primaryImage: vehiclePhoto }],
   rows: summary.rows.map((row) => ({
     ...row,
     cells: [row.cells[0]],

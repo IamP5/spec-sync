@@ -3,7 +3,7 @@
   [zPlacement]="mobileScreen().matches ? 'bottom' : 'right'"
   [zHandle]="mobileScreen().matches"
   (zAfterClose)="afterDetailsClosed()"
-  class="specsync-vehicle-drawer overflow-hidden md:w-[min(44rem,calc(100vw-3rem))]!"
+  class="specsync-vehicle-drawer border-0! overflow-hidden md:w-[min(44rem,calc(100vw-3rem))]!"
 >
   <z-drawer-title class="sr-only">
     {{ focused()?.brand }} {{ focused()?.model }} {{ focused()?.name }}

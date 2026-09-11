@@ -2,10 +2,72 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { matrix } from '../../../testing/vehicle-fixtures';
+import { matrix, vehiclePhoto } from '../../../testing/vehicle-fixtures';
 import { VehicleComparisonOverview } from './vehicle-comparison-overview';
 
 describe('VehicleComparisonOverview', () => {
+  it('looks up missing photos without replacing historical identities or specifications', async () => {
+    const recorded = structuredClone(matrix);
+    const before = JSON.stringify(recorded);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              configurations: matrix.configurations.map((vehicle) => ({
+                ...vehicle,
+                name: 'Changed live identity',
+                primaryImage: vehiclePhoto,
+              })),
+              rows: [],
+            }),
+          ),
+      ),
+    );
+    try {
+      const fixture = TestBed.createComponent(VehicleComparisonOverview);
+      fixture.componentRef.setInput('comparison', recorded);
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.querySelectorAll('.comparison-legend img')).toHaveLength(
+        2,
+      );
+      expect(element.textContent).toContain('Black');
+      expect(element.textContent).toContain('Opcional');
+      expect(element.textContent).not.toContain('Changed live identity');
+      expect(JSON.stringify(recorded)).toBe(before);
+      fixture.componentRef.setInput('comparison', undefined);
+      await fixture.whenStable();
+      expect(element.querySelectorAll('.comparison-legend img')).toHaveLength(
+        0,
+      );
+      fixture.destroy();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('keeps a saved comparison usable when the photo lookup fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('', { status: 503 })),
+    );
+    try {
+      const fixture = TestBed.createComponent(VehicleComparisonOverview);
+      fixture.componentRef.setInput('comparison', matrix);
+      await fixture.whenStable();
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.textContent).toContain('Opcional');
+      expect(
+        element.querySelectorAll('[aria-label="Vehicle image not available"]'),
+      ).toHaveLength(2);
+      fixture.destroy();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it.each([true, false])(
     'opens a responsive reviews drawer (mobile: %s) and hands off after closing',
     async (mobile) => {

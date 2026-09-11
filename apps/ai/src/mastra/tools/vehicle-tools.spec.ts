@@ -78,6 +78,15 @@ it('continues using the authoritative API for catalog operations', async () => {
 it('returns both vehicles from one tool call with independent continuation scopes and no duplicated IDs', async () => {
   const ranger = {
     id: 'f94a2350-0a1a-5ad3-aef8-3c0c472c72a1',
+    primaryImage: {
+      url: `https://storage.googleapis.com/specsync-dev-vehicle-images/vehicles/primary/${'a'.repeat(64)}/ranger.jpg`,
+      sha256: 'a'.repeat(64),
+      width: 1280,
+      height: 509,
+      altText: 'Ford Ranger',
+      matchScope: 'ILLUSTRATIVE',
+      sourcePageUrl: 'https://www.ford.com.br/',
+    },
     brand: 'Ford',
     model: 'Ranger',
     name: 'Limited',

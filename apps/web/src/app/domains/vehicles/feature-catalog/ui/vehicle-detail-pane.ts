@@ -28,6 +28,7 @@ import type {
   Comparison,
   VehicleConfiguration,
 } from '../../data/vehicle-contracts';
+import { VehicleImage } from '../../ui/vehicle-image';
 import { displayValue, safeSourceUrl } from '../../util/vehicle-display';
 
 interface DetailFact {
@@ -53,6 +54,7 @@ interface DetailEvidence {
   selector: 'app-vehicle-detail-pane',
   imports: [
     NgIcon,
+    VehicleImage,
     ZardBadgeComponent,
     ZardButtonComponent,
     ZardSkeletonComponent,
@@ -84,6 +86,14 @@ export class VehicleDetailPane {
   readonly closed = output<void>();
   readonly retried = output<void>();
   readonly askRequested = output<void>();
+
+  protected readonly image = computed(
+    () =>
+      this.vehicle().primaryImage ??
+      this.comparison()?.configurations.find(
+        ({ id }) => id === this.vehicle().id,
+      )?.primaryImage,
+  );
 
   protected readonly facts = computed(() =>
     detailFacts(this.comparison(), this.vehicle().id),

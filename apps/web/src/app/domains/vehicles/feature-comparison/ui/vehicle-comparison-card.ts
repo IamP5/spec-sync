@@ -16,7 +16,11 @@ import {
   cellObservations,
   comparisonRows,
 } from '../../data/vehicle-comparison';
-import type { Comparison } from '../../data/vehicle-contracts';
+import type {
+  Comparison,
+  VehicleImageMetadata,
+} from '../../data/vehicle-contracts';
+import { VehicleImage } from '../../ui/vehicle-image';
 import { displayValue, safeSourceUrl } from '../../util/vehicle-display';
 
 type Row = Comparison['rows'][number];
@@ -37,13 +41,14 @@ interface CellSummary {
  */
 @Component({
   selector: 'app-vehicle-comparison-card',
-  imports: [FormField, NgIcon, ZardSkeletonComponent],
+  imports: [FormField, NgIcon, ZardSkeletonComponent, VehicleImage],
   viewProviders: [provideIcons({ lucideSearch })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block min-w-0 w-full' },
   templateUrl: './vehicle-comparison-card.html',
 })
 export class VehicleComparisonCard {
+  readonly images = input<Record<string, VehicleImageMetadata | null>>();
   readonly result = input<Comparison>();
   readonly failure = input<string>();
   readonly complete = input(false);

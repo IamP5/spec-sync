@@ -8,6 +8,23 @@ export const attributeSchema = z.object({
   valueType: z.enum(['NUMBER', 'TEXT', 'LIST', 'AVAILABILITY']),
   unit: z.string().nullable(),
 });
+export const vehicleImageSchema = z.object({
+  url: z
+    .string()
+    .regex(
+      /^https:\/\/storage\.googleapis\.com\/[a-z0-9][a-z0-9._-]*-vehicle-images\/vehicles\/primary\/[a-f0-9]{64}\/[a-zA-Z0-9._-]+$/,
+    ),
+  sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  altText: z.string().min(1),
+  matchScope: z.enum(['EXACT_CONFIGURATION', 'ILLUSTRATIVE']),
+  sourcePageUrl: z
+    .string()
+    .url()
+    .regex(/^https:\/\//),
+});
+
 export const configurationSchema = z.object({
   id: z.string().uuid(),
   brand: z.string(),
@@ -18,6 +35,7 @@ export const configurationSchema = z.object({
   identityStatus: z.string(),
   identityNote: z.string().nullable(),
   identityEvidenceId: z.string().uuid().nullable(),
+  primaryImage: vehicleImageSchema.nullish(),
 });
 export const evidenceSchema = z.object({
   id: z.string().uuid(),
@@ -116,3 +134,5 @@ export const searchSchema = z.object({
 export type Comparison = z.infer<typeof comparisonSchema>;
 export type VehicleConfiguration = z.infer<typeof configurationSchema>;
 export type CatalogPage = z.infer<typeof catalogPageSchema>;
+
+export type VehicleImageMetadata = z.infer<typeof vehicleImageSchema>;
