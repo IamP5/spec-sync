@@ -25,9 +25,9 @@ import { AuthSessionCoordinator } from '../api/authentication';
       @if (auth.pending()) {
         <p role="status" class="text-sm">Checking your session…</p>
       }
-      @if (auth.error()) {
+      @if (auth.signInError(); as message) {
         <p role="alert" class="text-sm text-destructive">
-          We couldn’t sign you in. Please try again.
+          {{ message }}
         </p>
       }
     </section>

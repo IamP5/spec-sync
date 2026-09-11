@@ -42,10 +42,14 @@ export function createGateway(
   fetcher: typeof fetch = fetch,
 ) {
   const app = new Hono();
+  const frontendOrigins = [
+    config.frontendOrigin,
+    ...(config.additionalFrontendOrigins ?? []),
+  ];
   app.use(
     '*',
     cors({
-      origin: config.frontendOrigin,
+      origin: frontendOrigins,
       allowMethods: [
         'GET',
         'HEAD',
@@ -74,7 +78,7 @@ export function createGateway(
     if (config.publicOrigin.startsWith('https:'))
       c.header('Strict-Transport-Security', 'max-age=31536000');
     const origin = c.req.header('Origin');
-    if (origin && origin !== config.frontendOrigin)
+    if (origin && !frontendOrigins.includes(origin))
       return c.json({ error: 'Invalid request origin' }, 403);
     return next();
   });

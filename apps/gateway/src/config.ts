@@ -3,6 +3,7 @@ export interface GatewayConfig {
   apiUrl: string;
   aiUrl: string;
   frontendOrigin: string;
+  additionalFrontendOrigins?: string[];
   projectId: string;
   cloudRunAuth: boolean;
 }
@@ -14,8 +15,8 @@ export function loadConfig(env = process.env): GatewayConfig {
     return value;
   };
   const production = env['NODE_ENV'] === 'production';
-  const origin = (name: string): string => {
-    const url = new URL(required(name));
+  const origin = (name: string, value = required(name)): string => {
+    const url = new URL(value);
     if (
       url.username ||
       url.password ||
@@ -43,6 +44,11 @@ export function loadConfig(env = process.env): GatewayConfig {
     apiUrl: origin('API_URL'),
     aiUrl: origin('AI_URL'),
     frontendOrigin: origin('FRONTEND_ORIGIN'),
+    additionalFrontendOrigins: (env['ADDITIONAL_FRONTEND_ORIGINS'] ?? '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .map((value) => origin('ADDITIONAL_FRONTEND_ORIGINS', value)),
     projectId: required('GOOGLE_CLOUD_PROJECT'),
     cloudRunAuth: production || env['CLOUD_RUN_AUTH'] === 'true',
   };

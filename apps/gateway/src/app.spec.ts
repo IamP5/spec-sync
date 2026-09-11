@@ -39,6 +39,41 @@ function setup() {
 const authorization = 'Bearer valid';
 
 describe('gateway authentication and routing', () => {
+  it('accepts only explicitly configured additional origins and still requires verified credentials', async () => {
+    const { identity, fetcher } = setup();
+    const origin = 'https://macbook-pro.taila2e389.ts.net:8443';
+    const app = createGateway(
+      { ...config, additionalFrontendOrigins: [origin] },
+      identity,
+      fetcher,
+    );
+    const preflight = await app.request('/ai/copilotkit', {
+      method: 'OPTIONS',
+      headers: { origin, 'access-control-request-method': 'POST' },
+    });
+    expect(preflight.headers.get('access-control-allow-origin')).toBe(origin);
+    expect(
+      (await app.request('/auth/session', { headers: { origin } })).status,
+    ).toBe(401);
+    const verified = await app.request('/auth/session', {
+      headers: { origin, authorization },
+    });
+    expect(verified.status).toBe(200);
+    expect(await verified.json()).toEqual({ uid: user.uid });
+    for (const unknown of [
+      'https://other.taila2e389.ts.net:8443',
+      'https://macbook-pro.taila2e389.ts.net',
+      origin + '.evil.example',
+    ]) {
+      expect(
+        (
+          await app.request('/auth/session', {
+            headers: { origin: unknown, authorization },
+          })
+        ).status,
+      ).toBe(403);
+    }
+  });
   it('forwards authenticated source replay while blocking other methods and worker paths', async () => {
     const { app, fetcher } = setup();
     const path =
@@ -393,6 +428,42 @@ describe('gateway authentication and routing', () => {
 });
 
 describe('configuration and roles', () => {
+  it('validates every additional frontend origin without allowing wildcards or credentials', () => {
+    const env = {
+      PUBLIC_ORIGIN: 'https://gateway.example',
+      FRONTEND_ORIGIN: 'https://web.example',
+      API_URL: 'https://api.example',
+      AI_URL: 'https://ai.example',
+      GOOGLE_CLOUD_PROJECT: 'example',
+    };
+    expect(
+      loadConfig({
+        ...env,
+        ADDITIONAL_FRONTEND_ORIGINS:
+          ' https://macbook-pro.taila2e389.ts.net:8443, http://localhost:4200 ',
+      }).additionalFrontendOrigins,
+    ).toEqual([
+      'https://macbook-pro.taila2e389.ts.net:8443',
+      'http://localhost:4200',
+    ]);
+    for (const invalid of [
+      '*',
+      'https://user:pass@example.com',
+      'https://example.com/path',
+      'http://example.com',
+    ]) {
+      expect(() =>
+        loadConfig({ ...env, ADDITIONAL_FRONTEND_ORIGINS: invalid }),
+      ).toThrow();
+    }
+    expect(() =>
+      loadConfig({
+        ...env,
+        NODE_ENV: 'production',
+        ADDITIONAL_FRONTEND_ORIGINS: 'http://localhost:4200',
+      }),
+    ).toThrow('HTTPS');
+  });
   it('grants no implicit role and rejects malformed claims', () => {
     expect(rolesFromClaims(undefined)).toEqual([]);
     expect(rolesFromClaims(['reviewer', 'reviewer'])).toEqual(['reviewer']);

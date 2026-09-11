@@ -8,6 +8,7 @@ import { Events } from '@ngrx/signals/events';
 import { ReplaySubject } from 'rxjs';
 
 import { sessionEvents } from '../domains/auth/api/events';
+import { AuthLoginOverview } from '../domains/auth/api/features';
 import { AUTH_PROVIDER, AuthSession } from '../domains/auth/data/auth-session';
 import { SessionContext } from '../domains/auth/session/session-context';
 import { AuthSessionCoordinator } from '../domains/auth/state/auth-session-coordinator';
@@ -44,6 +45,7 @@ describe('reactive Google session', () => {
     vi.stubGlobal('location', { reload });
     reload.mockClear();
     TestBed.configureTestingModule({
+      imports: [AuthLoginOverview],
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
@@ -81,6 +83,34 @@ describe('reactive Google session', () => {
     expect(context.authenticated()).toBe(false);
     await verify('alice');
     expect(context.scope()?.uid).toBe('alice');
+  });
+  it('shows a safe SDK error code instead of a generic failure or raw credential details', async () => {
+    await emit(null);
+    sdk.login.mockRejectedValueOnce({
+      code: 'auth/network-request-failed',
+      message: 'private credential details',
+    });
+    const fixture = TestBed.createComponent(AuthLoginOverview);
+    await fixture.whenStable();
+    (fixture.nativeElement as HTMLElement).querySelector('button')?.click();
+    await fixture.whenStable();
+    const message = (fixture.nativeElement as HTMLElement).querySelector(
+      '[role="alert"]',
+    )?.textContent;
+    expect(message).toContain('auth/network-request-failed');
+    expect(message).not.toContain('private credential details');
+  });
+  it('distinguishes gateway verification failure from Google login failure', async () => {
+    const fixture = TestBed.createComponent(AuthLoginOverview);
+    await emit('alice');
+    http
+      .expectOne('https://gateway.example/auth/session')
+      .flush({}, { status: 403, statusText: 'Forbidden' });
+    await fixture.whenStable();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')
+        ?.textContent,
+    ).toContain('could not verify your session with its server');
   });
   it('refreshes credentials without resetting an established account', async () => {
     await emit('alice');
