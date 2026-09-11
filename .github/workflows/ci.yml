@@ -57,9 +57,15 @@ jobs:
       - name: Check formatting
         run: npm exec -- nx format:check
 
-      - name: Build, lint, and test affected projects
+      # Sheriff scans workspace directories while discovering modules. Finish
+      # its checks before Mastra replaces temporary build dependencies.
+      - name: Lint and check architecture of affected projects
         if: needs.affected.outputs.any == 'true'
-        run: npm exec -- nx affected --targets=build,lint,test,test-arch,fmt-check,validate
+        run: npm exec -- nx affected --targets=lint,test-arch
+
+      - name: Build and test affected projects
+        if: needs.affected.outputs.any == 'true'
+        run: npm exec -- nx affected --targets=build,test,fmt-check,validate
 
   # Read-only Terraform plan for the dev environment so infra changes are reviewable in the PR.
   # Runs only when `infra` changed and the GitHub variables from `nx run infra:output` exist.
