@@ -2,3 +2,8 @@
 .env
 *.db
 *.db-journal
+
+# Decision tooling for model and prompt choices, kept out of the repository:
+# it carries heavy fixtures (PDFs, captures) and is run by hand, never by CI.
+# `eslint.config.mjs` ignores it for the same reason.
+eval/
