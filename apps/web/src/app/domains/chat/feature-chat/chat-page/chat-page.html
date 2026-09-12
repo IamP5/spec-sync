@@ -256,9 +256,7 @@
   </div>
 </ng-template>
 
-@if (prototypeEnabled()) {
-<app-research-prototype-page [variant]="variant()" />
-} @else if (loading()) {
+@if (loading()) {
 <div
   class="relative flex min-h-0 flex-1 flex-col"
   [style.--composer-height.px]="composerHeight()"

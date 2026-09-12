@@ -3,7 +3,11 @@ import type { Memory } from '@mastra/memory';
 import { beforeEach, expect, it, vi } from 'vitest';
 
 const read = vi.hoisted(() => vi.fn());
-vi.mock('../research/client', () => ({ readResearch: read }));
+vi.mock('../research/client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../research/client')>()),
+  readResearch: read,
+}));
+import { ResearchServiceError } from '../research/client';
 import { researchUpdates } from './research-updates';
 
 const id = 'b0bf3b8d-12fb-45ae-83d4-5b41b61c559a';
@@ -75,16 +79,16 @@ it('delivers review as a persisted assistant action, once across polls and concu
     researchUpdates(memory, 'thread', 'user:alice', 'alice'),
     researchUpdates(memory, 'thread', 'user:alice', 'alice'),
   ]);
-  expect(first.map((message) => message.id)).toEqual(
-    second.map((message) => message.id),
+  expect(first.messages.map((message) => message.id)).toEqual(
+    second.messages.map((message) => message.id),
   );
   expect(stored).toHaveLength(2);
   expect(stored.every((message) => message.role === 'assistant')).toBe(true);
-  expect(first[0]).toMatchObject({
+  expect(first.messages[0]).toMatchObject({
     role: 'assistant',
     toolCalls: [{ function: { name: 'reviewVehicleResearch' } }],
   });
-  expect(JSON.stringify(first)).toContain('reviewReady');
+  expect(JSON.stringify(first.messages)).toContain('reviewReady');
   const calls = save.mock.calls.length;
   expect(
     await researchUpdates(memory, 'thread', 'user:alice', 'alice'),
@@ -92,45 +96,93 @@ it('delivers review as a persisted assistant action, once across polls and concu
   expect(save).toHaveBeenCalledTimes(calls);
   expect(read).toHaveBeenCalledWith('alice', id, undefined);
 });
-it('keeps the review call id within the limit OpenAI enforces on replay', async () => {
-  const [message] = await researchUpdates(
+it('reports nothing pending once every research of the thread is announced', async () => {
+  const delivered = await researchUpdates(
     memory,
     'thread',
     'user:alice',
     'alice',
   );
+  expect(delivered.pending).toBe(false);
+  read.mockClear();
+  const again = await researchUpdates(memory, 'thread', 'user:alice', 'alice');
+  expect(again.pending).toBe(false);
+  expect(again.messages).toEqual(delivered.messages);
+  // An announced research is not read again on later polls.
+  expect(read).not.toHaveBeenCalled();
+});
+it('reports nothing pending for a thread without research', async () => {
+  stored = [];
+  expect(
+    await researchUpdates(memory, 'thread', 'user:alice', 'alice'),
+  ).toEqual({ messages: [], pending: false });
+  expect(read).not.toHaveBeenCalled();
+});
+it('keeps the review call id within the limit OpenAI enforces on replay', async () => {
+  const [message] = (
+    await researchUpdates(memory, 'thread', 'user:alice', 'alice')
+  ).messages;
   const call = (message as { toolCalls?: { id: string }[] }).toolCalls?.[0];
   expect(call?.id).toMatch(/^rr-[0-9a-f]{32}$/);
   expect(call?.id.length).toBeLessThanOrEqual(40);
 });
-it.each(['QUEUED', 'PROCESSING', 'FAILED', 'REJECTED'])(
-  'waits for reviewable evidence instead of announcing %s as ready',
-  async (status) => {
+it.each([
+  ['QUEUED', true],
+  ['PROCESSING', true],
+  ['FAILED', false],
+  ['REJECTED', false],
+])(
+  'waits for reviewable evidence instead of announcing %s as ready (pending: %s)',
+  async (status, pending) => {
     read.mockResolvedValue({ ...snapshot, status });
     expect(
       await researchUpdates(memory, 'thread', 'user:alice', 'alice'),
-    ).toEqual([]);
+    ).toEqual({ messages: [], pending });
     expect(save).not.toHaveBeenCalled();
   },
 );
-it('does not disclose a cancelled or inaccessible subscription', async () => {
+it('does not disclose a cancelled or unknown subscription and stops waiting for it', async () => {
   read.mockResolvedValue({ ...snapshot, requestStatus: 'CANCELLED' });
   expect(
     await researchUpdates(memory, 'thread', 'user:alice', 'alice'),
-  ).toEqual([]);
-  read.mockRejectedValue(new Error('Not found'));
+  ).toEqual({ messages: [], pending: false });
+  read.mockRejectedValue(new ResearchServiceError(404));
   expect(
     await researchUpdates(memory, 'thread', 'user:alice', 'alice'),
-  ).toEqual([]);
+  ).toEqual({ messages: [], pending: false });
   expect(save).not.toHaveBeenCalled();
 });
 it('retries transient failures without losing the eventual review action', async () => {
+  read.mockRejectedValueOnce(new ResearchServiceError(503));
+  expect(
+    await researchUpdates(memory, 'thread', 'user:alice', 'alice'),
+  ).toEqual({ messages: [], pending: true });
   read.mockRejectedValueOnce(new Error('Unavailable'));
   expect(
     await researchUpdates(memory, 'thread', 'user:alice', 'alice'),
-  ).toEqual([]);
+  ).toEqual({ messages: [], pending: true });
+  const delivered = await researchUpdates(
+    memory,
+    'thread',
+    'user:alice',
+    'alice',
+  );
+  expect(delivered.messages).toHaveLength(2);
+  expect(delivered.pending).toBe(false);
+  expect(save).toHaveBeenCalledOnce();
+});
+it('keeps waiting when the completion could not be persisted this time', async () => {
+  save.mockRejectedValueOnce(new Error('Memory unavailable'));
   expect(
     await researchUpdates(memory, 'thread', 'user:alice', 'alice'),
-  ).toHaveLength(2);
-  expect(save).toHaveBeenCalledOnce();
+  ).toEqual({ messages: [], pending: true });
+  const delivered = await researchUpdates(
+    memory,
+    'thread',
+    'user:alice',
+    'alice',
+  );
+  // The announcement and its review result, as the browser receives them.
+  expect(delivered.messages).toHaveLength(2);
+  expect(delivered.pending).toBe(false);
 });

@@ -11,6 +11,8 @@ vi.mock('../identity', () => ({
   verifiedUserOf: () => Promise.resolve(verified),
   requireVerifiedUser: (_c: unknown, next: () => Promise<void>) => next(),
 }));
+const researchUpdates = vi.hoisted(() => vi.fn());
+vi.mock('./research-updates', () => ({ researchUpdates }));
 
 const { chatThreadRoutes, requestedTitle } = await import('./routes');
 
@@ -108,6 +110,35 @@ describe('chat thread routes', () => {
     stored.clear();
     messages.clear();
     verified = { uid: 'u-1', resourceId: 'user:u-1' };
+    researchUpdates.mockReset();
+  });
+
+  it('answers completion delivery with the messages and whether more may follow', async () => {
+    seed('mine', 'user:u-1');
+    researchUpdates.mockResolvedValue({
+      messages: [{ id: 'research-ready-1', role: 'assistant', content: 'Ok' }],
+      pending: true,
+    });
+    const response = await route(
+      '/chat/threads/:threadId/research-updates',
+      'POST',
+    )(context({ threadId: 'mine' }));
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      id: 'mine',
+      title: 'Thread mine',
+      createdAt: Date.parse('2026-09-01T00:00:00.000Z'),
+      updatedAt: Date.parse('2026-09-02T00:00:00.000Z'),
+      messages: [{ id: 'research-ready-1', role: 'assistant', content: 'Ok' }],
+      pending: true,
+    });
+    expect(researchUpdates).toHaveBeenCalledWith(
+      memory,
+      'mine',
+      'user:u-1',
+      'u-1',
+      undefined,
+    );
   });
 
   it('refuses completion delivery for another account or an anonymous caller', async () => {

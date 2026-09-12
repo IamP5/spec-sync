@@ -5,7 +5,7 @@ import type { MastraDBMessage } from '@mastra/core/agent/message-list';
 import type { Memory } from '@mastra/memory';
 import { z } from 'zod';
 
-import { readResearch } from '../research/client';
+import { readResearch, ResearchServiceError } from '../research/client';
 import { summarizeResearch } from '../research/contracts';
 import { toAGUIMessages } from './messages';
 
@@ -28,6 +28,20 @@ function reviewCallId(hash: string): string {
   return `rr-${hash.slice(0, REVIEW_CALL_HASH_LENGTH)}`;
 }
 
+/** What one poll of a thread's research delivers. */
+export interface ResearchUpdates {
+  /** Every completion message persisted for the thread, oldest first. */
+  messages: Message[];
+  /**
+   * True while a research the thread started may still complete: it is
+   * queued or processing, or its status could not be read this time. False
+   * once every referenced research is announced or can never be (cancelled,
+   * failed, rejected, unknown to the service), so the browser can stop
+   * polling until the thread changes.
+   */
+  pending: boolean;
+}
+
 /** Deterministic persisted messages make retries and concurrent tabs idempotent. */
 export async function researchUpdates(
   memory: Memory,
@@ -35,7 +49,7 @@ export async function researchUpdates(
   resourceId: string,
   uid: string,
   signal?: AbortSignal,
-): Promise<Message[]> {
+): Promise<ResearchUpdates> {
   const { messages } = await memory.recall({
     threadId,
     resourceId,
@@ -75,14 +89,17 @@ export async function researchUpdates(
       }),
     ),
   );
+  let pending = false;
   for (const requestId of references) {
     if (delivered.has(requestId)) continue;
     try {
       const research = await readResearch(uid, requestId, signal);
-      if (
-        research.requestStatus !== 'ACTIVE' ||
-        !['REVIEW', 'PUBLISHED'].includes(research.status)
-      )
+      if (research.requestStatus !== 'ACTIVE') continue;
+      if (research.status === 'QUEUED' || research.status === 'PROCESSING') {
+        pending = true;
+        continue;
+      }
+      if (research.status !== 'REVIEW' && research.status !== 'PUBLISHED')
         continue;
       const hash = createHash('sha256')
         .update(`${threadId}:${research.workId}`)
@@ -127,7 +144,11 @@ export async function researchUpdates(
     } catch (error) {
       // Missing/cancelled subscriptions must not block other research in this thread.
       if (signal?.aborted) throw error;
+      // A subscription the service does not know never completes; any other
+      // failure (research service down, memory write) is retried by a later poll.
+      if (!(error instanceof ResearchServiceError && error.status === 404))
+        pending = true;
     }
   }
-  return toAGUIMessages(updates);
+  return { messages: toAGUIMessages(updates), pending };
 }

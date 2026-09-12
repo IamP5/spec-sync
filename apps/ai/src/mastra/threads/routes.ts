@@ -74,16 +74,14 @@ export const chatThreadRoutes = [
       const threadId = c.req.param('threadId');
       const thread = await ownedThread(memory, threadId, user.resourceId);
       if (!thread) return c.json({ error: 'Not found' }, 404);
-      return c.json({
-        ...summaryOf(thread),
-        messages: await researchUpdates(
-          memory,
-          threadId,
-          user.resourceId,
-          user.uid,
-          c.req.raw.signal,
-        ),
-      });
+      const updates = await researchUpdates(
+        memory,
+        threadId,
+        user.resourceId,
+        user.uid,
+        c.req.raw.signal,
+      );
+      return c.json({ ...summaryOf(thread), ...updates });
     },
   }),
 

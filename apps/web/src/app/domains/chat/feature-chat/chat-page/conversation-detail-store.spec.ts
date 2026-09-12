@@ -20,6 +20,7 @@ import {
 } from '../../../../testing/fake-threads';
 import { matrix } from '../../../../testing/vehicle-fixtures';
 import { BEFORE_CHAT_REQUEST } from '../../data/chat-agent';
+import type { ResearchUpdates } from '../../data/thread';
 import { threadEvents } from '../../data/thread-events';
 import { ConversationDetailStore } from './conversation-detail-store';
 
@@ -42,6 +43,34 @@ describe('ConversationDetailStore', () => {
     threads = TestBed.inject(FakeThreadClient);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /** A run that starts a research, so the store asks the service about it. */
+  function startResearch(): void {
+    agent.replyWith((input) =>
+      toolCallReply(
+        input,
+        'researchVehicleSpecifications',
+        {},
+        { id: 'private-request' },
+        'Pesquisando',
+      ),
+    );
+  }
+
+  /** Flushes the effects and waits until the service was asked `times` times. */
+  async function askedTimes(
+    client: { mock: { calls: unknown[] } },
+    times: number,
+  ): Promise<void> {
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(client.mock.calls).toHaveLength(times);
+    });
+  }
+
   it('appends persisted completion without another model run or duplicate messages', async () => {
     const update = {
       id: 'research-ready-test',
@@ -50,7 +79,7 @@ describe('ConversationDetailStore', () => {
     };
     const client = vi
       .spyOn(threads, 'researchUpdates')
-      .mockImplementation((id) => of(storedThread(id, '', 1, [update])));
+      .mockImplementation(() => of({ messages: [update], pending: false }));
     agent.replyWith((input) =>
       toolCallReply(
         input,
@@ -81,30 +110,93 @@ describe('ConversationDetailStore', () => {
   });
 
   it('ignores a completion response after switching conversations', async () => {
-    const pending = new Subject<ReturnType<typeof storedThread>>();
+    const pending = new Subject<ResearchUpdates>();
     vi.spyOn(threads, 'researchUpdates').mockReturnValue(pending);
-    agent.replyWith((input) =>
-      toolCallReply(
-        input,
-        'researchVehicleSpecifications',
-        {},
-        { id: 'private-request' },
-        'Pesquisando',
-      ),
-    );
+    startResearch();
     const store = TestBed.inject(ConversationDetailStore);
     await store.send('Pesquisar Ranger');
     TestBed.tick();
-    const old = store.threadId();
     store.reset();
-    pending.next(
-      storedThread(old, '', 1, [
+    pending.next({
+      messages: [
         { id: 'research-ready-old', role: 'assistant', content: 'Ready' },
-      ]),
-    );
+      ],
+      pending: false,
+    });
     pending.complete();
     await Promise.resolve();
     expect(store.messages()).toEqual([]);
+  });
+
+  it('stops asking for research updates once the service has nothing left to announce', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const client = vi
+      .spyOn(threads, 'researchUpdates')
+      .mockReturnValue(of({ messages: [], pending: false }));
+    startResearch();
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Pesquisar Ranger');
+    await askedTimes(client, 1);
+
+    await vi.advanceTimersByTimeAsync(30_000);
+    TestBed.tick();
+
+    expect(client).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps asking every eight seconds while a research is still running', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const client = vi
+      .spyOn(threads, 'researchUpdates')
+      .mockReturnValue(of({ messages: [], pending: true }));
+    startResearch();
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Pesquisar Ranger');
+    await askedTimes(client, 1);
+
+    await vi.advanceTimersByTimeAsync(8_000);
+    await askedTimes(client, 2);
+    await vi.advanceTimersByTimeAsync(8_000);
+    await askedTimes(client, 3);
+  });
+
+  it('asks again after the thread is reopened and after the next run', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const client = vi
+      .spyOn(threads, 'researchUpdates')
+      .mockReturnValue(of({ messages: [], pending: false }));
+    startResearch();
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('Pesquisar Ranger');
+    await askedTimes(client, 1);
+    const id = store.threadId();
+
+    store.reset();
+    await vi.advanceTimersByTimeAsync(10_000);
+    TestBed.tick();
+    expect(client).toHaveBeenCalledTimes(1);
+
+    await store.open(id);
+    await askedTimes(client, 2);
+    expect(client).toHaveBeenLastCalledWith(id);
+
+    agent.replyWith((input) => textReply(input, 'Mais uma resposta'));
+    await store.send('E agora?');
+    await askedTimes(client, 3);
+  });
+
+  it('never asks about a thread that started no research', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const client = vi.spyOn(threads, 'researchUpdates');
+    agent.replyWith((input) => textReply(input, 'Hello'));
+    const store = TestBed.inject(ConversationDetailStore);
+    await store.send('hi');
+    TestBed.tick();
+
+    await vi.advanceTimersByTimeAsync(30_000);
+    TestBed.tick();
+
+    expect(client).not.toHaveBeenCalled();
   });
 
   it.each(['stop', 'reset', 'open'] as const)(

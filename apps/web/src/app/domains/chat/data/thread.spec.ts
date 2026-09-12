@@ -1,10 +1,31 @@
-import { groupThreads, matchesQuery, threadTitleOf } from './thread';
+import {
+  groupThreads,
+  matchesQuery,
+  parseResearchUpdates,
+  threadTitleOf,
+} from './thread';
 
 const DAY = 24 * 60 * 60 * 1000;
 
 function thread(id: string, updatedAt: number, title = id) {
   return { id, title, createdAt: updatedAt, updatedAt };
 }
+
+describe('parseResearchUpdates', () => {
+  it('reads the messages and whether a research is still running', () => {
+    const message = { id: 'research-ready-1', role: 'assistant', content: 'x' };
+    expect(
+      parseResearchUpdates({ id: 't', messages: [message], pending: false }),
+    ).toEqual({ messages: [message], pending: false });
+  });
+
+  it('keeps asking a service that does not say whether more may follow', () => {
+    expect(parseResearchUpdates({ messages: [] })).toEqual({
+      messages: [],
+      pending: true,
+    });
+  });
+});
 
 describe('threadTitleOf', () => {
   it('takes the first non-empty line without Markdown markers', () => {

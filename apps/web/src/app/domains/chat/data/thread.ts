@@ -64,6 +64,27 @@ export function parseThread(value: unknown): ChatThread {
 }
 
 /**
+ * What the research-updates route of a thread answers: the completion
+ * messages the AI service persisted for the research started from that
+ * thread, and whether one of them is still running, so a later call may have
+ * more to announce. A service that does not say is asked again.
+ */
+export interface ResearchUpdates {
+  messages: Message[];
+  pending: boolean;
+}
+
+const researchUpdatesSchema = z.object({
+  messages: z.array(z.unknown()),
+  pending: z.boolean().default(true),
+});
+
+export function parseResearchUpdates(value: unknown): ResearchUpdates {
+  const updates = researchUpdatesSchema.parse(value);
+  return { messages: updates.messages as Message[], pending: updates.pending };
+}
+
+/**
  * The AI service writes the title after the reply, so a thread can arrive
  * before it has one; the sidebar shows the same placeholder as a new chat.
  */

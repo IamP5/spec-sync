@@ -86,7 +86,9 @@ apps/ai/
   `/copilotkit`, the catalog route `/chat/models` and the `mode`,
   `roleModels`, `effort` and `locale` properties — plus `model`, kept for one release
   (`chat-model-route.ts`), the thread routes under
-  `/chat/threads` (`threads/routes.ts`), the credits route `/chat/credits`
+  `/chat/threads` (`threads/routes.ts`; the `research-updates` answer carries
+  `pending`, on which the browser stops polling, see
+  `docs/research/research-updates-polling-2026-09-12.md`), the credits route `/chat/credits`
   (`credits/credits-route.ts`) and its error message format, vehicle tool names in
   `tools/vehicle-tools.ts`, ingestion tool names in `tools/ingestion-tools.ts`
   and the client tool `startVehicleIngestion` the agent instructions and skill

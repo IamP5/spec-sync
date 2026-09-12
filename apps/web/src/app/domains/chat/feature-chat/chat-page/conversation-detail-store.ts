@@ -1,3 +1,4 @@
+import type { Message } from '@ag-ui/client';
 import { computed, DestroyRef, effect, inject, untracked } from '@angular/core';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { CopilotKitCoreErrorCode } from '@copilotkit/core';
@@ -37,6 +38,24 @@ import { toolPresentation } from '../tool-presentation';
 
 export type ConversationStatus = 'idle' | 'streaming' | 'error';
 
+/** Tools whose result subscribes the thread to a research the service announces later. */
+const researchTools = new Set([
+  'researchVehicleSpecifications',
+  'getVehicleResearch',
+  'replayVehicleResearch',
+  'reviewVehicleResearch',
+]);
+
+function hasResearchCall(messages: Message[]): boolean {
+  return messages.some(
+    (message) =>
+      message.role === 'assistant' &&
+      (message.toolCalls ?? []).some((call) =>
+        researchTools.has(call.function.name),
+      ),
+  );
+}
+
 /**
  * Detail store of the conversation shown on the chat page. The AI service
  * persists every turn in Mastra memory as the run happens, so nothing here
@@ -70,6 +89,12 @@ export const ConversationDetailStore = signalStore(
     createdAt: 0,
     /** True while a stored thread is being read back from the service. */
     loading: false,
+    /**
+     * True while the service may still have a research completion to
+     * announce in the open thread: from the start of every run, thread
+     * switch and reopen until a research-updates call says nothing is left.
+     */
+    _researchPending: true,
     /** Threads opened in this session, by id; the open one is in the agent. */
     _threads: {} as Record<string, ChatThread>,
   }),
@@ -117,25 +142,18 @@ export const ConversationDetailStore = signalStore(
     let checkingResearch = false;
     async function refreshResearch(): Promise<void> {
       const scope = store._session.scope();
-      if (checkingResearch || !scope || store.loading() || store.isStreaming())
-        return;
       if (
-        !store
-          .messages()
-          .some(
-            (message) =>
-              message.role === 'assistant' &&
-              message.toolCalls?.some((call) =>
-                [
-                  'researchVehicleSpecifications',
-                  'getVehicleResearch',
-                  'replayVehicleResearch',
-                  'reviewVehicleResearch',
-                ].includes(call.function.name),
-              ),
-          )
+        checkingResearch ||
+        !scope ||
+        store.loading() ||
+        store.isStreaming() ||
+        !store._researchPending()
       )
         return;
+      if (!hasResearchCall(store.messages())) {
+        patchState(store, { _researchPending: false });
+        return;
+      }
       const id = store.threadId();
       const before = store.messages();
       checkingResearch = true;
@@ -150,6 +168,7 @@ export const ConversationDetailStore = signalStore(
           store.messages() === before
         ) {
           store._chatAgentClient.appendPersisted(updates.messages);
+          patchState(store, { _researchPending: updates.pending });
         }
       } catch {
         /* A later refresh retries transient completion delivery failures. */
@@ -174,6 +193,7 @@ export const ConversationDetailStore = signalStore(
         status: 'streaming',
         error: undefined,
         stopped: false,
+        _researchPending: true,
       });
       try {
         await work();
@@ -232,6 +252,7 @@ export const ConversationDetailStore = signalStore(
         title: '',
         createdAt: 0,
         loading: false,
+        _researchPending: true,
       });
     }
 
@@ -248,6 +269,7 @@ export const ConversationDetailStore = signalStore(
         title: thread.title,
         createdAt: thread.createdAt,
         loading: false,
+        _researchPending: true,
       });
     }
 
@@ -378,10 +400,18 @@ export const ConversationDetailStore = signalStore(
   })),
   withHooks({
     onInit(store) {
+      // Asks the service for research completions while one may still be
+      // due; the interval ends with the run, the thread or the last answer.
       effect((onCleanup) => {
         const scope = store._session.scope();
         store.threadId();
-        if (!scope || store.loading() || store.isStreaming()) return;
+        if (
+          !scope ||
+          store.loading() ||
+          store.isStreaming() ||
+          !store._researchPending()
+        )
+          return;
         untracked(() => {
           void store._refreshResearch();
         });

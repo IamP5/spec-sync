@@ -1,7 +1,11 @@
 import { Injectable, resource, signal } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
-import { ChatThread, ChatThreadSummary } from '../domains/chat/data/thread';
+import {
+  ChatThread,
+  ChatThreadSummary,
+  ResearchUpdates,
+} from '../domains/chat/data/thread';
 import { ThreadClient } from '../domains/chat/data/thread-client';
 
 /**
@@ -41,8 +45,9 @@ export class FakeThreadClient {
     return of(this.threads().find((thread) => thread.id === id));
   }
 
-  researchUpdates(id: string): Observable<ChatThread> {
-    return of(blank(id, ''));
+  /** Nothing to announce and nothing running: the store stops asking. */
+  researchUpdates(): Observable<ResearchUpdates> {
+    return of({ messages: [], pending: false });
   }
 
   rename(id: string, title: string): Observable<ChatThreadSummary> {

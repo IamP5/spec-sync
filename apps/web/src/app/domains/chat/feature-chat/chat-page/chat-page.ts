@@ -10,7 +10,6 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   LOCALE_ID,
   signal,
   untracked,
@@ -94,7 +93,6 @@ import { RunOptionsPicker } from '../ui/run-options-picker';
 import { registerChatTools } from './chat-tools';
 import { ConversationDetailStore } from './conversation-detail-store';
 import { ModelSearchStore } from './model-search-store';
-import { ResearchPrototypePage } from './research-prototype-page';
 
 const PROMPT_REQUIRED_MESSAGE = $localize`Type a message to send.`;
 const OFFLINE_MESSAGE = $localize`The assistant is unavailable. Make sure the AI service is running.`;
@@ -164,7 +162,6 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
 @Component({
   selector: 'app-chat-page',
   imports: [
-    ResearchPrototypePage,
     CdkTextareaAutosize,
     FormField,
     MarkdownPipe,
@@ -227,11 +224,6 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
   host: { class: 'flex min-h-0 flex-1 flex-col' },
 })
 export class ChatPage {
-  readonly prototype = input('');
-  readonly variant = input('A');
-  protected readonly prototypeEnabled = computed(
-    () => isDevMode() && this.prototype() === 'research',
-  );
   private readonly store = inject(ConversationDetailStore);
   private readonly preferences = inject(UserPreferencesCoordinator);
   private readonly modelSearch = inject(ModelSearchStore);

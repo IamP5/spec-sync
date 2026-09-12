@@ -11,9 +11,11 @@ import {
   CHAT_THREADS_URL,
   ChatThread,
   ChatThreadSummary,
+  parseResearchUpdates,
   parseThread,
   parseThreadList,
   parseThreadSummary,
+  ResearchUpdates,
 } from './thread';
 
 /**
@@ -48,10 +50,15 @@ export class ThreadClient {
     );
   }
 
-  researchUpdates(id: string): Observable<ChatThread> {
+  /**
+   * Delivers the completion messages of the research started from a thread
+   * and says whether more may follow. Each call persists what is new, so it
+   * is a POST even though the caller sends nothing.
+   */
+  researchUpdates(id: string): Observable<ResearchUpdates> {
     return this.http
       .post<unknown>(`${this.url(id)}/research-updates`, {})
-      .pipe(map(parseThread));
+      .pipe(map(parseResearchUpdates));
   }
 
   rename(id: string, title: string): Observable<ChatThreadSummary> {
