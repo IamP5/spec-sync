@@ -2,7 +2,7 @@ import { Agent } from '@mastra/core/agent';
 import type { RequestContext } from '@mastra/core/request-context';
 import { z } from 'zod';
 
-import { modelForRole } from '../models';
+import { chatProviderOptionsFor, modelForRole } from '../models';
 import { excerptOf, numberedLines } from './evidence';
 
 /** Upper bound of configurations one run extracts; mirrors the API limit. */
@@ -77,9 +77,11 @@ export async function identifyConfigurations(
   const result = await identifier.generate(
     JSON.stringify({ request, source: numberedLines(text) }),
     {
-      // A chat preview follows the user's mode; the curator workflow passes no
-      // context and the role resolves to its default.
+      // A chat preview follows the user's tier; the curator workflow passes no
+      // context and the role resolves to the Balanced entry. The tier also
+      // fixes how hard the identifier thinks (`low` everywhere today).
       requestContext,
+      providerOptions: chatProviderOptionsFor(requestContext, 'identification'),
       structuredOutput: { schema: modelOutput },
       maxSteps: 1,
       modelSettings: { temperature: 0 },

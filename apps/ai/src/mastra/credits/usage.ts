@@ -8,6 +8,22 @@
  * their counts only in nested detail objects. The normaliser below is
  * deliberately tolerant: it takes the first finite number it finds for each
  * position, top level before any nested record.
+ *
+ * The wallet prices `inputTokens` (less `cachedInputTokens`) and
+ * `outputTokens`; `reasoningTokens` is recorded only. Every token the
+ * provider bills therefore has to land in one of the first two, which the
+ * normaliser makes sure of in two places:
+ *
+ * - Reasoning. Both providers this service uses already count it inside
+ *   `outputTokens` (OpenRouter's `completion_tokens`, and `@ai-sdk/google`
+ *   adds `thoughtsTokenCount` to the candidates; both verified 2026-09-11).
+ *   A provider that reports it separately is recognised by its own wire
+ *   total — `total_tokens` / `totalTokenCount`, which Mastra keeps under
+ *   `raw` — exceeding input plus output by the reasoning count, and the
+ *   reasoning is then added to the output.
+ * - Grounding. Gemini bills the prompt tokens of a Google Search call as
+ *   `toolUsePromptTokenCount`, next to and not inside `promptTokenCount`, and
+ *   the AI SDK never reads that field. It is added to the input.
  */
 export interface StepUsage {
   inputTokens: number;
@@ -37,6 +53,13 @@ const CACHED_KEYS = [
   'cached_input_tokens',
   'cachedContentTokenCount',
 ];
+/** Gemini's grounding prompt tokens, billed as input but reported apart from it. */
+const TOOL_USE_INPUT_KEYS = ['toolUsePromptTokenCount'];
+/**
+ * The total the provider itself reported. Not `totalTokens`: Mastra recomputes
+ * that one as input + output, so it can never reveal an excluded count.
+ */
+const WIRE_TOTAL_KEYS = ['total_tokens', 'totalTokenCount'];
 
 /** How deep nested detail objects are searched (`raw`, `*Details`, …). */
 const MAX_DEPTH = 3;
@@ -64,16 +87,48 @@ export function normaliseUsage(usage: unknown): StepUsage {
       estimated: true,
     };
   }
-  const inputTokens = input ?? 0;
+  const promptTokens = input ?? 0;
+  const inputTokens = promptTokens + (pick(usage, TOOL_USE_INPUT_KEYS, 0) ?? 0);
+  const reasoningTokens = pick(usage, REASONING_KEYS, 0) ?? 0;
   return {
     inputTokens,
     // The API charges the uncached remainder, so a cached count above the
     // prompt itself would make the charge negative.
-    cachedInputTokens: Math.min(pick(usage, CACHED_KEYS, 0) ?? 0, inputTokens),
-    outputTokens: output ?? 0,
-    reasoningTokens: pick(usage, REASONING_KEYS, 0) ?? 0,
+    cachedInputTokens: Math.min(pick(usage, CACHED_KEYS, 0) ?? 0, promptTokens),
+    outputTokens:
+      (output ?? 0) +
+      (reasoningExcludedFromOutput(
+        usage,
+        inputTokens,
+        output ?? 0,
+        reasoningTokens,
+      )
+        ? reasoningTokens
+        : 0),
+    reasoningTokens,
     estimated: false,
   };
+}
+
+/**
+ * Whether the provider left its reasoning tokens out of the output count. A
+ * provider that reports a total of its own gives it away: the total then
+ * covers input, output and reasoning, while the two counts alone fall short by
+ * exactly the reasoning. Without a wire total the output is trusted as is.
+ */
+function reasoningExcludedFromOutput(
+  usage: unknown,
+  inputTokens: number,
+  outputTokens: number,
+  reasoningTokens: number,
+): boolean {
+  if (reasoningTokens === 0) {
+    return false;
+  }
+  const total = pick(usage, WIRE_TOTAL_KEYS, 0);
+  return (
+    total !== undefined && total >= inputTokens + outputTokens + reasoningTokens
+  );
 }
 
 function pick(

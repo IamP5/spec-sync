@@ -50,13 +50,12 @@ function tariff(modelId: string, input: number, output: number) {
   };
 }
 
-// The prices V8 actually seeds, so the expectations below double as the
-// documented cost of a message in each mode.
+// The prices V8 and V15 actually seed, so the expectations below double as
+// the documented cost of a message in each tier.
 const RATE_CARD = [
-  tariff('google/gemini-3.5-flash-lite', 30_000_000, 250_000_000),
+  tariff('openai/gpt-5.6-luna', 20_000_000, 120_000_000),
+  tariff('openai/gpt-5.6-sol', 200_000_000, 1_000_000_000),
   tariff('google/gemini-3.8-flash', 75_000_000, 375_000_000),
-  tariff('google/gemini-3.1-pro-preview', 200_000_000, 1_200_000_000),
-  tariff('anthropic/claude-sonnet-5', 200_000_000, 1_000_000_000),
 ];
 
 function stubTariffs(models: unknown[]): void {
@@ -339,12 +338,10 @@ describe('catalog', () => {
       expect(mode.affordable).toBeNull();
     }
     expect(catalog.models).toEqual(chatModels());
-    expect(catalog.roles.map((role) => role.id)).toEqual([
-      'chat',
-      'vision',
-      'identification',
-      'contentDiscovery',
-    ]);
+    // Only the chat role is user-configurable; the tier fixes every effort,
+    // so the browser gets no effort track to show.
+    expect(catalog.roles.map((role) => role.id)).toEqual(['chat']);
+    expect(catalog.efforts).toEqual([]);
     expect(fetcher).not.toHaveBeenCalled();
   });
 
@@ -353,20 +350,22 @@ describe('catalog', () => {
     stubTariffs(RATE_CARD);
     const { modes } = await chatCatalog();
     const byId = Object.fromEntries(modes.map((mode) => [mode.id, mode]));
-    // 8,000 input + 1,500 output on the mode's chat model.
+    // 8,000 input + 1,500 output on the tier's chat model. Instant and
+    // Balanced both run Luna and differ only in thinking, which the
+    // reference turn does not price.
     expect(byId['velocity']?.estimatedCredits).toBe(
-      30_000_000 * 0.008 + 250_000_000 * 0.0015,
+      20_000_000 * 0.008 + 120_000_000 * 0.0015,
     );
     expect(byId['normal']?.estimatedCredits).toBe(
-      75_000_000 * 0.008 + 375_000_000 * 0.0015,
+      20_000_000 * 0.008 + 120_000_000 * 0.0015,
     );
     expect(byId['intelligent']?.estimatedCredits).toBe(
       200_000_000 * 0.008 + 1_000_000_000 * 0.0015,
     );
-    // 0.62 / 1.16 / 3.10 credits a message on the seeded card.
-    expect(byId['velocity']?.relativeCost).toBe(0.5);
+    // 0.34 / 0.34 / 3.10 credits a message on the seeded card.
+    expect(byId['velocity']?.relativeCost).toBe(1);
     expect(byId['normal']?.relativeCost).toBe(1);
-    expect(byId['intelligent']?.relativeCost).toBe(2.7);
+    expect(byId['intelligent']?.relativeCost).toBe(9.1);
     expect(byId['auto']?.chatModelId).toBeNull();
     // The route is unauthenticated, so it cannot know a balance.
     expect(byId['intelligent']?.affordable).toBeNull();
@@ -375,9 +374,7 @@ describe('catalog', () => {
   it('does not offer a mode whose model has no active tariff', async () => {
     vi.stubEnv(CREDITS_SERVICE_KEY_ENV, KEY);
     stubTariffs(
-      RATE_CARD.filter(
-        (entry) => entry.modelId !== 'anthropic/claude-sonnet-5',
-      ),
+      RATE_CARD.filter((entry) => entry.modelId !== 'openai/gpt-5.6-sol'),
     );
     const { modes, models } = await chatCatalog();
     expect(modes.map((mode) => mode.id)).toEqual([
@@ -385,18 +382,16 @@ describe('catalog', () => {
       'normal',
       'auto',
     ]);
-    expect(models.map((model) => model.id)).not.toContain(
-      'anthropic/claude-sonnet-5',
-    );
+    expect(models.map((model) => model.id)).not.toContain('openai/gpt-5.6-sol');
   });
 
   it('keeps normal offerable on the cheapest priced model when its own is unpriced', async () => {
     vi.stubEnv(CREDITS_SERVICE_KEY_ENV, KEY);
-    stubTariffs([RATE_CARD[0]]);
+    stubTariffs([RATE_CARD[2]]);
     const logged: string[] = [];
     const { modes } = await chatCatalog((message) => logged.push(message));
     const normal = modes.find((mode) => mode.id === 'normal');
-    expect(normal?.chatModelId).toBe('google/gemini-3.5-flash-lite');
+    expect(normal?.chatModelId).toBe('google/gemini-3.8-flash');
     expect(logged.join()).toContain('falls back to');
   });
 

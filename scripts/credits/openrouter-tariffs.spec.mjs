@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
+  MIGRATIONS,
   SEEDED_MODELS,
   scaleDecimal,
   sqlRows,
@@ -67,7 +68,7 @@ describe('tariffFor', () => {
 });
 
 describe('the committed snapshot', () => {
-  it('prices exactly the seeded models and feeds the V8 rows', async () => {
+  it('prices exactly the seeded models and feeds every seeding migration', async () => {
     const snapshot = JSON.parse(
       await readFile(path.join(here, 'openrouter-tariffs.json'), 'utf8'),
     );
@@ -76,16 +77,57 @@ describe('the committed snapshot', () => {
     );
     expect(snapshot.fetchedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 
-    // The migration must contain, verbatim, the rows generated from the snapshot.
-    const migration = await readFile(
-      path.join(
-        here,
-        '../../apps/api/src/main/resources/db/migration/V8__openrouter_credits.sql',
-      ),
-      'utf8',
-    );
-    for (const row of sqlRows(snapshot).split(',\n')) {
-      expect(migration).toContain(row.trim().replace(/,$/, ''));
+    // Each migration must contain, verbatim, the rows generated for it from
+    // the snapshot — the OpenRouter rows it seeded and the Vertex mirrors.
+    for (const [name, file] of Object.entries(MIGRATIONS)) {
+      const migration = await readFile(path.join(here, file), 'utf8');
+      const rows = sqlRows(snapshot, name).split(',\n');
+      expect(rows.length).toBeGreaterThan(0);
+      for (const row of rows) {
+        expect(migration).toContain(row.trim().replace(/,$/, ''));
+      }
     }
+  });
+
+  it('mirrors a Vertex row from the OpenRouter entry of the same model', () => {
+    const snapshot = {
+      models: [
+        {
+          id: 'tariff-1',
+          migration: 'V15',
+          modelId: 'google/gemini-3.8-flash',
+          version: 1,
+          inputPerMillion: '75000000',
+          cachedInputPerMillion: '7500000',
+          outputPerMillion: '375000000',
+        },
+        {
+          id: 'tariff-2',
+          migration: 'V8',
+          modelId: 'google/gemini-3.1-pro-preview',
+          version: 1,
+          inputPerMillion: '200000000',
+          cachedInputPerMillion: '20000000',
+          outputPerMillion: '1200000000',
+        },
+      ],
+    };
+    const rows = sqlRows(snapshot, 'V15');
+    expect(rows).toContain(
+      "('tariff-1', 'openrouter', 'google/gemini-3.8-flash', 1, 75000000, 7500000, 375000000, true)",
+    );
+    expect(rows).toContain(
+      "'vertex', 'gemini-3.8-flash', 2, 75000000, 7500000, 375000000, true)",
+    );
+    // The mirror's source lives in the snapshot whatever migration seeded it,
+    // and a snapshot without it fails loudly.
+    expect(rows).toContain(
+      "'vertex', 'gemini-3.1-pro-preview', 2, 200000000, 20000000, 1200000000, true)",
+    );
+    expect(() => sqlRows({ models: [] }, 'V15')).toThrow(/not in the snapshot/);
+    // V8 seeded no Vertex mirror: only its own OpenRouter rows.
+    expect(sqlRows(snapshot, 'V8')).toBe(
+      "    ('tariff-2', 'openrouter', 'google/gemini-3.1-pro-preview', 1, 200000000, 20000000, 1200000000, true)",
+    );
   });
 });

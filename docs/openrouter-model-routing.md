@@ -11,6 +11,176 @@ Three things change at once, and they change together on purpose: the money
 unit becomes a credit unit, the provider becomes OpenRouter, and the model
 selector becomes a mode selector.
 
+## Tier revision (2026-09-12)
+
+Decided on 2026-09-11 from the measured evals in `apps/ai/eval` (blind-graded
+chat quality on the real agent instructions and tool schemas, PDF transcription
+alignment on two real brochures, identification recall, grounding hit rate and
+latency, per-step cost metering) rather than from list prices; implemented on
+2026-09-12. Where this section and the sections below disagree, this section
+wins. The sections below stay as the record of the first release.
+
+### Three tiers, wire ids unchanged
+
+The composer offers three tiers. **The wire ids do not change** —
+`velocity` / `normal` / `intelligent`, in `mode`, in the preferences, in the
+catalog — only what the user reads: **Instant / Balanced / Deep**. The service
+also lists `auto`; the browser drops it (see "The composer control").
+A tier is a map from role to **model and reasoning effort**, owned by the AI
+service (`TIER_TABLE` in `apps/ai/src/mastra/models.ts`).
+
+| Role               | Instant (`velocity`)               | Balanced (`normal`, default)       | Deep (`intelligent`)             |
+| ------------------ | ---------------------------------- | ---------------------------------- | -------------------------------- |
+| `chat`             | `openai/gpt-5.6-luna` · low        | `openai/gpt-5.6-luna` · high       | `openai/gpt-5.6-sol` · medium    |
+| `vision`           | `google/gemini-3.8-flash` · low    | `google/gemini-3.8-flash` · medium | `google/gemini-3.8-flash` · high |
+| `identification`   | `google/gemini-3.8-flash` · low    | `google/gemini-3.8-flash` · medium | `google/gemini-3.8-flash` · high |
+| `contentDiscovery` | Vertex `gemini-2.5-flash`          | Vertex `gemini-3.8-flash`          | Vertex `gemini-3.1-pro-preview`  |
+| `discovery`        | Vertex `gemini-2.5-flash`          | Vertex `gemini-3.8-flash`          | Vertex `gemini-3.1-pro-preview`  |
+| `extraction`       | `google/gemini-3.8-flash`          | `google/gemini-3.8-flash`          | `google/gemini-3.8-flash` · high |
+| `title`            | `openai/gpt-5.6-luna` (every tier) |                                    |                                  |
+
+"· level" is the reasoning effort the tier fixes; a cell without one leaves
+thinking to the provider. `auto` still resolves per run with the heuristic
+below, unchanged. Why these cells:
+
+- Luna ties Sol on blind quality (19.46 vs 19.50 / 20) at about a ninth of the
+  measured cost per turn, so the two cheaper tiers differ only in how hard
+  Luna thinks; Deep buys Sol. Effort moved quality by at most 1.5 / 20 within a
+  model and is a cost and latency lever.
+- Gemini 3.8 Flash is the one model that transcribed both real brochures
+  cleanly; `low` switches Gemini 3 thinking off and misattached the original
+  terms, `high` ran a four-page batch in ~125 s. The transcriber's per-batch
+  budget is therefore 180 s when the tier asks for `high` (120 s otherwise).
+- Identification at `low` scored 60 / 60 with no empty answers and names
+  ambiguous model years distinctly; the tiers still step it low / medium /
+  high alongside the transcription, so one tier means one thinking level for
+  the whole upload.
+- Grounding cannot leave Vertex (below). 2.5 Flash answered in ~14 s with the
+  same hit rate as the newer generations, which took 46–85 s; the tiers trade
+  that latency for the newer reader on Balanced and Deep.
+- Every `extraction` call today runs without a request context — the curator
+  workflow and the shared research worker are API-leased jobs — and therefore
+  at the Balanced entry. The Deep cell applies as soon as a caller passes a
+  run's context.
+
+### The effort selector is gone from the catalog
+
+`GET /chat/models` answers `efforts: []` and keeps `defaultEffortId: "auto"`
+for the schema. The browser already hides its effort track when the list is
+empty, and `effectiveEffort` sends nothing it is not offered. A
+`forwardedProps.effort` of `low` / `medium` / `high` from a browser of the
+previous release overrides the **`chat`** role's effort for one release and
+nothing else (`effortForRole`).
+
+### Only `chat` is user-configurable
+
+`CONFIGURABLE_ROLES` is `['chat']`; `roles` in the catalog lists that one
+role, and `SPECSYNC_CHAT_MODELS` defaults to the chat models the tier table
+names (`openai/gpt-5.6-luna`, `openai/gpt-5.6-sol`). An override keeps the
+tier's effort. Stored `roleModels` for other roles are ignored, as before.
+
+### `contentDiscovery` is a Vertex role
+
+Grounding through OpenRouter never worked: Mastra sends
+`vertex.tools.googleSearch({})` to OpenRouter as an unknown tool type
+(`{"type":"google:google_search"}`), Gemini answers `MALFORMED_FUNCTION_CALL`
+and the tool always reported `EMPTY`; OpenAI models answered 400. Both
+grounding roles now resolve to the Vertex provider instance with the tier's
+Gemini generation, are charged under `provider = 'vertex'` and the bare model
+id, and pass the run's context so the resolver sees the tier. The content
+discovery timeout is 90 s (was 45 s), which the newer generations need.
+
+### Every role thinks at the tier's effort
+
+Every model-calling role passes `providerOptions:
+chatProviderOptionsFor(requestContext, role)` into `generate()` — the
+transcriber, the identifier, the extractor and both grounding agents — not
+only the chat agent. The chat agent keeps Gemini thought summaries on; the
+structured-output roles do not ask for them. Without a request context the
+Balanced entry applies, so the curator workflow transcribes at `medium` and
+extracts without a fixed effort.
+
+### Prompt caching on every model
+
+Verified against OpenRouter's documentation and Mastra 1.64 on 2026-09-12:
+
+- **OpenAI** (Luna, Sol) and **Gemini** (through OpenRouter and on Vertex)
+  cache a repeated prompt prefix automatically from 1,024 tokens; no request
+  field exists or is needed. The chat agent's system prompt and tool
+  definitions are the stable prefix; the interface language sits at its start
+  and is stable per user.
+- **Anthropic** caches nothing unless asked. An Anthropic model — reachable
+  only through `SPECSYNC_CHAT_MODELS` now — gets OpenRouter's top-level
+  `cache_control: { type: "ephemeral" }`, which OpenRouter turns into a
+  breakpoint on the last cacheable block. Mastra's OpenRouter model spreads
+  `providerOptions.openrouter` into the top level of the request body, so the
+  field reaches the wire (`chatProviderOptions`).
+- Cached reads reach the wallet: Mastra maps OpenRouter's
+  `prompt_tokens_details.cached_tokens` and Gemini's `cachedContentTokenCount`
+  to `cachedInputTokens`, and the API charges them at
+  `cached_input_per_million`. OpenRouter now always returns full usage
+  details; `usage.include` is deprecated and not sent.
+
+### Every billed token reaches the charge
+
+`credits/usage.ts` flattens a step's usage for the wallet, which prices
+`inputTokens − cachedInputTokens` and `outputTokens` and records
+`reasoningTokens`. Two corrections, both covered by tests:
+
+- Reasoning is already inside `outputTokens` for both providers (OpenRouter's
+  `completion_tokens`; `@ai-sdk/google` 4.0 adds `thoughtsTokenCount` to the
+  candidates). A provider that reports it apart is recognised by its own wire
+  total (`total_tokens` / `totalTokenCount`, kept under `raw`) exceeding input
+  plus output by the reasoning count, and the reasoning is then added to the
+  output. Mastra's own `totalTokens` is recomputed as input + output and
+  cannot be used for this.
+- Gemini bills the prompt tokens of a Google Search call as
+  `toolUsePromptTokenCount`, next to `promptTokenCount`, and the AI SDK never
+  reads the field. It is added to the input; the cache discount stays bounded
+  by the prompt itself.
+
+Still not charged, deliberately: thread titles, the curator ingestion
+workflow, the shared research worker (an API-leased job that outlives the
+chat run and serves every user) and Google's per-query grounding fee.
+
+### Rate card: `V15__tier_tariffs.sql`
+
+Deactivates the OpenRouter rows of `google/gemini-3.5-flash-lite`,
+`google/gemini-3.1-pro-preview` and `anthropic/claude-sonnet-5` (no tier names
+them; `google/gemini-3.8-flash` keeps its V8 row for vision and
+identification). Seeds `openai/gpt-5.6-luna` and `openai/gpt-5.6-sol` from the
+refreshed snapshot, and two `vertex` rows — `gemini-3.8-flash` and
+`gemini-3.1-pro-preview`, version 2 — mirrored from the OpenRouter entry of
+the same model, since Google publishes one list price. The generator takes a
+migration name (`node scripts/credits/openrouter-tariffs.mjs --sql V15`) and
+its test checks every seeding migration against the snapshot.
+
+On the seeded card the reference turn (8,000 input + 1,500 output, thinking
+not priced) costs 0.34 / 0.34 / 3.10 credits on Instant / Balanced / Deep, so
+the picker shows `9.1×` on Deep and no multiplier on Instant. Measured turns
+on the real prompts came out at about 0.18 / 0.18 / 1.5 credits.
+
+### The composer control
+
+`RunOptionsPicker` (`apps/web/src/app/domains/chat/feature-chat/ui/`) renders
+the tiers ChatGPT-style: the pill carries a three-dot level glyph and the
+tier's name; the panel puts the tiers on one slider — one stop per tier,
+cheapest first, dragged or moved with the arrow keys as a radio group — with
+the stop under the thumb named above it together with its cost per message and
+its multiplier against Balanced. The wallet confirmation before an expensive
+tier is unchanged.
+
+The picker offers the named tiers only. **Auto, the advanced per-role
+overrides and the model rate card of the credits pill were removed from the
+browser** (2026-09-12): the catalog's `auto` mode is dropped on the way in
+(`chatModelCatalogSchema`), a stored `auto` preference falls back to the
+service default, no run sends `roleModels` any more, and the credits panel
+lists only the recent replies. The service keeps every one of those contracts
+— it still resolves `auto` and still honours `roleModels` — so the browser can
+offer them again without a service change. The effort track is likewise gone
+from the browser; the catalog's `efforts` only feed the coordinator's
+compatibility path.
+
 ## Product decisions (settled)
 
 ### 1. OpenRouter is the model router
@@ -133,22 +303,22 @@ thread state, and pinned into the request context:
   made no ingestion tool call.
 - `normal` otherwise.
 
-The resolved mode reaches the browser through **the wallet, not the catalog**.
-`GET /chat/models` is unauthenticated and shared between users, so a per-run,
-per-user value cannot ride on it — its `resolvedMode` field is always `null`.
-The wallet view is user-scoped and already refetched after every run, and each
-recent run records the model it was charged at; the browser maps that model
-back to the mode that names it (`modeOfRunModel` in `data/chat-model.ts`) and
-the pill reads `Auto · Normal`. No new endpoint and no new AG-UI event.
+The browser no longer offers Auto, so nothing reads the resolved mode any
+more. Should it come back: `GET /chat/models` is unauthenticated and shared
+between users, so a per-run, per-user value cannot ride on it — its
+`resolvedMode` field is always `null`. The wallet view is user-scoped and
+already refetched after every run, and each recent run records the model it
+was charged at, which is the mode that names it. No new endpoint and no new
+AG-UI event would be needed.
 
 A classifier-backed router is a later change and must fail closed to `normal`
 when the wallet cannot cover its own call.
 
 ### Advanced configuration
 
-Per-role overrides, stored next to the mode in the existing browser
-preferences (`specsync.chat.preferences.v1`, `UserPreferencesClient`). A role
-with no override follows the mode. Only the four billable, mode-driven roles
+Per-role overrides. The service still honours them on `roleModels`; the
+composer no longer offers them and the browser stores none (2026-09-12). A
+role with no override follows the mode. Only the four billable, mode-driven roles
 are user-configurable; `extraction`, `title` and `discovery` are not.
 
 Overrides are filtered by capability: `vision` only offers models whose
@@ -417,19 +587,18 @@ already implied by a label:
 - `<= 0`: `0`.
 
 The pill reads `183 credits` with the existing progress bar. The popover
-header becomes "AI Credits", the amount line `183 of 200`, and the model price
-list shows credits per 1M tokens instead of BRL.
+header becomes "AI Credits" and the amount line `183 of 200`. The model price
+list it used to carry was removed on 2026-09-12; the panel lists the recent
+replies and what each cost.
 
 ### Mode picker
 
 `RunOptionsPicker` becomes mode-first. The pill names the current mode
-(`Normal`, or `Auto · Normal` once a run has resolved one). The panel shows
-the four modes as radios with, on each row, the estimated cost —
-`≈ 1.16 credits per message` — and, for anything above Normal, the multiplier
-`3.2× Normal`. The effort track stays where it is.
-
-An "Advanced" row at the bottom opens the per-role list: one selector per
-configurable role, each defaulting to "Follow mode".
+(`Normal`). The panel shows the offered modes with, on each row, the estimated
+cost — `≈ 1.16 credits per message` — and, for anything above Normal, the
+multiplier `3.2× Normal`. (Superseded in part: see "The composer control" —
+Auto, the effort track and the "Advanced" per-role list are no longer in the
+browser.)
 
 Switching to a mode that leaves the balance covering **fewer than 20
 reference turns** shows a confirm step inside the panel: the estimated cost,
@@ -443,13 +612,12 @@ for the case where the user is about to run out.
 
 ### Preferences
 
-`Preferences` gains `mode: ChatMode` (default `'normal'`) and
-`roleModels: Partial<Record<ModelRole, string>>` (default `{}`), persisted in
-the same localStorage key with the same tolerant parsing. The existing `model`
-field is read once and migrated into `roleModels.chat`, then dropped.
+`Preferences` gains `mode: ChatMode` (default `'normal'`), persisted in the
+same localStorage key with the same tolerant parsing; a stored mode the
+browser no longer offers (`auto`) reads as the default.
 
-`ChatAgentClient` sends `mode` and `roleModels` as forwarded properties
-alongside `effort`.
+`ChatAgentClient` sends `mode` as a forwarded property alongside `effort`.
+(`roleModels` went with the advanced selector on 2026-09-12.)
 
 ### Insufficient-credits recovery
 

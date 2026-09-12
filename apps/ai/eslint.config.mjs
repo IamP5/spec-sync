@@ -4,7 +4,12 @@ import baseConfig from '../../eslint.config.mjs';
 export default [
   ...baseConfig,
   {
-    ignores: ['.mastra/**'],
+    // `.mastra/**` is the generated bundle. `eval/**` is untracked decision
+    // tooling (see apps/ai/eval/*/README.md): it deliberately reaches into the
+    // service's modules to measure the real agent, which is not a boundary the
+    // service's own code may cross, so it is linted out rather than having
+    // Sheriff's encapsulation rule relaxed for everyone.
+    ignores: ['.mastra/**', 'eval/**'],
   },
   {
     files: ['**/*.ts'],

@@ -65,6 +65,107 @@ describe('usage normalisation', () => {
     });
   });
 
+  it('trusts an output count that already includes the reasoning', () => {
+    // OpenRouter: completion_tokens covers the reasoning, and its total is
+    // prompt + completion. Nothing to add.
+    expect(
+      normaliseUsage({
+        inputTokens: 1_000,
+        outputTokens: 700,
+        totalTokens: 1_700,
+        reasoningTokens: 400,
+        cachedInputTokens: 0,
+        raw: {
+          raw: {
+            prompt_tokens: 1_000,
+            completion_tokens: 700,
+            total_tokens: 1_700,
+            completion_tokens_details: { reasoning_tokens: 400 },
+          },
+        },
+      }),
+    ).toMatchObject({
+      inputTokens: 1_000,
+      outputTokens: 700,
+      reasoningTokens: 400,
+    });
+    // Gemini through the AI SDK: the candidates plus the thoughts, and a
+    // total that adds up to the same. Nothing to add either.
+    expect(
+      normaliseUsage({
+        inputTokens: 1_000,
+        outputTokens: 700,
+        totalTokens: 1_700,
+        reasoningTokens: 400,
+        raw: {
+          raw: {
+            promptTokenCount: 1_000,
+            candidatesTokenCount: 300,
+            thoughtsTokenCount: 400,
+            totalTokenCount: 1_700,
+          },
+        },
+      }),
+    ).toMatchObject({
+      inputTokens: 1_000,
+      outputTokens: 700,
+      reasoningTokens: 400,
+    });
+  });
+
+  it('bills the reasoning a provider left out of its output count', () => {
+    // The wire total exceeds input + output by exactly the reasoning: the
+    // provider counted it apart, so the wallet would otherwise never see it.
+    expect(
+      normaliseUsage({
+        inputTokens: 1_000,
+        outputTokens: 300,
+        totalTokens: 1_300,
+        reasoningTokens: 400,
+        raw: { raw: { total_tokens: 1_700 } },
+      }),
+    ).toMatchObject({
+      inputTokens: 1_000,
+      outputTokens: 700,
+      reasoningTokens: 400,
+    });
+    // No wire total: the output is trusted as reported.
+    expect(
+      normaliseUsage({
+        inputTokens: 1_000,
+        outputTokens: 300,
+        reasoningTokens: 400,
+      }),
+    ).toMatchObject({ outputTokens: 300, reasoningTokens: 400 });
+  });
+
+  it('bills the prompt tokens of a Google Search grounding call as input', () => {
+    // Gemini reports them next to promptTokenCount; the AI SDK never reads
+    // the field, so it only survives in the raw usage.
+    expect(
+      normaliseUsage({
+        inputTokens: 2_000,
+        outputTokens: 500,
+        cachedInputTokens: 1_500,
+        raw: {
+          raw: {
+            promptTokenCount: 2_000,
+            toolUsePromptTokenCount: 6_000,
+            candidatesTokenCount: 500,
+            totalTokenCount: 8_500,
+          },
+        },
+      }),
+    ).toEqual({
+      inputTokens: 8_000,
+      // The cache covers the prompt, never the grounding tokens.
+      cachedInputTokens: 1_500,
+      outputTokens: 500,
+      reasoningTokens: 0,
+      estimated: false,
+    });
+  });
+
   it('keeps every count a non-negative integer within the prompt', () => {
     expect(
       normaliseUsage({

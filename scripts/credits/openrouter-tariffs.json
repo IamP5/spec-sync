@@ -1,12 +1,13 @@
 {
   "source": "https://openrouter.ai/api/v1/models",
-  "fetchedAt": "2026-09-07T21:46:52.815Z",
+  "fetchedAt": "2026-09-12T03:07:49.927Z",
   "unit": "micro-credits per million tokens (1 credit = 1_000_000 micro-credits = USD 0.01)",
   "conversion": "round_half_up(usd_per_token * 1e6 * 100 * 1e6)",
   "cacheReadFallback": "25% of input when OpenRouter publishes no input_cache_read",
   "models": [
     {
       "id": "7c1b1a10-0001-4000-8000-000000000001",
+      "migration": "V8",
       "provider": "openrouter",
       "modelId": "google/gemini-3.5-flash-lite",
       "version": 1,
@@ -22,6 +23,7 @@
     },
     {
       "id": "7c1b1a10-0001-4000-8000-000000000006",
+      "migration": "V8",
       "provider": "openrouter",
       "modelId": "google/gemini-3.8-flash",
       "version": 1,
@@ -37,6 +39,7 @@
     },
     {
       "id": "7c1b1a10-0001-4000-8000-000000000003",
+      "migration": "V8",
       "provider": "openrouter",
       "modelId": "google/gemini-3.1-pro-preview",
       "version": 1,
@@ -52,8 +55,41 @@
     },
     {
       "id": "7c1b1a10-0001-4000-8000-000000000004",
+      "migration": "V8",
       "provider": "openrouter",
       "modelId": "anthropic/claude-sonnet-5",
+      "version": 1,
+      "inputPerMillion": "200000000",
+      "cachedInputPerMillion": "20000000",
+      "outputPerMillion": "1000000000",
+      "cacheReadPublished": true,
+      "usd": {
+        "prompt": "0.000002",
+        "completion": "0.00001",
+        "inputCacheRead": "0.0000002"
+      }
+    },
+    {
+      "id": "7c1b1a10-0001-4000-8000-000000000007",
+      "migration": "V15",
+      "provider": "openrouter",
+      "modelId": "openai/gpt-5.6-luna",
+      "version": 1,
+      "inputPerMillion": "20000000",
+      "cachedInputPerMillion": "2000000",
+      "outputPerMillion": "120000000",
+      "cacheReadPublished": true,
+      "usd": {
+        "prompt": "0.0000002",
+        "completion": "0.0000012",
+        "inputCacheRead": "0.00000002"
+      }
+    },
+    {
+      "id": "7c1b1a10-0001-4000-8000-000000000008",
+      "migration": "V15",
+      "provider": "openrouter",
+      "modelId": "openai/gpt-5.6-sol",
       "version": 1,
       "inputPerMillion": "200000000",
       "cachedInputPerMillion": "20000000",

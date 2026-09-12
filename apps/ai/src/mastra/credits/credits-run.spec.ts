@@ -94,26 +94,27 @@ describe('admission', () => {
       status: 'INSUFFICIENT_CREDITS',
       available: 120_000,
       minimumCharge: 185_000,
-      cheaperModels: ['google/gemini-3.5-flash-lite'],
+      cheaperModels: ['openai/gpt-5.6-luna'],
     });
+    // Luna serves both cheaper tiers, so both are named.
     await expect(
-      run().admit('openrouter', 'anthropic/claude-sonnet-5', 'intelligent'),
+      run().admit('openrouter', 'openai/gpt-5.6-sol', 'intelligent'),
     ).rejects.toThrow(
       'INSUFFICIENT_CREDITS: Your AI credits (0.12) do not cover a reply in ' +
-        'Intelligent mode. Velocity mode fits your remaining credits.',
+        'Deep mode. Instant mode, Balanced mode fits your remaining credits.',
     );
   });
 
-  it('names a cheaper model that belongs to no mode by its own label', async () => {
+  it('names a cheaper model that belongs to no tier by its own label', async () => {
     openRun.mockResolvedValue({
       status: 'INSUFFICIENT_CREDITS',
       available: 120_000,
       minimumCharge: 185_000,
-      cheaperModels: ['openai/gpt-5.6-luna'],
+      cheaperModels: ['google/gemini-3.8-flash'],
     });
     await expect(
-      run().admit('openrouter', 'anthropic/claude-sonnet-5', 'intelligent'),
-    ).rejects.toThrow(/GPT 5\.6 Luna fits your remaining credits\.$/);
+      run().admit('openrouter', 'openai/gpt-5.6-sol', 'intelligent'),
+    ).rejects.toThrow(/Gemini 3\.8 Flash fits your remaining credits\.$/);
   });
 
   it('names no cheaper mode when none fits', async () => {
@@ -286,13 +287,9 @@ describe('metering', () => {
 describe('tool usage', () => {
   it('charges a sub-agent call at the tariff of its own role, not the chat one', async () => {
     const credits = run();
-    // Intelligent runs the chat on Claude but transcribes on Gemini Pro; a
-    // preview inside the run must be charged at the vision tariff.
-    await credits.admit(
-      'openrouter',
-      'anthropic/claude-sonnet-5',
-      'intelligent',
-    );
+    // Deep runs the chat on Sol but transcribes on Gemini Flash; a preview
+    // inside the run must be charged at the vision tariff.
+    await credits.admit('openrouter', 'openai/gpt-5.6-sol', 'intelligent');
     const requestContext = new RequestContext();
     requestContext.set(CREDITS_RUN_KEY, credits);
     requestContext.set(CHAT_RESOLVED_MODE_KEY, 'intelligent');
@@ -313,17 +310,18 @@ describe('tool usage', () => {
       expect.objectContaining({
         stepKey: 'tool-previewVehicleSource-1',
         provider: 'openrouter',
-        modelId: 'google/gemini-3.1-pro-preview',
+        modelId: 'google/gemini-3.8-flash',
       }),
     );
-    // Grounding stays on Vertex, so it is charged against the Vertex tariff.
+    // Grounding stays on Vertex, so it is charged against the Vertex tariff
+    // of the Gemini generation the tier reads with.
     expect(reportUsage).toHaveBeenCalledWith(
       'u-1',
       'r-1',
       expect.objectContaining({
         stepKey: 'tool-discoverVehicleSpecificationSources-2',
         provider: 'vertex',
-        modelId: 'gemini-2.5-flash',
+        modelId: 'gemini-3.1-pro-preview',
       }),
     );
   });

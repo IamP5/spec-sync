@@ -5,10 +5,22 @@ import { z } from 'zod';
 import { withToolFailure } from '../catalog/api-client';
 import { failureSchema } from '../catalog/contracts';
 import { recordToolUsage } from '../credits/credits-run';
-import { modelForRole, vertex } from '../models';
+import { chatProviderOptionsFor, modelForRole, vertex } from '../models';
 import { describeSource, resolveGroundedSources } from './grounding-links';
 
-/** Isolated grounding call: provider search is never mixed with application tools. */
+/**
+ * Grounded reads on the newer Gemini generations take up to about a minute
+ * and a half (measured 2026-09-11 for 3.8 Flash); the previous 45 s cut the
+ * Balanced and Deep tiers off mid-search.
+ */
+const DISCOVERY_TIMEOUT_MS = 90_000;
+
+/**
+ * Isolated grounding call: provider search is never mixed with application
+ * tools. `contentDiscovery` is a Vertex role in every tier — Google Search
+ * grounding has no OpenRouter equivalent, and routing it there sent the
+ * Google tool as an unknown tool type, so the search always came back empty.
+ */
 const discovery = new Agent({
   id: 'content-discovery',
   name: 'Vehicle source discovery',
@@ -52,12 +64,19 @@ export const discoverVehicleContent = createTool({
           ...input,
         }),
         {
-          // `contentDiscovery` follows the run's chat model, so the run's
-          // context has to reach the sub-agent's model resolver.
+          // The tier picks the Gemini generation and its thinking, so the
+          // run's context has to reach the sub-agent's model resolver.
           requestContext: context?.requestContext,
+          providerOptions: chatProviderOptionsFor(
+            context?.requestContext,
+            'contentDiscovery',
+          ),
           abortSignal: context?.abortSignal
-            ? AbortSignal.any([context.abortSignal, AbortSignal.timeout(45000)])
-            : AbortSignal.timeout(45000),
+            ? AbortSignal.any([
+                context.abortSignal,
+                AbortSignal.timeout(DISCOVERY_TIMEOUT_MS),
+              ])
+            : AbortSignal.timeout(DISCOVERY_TIMEOUT_MS),
           maxSteps: 2,
         },
       );

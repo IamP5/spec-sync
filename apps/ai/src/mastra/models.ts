@@ -8,8 +8,13 @@ import type { RequestContext } from '@mastra/core/request-context';
 
 import { cachedTariffModelIds } from './credits/credits-client';
 
+/** The options of one provider key, as Mastra types them. */
+type ProviderOptions = NonNullable<AgentExecutionOptions['providerOptions']>;
+type ProviderEntry = ProviderOptions[string];
+
 /**
- * The one place that decides which model serves which job.
+ * The one place that decides which model serves which job, and how hard it
+ * thinks.
  *
  * Every model call goes through OpenRouter (`openrouter/<vendor>/<model>`,
  * key from OPENROUTER_API_KEY) except Google Search grounding, which stays on
@@ -35,10 +40,15 @@ export type ModelRole =
   | 'title'
   | 'router';
 
-/** The four modes the composer offers. A mode is a map from role to model. */
+/**
+ * The three tiers the composer offers plus `auto`. The ids are the wire
+ * contract with apps/web and are kept from the first release; the labels the
+ * user sees are Instant / Balanced / Deep. A tier is a map from role to model
+ * and reasoning effort.
+ */
 export type ChatMode = 'velocity' | 'normal' | 'intelligent' | 'auto';
 
-/** A mode that names models directly; `auto` resolves to one of these per run. */
+/** A tier that names models directly; `auto` resolves to one of these per run. */
 export type ResolvedChatMode = Exclude<ChatMode, 'auto'>;
 
 export const CHAT_MODES: readonly ChatMode[] = [
@@ -48,77 +58,120 @@ export const CHAT_MODES: readonly ChatMode[] = [
   'auto',
 ];
 
-/** Mode a run uses when the browser sends none. */
+/** Tier a run uses when the browser sends none. */
 export const DEFAULT_MODE_ID: ResolvedChatMode = 'normal';
 
-/** The roles the mode table names; the others are configuration, not a mode. */
-type ModeDrivenRole = 'chat' | 'vision' | 'identification';
+const EFFORT_LEVELS = ['low', 'medium', 'high'] as const;
+
+export type ChatEffortLevel = (typeof EFFORT_LEVELS)[number];
+
+/** Where a role's model actually runs. `vertex` is grounding only. */
+export type ChatModelProvider = 'openrouter' | 'vertex';
+
+/** Provider and id of the model a role resolves to; what the wallet is charged against. */
+export interface ResolvedModel {
+  provider: ChatModelProvider;
+  id: string;
+}
+
+/** One cell of the tier table: a model and, when the tier fixes it, its reasoning effort. */
+interface TierEntry extends ResolvedModel {
+  effort?: ChatEffortLevel;
+}
+
+/** The roles the tier table names; `title` and `router` are configuration. */
+type TierRole =
+  | 'chat'
+  | 'vision'
+  | 'identification'
+  | 'contentDiscovery'
+  | 'discovery'
+  | 'extraction';
+
+function routed(id: string, effort?: ChatEffortLevel): TierEntry {
+  return effort
+    ? { provider: 'openrouter', id, effort }
+    : { provider: 'openrouter', id };
+}
+
+function grounded(id: string, effort?: ChatEffortLevel): TierEntry {
+  return effort
+    ? { provider: 'vertex', id, effort }
+    : { provider: 'vertex', id };
+}
 
 /**
- * Model per mode and role. `vision` stays on Gemini in every mode: PDF
- * transcription is a tuned structured-output prompt validated by
- * `validateTranscript`, and swapping its model needs its own eval set first.
- * Intelligent buys a better reasoner, not a different transcriber.
+ * Model and reasoning effort per tier and role, decided on 2026-09-11 from
+ * the measured evals in `apps/ai/eval` (blind-graded chat quality, PDF
+ * transcription alignment, identification recall, grounding hit rate) rather
+ * than from list prices.
+ *
+ * - `chat`: GPT 5.6 Luna ties Sol on quality at a ninth of the cost, so the
+ *   two cheaper tiers differ only in how hard Luna thinks; Deep buys Sol.
+ * - `vision` and `identification` stay on Gemini 3.8 Flash in every tier: it
+ *   is the one model that transcribes real brochures cleanly and identified
+ *   every gold vehicle. The tier only moves how hard it thinks (low / medium
+ *   / high) for both roles.
+ * - `contentDiscovery` and `discovery` are Google Search grounding and run on
+ *   Vertex in every tier — grounding through OpenRouter never worked (the
+ *   Google tool is sent as an unknown tool type). The tier picks the Gemini
+ *   generation that reads the results.
+ * - `extraction` is the curator's model; only Deep asks it to think harder.
+ *   Every extraction today runs without a request context and therefore at
+ *   the Balanced entry (see `resolvedModelForRole`).
  */
-const MODE_TABLE: Record<ResolvedChatMode, Record<ModeDrivenRole, string>> = {
+const TIER_TABLE: Record<ResolvedChatMode, Record<TierRole, TierEntry>> = {
   velocity: {
-    chat: 'google/gemini-3.5-flash-lite',
-    vision: 'google/gemini-3.5-flash-lite',
-    identification: 'google/gemini-3.5-flash-lite',
+    chat: routed('openai/gpt-5.6-luna', 'low'),
+    vision: routed('google/gemini-3.8-flash', 'low'),
+    identification: routed('google/gemini-3.8-flash', 'low'),
+    contentDiscovery: grounded('gemini-2.5-flash'),
+    discovery: grounded('gemini-2.5-flash'),
+    extraction: routed('google/gemini-3.8-flash'),
   },
   normal: {
-    chat: 'google/gemini-3.8-flash',
-    vision: 'google/gemini-3.8-flash',
-    identification: 'google/gemini-3.8-flash',
+    chat: routed('openai/gpt-5.6-luna', 'high'),
+    vision: routed('google/gemini-3.8-flash', 'medium'),
+    identification: routed('google/gemini-3.8-flash', 'medium'),
+    contentDiscovery: grounded('gemini-3.8-flash'),
+    discovery: grounded('gemini-3.8-flash'),
+    extraction: routed('google/gemini-3.8-flash'),
   },
   intelligent: {
-    chat: 'anthropic/claude-sonnet-5',
-    vision: 'google/gemini-3.1-pro-preview',
-    identification: 'google/gemini-3.8-flash',
+    chat: routed('openai/gpt-5.6-sol', 'medium'),
+    vision: routed('google/gemini-3.8-flash', 'high'),
+    identification: routed('google/gemini-3.8-flash', 'high'),
+    contentDiscovery: grounded('gemini-3.1-pro-preview'),
+    discovery: grounded('gemini-3.1-pro-preview'),
+    extraction: routed('google/gemini-3.8-flash', 'high'),
   },
 };
 
 const MODE_LABELS: Record<ChatMode, string> = {
-  velocity: 'Velocity',
-  normal: 'Normal',
-  intelligent: 'Intelligent',
+  velocity: 'Instant',
+  normal: 'Balanced',
+  intelligent: 'Deep',
   auto: 'Auto',
 };
 
 const MODE_DESCRIPTIONS: Record<ChatMode, string> = {
-  velocity: 'Fastest answers, lowest cost.',
-  normal: 'Balanced answers for everyday questions.',
-  intelligent: 'A stronger reasoner for hard comparisons.',
-  auto: 'Picks a mode from your message.',
+  velocity: 'Quick answers at the lowest cost.',
+  normal: 'Thorough answers for everyday questions.',
+  intelligent: 'The strongest reasoning for hard comparisons.',
+  auto: 'Picks a level from your message.',
 };
-
-/**
- * Gemini on Vertex AI serving `discovery`. Grounding is the one call this
- * service still makes outside OpenRouter, so its model is fixed rather than a
- * mode entry: the wallet is charged under `provider = 'vertex'` with this bare
- * model id, which therefore needs its own active tariff row.
- * `SPECSYNC_DISCOVERY_MODEL` overrides it.
- */
-export const DEFAULT_DISCOVERY_MODEL = 'gemini-2.5-flash';
-
-export function discoveryModelId(env: NodeJS.ProcessEnv = process.env): string {
-  return env['SPECSYNC_DISCOVERY_MODEL'] ?? DEFAULT_DISCOVERY_MODEL;
-}
-
-/** Curator ingestion model; an operator setting, never a user's mode. */
-const DEFAULT_EXTRACTION_MODEL = 'google/gemini-3.8-flash';
 
 /** Thread titles; SpecSync's own budget, never charged to the user. */
 const DEFAULT_TITLE_MODEL = 'openai/gpt-5.6-luna';
 
 /**
- * Request context key under which the CopilotKit route stores the mode the
+ * Request context key under which the CopilotKit route stores the tier the
  * browser asked for (see `chat-model-route.ts`).
  */
 export const CHAT_MODE_KEY = 'chat-mode';
 
 /**
- * Request context key under which the CopilotKit route stores the mode a run
+ * Request context key under which the CopilotKit route stores the tier a run
  * actually runs in. For `auto` the heuristic decides it once, before
  * admission, and pins it here so every role of the run agrees on it.
  */
@@ -129,17 +182,14 @@ export const CHAT_ROLE_MODELS_KEY = 'chat-role-models';
 
 /**
  * Request context key under which the CopilotKit route stores the reasoning
- * effort the browser asked for. `chatProviderOptionsFor` maps it to the
- * thinking settings of the model that serves the run.
+ * effort a browser of the previous release still sends. The tier now fixes
+ * the effort of every role; an explicit level here overrides the `chat`
+ * role's for one release and nothing else.
  */
 export const CHAT_EFFORT_KEY = 'chat-effort';
 
-/** Effort id that leaves the amount of thinking to the provider. */
+/** Effort id that leaves the amount of thinking to the tier. */
 export const DEFAULT_EFFORT_ID = 'auto';
-
-const EFFORT_LEVELS = ['low', 'medium', 'high'] as const;
-
-export type ChatEffortLevel = (typeof EFFORT_LEVELS)[number];
 
 /** One entry of the effort selector; the id is part of the contract with apps/web. */
 export interface ChatEffortOption {
@@ -157,15 +207,6 @@ const GEMINI_THINKING_BUDGETS: Record<ChatEffortLevel, number> = {
   high: 24576,
 };
 
-/** Where a role's model actually runs. `vertex` is grounding only. */
-export type ChatModelProvider = 'openrouter' | 'vertex';
-
-/** Provider and id of the model a role resolves to; what the wallet is charged against. */
-export interface ResolvedModel {
-  provider: ChatModelProvider;
-  id: string;
-}
-
 /** One entry of the model catalog; the id is part of the contract with apps/web. */
 export interface ChatModelOption {
   id: string;
@@ -174,28 +215,24 @@ export interface ChatModelOption {
   provider: ChatModelProvider;
 }
 
-/** One entry of the mode picker. */
+/** One entry of the tier picker. */
 export interface ChatModeOption {
   id: ChatMode;
   label: string;
   description: string;
 }
 
-/** The roles the advanced selector may override; the rest are not user-configurable. */
-export const CONFIGURABLE_ROLES = [
-  'chat',
-  'vision',
-  'identification',
-  'contentDiscovery',
-] as const;
+/**
+ * The roles the advanced selector may override. Only `chat`: the other roles
+ * are pinned to the model their eval singled out, and grounding cannot leave
+ * Vertex at all.
+ */
+export const CONFIGURABLE_ROLES = ['chat'] as const;
 
 export type ConfigurableRole = (typeof CONFIGURABLE_ROLES)[number];
 
 const ROLE_LABELS: Record<ConfigurableRole, string> = {
   chat: 'Chat',
-  vision: 'Document reading',
-  identification: 'Configuration identification',
-  contentDiscovery: 'Content discovery',
 };
 
 export function chatModes(): ChatModeOption[] {
@@ -210,22 +247,22 @@ export function modeLabelOf(mode: ChatMode): string {
   return MODE_LABELS[mode];
 }
 
-/** The `chat` model of a mode, which is what its cost estimate is computed on. */
+/** The `chat` model of a tier, which is what its cost estimate is computed on. */
 export function chatModelOfMode(mode: ResolvedChatMode): string {
-  return MODE_TABLE[mode].chat;
+  return TIER_TABLE[mode].chat.id;
 }
 
-/** Modes a model belongs to, for the insufficient-credits message. */
+/** Tiers whose `chat` model is `id`, for the insufficient-credits message. */
 export function modesOfModel(id: string): ResolvedChatMode[] {
-  return (Object.keys(MODE_TABLE) as ResolvedChatMode[]).filter((mode) =>
-    Object.values(MODE_TABLE[mode]).includes(id),
+  return (Object.keys(TIER_TABLE) as ResolvedChatMode[]).filter(
+    (mode) => TIER_TABLE[mode].chat.id === id,
   );
 }
 
 /**
  * Models the advanced selector may offer. `SPECSYNC_CHAT_MODELS` (comma
  * separated OpenRouter ids) overrides the default, which is the union of the
- * models the mode table names.
+ * models the tier table names for the configurable roles.
  */
 export function chatModelIds(env: NodeJS.ProcessEnv = process.env): string[] {
   const configured = listOf(env['SPECSYNC_CHAT_MODELS']);
@@ -233,9 +270,9 @@ export function chatModelIds(env: NodeJS.ProcessEnv = process.env): string[] {
     return configured;
   }
   const ids = new Set<string>();
-  for (const mode of Object.values(MODE_TABLE)) {
-    for (const id of Object.values(mode)) {
-      ids.add(id);
+  for (const tier of Object.values(TIER_TABLE)) {
+    for (const role of CONFIGURABLE_ROLES) {
+      ids.add(tier[role].id);
     }
   }
   return [...ids];
@@ -264,8 +301,7 @@ export interface ChatRoleOption {
 
 /**
  * The models each configurable role may be overridden with, filtered by the
- * capability the role needs: `vision` reads attachments, `identification`
- * needs structured output. Both flags come from Mastra's own capability
+ * capability the role needs. Both flags come from Mastra's own capability
  * tables, so an id the router cannot serve for that job is never offered.
  */
 export function chatRoles(ids: string[] = chatModelIds()): ChatRoleOption[] {
@@ -288,10 +324,10 @@ function roleCanRun(role: ModelRole, id: string): boolean {
 }
 
 /**
- * The mode a run uses. `auto` is resolved once before admission and pinned
+ * The tier a run uses. `auto` is resolved once before admission and pinned
  * into the request context, so every role of the run reads the same decision.
  * Without a request context — the curator workflow, thread titles — a run has
- * no mode and every role falls back to its default.
+ * no tier and every role falls back to the Balanced entry.
  */
 export function modeOf(
   requestContext?: Pick<RequestContext, 'get'>,
@@ -313,7 +349,7 @@ export function isChatMode(value: unknown): value is ChatMode {
 }
 
 /**
- * The advanced override for a role, or `undefined` when it follows the mode.
+ * The advanced override for a role, or `undefined` when it follows the tier.
  * An override is honoured only while it names a model of the catalog that can
  * do the role's job and that the wallet can price; anything else is ignored,
  * never fatal, so a stale browser preference cannot break a run.
@@ -343,53 +379,77 @@ function isConfigurable(role: ModelRole): role is ConfigurableRole {
 }
 
 /**
+ * The tier cell a role resolves to for this request: model, provider and the
+ * effort the tier fixes for it. `title` and `router` are configuration, not
+ * tier entries; `discovery` and `extraction` keep their operator overrides
+ * (`SPECSYNC_DISCOVERY_MODEL`, `SPECSYNC_EXTRACTION_MODEL`), which replace
+ * the model in every tier and leave the effort alone. An advanced override
+ * of `chat` likewise keeps the tier's effort.
+ */
+function tierEntryOf(
+  role: ModelRole,
+  requestContext: Pick<RequestContext, 'get'> | undefined,
+  env: NodeJS.ProcessEnv,
+): TierEntry {
+  const tier = TIER_TABLE[modeOf(requestContext)];
+  switch (role) {
+    case 'title':
+      return routed(env['SPECSYNC_TITLE_MODEL'] ?? DEFAULT_TITLE_MODEL);
+    // The classifier-backed router is a later change; until then it costs the
+    // same as a Balanced chat turn, which is what its estimates assume.
+    case 'router':
+      return TIER_TABLE[DEFAULT_MODE_ID].chat;
+    case 'discovery':
+      return withModel(tier.discovery, env['SPECSYNC_DISCOVERY_MODEL']);
+    case 'extraction':
+      return withModel(tier.extraction, env['SPECSYNC_EXTRACTION_MODEL']);
+    default:
+      return withModel(tier[role], roleOverrideOf(role, requestContext, env));
+  }
+}
+
+function withModel(entry: TierEntry, id: string | undefined): TierEntry {
+  return id ? { ...entry, id } : entry;
+}
+
+/**
  * Provider and id the role actually resolves to; what the wallet is charged
- * against. Called without a request context a role resolves to its default,
- * never to a user's mode — that is what keeps the curator workflow and the
- * thread titles on SpecSync's own budget.
+ * against. Called without a request context a role resolves to the Balanced
+ * entry, never to a user's tier — that is what keeps the curator workflow and
+ * the thread titles on SpecSync's own budget.
  */
 export function resolvedModelForRole(
   role: ModelRole,
   requestContext?: Pick<RequestContext, 'get'>,
   env: NodeJS.ProcessEnv = process.env,
 ): ResolvedModel {
-  if (role === 'discovery') {
-    return { provider: 'vertex', id: discoveryModelId(env) };
-  }
-  return {
-    provider: 'openrouter',
-    id: openRouterIdFor(role, requestContext, env),
-  };
-}
-
-function openRouterIdFor(
-  role: Exclude<ModelRole, 'discovery'>,
-  requestContext: Pick<RequestContext, 'get'> | undefined,
-  env: NodeJS.ProcessEnv,
-): string {
-  const override = roleOverrideOf(role, requestContext, env);
-  if (override) {
-    return override;
-  }
-  switch (role) {
-    case 'extraction':
-      return env['SPECSYNC_EXTRACTION_MODEL'] ?? DEFAULT_EXTRACTION_MODEL;
-    case 'title':
-      return env['SPECSYNC_TITLE_MODEL'] ?? DEFAULT_TITLE_MODEL;
-    // The classifier-backed router is a later change; until then it costs the
-    // same as a normal chat turn, which is what its estimates assume.
-    case 'router':
-      return MODE_TABLE[DEFAULT_MODE_ID].chat;
-    // Content discovery is not in the mode table: it follows `chat`.
-    case 'contentDiscovery':
-      return MODE_TABLE[modeOf(requestContext)].chat;
-    default:
-      return MODE_TABLE[modeOf(requestContext)][role];
-  }
+  const { provider, id } = tierEntryOf(role, requestContext, env);
+  return { provider, id };
 }
 
 /**
- * The model a role runs on for this request. `discovery` returns the Vertex
+ * The reasoning effort a role runs with for this request, or `undefined`
+ * when the tier leaves it to the provider. The tier fixes it per role; the
+ * `effort` property a browser of the previous release still sends overrides
+ * the `chat` role's for one release.
+ */
+export function effortForRole(
+  role: ModelRole,
+  requestContext?: Pick<RequestContext, 'get'>,
+  env: NodeJS.ProcessEnv = process.env,
+): ChatEffortLevel | undefined {
+  if (role === 'chat') {
+    const asked = requestContext?.get(CHAT_EFFORT_KEY);
+    const level = EFFORT_LEVELS.find((candidate) => candidate === asked);
+    if (level) {
+      return level;
+    }
+  }
+  return tierEntryOf(role, requestContext, env).effort;
+}
+
+/**
+ * The model a role runs on for this request. A Vertex role returns the
  * provider instance, which is what keeps `vertex.tools.googleSearch({})`
  * working; every other role returns an OpenRouter router string.
  */
@@ -409,49 +469,65 @@ export function routerStringOf(id: string): `openrouter/${string}` {
   return `openrouter/${id}`;
 }
 
-/** Reasoning efforts the chat offers for any model; `auto` is the provider default. */
+/**
+ * Reasoning efforts the composer may pick. None since the tiers fix the
+ * effort per role: the browser hides its effort track when the list is
+ * empty, and the `effort` property it may still send is honoured for `chat`
+ * only (`effortForRole`).
+ */
 export function chatEfforts(): ChatEffortOption[] {
-  return [
-    { id: DEFAULT_EFFORT_ID, label: 'Auto' },
-    ...EFFORT_LEVELS.map((id) => ({ id, label: labelOf(id) })),
-  ];
+  return [];
 }
 
 /**
  * Provider options for a run of `model` with reasoning effort `effort`.
  *
- * Gemini always streams its thought summaries; a picked effort becomes a
- * thinking level on Gemini 3.x, a thinking budget on Gemini 2.5 and a
- * reasoning effort on OpenAI and Anthropic (docs/openrouter-model-routing.md).
+ * A picked effort becomes a thinking level on Gemini 3.x, a thinking budget
+ * on Gemini 2.5 and a reasoning effort on OpenAI and Anthropic
+ * (docs/openrouter-model-routing.md). The chat agent additionally streams
+ * Gemini's thought summaries (`thoughts`); the structured-output roles do not.
  *
  * Those vendor keys are what a direct provider instance reads, and the Vertex
- * `discovery` role is served by exactly that. A model routed through
- * OpenRouter is not: Mastra 1.64 resolves `openrouter/…` to its own OpenRouter
- * chat model, whose `doGenerate` spreads only `providerOptions.openrouter`
- * into the request body and drops every other key (verified against
- * @mastra/core 1.64). The same effort is therefore also emitted as
- * OpenRouter's own `reasoning` field — `effort` where the vendor takes a
- * level, `max_tokens` where it takes a budget — so a picked effort reaches the
- * vendor instead of being silently discarded.
+ * roles are served by exactly that. A model routed through OpenRouter is not:
+ * Mastra 1.64 resolves `openrouter/…` to its own OpenRouter chat model, whose
+ * `doGenerate` spreads only `providerOptions.openrouter` into the request
+ * body and drops every other key (verified against @mastra/core 1.64). The
+ * same effort is therefore also emitted as OpenRouter's own `reasoning` field
+ * — `effort` where the vendor takes a level, `max_tokens` where it takes a
+ * budget — so a picked effort reaches the vendor instead of being silently
+ * discarded.
+ *
+ * Prompt caching rides on the same key. OpenAI and Gemini cache a repeated
+ * prompt prefix on their own (OpenRouter, "Prompt caching": automatic from
+ * 1,024 tokens, no request field); Anthropic caches nothing unless asked, so
+ * an Anthropic model gets OpenRouter's top-level `cache_control`, which places
+ * the breakpoint on the last cacheable block of the prompt for us.
  */
 export function chatProviderOptions(
   model: ResolvedModel,
   effort: unknown,
-): NonNullable<AgentExecutionOptions['providerOptions']> {
+  { thoughts = true }: { thoughts?: boolean } = {},
+): ProviderOptions {
   const level = EFFORT_LEVELS.find((candidate) => candidate === effort);
   const vendor = model.provider === 'vertex' ? 'google' : vendorOf(model.id);
   const name = modelNameOf(model.id);
   if (vendor !== 'google') {
     const options = level ? { [vendor]: { reasoningEffort: level } } : {};
-    return model.provider === 'openrouter' && level
-      ? { ...options, openrouter: { reasoning: { effort: level } } }
+    const routed: ProviderEntry = {
+      ...(level ? { reasoning: { effort: level } } : {}),
+      ...(vendor === 'anthropic'
+        ? { cache_control: { type: 'ephemeral' } }
+        : {}),
+    };
+    return model.provider === 'openrouter' && Object.keys(routed).length
+      ? { ...options, openrouter: routed }
       : options;
   }
   const thinkingConfig: {
-    includeThoughts: boolean;
+    includeThoughts?: boolean;
     thinkingLevel?: ChatEffortLevel;
     thinkingBudget?: number;
-  } = { includeThoughts: true };
+  } = thoughts ? { includeThoughts: true } : {};
   let routed:
     | { reasoning: { effort: ChatEffortLevel } }
     | { reasoning: { max_tokens: number } }
@@ -468,21 +544,28 @@ export function chatProviderOptions(
     : { google: { thinkingConfig } };
 }
 
-/** Provider options for a role, from what the CopilotKit route put into the request context. */
+/**
+ * Provider options for a role of this request: the tier's model and effort
+ * for it, from what the CopilotKit route put into the request context. Every
+ * role that calls a model passes these, so a tier changes how hard the
+ * transcriber, the identifier and the grounding reader think, not only the
+ * chat agent. Without a request context the Balanced entry applies.
+ */
 export function chatProviderOptionsFor(
-  requestContext: Pick<RequestContext, 'get'>,
+  requestContext: Pick<RequestContext, 'get'> | undefined,
   role: ModelRole = 'chat',
 ) {
   return chatProviderOptions(
     resolvedModelForRole(role, requestContext),
-    requestContext.get(CHAT_EFFORT_KEY),
+    effortForRole(role, requestContext),
+    { thoughts: role === 'chat' },
   );
 }
 
-/** Prompt length above which auto mode picks Intelligent. */
+/** Prompt length above which auto picks Deep. */
 export const AUTO_LONG_PROMPT_CHARS = 1_200;
 
-/** Prompt length below which auto mode may pick Velocity. */
+/** Prompt length below which auto may pick Instant. */
 export const AUTO_SHORT_PROMPT_CHARS = 120;
 
 /** What the auto heuristic reads: the run's first user message and the thread's state. */
@@ -513,7 +596,7 @@ export function comparesManyVehicles(prompt: string): boolean {
 }
 
 /**
- * The mode `auto` runs in. Heuristic only in this release: no classifier model
+ * The tier `auto` runs in. Heuristic only in this release: no classifier model
  * call, so the decision costs nothing and cannot itself run the wallet dry.
  * It is made once, from the first user message of the run and the thread
  * state, and pinned for the whole run.
@@ -550,14 +633,14 @@ export function vendorOf(id: string): string {
   return slash === -1 ? '' : id.slice(0, slash);
 }
 
-/** "google/gemini-3.8-flash" → "gemini-3.5-flash". */
+/** "google/gemini-3.8-flash" → "gemini-3.8-flash". */
 export function modelNameOf(id: string): string {
   const slash = id.lastIndexOf('/');
   return slash === -1 ? id : id.slice(slash + 1);
 }
 
 /**
- * "google/gemini-3.8-flash" → "Gemini 3.5 Flash", "openai/gpt-5.6-luna" →
+ * "google/gemini-3.8-flash" → "Gemini 3.8 Flash", "openai/gpt-5.6-luna" →
  * "GPT 5.6 Luna", "low" → "Low". The vendor prefix is dropped: the catalog
  * carries it in its own field.
  */

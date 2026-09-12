@@ -3,7 +3,12 @@ import type { RequestContext } from '@mastra/core/request-context';
 import { createCanvas } from '@napi-rs/canvas';
 import { z } from 'zod';
 
-import { modelForRole, resolvedModelForRole } from '../models';
+import {
+  chatProviderOptionsFor,
+  effortForRole,
+  modelForRole,
+  resolvedModelForRole,
+} from '../models';
 
 /** Pages per transcription request; small batches keep long brochures complete. */
 const PAGES_PER_BATCH = 4;
@@ -11,6 +16,14 @@ const PAGES_PER_BATCH = 4;
 const BATCH_CONCURRENCY = 2;
 /** Model calls per batch before the capture fails. */
 const TRANSCRIPTION_ATTEMPTS = 2;
+/** Wall-clock budget of one batch call. */
+const BATCH_TIMEOUT_MS = 120_000;
+/**
+ * The same budget when the tier asks for `high` thinking: a four-page batch
+ * measured ~125 s on Gemini 3.8 Flash at that level (2026-09-11), so the
+ * plain budget would fail every Deep transcription on its first attempt.
+ */
+const HIGH_EFFORT_BATCH_TIMEOUT_MS = 180_000;
 export const MAX_PDF_PAGES = 24;
 const MAX_TRANSCRIPT_CHARS = 150_000;
 
@@ -254,12 +267,22 @@ async function transcribeBatch(
   // One corrective retry can recover incomplete/reordered evidence. Provider
   // content blocks are terminal; repeating them cannot produce accepted evidence.
   let failure: unknown;
+  // The tier fixes the transcriber's thinking (`vision` role); the curator
+  // workflow passes no context and reads at the Balanced level.
+  const providerOptions = chatProviderOptionsFor(requestContext, 'vision');
+  const timeoutMs =
+    effortForRole('vision', requestContext) === 'high'
+      ? HIGH_EFFORT_BATCH_TIMEOUT_MS
+      : BATCH_TIMEOUT_MS;
   for (let attempt = 0; attempt < TRANSCRIPTION_ATTEMPTS; attempt++) {
     signal.throwIfAborted();
     await assertOwnership?.();
     signal.throwIfAborted();
     try {
-      const callSignal = AbortSignal.any([signal, AbortSignal.timeout(120000)]);
+      const callSignal = AbortSignal.any([
+        signal,
+        AbortSignal.timeout(timeoutMs),
+      ]);
       const retryContent: Array<TextPart | ImagePart> =
         attempt === 0
           ? content
@@ -274,9 +297,10 @@ async function transcribeBatch(
         [{ role: 'user', content: retryContent }],
         {
           // The chat preview passes the run's context so the `vision` role
-          // follows the user's mode; the curator workflow passes none and the
-          // role resolves to its default.
+          // follows the user's tier; the curator workflow passes none and the
+          // role resolves to the Balanced entry.
           requestContext,
+          providerOptions,
           structuredOutput: { schema },
           maxSteps: 1,
           modelSettings: { maxOutputTokens: 40000, temperature: 0 },

@@ -6,13 +6,14 @@ import { fileURLToPath } from 'node:url';
 // Generates the AI credits rate card from OpenRouter's public model catalog.
 //
 //   node scripts/credits/openrouter-tariffs.mjs            # refresh the snapshot
-//   node scripts/credits/openrouter-tariffs.mjs --sql      # print the migration rows
+//   node scripts/credits/openrouter-tariffs.mjs --sql      # print every migration's rows
+//   node scripts/credits/openrouter-tariffs.mjs --sql V15  # one migration's rows
 //
 // The snapshot (`openrouter-tariffs.json`) is committed next to this file and is
 // the single source the migration rows are generated from: prices are never
 // typed by hand and never invented. `--sql` reads the snapshot, so the rows in
-// `V8__openrouter_credits.sql` can be regenerated offline and diffed against
-// what is committed.
+// every seeding migration can be regenerated offline and diffed against what
+// is committed.
 //
 // See docs/openrouter-model-routing.md, "Rate card".
 
@@ -21,14 +22,20 @@ const SNAPSHOT = path.join(here, 'openrouter-tariffs.json');
 
 const CATALOG_URL = 'https://openrouter.ai/api/v1/models';
 
-// The models the seed prices: the mode table of the contract, which is also the
-// default of SPECSYNC_CHAT_MODELS. Order is the order of the migration rows.
-export const SEEDED_MODELS = [
-  'google/gemini-3.5-flash-lite',
-  'google/gemini-3.8-flash',
-  'google/gemini-3.1-pro-preview',
-  'anthropic/claude-sonnet-5',
+// Every model a seeding migration priced, with the migration that seeded it.
+// Order is the order of the migration rows. A model stays here after its tariff
+// is deactivated: the ledger points at the row, and the snapshot test checks
+// that each migration still contains the rows it was generated with.
+export const SEEDS = [
+  { id: 'google/gemini-3.5-flash-lite', migration: 'V8' },
+  { id: 'google/gemini-3.8-flash', migration: 'V8' },
+  { id: 'google/gemini-3.1-pro-preview', migration: 'V8' },
+  { id: 'anthropic/claude-sonnet-5', migration: 'V8' },
+  { id: 'openai/gpt-5.6-luna', migration: 'V15' },
+  { id: 'openai/gpt-5.6-sol', migration: 'V15' },
 ];
+
+export const SEEDED_MODELS = SEEDS.map((seed) => seed.id);
 
 // Stable, hand-assigned tariff ids: the ledger points at a tariff version, so a
 // regenerated seed must keep naming the same rows.
@@ -37,6 +44,37 @@ const TARIFF_IDS = {
   'google/gemini-3.8-flash': '7c1b1a10-0001-4000-8000-000000000006',
   'google/gemini-3.1-pro-preview': '7c1b1a10-0001-4000-8000-000000000003',
   'anthropic/claude-sonnet-5': '7c1b1a10-0001-4000-8000-000000000004',
+  'openai/gpt-5.6-luna': '7c1b1a10-0001-4000-8000-000000000007',
+  'openai/gpt-5.6-sol': '7c1b1a10-0001-4000-8000-000000000008',
+};
+
+// Google Search grounding runs on Vertex AI directly and is billed by Google
+// under the bare model id, so the two Gemini generations the Balanced and Deep
+// tiers ground with need their own `vertex` tariff rows. Google publishes the
+// same list price on Vertex and through OpenRouter, so the rows mirror the
+// OpenRouter catalog entry of the same model. Version 2: V7 seeded version 1 of
+// both and V8 deactivated them.
+export const VERTEX_MIRRORS = [
+  {
+    id: '7c1b1a10-0001-4000-8000-000000000009',
+    modelId: 'gemini-3.8-flash',
+    source: 'google/gemini-3.8-flash',
+    version: 2,
+    migration: 'V15',
+  },
+  {
+    id: '7c1b1a10-0001-4000-8000-00000000000a',
+    modelId: 'gemini-3.1-pro-preview',
+    source: 'google/gemini-3.1-pro-preview',
+    version: 2,
+    migration: 'V15',
+  },
+];
+
+// Path of each seeding migration, relative to this file.
+export const MIGRATIONS = {
+  V8: '../../apps/api/src/main/resources/db/migration/V8__openrouter_credits.sql',
+  V15: '../../apps/api/src/main/resources/db/migration/V15__tier_tariffs.sql',
 };
 
 // micro_credits_per_million = round_half_up(usd_per_token x 1e6 x 100 x 1e6),
@@ -137,14 +175,14 @@ async function fetchCatalog() {
 
 async function refresh() {
   const catalog = await fetchCatalog();
-  const models = SEEDED_MODELS.map((id) => {
+  const models = SEEDS.map(({ id, migration }) => {
     const entry = catalog.find((model) => model.id === id);
     if (!entry) {
       throw new Error(
-        `OpenRouter does not list ${id}; the mode table needs a decision, not a guess`,
+        `OpenRouter does not list ${id}; the tier table needs a decision, not a guess`,
       );
     }
-    return { id: TARIFF_IDS[id], ...tariffFor(entry) };
+    return { id: TARIFF_IDS[id], migration, ...tariffFor(entry) };
   });
   const snapshot = {
     source: CATALOG_URL,
@@ -164,25 +202,48 @@ async function readSnapshot() {
   return JSON.parse(await readFile(SNAPSHOT, 'utf8'));
 }
 
-/** The VALUES rows of the V8 seed, in the order of SEEDED_MODELS. */
-export function sqlRows(snapshot) {
-  return snapshot.models
-    .map(
-      (model) =>
-        `    ('${model.id}', 'openrouter', '${model.modelId}', ${model.version}, ` +
-        `${model.inputPerMillion}, ${model.cachedInputPerMillion}, ${model.outputPerMillion}, true)`,
-    )
-    .join(',\n');
+function row(id, provider, modelId, version, prices) {
+  return (
+    `    ('${id}', '${provider}', '${modelId}', ${version}, ` +
+    `${prices.inputPerMillion}, ${prices.cachedInputPerMillion}, ${prices.outputPerMillion}, true)`
+  );
+}
+
+/**
+ * The VALUES rows of one seeding migration (every migration when `migration`
+ * is omitted): the OpenRouter rows in the order of SEEDS, then the Vertex
+ * mirrors that migration adds. A model seeded by V8 keeps its migration even
+ * though V15 deactivates it, so the V8 test keeps guarding V8's rows.
+ */
+export function sqlRows(snapshot, migration) {
+  const rows = snapshot.models
+    .filter((model) => !migration || model.migration === migration)
+    .map((model) =>
+      row(model.id, 'openrouter', model.modelId, model.version, model),
+    );
+  for (const mirror of VERTEX_MIRRORS) {
+    if (migration && mirror.migration !== migration) continue;
+    const source = snapshot.models.find(
+      (model) => model.modelId === mirror.source,
+    );
+    if (!source) {
+      throw new Error(`${mirror.source} is not in the snapshot`);
+    }
+    rows.push(row(mirror.id, 'vertex', mirror.modelId, mirror.version, source));
+  }
+  return rows.join(',\n');
 }
 
 const [, entry] = process.argv;
 if (entry && path.resolve(entry) === fileURLToPath(import.meta.url)) {
-  if (process.argv.includes('--sql')) {
+  const sql = process.argv.indexOf('--sql');
+  if (sql !== -1) {
     const snapshot = await readSnapshot();
+    const migration = process.argv[sql + 1];
     console.log(
       `-- generated from openrouter-tariffs.json, fetched ${snapshot.fetchedAt}`,
     );
-    console.log(sqlRows(snapshot));
+    console.log(sqlRows(snapshot, migration));
   } else {
     const snapshot = await refresh();
     console.log(

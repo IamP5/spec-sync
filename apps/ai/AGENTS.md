@@ -93,38 +93,54 @@ apps/ai/
   refer to. The web client renders server tool results directly. Change names
   only together with the client.
 - `models.ts` is the single role registry (see
-  `docs/openrouter-model-routing.md`). Eight roles — `chat`, `discovery`,
-  `vision`, `identification`, `contentDiscovery`, `extraction`, `title`,
-  `router` — each resolve through `modelForRole(role, requestContext)`.
-  `discovery` returns the Vertex provider instance; every other role returns
-  an `openrouter/<id>` router string. A role resolved **without** a request
-  context falls back to its default, which is what keeps the curator ingestion
-  workflow and the thread titles on SpecSync's own budget rather than on a
-  user's mode. A sub-agent therefore only follows the user's mode when its
-  caller passes `requestContext` into `generate()`.
-- The browser picks a **mode**, not a model: `velocity` / `normal` /
-  `intelligent` / `auto`, sent as the CopilotKit property
-  (AG-UI `forwardedProps`) `mode`, with optional per-role overrides in
-  `roleModels`. `setChatModelContext` stores both in the request context.
-  `auto` is resolved by a heuristic there — before admission — and pinned, so
-  every role of the run agrees on one decision. The older `model` property is
-  accepted for one release as a synonym for `roleModels.chat`. An override is
-  ignored (never fatal) when it names a model outside `SPECSYNC_CHAT_MODELS`,
-  one that cannot do the role's job, or one the wallet cannot price.
+  `docs/openrouter-model-routing.md`, "Tier revision"). Eight roles — `chat`,
+  `discovery`, `vision`, `identification`, `contentDiscovery`, `extraction`,
+  `title`, `router` — each resolve through `modelForRole(role, requestContext)`
+  and `effortForRole(role, requestContext)`. The two grounding roles,
+  `discovery` and `contentDiscovery`, return the Vertex provider instance;
+  every other role returns an `openrouter/<id>` router string. A role
+  resolved **without** a request context falls back to the Balanced tier's
+  entry, which is what keeps the curator ingestion workflow, the shared
+  research worker and the thread titles on SpecSync's own budget rather than
+  on a user's tier. A sub-agent therefore only follows the user's tier when
+  its caller passes `requestContext` into `generate()` — and it only thinks at
+  the tier's effort when the caller also passes
+  `providerOptions: chatProviderOptionsFor(requestContext, role)`, which every
+  model-calling role does today.
+- The browser picks a **tier**, not a model: `velocity` / `normal` /
+  `intelligent` / `auto` on the wire (Instant / Balanced / Deep to the user),
+  sent as the CopilotKit property (AG-UI `forwardedProps`) `mode`, with an
+  optional `chat` override in `roleModels` (the only configurable role). The
+  service accepts all of these; since 2026-09-12 the web composer offers the
+  three named tiers only and sends no `roleModels`, so `auto` and the
+  overrides are reachable by other clients, not by the chat page.
+  `setChatModelContext` stores both in the request context. `auto` is
+  resolved by a heuristic there — before admission — and pinned, so every role
+  of the run agrees on one decision. The older `model` property is accepted
+  for one release as a synonym for `roleModels.chat`. An override is ignored
+  (never fatal) when it names a model outside `SPECSYNC_CHAT_MODELS`, one that
+  cannot do the role's job, or one the wallet cannot price; it keeps the
+  tier's effort.
 - The browser also sends the language its interface runs in
   (`forwardedProps.locale`, a BCP 47 tag). `setChatModelContext` stores it and
   the agent's instructions name that language, so a Portuguese interface gets a
   Portuguese answer whatever language the user types in. A tag `language.ts`
   does not know is ignored and the agent follows the conversation instead;
   adding a locale to the web app means adding it there too.
-- The picked reasoning effort (`forwardedProps.effort`,
-  `auto`/`low`/`medium`/`high` from `chatEfforts()`) becomes a Gemini thinking
-  level (3.x) or thinking budget (2.5) or an OpenAI/Anthropic
-  `reasoningEffort` (`chatProviderOptionsFor`); Gemini thought summaries stay
-  on regardless. Mastra 1.64's OpenRouter model forwards only
-  `providerOptions.openrouter` to the wire, so the same effort is emitted
-  there as OpenRouter's own `reasoning` field as well — dropping that key
-  silently disables reasoning control on every routed model.
+- The tier fixes the reasoning effort of every role (`effortForRole`);
+  `chatEfforts()` is empty, so the browser shows no effort track. A
+  `forwardedProps.effort` of `low`/`medium`/`high` from a browser of the
+  previous release overrides the `chat` role's effort for one release and
+  nothing else. An effort becomes a Gemini thinking level (3.x) or thinking
+  budget (2.5) or an OpenAI/Anthropic `reasoningEffort`
+  (`chatProviderOptions`); the chat agent keeps Gemini thought summaries on,
+  the structured-output roles do not. Mastra 1.64's OpenRouter model forwards
+  only `providerOptions.openrouter` to the wire, spread into the top level of
+  the request body, so the same effort is emitted there as OpenRouter's own
+  `reasoning` field as well — dropping that key silently disables reasoning
+  control on every routed model. Prompt caching rides on the same key: OpenAI
+  and Gemini cache a repeated prefix on their own, an Anthropic model gets
+  OpenRouter's top-level `cache_control`.
 - AI credits are on exactly while `SPECSYNC_CREDITS_SERVICE_KEY` (>= 32
   characters) is set; with it unset nothing in `src/mastra/credits/` runs and
   the chat behaves as before. When it is set the module **fails closed**: a run
@@ -139,10 +155,15 @@ apps/ai/
   `discoverVehicleContent`, `discoverVehicleSpecificationSources` and
   `previewVehicleSource` — each at the tariff of **its own role**
   (`recordToolUsage` takes the role), so a PDF preview is priced as `vision`
-  and grounding as the Vertex `discovery` model, not as the chat model. Not charged: thread titles, the curator ingestion
-  workflow and Google Search grounding fees. A failed settlement is logged and
-  swallowed; it must never abort a generation or repeat a step. The AI service
-  stores no wallet state: the API owns the ledger.
+  and grounding as the Vertex model of the tier, not as the chat model. Every
+  token the provider bills lands in the charge: `credits/usage.ts` counts
+  Gemini's grounding prompt tokens as input and adds reasoning to the output
+  when a provider reports it apart (neither OpenRouter nor the Google SDK
+  does today; both were verified). Not charged: thread titles, the curator
+  ingestion workflow, the shared research worker and Google Search grounding
+  fees. A failed settlement is logged and swallowed; it must never abort a
+  generation or repeat a step. The AI service stores no wallet state: the API
+  owns the ledger.
 - Keep `zod` on the same line as the workspace root (currently 3.25.x, the
   line `@ag-ui/mastra` and `@copilotkit/runtime` use). Two zod copies in one
   process break Mastra's OpenAPI generation at startup
@@ -167,7 +188,7 @@ The user account needs `roles/aiplatform.user` on the project. Keep
 such as `us-central1` only serves the 2.5 family and answers 404 otherwise.
 `OPENROUTER_API_KEY` is needed for every role but `discovery`; without it only
 grounding and the catalog route work. `SPECSYNC_CHAT_MODELS` lists the models
-the advanced per-role selector may offer (see `.env.example`). `nx serve web`
+a per-role override may name (see `.env.example`). `nx serve web`
 proxies `/ai` to the same server, so the chat page and Studio share one
 process. The chat routes need a verified token, so a run only works through
 the gateway; `docker compose up postgres` plus
