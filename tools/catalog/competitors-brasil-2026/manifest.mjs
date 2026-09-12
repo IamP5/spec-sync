@@ -145,13 +145,24 @@ const s10Configurations = [
 ];
 
 const hiluxConfigurations = [
-  'STD Power Pack MT',
-  'STD Power Pack AT',
+  'STD Power Pack 4x4 MT',
+  'STD Power Pack 4x4 AT',
   'SR AT',
   'SRV AT',
   'SRX AT',
   'SRX Plus AT',
 ].map((name) => dieselPickup(name, 2026, 'toyota_hilux'));
+hiluxConfigurations.push(
+  ...['Cabine Simples 4x4 MT', 'Cabine Simples 4x4 AT'].map((name) =>
+    configuration(name, 2026, 'toyota_hilux', 'Picape cabine simples', [
+      'Diesel',
+    ]),
+  ),
+  ...['Chassi Cabine Simples 4x4 MT', 'Chassi Cabine Simples 4x4 AT'].map(
+    (name) =>
+      configuration(name, 2026, 'toyota_hilux', 'Chassi-cabine', ['Diesel']),
+  ),
+);
 
 const tritonConfigurations = [
   'GL MT',
@@ -169,6 +180,13 @@ const poerConfigurations = [
   'POER P30 Trail',
   'POER P30 Exclusive',
 ].map((name) => dieselPickup(name, 2026, 'gwm_poer'));
+
+const hunterConfigurations = [
+  ['4Work MT', 'jac_hunter_4work'],
+  ['4Work AT', 'jac_hunter_4work'],
+  ['Heavy Duty HD', 'jac_hunter_heavy_duty'],
+  ['Heavy Duty HDX', 'jac_hunter_heavy_duty'],
+].map(([name, source]) => dieselPickup(name, 2026, source));
 
 const dakotaConfigurations = [
   ['Big Horn 2.2 Diesel', 2027],
@@ -210,6 +228,22 @@ const rampageConfigurations = [
   ['R/T 2.0 Turbo Flex', ['Gasolina', 'Etanol']],
 ].map(([name, fuelType]) =>
   configuration(name, 2027, 'ram_rampage', 'Picape cabine dupla', fuelType),
+);
+rampageConfigurations.push(
+  configuration(
+    'Rebel Ignition 2.0 Turbo Flex',
+    2026,
+    'ram_rampage_product',
+    'Picape cabine dupla',
+    ['Gasolina', 'Etanol'],
+  ),
+  configuration(
+    'Laramie Turbo Flex',
+    2026,
+    'ram_rampage_product',
+    'Picape cabine dupla',
+    ['Gasolina', 'Etanol'],
+  ),
 );
 
 const montanaConfigurations = ['MT', 'LT', 'LTZ', 'Premier', 'RS'].map((name) =>
@@ -257,6 +291,24 @@ const havalConfigurations = [
   ['GT', ['Gasolina', 'Etanol', 'Eletricidade']],
 ].map(([name, fuelType]) => suv(name, 2027, 'gwm_haval_h6', fuelType));
 
+const tiggo7Configurations = [
+  ['Novo Tiggo 7 Sport', 'caoa_chery_tiggo_7_sport', ['Gasolina', 'Etanol']],
+  ['Novo Tiggo 7 Pro', 'caoa_chery_tiggo_7_pro', ['Gasolina']],
+  [
+    'Tiggo 7 Pro Hybrid Max Drive',
+    'caoa_chery_tiggo_7_hybrid',
+    ['Gasolina', 'Eletricidade'],
+  ],
+  ['Tiggo 7 Pro PHEV', 'caoa_chery_tiggo_7_phev', ['Gasolina', 'Eletricidade']],
+].map(([name, source, fuelType]) => suv(name, 2027, source, fuelType));
+
+const tank300Configurations = [
+  ['PHEV Flex', 'gwm_tank_300'],
+  ['TerraForce', 'gwm_tank_300_terraforce'],
+].map(([name, source]) =>
+  suv(name, 2027, source, ['Gasolina', 'Etanol', 'Eletricidade']),
+);
+
 const masterConfigurations = [
   configuration(
     'Minibus Executive L3H2 16 lugares',
@@ -292,6 +344,15 @@ const ducatoConfigurations = [
     'Diesel',
   ]),
   configuration('Maxicargo 13M 2.2 Diesel', 2026, 'fiat_ducato', 'Furgão', [
+    'Diesel',
+  ]),
+];
+
+const hiaceConfigurations = [
+  configuration('Minibus AT DX 15+1', 2026, 'toyota_hiace_minibus', 'Minibus', [
+    'Diesel',
+  ]),
+  configuration('Furgão AT DX', 2026, 'toyota_hiace_furgao', 'Furgão', [
     'Diesel',
   ]),
 ];
@@ -359,6 +420,76 @@ const eSprinterConfigurations = [
   configuration(name, 2026, 'mercedes_esprinter', bodyStyle, ['Eletricidade']),
 );
 
+const sprinterConfigurations = [
+  ...[
+    '317 Street 3,5 t Longo',
+    '317 Street 3,5 t Extra-longo',
+    '417 4,1 t Longo',
+    '517 5,0 t Longo',
+    '517 5,0 t Extra-longo',
+  ].map((name) =>
+    configuration(
+      `Chassi ${name}`,
+      2027,
+      'mercedes_sprinter',
+      'Chassi-cabine',
+      ['Diesel'],
+    ),
+  ),
+  ...[
+    '317 Street 3,5 t Longo Teto Alto',
+    '317 Street 3,5 t Longo Teto Baixo',
+    '317 Street 3,5 t Extra-longo Teto Alto',
+    '417 4,1 t Longo Teto Alto',
+    '417 4,1 t Longo Teto Baixo',
+    '417 4,1 t Extra-longo Teto Alto',
+    '517 5,0 t Extra-longo Teto Alto',
+    '517 5,0 t Extra-longo Prolongado Teto Alto',
+  ].map((name) =>
+    configuration(`Furgão ${name}`, 2027, 'mercedes_sprinter', 'Furgão', [
+      'Diesel',
+    ]),
+  ),
+  ...[
+    '417 4,1 t Longo Teto Alto 15+1 Reclinável',
+    '417 4,1 t Longo Teto Alto 15+1 Fixo',
+    '417 4,1 t Longo Teto Alto 9+1',
+    '417 4,1 t Longo Teto Baixo 15+1',
+    '517 5,0 t Extra-longo 17+1',
+    '517 5,0 t Extra-longo Prolongado 19+1',
+    '517 5,0 t Extra-longo Prolongado 20+1',
+  ].map((name) =>
+    configuration(`Van ${name}`, 2027, 'mercedes_sprinter', 'Minibus', [
+      'Diesel',
+    ]),
+  ),
+];
+
+const jacElectricCommercialModels = [
+  model('E-JV5.5', ['E-Transit Furgão'], 'ADJACENT', [
+    configuration('E-JV5.5', 2026, 'jac_ejv55', 'Furgão', ['Eletricidade']),
+  ]),
+  model('E-JV7L', ['Transit Minibus'], 'ADJACENT', [
+    configuration('E-JV7L 6+1', 2026, 'jac_ejv7l', 'Minibus', ['Eletricidade']),
+  ]),
+  model('E-JV12', ['Transit Furgão', 'E-Transit Furgão'], 'DIRECT', [
+    configuration('E-JV12', 2026, 'jac_ejv12', 'Furgão', ['Eletricidade']),
+  ]),
+  model('E-JV12 VIP', ['Transit Minibus'], 'DIRECT_AND_ADJACENT', [
+    configuration('E-JV12 VIP 15+1', 2026, 'jac_ejv12_vip', 'Minibus', [
+      'Eletricidade',
+    ]),
+  ]),
+  model('E-JV CC', ['Transit Chassi'], 'ADJACENT', [
+    configuration('E-JV CC', 2026, 'jac_ejvcc', 'Chassi-cabine', [
+      'Eletricidade',
+    ]),
+    configuration('E-JV CC Plus', 2026, 'jac_ejvcc', 'Chassi-cabine', [
+      'Eletricidade',
+    ]),
+  ]),
+];
+
 const brands = [
   {
     name: 'Chevrolet',
@@ -391,6 +522,12 @@ const brands = [
         'DIRECT',
         corollaCrossConfigurations,
       ),
+      model(
+        'Hiace',
+        ['Transit Minibus', 'Transit Furgão'],
+        'DIRECT_AND_ADJACENT',
+        hiaceConfigurations,
+      ),
     ],
   },
   {
@@ -419,6 +556,19 @@ const brands = [
         'DIRECT_AND_ADJACENT',
         havalConfigurations,
       ),
+      model('Tank 300', ['Bronco Sport'], 'ADJACENT', tank300Configurations),
+    ],
+  },
+  {
+    name: 'JAC',
+    models: [
+      model(
+        'Hunter',
+        ['Ranger', 'Ranger Raptor'],
+        'DIRECT_AND_ADJACENT',
+        hunterConfigurations,
+      ),
+      ...jacElectricCommercialModels,
     ],
   },
   {
@@ -481,6 +631,10 @@ const brands = [
     ],
   },
   {
+    name: 'CAOA Chery',
+    models: [model('Tiggo 7', ['Territory'], 'DIRECT', tiggo7Configurations)],
+  },
+  {
     name: 'Jeep',
     models: [
       model(
@@ -508,6 +662,16 @@ const brands = [
           'SUV',
           ['Eletricidade'],
         ),
+      ]),
+    ],
+  },
+  {
+    name: 'Zeekr',
+    models: [
+      model('7X', ['Mustang Mach-E'], 'DIRECT', [
+        configuration('Flagship AWD', 2026, 'zeekr_7x', 'SUV', [
+          'Eletricidade',
+        ]),
       ]),
     ],
   },
@@ -540,6 +704,14 @@ const brands = [
           configuration(name, 2027, 'bmw_m2', 'Coupé', ['Gasolina']),
         ),
       ),
+      model(
+        'M4',
+        ['Mustang Dark Horse'],
+        'ADJACENT',
+        ['M4 Competition', 'M4 Competition Track'].map((name) =>
+          configuration(name, 2027, 'bmw_m4', 'Coupé', ['Gasolina']),
+        ),
+      ),
     ],
   },
   {
@@ -551,12 +723,23 @@ const brands = [
         'DIRECT_AND_ADJACENT',
         dailyConfigurations,
       ),
-      model('eDaily', ['E-Transit Furgão'], 'ADJACENT', eDailyConfigurations),
+      model(
+        'eDaily',
+        ['E-Transit Furgão', 'Transit Chassi'],
+        'ADJACENT',
+        eDailyConfigurations,
+      ),
     ],
   },
   {
     name: 'Mercedes-Benz',
     models: [
+      model(
+        'Sprinter',
+        ['Transit Minibus', 'Transit Furgão', 'Transit Chassi'],
+        'DIRECT',
+        sprinterConfigurations,
+      ),
       model(
         'eSprinter',
         ['E-Transit Furgão'],
@@ -641,6 +824,7 @@ const configurationCount = brands.reduce(
     ),
   0,
 );
+const modelCount = brands.reduce((sum, brand) => sum + brand.models.length, 0);
 
 export default {
   version: 'ford-competitors-brasil-current-2026-09-12-v1',
@@ -649,8 +833,8 @@ export default {
   attributes,
   brands,
   expected: {
-    brandCount: 16,
-    modelCount: 27,
+    brandCount: brands.length,
+    modelCount,
     configurationCount,
   },
   supersessions,

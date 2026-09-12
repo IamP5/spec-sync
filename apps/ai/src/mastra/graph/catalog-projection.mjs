@@ -1,4 +1,30 @@
 export function projectionStatements(snapshot, fingerprint) {
+  const activeConfigurations = snapshot.vehicle_configuration.filter(
+    (configuration) => configuration.superseded_by == null,
+  );
+  const activeConfigurationIds = new Set(
+    activeConfigurations.map((configuration) => configuration.id),
+  );
+  const activeAssertions = snapshot.spec_assertion.filter((assertion) =>
+    activeConfigurationIds.has(assertion.configuration_id),
+  );
+  const activeAssertionIds = new Set(
+    activeAssertions.map((assertion) => assertion.id),
+  );
+  snapshot = {
+    ...snapshot,
+    vehicle_configuration: activeConfigurations,
+    spec_assertion: activeAssertions,
+    assertion_evidence: snapshot.assertion_evidence.filter((link) =>
+      activeAssertionIds.has(link.assertion_id),
+    ),
+    accepted_specification: snapshot.accepted_specification.filter((cell) =>
+      activeConfigurationIds.has(cell.configuration_id),
+    ),
+    configuration_package: snapshot.configuration_package.filter((link) =>
+      activeConfigurationIds.has(link.configuration_id),
+    ),
+  };
   // New definitions introduce unknown cells, never an inferred absence of equipment.
   const cells = [...snapshot.accepted_specification];
   const existing = new Set(

@@ -31,6 +31,16 @@ export default [
     'https://www.gwmmotors.com.br/pt/modelos/poer-p30-exclusive',
   ),
   page(
+    'jac_hunter_4work',
+    'JAC Hunter 4Work — produto e versões',
+    'https://www.jacmotors.com.br/picapes/hunter-4work/',
+  ),
+  page(
+    'jac_hunter_heavy_duty',
+    'JAC Hunter Heavy Duty — produto e versões',
+    'https://www.jacmotors.com.br/picapes/hunter/',
+  ),
+  page(
     'ram_dakota',
     'RAM Dakota — configurador',
     'https://www.ram.com.br/picapes/dakota/monte.html',
@@ -59,6 +69,11 @@ export default [
     'ram_rampage',
     'RAM Rampage MY27 — configurador',
     'https://www.ram.com.br/picapes/rampage/monte.html?year=2027',
+  ),
+  page(
+    'ram_rampage_product',
+    'RAM Rampage — produto e séries correntes',
+    'https://www.ram.com.br/picapes/rampage.html',
   ),
   page(
     'chevrolet_montana',
@@ -108,6 +123,36 @@ export default [
     '2026-06-09',
   ),
   page(
+    'caoa_chery_tiggo_7_sport',
+    'CAOA Chery Novo Tiggo 7 Sport 2027',
+    'https://caoachery.com.br/novos/tiggo-7-sport-2027',
+  ),
+  page(
+    'caoa_chery_tiggo_7_pro',
+    'CAOA Chery Novo Tiggo 7 Pro 2027',
+    'https://caoachery.com.br/novos/tiggo-7-pro-2027',
+  ),
+  page(
+    'caoa_chery_tiggo_7_hybrid',
+    'CAOA Chery Tiggo 7 Pro Hybrid Max Drive',
+    'https://caoachery.com.br/novos/tiggo-7-pro-hybrid-max-drive',
+  ),
+  page(
+    'caoa_chery_tiggo_7_phev',
+    'CAOA Chery Tiggo 7 Pro PHEV',
+    'https://caoachery.com.br/novos/tiggo-7-pro-plug-in-hybrid',
+  ),
+  page(
+    'gwm_tank_300',
+    'GWM Tank 300 PHEV Flex — produto',
+    'https://www.gwmmotors.com.br/pt/modelos/tank-300',
+  ),
+  page(
+    'gwm_tank_300_terraforce',
+    'GWM Tank 300 TerraForce — produto',
+    'https://www.gwmmotors.com.br/pt/modelos/tank-300-terraforce',
+  ),
+  page(
     'jeep_wrangler',
     'Jeep Wrangler MY26 — configurador',
     'https://www.jeep.com.br/wrangler/monte.html?year=2026',
@@ -116,6 +161,11 @@ export default [
     'byd_sealion_7',
     'BYD Sealion 7 — produto',
     'https://www.byd.com/br/car/sealion7',
+  ),
+  page(
+    'zeekr_7x',
+    'Zeekr 7X Flagship AWD — venda no Brasil',
+    'https://www.zeekrlife.com/pt-br/posts/suv-zeekr-7x-chega-ao-mercado-de-eletricos-premium',
   ),
   page(
     'volvo_ex40',
@@ -131,6 +181,11 @@ export default [
     'bmw_m2',
     'BMW M2 Coupé — produto e versões',
     'https://www.bmw.com.br/pt/all-models/m-series/bmw-2-series-m-models/m2-coupe-2024-g87.html',
+  ),
+  page(
+    'bmw_m4',
+    'BMW M4 Competition — produto e versões',
+    'https://www.bmw.com.br/pt/all-models/m-series/bmw-4-series-m-models/bmw-m4-coupe.html',
   ),
   page(
     'renault_master_minibus',
@@ -158,6 +213,16 @@ export default [
     'https://ducato.fiat.com.br/monte.html',
   ),
   page(
+    'toyota_hiace_minibus',
+    'Toyota Hiace Minibus — produto',
+    'https://www.toyota.com.br/modelos/hiace',
+  ),
+  page(
+    'toyota_hiace_furgao',
+    'Toyota Hiace Furgão — produto',
+    'https://www.toyota.com.br/modelos/hiace-furgao',
+  ),
+  page(
     'mercedes_sprinter',
     'Mercedes-Benz Sprinter — tabela oficial agosto de 2026',
     'https://imprensa.mercedes-benz.com.br/storage/files/TannlpO1the8tNK0oKol3AUAZxq7XVaj1Y0GtGLV.pdf',
@@ -183,5 +248,30 @@ export default [
     'iveco_edaily',
     'Iveco eDaily — produto',
     'https://www.iveco.com/brasil/eDaily',
+  ),
+  page(
+    'jac_ejv55',
+    'JAC E-JV5.5 — produto',
+    'https://www.jacmotors.com.br/vans/e-jv55/',
+  ),
+  page(
+    'jac_ejv7l',
+    'JAC E-JV7L — produto',
+    'https://www.jacmotors.com.br/vans/e-jv7l/',
+  ),
+  page(
+    'jac_ejv12',
+    'JAC E-JV12 — produto',
+    'https://www.jacmotors.com.br/vans/e-jv12/',
+  ),
+  page(
+    'jac_ejv12_vip',
+    'JAC E-JV12 VIP — produto',
+    'https://www.jacmotors.com.br/vans/e-jv12-vip/',
+  ),
+  page(
+    'jac_ejvcc',
+    'JAC E-JV CC e CC Plus — produto',
+    'https://www.jacmotors.com.br/vans/e-jvcc/',
   ),
 ];

@@ -263,3 +263,34 @@ test('graph projection parameterizes source content and includes selected facts 
   for (const s of statements)
     assert(!s.statement.includes(t.evidence[0].excerpt));
 });
+
+test('graph projection excludes superseded configurations and dependent facts', () => {
+  const snapshot = structuredClone(t);
+  const superseded = snapshot.vehicle_configuration[0];
+  superseded.superseded_by = snapshot.vehicle_configuration[1].id;
+
+  const statements = projectionStatements(
+    { ...snapshot, seed_dataset: [{ version: dataset.version }] },
+    digest,
+  );
+  const nodeRows = (label) =>
+    statements.find((item) =>
+      item.statement.includes(`CREATE (n:SpecSyncCatalog:${label})`),
+    ).parameters.rows;
+
+  assert(
+    !nodeRows('VehicleConfiguration').some(
+      (configuration) => configuration.id === superseded.id,
+    ),
+  );
+  assert(
+    !nodeRows('SpecAssertion').some(
+      (assertion) => assertion.configuration_id === superseded.id,
+    ),
+  );
+  assert(
+    !nodeRows('SpecificationCell').some(
+      (cell) => cell.configuration_id === superseded.id,
+    ),
+  );
+});

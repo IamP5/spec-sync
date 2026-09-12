@@ -16,6 +16,14 @@ export default new Map([
     'ec1ff131078040d86b23fd228169c2c4af31ecc6407f57e23ec1563ea7bbddd9',
   ],
   [
+    'jac_hunter_4work',
+    '507e89053f374d991f996387480cbafa592f035c913102e15b7b5462b5c01976',
+  ],
+  [
+    'jac_hunter_heavy_duty',
+    '8edd09327f79267dbc30eca7b7b58c47b149501e752e4ff08f624ceae8b6edd9',
+  ],
+  [
     'ram_dakota',
     '4d53cbfcbe0136816520ecc5994385a5d913de77167215c9d29f4a4f66deb61b',
   ],
@@ -38,6 +46,10 @@ export default new Map([
   [
     'ram_rampage',
     'bcc5260560eb2ec6b080d3dda22ca76e4690495778c177caf6dd69e86a38dd81',
+  ],
+  [
+    'ram_rampage_product',
+    '5776595cab9d6d1d0f9fc544f8c33c072d831b8f8f9d79b16f7d357c7597b437',
   ],
   [
     'chevrolet_montana',
@@ -80,12 +92,40 @@ export default new Map([
     'd16da20db6f1180da29735bb8143b0b8059913ff2a2517be16e75900e4584c0d',
   ],
   [
+    'caoa_chery_tiggo_7_sport',
+    '6502de86c54095a295f0050a0ef11f52e4cf414d918434f21592fbb0e9e6b74c',
+  ],
+  [
+    'caoa_chery_tiggo_7_pro',
+    '56d326fcc4c2ff388e453b21e786d9a3cfdf1228b5d33a09f8c75364a9f07297',
+  ],
+  [
+    'caoa_chery_tiggo_7_hybrid',
+    '99713c69fe6bbc259991c22c81f3445e3cb93725659838a76ec3171a7f6f20e9',
+  ],
+  [
+    'caoa_chery_tiggo_7_phev',
+    '796c96be9defa0eefb086ab5185f142077434d11d1fd49c5ad55eb75b63297a3',
+  ],
+  [
+    'gwm_tank_300',
+    '500c5cded7e78d42834472973ed57f532583c98b2e5847a788041c2daa3bd3c3',
+  ],
+  [
+    'gwm_tank_300_terraforce',
+    'b0804267c6832d26e62262fb09c8f1216bc186b84d9eec0473c21f9e466f935e',
+  ],
+  [
     'jeep_wrangler',
     'a5f0eb2337dcfef9259b3e885f2dd8300f43d7995b76b119d2ece2b0ea41541f',
   ],
   [
     'byd_sealion_7',
     '70e1b758edb730de7a0ca5317bb40dec0944fd4909e9003556a7b952a7969093',
+  ],
+  [
+    'zeekr_7x',
+    '46cea7494ddd1470c92e4759ccf9556d29b8ebd2c94a9930f489aa7e0a62a037',
   ],
   [
     'volvo_ex40',
@@ -98,6 +138,10 @@ export default new Map([
   [
     'bmw_m2',
     'eb5096eb09e3ba08f5c30a4033741ae333027856cda90e32b0fb0b1be68fafb5',
+  ],
+  [
+    'bmw_m4',
+    '15304176527bab728051d224fbf155a6355c390d5ba283888b061773ba42991b',
   ],
   [
     'renault_master_minibus',
@@ -120,6 +164,14 @@ export default new Map([
     '2ca4b9d0f26909fd87744e4e457355f324cc9f7739aef850eb7751e5de9e9c78',
   ],
   [
+    'toyota_hiace_minibus',
+    'da4c8c497974a395670b04531901ed5bc65591672f56e5dfb00eae423f285a8c',
+  ],
+  [
+    'toyota_hiace_furgao',
+    'e31b530a842811a4e2d3bc88da16289c92815e43b33b3237e1966880298bcc2e',
+  ],
+  [
     'mercedes_sprinter',
     '747f1798cee0525179382cf0d9f628d76f97e3eba31efe542bc955acb30b42c6',
   ],
@@ -138,5 +190,25 @@ export default new Map([
   [
     'iveco_edaily',
     '5b4b256c534ac8206fe03490eb784ca708b0e41d5c5d24fb2e1ecd1c9ccb21ae',
+  ],
+  [
+    'jac_ejv55',
+    'bc28509f5362de7cd170ebdb2bc48b5d5b06e8a3b2cc9454b7d8994eafd2c6a1',
+  ],
+  [
+    'jac_ejv7l',
+    'a9f4278cf226ac0ba9f8ce3690c6294be55e8d46874520534323e594565d4bca',
+  ],
+  [
+    'jac_ejv12',
+    '81e0c7e3aa93511aa36905ae6343084dd7051af86fef8b134e2ca08e6e03b639',
+  ],
+  [
+    'jac_ejv12_vip',
+    '4078c4c93b8b461a471e541473503b53e6ab8d5f6d45d2452b69190e924774fb',
+  ],
+  [
+    'jac_ejvcc',
+    '4d7c404327fc3d5eb3a1ee0557fad0e49e8f855e55f222ff8cb62dde3d18432e',
   ],
 ]);
