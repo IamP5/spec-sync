@@ -17,6 +17,17 @@ const researchTools = new Set([
 ]);
 const referenceSchema = z.object({ id: z.string().uuid() });
 
+/**
+ * OpenAI rejects a tool call id over 64 characters (Chat Completions once
+ * capped it at 40), and the id replays with the thread on every later run, so
+ * one oversized id makes the whole conversation unanswerable. A prefix of the
+ * message hash keeps the call id deterministic and well inside both limits.
+ */
+const REVIEW_CALL_HASH_LENGTH = 32;
+function reviewCallId(hash: string): string {
+  return `rr-${hash.slice(0, REVIEW_CALL_HASH_LENGTH)}`;
+}
+
 /** Deterministic persisted messages make retries and concurrent tabs idempotent. */
 export async function researchUpdates(
   memory: Memory,
@@ -73,7 +84,10 @@ export async function researchUpdates(
         !['REVIEW', 'PUBLISHED'].includes(research.status)
       )
         continue;
-      const id = `research-ready-${createHash('sha256').update(`${threadId}:${research.workId}`).digest('hex')}`;
+      const hash = createHash('sha256')
+        .update(`${threadId}:${research.workId}`)
+        .digest('hex');
+      const id = `research-ready-${hash}`;
       if (ids.has(id)) continue;
       const summary = summarizeResearch(research);
       const counts = summary.configurations.reduce(
@@ -98,7 +112,7 @@ export async function researchUpdates(
               type: 'tool-invocation',
               toolInvocation: {
                 state: 'result',
-                toolCallId: `${id}-review`,
+                toolCallId: reviewCallId(hash),
                 toolName: 'reviewVehicleResearch',
                 args: { id: requestId },
                 result: { ...summary, reviewReady: true },

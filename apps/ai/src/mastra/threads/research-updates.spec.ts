@@ -92,6 +92,17 @@ it('delivers review as a persisted assistant action, once across polls and concu
   expect(save).toHaveBeenCalledTimes(calls);
   expect(read).toHaveBeenCalledWith('alice', id, undefined);
 });
+it('keeps the review call id within the limit OpenAI enforces on replay', async () => {
+  const [message] = await researchUpdates(
+    memory,
+    'thread',
+    'user:alice',
+    'alice',
+  );
+  const call = (message as { toolCalls?: { id: string }[] }).toolCalls?.[0];
+  expect(call?.id).toMatch(/^rr-[0-9a-f]{32}$/);
+  expect(call?.id.length).toBeLessThanOrEqual(40);
+});
 it.each(['QUEUED', 'PROCESSING', 'FAILED', 'REJECTED'])(
   'waits for reviewable evidence instead of announcing %s as ready',
   async (status) => {
