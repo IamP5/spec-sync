@@ -295,13 +295,15 @@
       aria-haspopup="dialog"
       (click)="evidenceRequested.emit({ configuration: configuration, attribute: claim.attributeCode })"
     >
-      {{ value(claim) }} {{ claim.rawUnit || claim.unit || '' }}
+      {{ value(claim) }}
       <span class="text-[10px] font-normal text-muted-foreground" i18n
         >↗ source</span
       >
     </button>
     @if (claim.availability) {
-    <p class="mt-1 text-xs text-muted-foreground">{{ claim.availability }}</p>
+    <p class="mt-1 text-xs text-muted-foreground">
+      {{ availability(claim.availability) }}
+    </p>
     } @if (qualifiers(claim.qualifiers); as conditions) {
     <p class="mt-1 text-xs text-muted-foreground">{{ conditions }}</p>
     } @if (claim.issues.length) {

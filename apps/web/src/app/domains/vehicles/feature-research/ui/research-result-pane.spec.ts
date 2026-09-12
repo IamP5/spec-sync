@@ -102,9 +102,35 @@ describe('ResearchResultPane', () => {
       'does not accept a vehicle specification into the catalog',
     );
     const summary = element.querySelector('[data-configuration] > summary');
-    expect(summary?.textContent).toContain('1 mapped findings');
-    expect(summary?.textContent).toContain('1 awaiting mapping');
+    expect(summary?.textContent).toContain('one mapped finding');
+    expect(summary?.textContent).toContain('one awaiting mapping');
     expect(element.querySelectorAll('[aria-label="Power"]')).toHaveLength(2);
+  });
+
+  it('translates coded qualifiers and omits a locator that only repeats the cited lines', async () => {
+    const fixture = TestBed.createComponent(ResearchResultPane);
+    const draft = researchDraft();
+    fixture.componentRef.setInput('research', {
+      ...draft,
+      configurations: draft.configurations.map((configuration) => ({
+        ...configuration,
+        claims: [
+          {
+            ...configuration.claims[0],
+            qualifiers: { scope: 'model', driverIncluded: 'UNKNOWN' },
+            locator: 'line 5',
+          },
+        ],
+      })),
+    });
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.textContent).toContain(
+      'Stated for the whole model range · Driver included: Not stated by the source',
+    );
+    expect(element.textContent).not.toContain('scope: model');
+    expect(element.textContent).toContain('lines 5–6');
+    expect(element.textContent).not.toContain('line 5');
   });
 
   it('distinguishes derived terms from manufacturer wording when no mapping was proposed', async () => {
@@ -181,7 +207,7 @@ describe('ResearchResultPane', () => {
         ?.open,
     ).toBe(false);
     expect(element.textContent).toContain('lines 5–6');
-    expect(element.textContent).toContain('fuel: diesel');
+    expect(element.textContent).toContain('Fuel: diesel');
     expect(element.textContent).toContain('Confirm model-year applicability.');
     const source = element.querySelector<HTMLAnchorElement>('a');
     expect(source?.href).toBe('https://example.com/vehicle.pdf');
@@ -321,7 +347,7 @@ describe('ResearchResultPane', () => {
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('[role="status"]')?.textContent).toContain(
-      'Extracting specifications for the document’s configurations',
+      'Extracting specifications',
     );
     expect(element.textContent).not.toContain('09774cd6189bbe6ef597');
     expect(element.textContent).not.toContain('configuration-0');

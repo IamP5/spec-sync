@@ -9,6 +9,11 @@ import {
 import { ZardBadgeComponent } from '@/ui/components/badge';
 import { ZardButtonComponent } from '@/ui/components/button';
 
+import {
+  availabilityLabel,
+  claimLocator,
+  formatQualifiers,
+} from '../../data/claim-presentation';
 import type {
   IngestionClaim,
   IngestionUnmappedObservation,
@@ -17,7 +22,10 @@ import {
   researchIsActive,
   type ResearchSnapshot,
 } from '../../data/research-contracts';
-import type { ResearchEvidenceFocus } from '../../data/research-presentation';
+import {
+  type ResearchEvidenceFocus,
+  researchStatus,
+} from '../../data/research-presentation';
 
 @Component({
   selector: 'app-research-result-pane',
@@ -136,14 +144,27 @@ import type { ResearchEvidenceFocus } from '../../data/research-presentation';
               [open]="!!focus() || requested(configuration.name)"
               [attr.data-configuration]="configuration.name"
             >
-              <summary class="cursor-pointer font-medium" i18n>
+              <summary class="cursor-pointer font-medium">
                 {{ configuration.name }} ·
-                {{ configuration.claims.length }} mapped findings
+                <span i18n>
+                  {configuration.claims.length, plural,
+                    =1 {one mapped finding}
+                    other {{{ configuration.claims.length }} mapped findings}
+                  }
+                </span>
                 @if (configuration.unmappedObservations?.length; as count) {
-                  · {{ count }} awaiting mapping
+                  ·
+                  <span i18n>
+                    {count, plural,
+                      =1 {one awaiting mapping}
+                      other {{{ count }} awaiting mapping}
+                    }
+                  </span>
                 }
                 @if (requested(configuration.name)) {
-                  <z-badge zType="secondary" class="ml-2">Requested</z-badge>
+                  <z-badge zType="secondary" class="ml-2" i18n
+                    >Requested</z-badge
+                  >
                 }
               </summary>
               <p class="mt-2 text-xs text-muted-foreground" i18n>
@@ -177,7 +198,7 @@ import type { ResearchEvidenceFocus } from '../../data/research-presentation';
                       {{ displayValue(claim) }}
                       {{ claim.rawUnit || claim.unit || '' }}
                       @if (claim.availability) {
-                        · {{ claim.availability }}
+                        · {{ availability(claim.availability) }}
                       }
                     </p>
                     @if (qualifiers(claim.qualifiers); as conditions) {
@@ -193,8 +214,8 @@ import type { ResearchEvidenceFocus } from '../../data/research-presentation';
                         Evidence · lines {{ claim.lineStart }}–{{
                           claim.lineEnd
                         }}
-                        @if (claim.locator) {
-                          · {{ claim.locator }}
+                        @if (locator(claim); as where) {
+                          · {{ where }}
                         }
                       </summary>
                       <blockquote
@@ -280,8 +301,8 @@ import type { ResearchEvidenceFocus } from '../../data/research-presentation';
                           Evidence · lines {{ observation.lineStart }}–{{
                             observation.lineEnd
                           }}
-                          @if (observation.locator) {
-                            · {{ observation.locator }}
+                          @if (locator(observation); as where) {
+                            · {{ where }}
                           }
                         </summary>
                         <blockquote
@@ -396,33 +417,15 @@ export class ResearchResultPane {
   protected readonly sharing = computed(
     () =>
       ({
-        CREATED: 'Research started',
-        JOINED: 'Joined shared research',
-        REUSED: 'Existing research reused',
+        CREATED: $localize`Research started`,
+        JOINED: $localize`Joined shared research`,
+        REUSED: $localize`Existing research reused`,
       })[this.research().disposition],
   );
-  protected readonly status = computed(() => {
-    const research = this.research();
-    if (research.requestStatus === 'CANCELLED') return 'Not following';
-    if (this.active()) {
-      if (research.status === 'QUEUED')
-        return this.retrying()
-          ? `Retry queued after attempt ${research.attempts}`
-          : 'Queued';
-      const progress = this.progress(research.stage);
-      return this.retrying()
-        ? `Retrying research · attempt ${research.attempts} · ${progress}`
-        : progress;
-    }
-    return {
-      REVIEW: 'Ready for review',
-      PUBLISHED: 'Catalog update published',
-      FAILED: 'Research failed',
-      REJECTED: 'Research rejected',
-      QUEUED: 'Queued',
-      PROCESSING: 'Researching sources',
-    }[research.status];
-  });
+  protected readonly status = computed(() => researchStatus(this.research()));
+  protected readonly availability = availabilityLabel;
+  protected readonly locator = claimLocator;
+  protected readonly qualifiers = formatQualifiers;
   protected requested(name: string): boolean {
     const requested = this.research().request.configurations;
     return (
@@ -432,11 +435,6 @@ export class ResearchResultPane {
           value.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase(),
       )
     );
-  }
-  protected qualifiers(value: Record<string, string>): string {
-    return Object.entries(value)
-      .map(([key, item]) => `${key}: ${item}`)
-      .join(' · ');
   }
   protected displayValue(claim: IngestionClaim): string {
     if (claim.listValue?.length) return claim.listValue.join(', ');
@@ -453,17 +451,10 @@ export class ResearchResultPane {
     proposal: NonNullable<IngestionUnmappedObservation['proposal']>,
   ): string {
     return {
-      ADD_ATTRIBUTE: 'New catalog field',
-      ADD_ALIAS: 'Manufacturer terminology',
-      EXTEND_VOCABULARY: 'New catalog value',
-      REVIEW_SEMANTICS: 'Meaning needs review',
+      ADD_ATTRIBUTE: $localize`New catalog field`,
+      ADD_ALIAS: $localize`Manufacturer terminology`,
+      EXTEND_VOCABULARY: $localize`New catalog value`,
+      REVIEW_SEMANTICS: $localize`Meaning needs review`,
     }[proposal.kind];
-  }
-  private progress(stage: string): string {
-    if (stage === 'capture-source') return 'Source captured';
-    if (stage === 'identify-configurations') return 'Configurations identified';
-    if (/^extract-(?:[a-f0-9]{20}-)?configuration-\d+$/.test(stage))
-      return 'Extracting specifications for the document’s configurations';
-    return 'Researching sources';
   }
 }

@@ -228,10 +228,9 @@
                 >Lines {{ row.claim.lineStart }}–{{ row.claim.lineEnd }}</span
               >
             </button>
-            <p class="mt-1 text-xs text-muted-foreground">
-              {{ row.claim.locator }}
-            </p>
-            @if (isExpanded(row.index)) {
+            @if (row.locator) {
+            <p class="mt-1 text-xs text-muted-foreground">{{ row.locator }}</p>
+            } @if (isExpanded(row.index)) {
             <blockquote
               class="mt-2 max-w-md rounded-lg bg-muted p-2 text-xs whitespace-pre-wrap"
             >

@@ -1,3 +1,4 @@
+import { formatMeasurement } from './claim-presentation';
 import type { IngestionClaim } from './ingestion-contracts';
 import { researchIsActive, type ResearchSnapshot } from './research-contracts';
 
@@ -29,7 +30,15 @@ export function researchComparisonRows(
   return [...rows.values()];
 }
 
-export function researchClaimValue(claim: IngestionClaim): string {
+/**
+ * Value of a claim in the research journal: the printed list items, else the
+ * normalized value in its canonical unit formatted for `locale`, else the
+ * value as printed in the source.
+ */
+export function researchClaimValue(
+  claim: IngestionClaim,
+  locale: string,
+): string {
   if (claim.listValue?.length) return claim.listValue.join(', ');
   if (
     !claim.issues.length &&
@@ -38,7 +47,10 @@ export function researchClaimValue(claim: IngestionClaim): string {
     claim.value.every((value) => typeof value === 'string' && value.trim())
   )
     return claim.value.join(', ');
-  return claim.rawValue;
+  if (!claim.issues.length && typeof claim.value === 'number')
+    return formatMeasurement(claim.value, claim.unit, locale);
+  const unit = claim.rawUnit || claim.unit;
+  return `${claim.rawValue}${unit ? ` ${unit}` : ''}`;
 }
 
 export function researchStatus(research: ResearchSnapshot): string {

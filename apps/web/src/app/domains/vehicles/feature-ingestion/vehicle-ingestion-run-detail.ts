@@ -8,6 +8,7 @@ import {
   inject,
   input,
   linkedSignal,
+  LOCALE_ID,
   output,
   signal,
   untracked,
@@ -88,6 +89,7 @@ export class VehicleIngestionRunDetail {
   protected readonly publishingLabel = $localize`Publishing…`;
   protected readonly publishLabel = $localize`Publish selected`;
 
+  private readonly locale = inject(LOCALE_ID);
   protected readonly store = inject(IngestionDetailStore);
   protected readonly run = this.store.runValue;
   protected readonly loading = this.store.runIsLoading;
@@ -177,7 +179,11 @@ export class VehicleIngestionRunDetail {
 
   protected tabLabel(configuration: IngestionConfigurationDraft): string {
     const counts = claimCounts(
-      claimGroups(configuration, this.run()?.currentValues[configuration.name]),
+      claimGroups(
+        configuration,
+        this.run()?.currentValues[configuration.name],
+        this.locale,
+      ),
     );
     return `${configuration.name} (${counts.total})`;
   }
@@ -193,7 +199,11 @@ export class VehicleIngestionRunDetail {
   protected toggleClaim(configuration: number, claim: number): void {
     const draft = this.configurations()[configuration];
     if (!draft) return;
-    const groups = claimGroups(draft, this.run()?.currentValues[draft.name]);
+    const groups = claimGroups(
+      draft,
+      this.run()?.currentValues[draft.name],
+      this.locale,
+    );
     this.updateState(configuration, (state) => ({
       ...state,
       selected: toggleSelection(state.selected, groups, claim),
@@ -210,7 +220,11 @@ export class VehicleIngestionRunDetail {
   protected selectSuggested(configuration: number): void {
     const draft = this.configurations()[configuration];
     if (!draft) return;
-    const groups = claimGroups(draft, this.run()?.currentValues[draft.name]);
+    const groups = claimGroups(
+      draft,
+      this.run()?.currentValues[draft.name],
+      this.locale,
+    );
     this.updateState(configuration, (state) => ({
       ...state,
       selected: defaultSelection(groups, draft.claims.length),

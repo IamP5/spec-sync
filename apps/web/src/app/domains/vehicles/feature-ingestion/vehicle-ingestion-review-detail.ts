@@ -7,6 +7,7 @@ import {
   inject,
   input,
   linkedSignal,
+  LOCALE_ID,
   output,
   signal,
   untracked,
@@ -107,6 +108,7 @@ export class VehicleIngestionReviewDetail {
   /** Credential-free summary, emitted whenever the persisted run changes. */
   readonly runChanged = output<IngestionRunSummary>();
 
+  private readonly locale = inject(LOCALE_ID);
   protected readonly store = inject(IngestionDetailStore);
   protected readonly run = this.store.runValue;
   protected readonly loading = this.store.runIsLoading;
@@ -127,7 +129,8 @@ export class VehicleIngestionReviewDetail {
       reviewDecisions(
         configuration,
         run?.currentValues[configuration.name],
-        published.get(index),
+        published.get(index) ?? new Set(),
+        this.locale,
       ),
     );
   });

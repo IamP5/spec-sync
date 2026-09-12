@@ -79,9 +79,10 @@ export function publishedClaims(
 export function reviewDecisions(
   configuration: IngestionConfigurationDraft,
   current: Record<string, IngestionCurrentCell> | undefined,
-  published: ReadonlySet<number> = new Set(),
+  published: ReadonlySet<number>,
+  locale: string,
 ): ReviewDecision[] {
-  return claimGroups(configuration, current).map((group) => {
+  return claimGroups(configuration, current, locale).map((group) => {
     const done = group.rows.find((row) => published.has(row.index));
     const candidates = group.rows.filter((row) => row.change !== 'invalid');
     const kind: DecisionKind = done

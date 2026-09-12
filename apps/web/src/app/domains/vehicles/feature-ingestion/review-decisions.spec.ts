@@ -86,7 +86,12 @@ const current = { torque_max: known(500), length: known(5370) };
 
 describe('guided review decisions', () => {
   it('pre-approves the single evidenced candidate and leaves conflicts and unverified evidence to the reviewer', () => {
-    const decisions = reviewDecisions(configuration, current);
+    const decisions = reviewDecisions(
+      configuration,
+      current,
+      new Set(),
+      'en-US',
+    );
     expect(decisions.map((d) => [d.attributeCode, d.kind])).toEqual([
       ['torque_max', 'auto'],
       ['power', 'conflict'],
@@ -111,7 +116,12 @@ describe('guided review decisions', () => {
   });
 
   it('keeps one candidate per attribute and lets the reviewer set a decision aside', () => {
-    const decisions = reviewDecisions(configuration, current);
+    const decisions = reviewDecisions(
+      configuration,
+      current,
+      new Set(),
+      'en-US',
+    );
     const power = decisions[1];
     let state = chooseCandidate(initialDecisions(decisions), power, 2);
     expect(state.selected).toEqual({ torque_max: 0, power: 2 });
@@ -129,7 +139,12 @@ describe('guided review decisions', () => {
   });
 
   it('walks the open decisions in order, wrapping around, until none is left', () => {
-    const decisions = reviewDecisions(configuration, current);
+    const decisions = reviewDecisions(
+      configuration,
+      current,
+      new Set(),
+      'en-US',
+    );
     const state = initialDecisions(decisions);
     expect(nextPending(decisions, state, undefined)?.attributeCode).toBe(
       'power',
@@ -148,7 +163,7 @@ describe('guided review decisions', () => {
   });
 
   it('treats what this run already published as final and carries the rest of the choices over', () => {
-    const first = reviewDecisions(configuration, current);
+    const first = reviewDecisions(configuration, current, new Set(), 'en-US');
     let state = chooseCandidate(initialDecisions(first), first[1], 2);
     state = deferDecision(state, 'payload');
     state = { ...state, identityConfirmed: true, reason: 'Trail only' };
@@ -162,7 +177,12 @@ describe('guided review decisions', () => {
         ],
       },
     ]);
-    const after = reviewDecisions(configuration, current, published.get(0));
+    const after = reviewDecisions(
+      configuration,
+      current,
+      published.get(0) ?? new Set(),
+      'en-US',
+    );
     expect(after[0]).toMatchObject({ kind: 'published' });
     expect(after[0].published?.index).toBe(0);
     const carried = carryOverDecisions(state, after);
@@ -175,7 +195,12 @@ describe('guided review decisions', () => {
   });
 
   it('builds the publication from the selection only, with an optional reason per configuration', () => {
-    const decisions = reviewDecisions(configuration, current);
+    const decisions = reviewDecisions(
+      configuration,
+      current,
+      new Set(),
+      'en-US',
+    );
     const chosen = chooseCandidate(
       initialDecisions(decisions),
       decisions[1],

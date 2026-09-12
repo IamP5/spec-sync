@@ -173,7 +173,7 @@ describe('Vehicle ingestion run review', () => {
       claimsWithIssues: 1,
     });
     expect(element.textContent).toContain('not requested: Raptor');
-    expect(element.textContent).toContain('588.399 Nm');
+    expect(element.textContent).toContain('588.4 Nm');
     expect(element.textContent).toContain('Ambiguous source value');
   });
 

@@ -1,3 +1,9 @@
+import {
+  availabilityLabel,
+  claimLocator,
+  formatMeasurement,
+  formatQualifiers,
+} from '../data/claim-presentation';
 import type {
   IngestionClaim,
   IngestionConfigurationDraft,
@@ -6,8 +12,12 @@ import type {
   IngestionRunSummary,
   IngestionStatus,
 } from '../data/ingestion-contracts';
-import { displayValue } from '../util/vehicle-display';
 import type { DecisionKind, DecisionStatus } from './review-decisions';
+
+export {
+  availabilityLabel,
+  formatQualifiers,
+} from '../data/claim-presentation';
 
 /** Where a run stands, for the progress steps and badges. */
 export interface RunStage {
@@ -93,6 +103,8 @@ export interface ClaimRow {
   readonly current: string;
   readonly change: ClaimChange;
   readonly qualifiers: string;
+  /** Where the extractor found the value, beyond the cited lines. */
+  readonly locator: string;
 }
 
 export interface ClaimGroup {
@@ -104,10 +116,10 @@ export interface ClaimGroup {
 }
 
 /** Proposed value in the canonical unit, or the availability for equipment. */
-export function proposedValue(claim: IngestionClaim): string {
+export function proposedValue(claim: IngestionClaim, locale: string): string {
   if (claim.availability) return availabilityLabel(claim.availability);
   if (claim.value === null || claim.value === undefined) return '';
-  return `${displayValue(claim.value)}${claim.unit ? ` ${claim.unit}` : ''}`;
+  return formatMeasurement(claim.value, claim.unit, locale);
 }
 
 export function rawValue(claim: IngestionClaim): string {
@@ -117,29 +129,17 @@ export function rawValue(claim: IngestionClaim): string {
   return `${claim.rawValue}${claim.rawUnit ? ` ${claim.rawUnit}` : ''}${items}`;
 }
 
-export function availabilityLabel(value: string): string {
-  return (
-    (
-      {
-        STANDARD: $localize`Standard`,
-        OPTIONAL: $localize`Optional`,
-        ABSENT: $localize`Absent`,
-        NOT_APPLICABLE: $localize`Not applicable`,
-      } as Record<string, string>
-    )[value] ?? value
-  );
-}
-
 /** Accepted catalog value of the attribute, as the reviewer compares against it. */
 export function currentValue(
   cell: IngestionCurrentCell | undefined,
   unit: string | null,
+  locale: string,
 ): string {
   if (!cell) return $localize`Not in catalog`;
   if (cell.knowledge_status === 'CONFLICTING') return $localize`Conflicting`;
   if (cell.knowledge_status !== 'KNOWN') return $localize`Not reported`;
   if (cell.availability) return availabilityLabel(cell.availability);
-  return `${displayValue(cell.value)}${unit ? ` ${unit}` : ''}`;
+  return formatMeasurement(cell.value, unit, locale);
 }
 
 export function claimChange(
@@ -154,16 +154,11 @@ export function claimChange(
   return same ? 'same' : 'changed';
 }
 
-export function formatQualifiers(qualifiers: Record<string, string>): string {
-  return Object.entries(qualifiers)
-    .map(([name, value]) => `${name}: ${value}`)
-    .join(' · ');
-}
-
 /** Claims of one configuration grouped per attribute, in draft order. */
 export function claimGroups(
   configuration: IngestionConfigurationDraft,
   current: Record<string, IngestionCurrentCell> | undefined,
+  locale: string,
 ): ClaimGroup[] {
   const groups = new Map<string, ClaimRow[]>();
   const labels = new Map<string, string>();
@@ -172,11 +167,12 @@ export function claimGroups(
     const row: ClaimRow = {
       index,
       claim,
-      proposed: proposedValue(claim),
+      proposed: proposedValue(claim, locale),
       raw: rawValue(claim),
-      current: currentValue(cell, claim.unit),
+      current: currentValue(cell, claim.unit, locale),
       change: claimChange(claim, cell),
       qualifiers: formatQualifiers(claim.qualifiers),
+      locator: claimLocator(claim),
     };
     groups.set(claim.attributeCode, [
       ...(groups.get(claim.attributeCode) ?? []),
@@ -325,7 +321,7 @@ export function runTitle(request: IngestionRun['request']): string {
 export function scopeLabel(configurations: string[]): string {
   return configurations.length
     ? configurations.join(', ')
-    : 'Every configuration the source presents';
+    : $localize`Every configuration the source presents`;
 }
 
 /** What a decision kind means to the reviewer, for badges and the queue. */

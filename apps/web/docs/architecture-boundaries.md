@@ -203,6 +203,14 @@ The app ships one build and translates at runtime
   that is part of a contract with the agent — prompts sent straight through,
   tool names, attribute codes, status codes — stays in the source language, and
   a status _code_ is never the same string as its label.
+- Research warnings, claim issues and locators are diagnostics the AI service
+  writes once per shared research and the agent reads back; they are stored
+  as text and stay in the source language. Never restate them in the browser
+  by matching their wording. Render what the structured data already carries
+  (counts, coded qualifiers such as `scope=model`, availability, normalized
+  values) through `$localize` and `LOCALE_ID` instead, and keep the service
+  from emitting warnings that only repeat such data
+  (`domains/vehicles/data/claim-presentation.ts`).
 - Nothing imported by `src/main.ts` before `loadTranslations()` may use
   `$localize`; such a message would keep its English source forever.
 - Format through `LOCALE_ID` (`inject(LOCALE_ID)`, the `date`/`number`/

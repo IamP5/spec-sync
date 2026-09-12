@@ -3,8 +3,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   linkedSignal,
+  LOCALE_ID,
   output,
 } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -17,6 +19,11 @@ import {
 
 import { ZardButtonComponent } from '@/ui/components/button';
 
+import {
+  availabilityLabel,
+  formatQualifiers,
+} from '../../data/claim-presentation';
+import type { IngestionClaim } from '../../data/ingestion-contracts';
 import type { ResearchSnapshot } from '../../data/research-contracts';
 import { researchIsActive } from '../../data/research-contracts';
 import {
@@ -81,7 +88,11 @@ export class ResearchComparisonPane {
     return $localize`See all ${count}:count: attributes`;
   }
   protected readonly active = computed(() => researchIsActive(this.research()));
-  protected readonly value = researchClaimValue;
+  private readonly locale = inject(LOCALE_ID);
+  protected value(claim: IngestionClaim): string {
+    return researchClaimValue(claim, this.locale);
+  }
+  protected readonly availability = availabilityLabel;
   protected readonly selected = linkedSignal({
     source: () => this.research().id,
     computation: () => '',
@@ -133,8 +144,5 @@ export class ResearchComparisonPane {
       ? this.research().error
       : null,
   );
-  protected readonly qualifiers = (values: Record<string, string>) =>
-    Object.entries(values)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(' · ');
+  protected readonly qualifiers = formatQualifiers;
 }

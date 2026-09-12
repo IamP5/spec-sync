@@ -2,7 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
+  LOCALE_ID,
   output,
   signal,
 } from '@angular/core';
@@ -70,6 +72,7 @@ export class IngestionClaimsPane {
   readonly suggestedRequested = output<void>();
   readonly clearRequested = output<void>();
 
+  private readonly locale = inject(LOCALE_ID);
   protected readonly filters = claimFilters();
 
   protected publishLabel(label: string): string {
@@ -78,7 +81,7 @@ export class IngestionClaimsPane {
   protected readonly filter = signal<ClaimFilter>('all');
   protected readonly expanded = signal<ReadonlySet<number>>(new Set());
   protected readonly groups = computed<ClaimGroup[]>(() =>
-    claimGroups(this.configuration(), this.current()),
+    claimGroups(this.configuration(), this.current(), this.locale),
   );
   protected readonly counts = computed(() => claimCounts(this.groups()));
   protected readonly visibleGroups = computed(() =>

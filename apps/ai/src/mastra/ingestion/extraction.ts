@@ -824,18 +824,15 @@ export async function extractConfigurationClaims(
         !claim.excerpt.includes(`originalTerm: ${claim.originalTerm}`)
       )
         claim.originalTerm = null;
+  // Warnings report what the draft cannot show on its own (dropped or
+  // conflicting evidence). They are stored once per shared research and read
+  // by the agent, so they stay in English; facts the draft already carries
+  // (the unmapped observations, an empty claim list) are not restated here,
+  // because the browser renders those in the viewer's language.
   const unmapped = verifyUnmappedObservations(input, novel);
   if (unmapped.rejected)
     warnings.push(
       `${unmapped.rejected} unmapped observation(s) were dropped because their source label, value, unit or evidence bounds could not be verified.`,
-    );
-  if (unmapped.observations.length)
-    warnings.push(
-      `${unmapped.observations.length} evidenced observation(s) require ontology mapping; their proposals are advisory and are not published specifications.`,
-    );
-  if (claims.length === 0)
-    warnings.push(
-      'No supported specification was extracted for this configuration.',
     );
   return configurationDraftSchema.parse({
     name: scope.name,

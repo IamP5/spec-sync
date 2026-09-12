@@ -8,9 +8,12 @@ import {
   currentValue,
   defaultSelection,
   filterGroups,
+  proposedValue,
   runStage,
   toggleSelection,
 } from './ingestion-presentation';
+
+const LOCALE = 'en-US';
 
 const claim = (overrides: Partial<IngestionClaim>): IngestionClaim => ({
   attributeCode: 'torque_max',
@@ -68,7 +71,7 @@ const current = {
 
 describe('ingestion presentation', () => {
   it('groups claims per attribute and flags conflicting candidates', () => {
-    const groups = claimGroups(configuration, current);
+    const groups = claimGroups(configuration, current, LOCALE);
     expect(groups.map((group) => group.attributeCode)).toEqual([
       'torque_max',
       'camera_360',
@@ -78,7 +81,8 @@ describe('ingestion presentation', () => {
     expect(groups[0].rows.map((row) => row.change)).toEqual(['new', 'new']);
     expect(groups[1].rows[0].change).toBe('same');
     expect(groups[2].rows[0].change).toBe('invalid');
-    expect(groups[0].rows[0].proposed).toBe('588.399 Nm');
+    expect(groups[0].rows[0].proposed).toBe('588.4 Nm');
+    expect(groups[0].rows[0].locator).toBe('Page 1');
     expect(groups[0].rows[0].raw).toBe('60 kgf.m');
     expect(claimCounts(groups)).toEqual({
       total: 4,
@@ -89,7 +93,7 @@ describe('ingestion presentation', () => {
     });
   });
   it('filters by change, conflict and issue', () => {
-    const groups = claimGroups(configuration, current);
+    const groups = claimGroups(configuration, current, LOCALE);
     expect(filterGroups(groups, 'issues').flatMap((g) => g.rows).length).toBe(
       1,
     );
@@ -99,7 +103,7 @@ describe('ingestion presentation', () => {
     );
   });
   it('preselects unambiguous changes and keeps one candidate per attribute', () => {
-    const groups = claimGroups(configuration, current);
+    const groups = claimGroups(configuration, current, LOCALE);
     expect(defaultSelection(groups, 4)).toEqual([false, false, false, false]);
     const first = toggleSelection([false, false, false, false], groups, 0);
     expect(first).toEqual([true, false, false, false]);
@@ -113,7 +117,7 @@ describe('ingestion presentation', () => {
     ]);
   });
   it('describes current catalog cells and run stages', () => {
-    expect(currentValue(undefined, 'Nm')).toBe('Not in catalog');
+    expect(currentValue(undefined, 'Nm', LOCALE)).toBe('Not in catalog');
     expect(
       currentValue(
         {
@@ -123,6 +127,7 @@ describe('ingestion presentation', () => {
           qualifiers: null,
         },
         'Nm',
+        LOCALE,
       ),
     ).toBe('Not reported');
     expect(
@@ -134,9 +139,38 @@ describe('ingestion presentation', () => {
           qualifiers: null,
         },
         'Nm',
+        LOCALE,
       ),
     ).toBe('600 Nm');
     expect(runStage('PROCESSING').step).toBe(1);
+  });
+  it('formats proposed values through the locale and translates coded qualifiers', () => {
+    expect(
+      proposedValue(
+        claim({ attributeCode: 'price', unit: 'BRL', value: 282990 }),
+        LOCALE,
+      ),
+    ).toBe('R$282,990');
+    expect(proposedValue(claim({ value: 479.545185 }), LOCALE)).toBe(
+      '479.55 Nm',
+    );
+    const [row] = claimGroups(
+      {
+        ...configuration,
+        claims: [
+          claim({
+            qualifiers: { scope: 'model', rpm: '3.250' },
+            locator: 'lines 1-1',
+          }),
+        ],
+      },
+      undefined,
+      LOCALE,
+    )[0].rows;
+    expect(row.qualifiers).toBe(
+      'Stated for the whole model range · Engine speed: 3.250',
+    );
+    expect(row.locator).toBe('');
     expect(runStage('FAILED')).toMatchObject({ step: -1, terminal: true });
   });
 });
