@@ -72,6 +72,14 @@ export default new Map([
     'd93ea2764288e41a261af0a24a6eae3e7439872af727f6085c44bd98cbe029d8',
   ],
   [
+    'ram_2500',
+    '8392e6ae711aa863e12a25a8266702460049d9d1487cc09a7ac5a52bc60b7337',
+  ],
+  [
+    'ram_3500',
+    'ecf522509cf8fafe8fda318fa524f7d5e4b21920b6307604c82dd4ad4f201678',
+  ],
+  [
     'chevrolet_silverado',
     '04887192cbf3f723178ade200bce5800e72c500419a558cf9faef408465e307e',
   ],

@@ -308,6 +308,39 @@ export default new Map([
     },
   ],
   [
+    'ram-2500-laramie.webp',
+    {
+      sha256:
+        '07a322c7b3fb809a1d904e018bcc15752bcd53acf1d5c92136c60e4c8388175f',
+      contentType: 'image/webp',
+      byteSize: 31310,
+      width: 650,
+      height: 372,
+    },
+  ],
+  [
+    'ram-3500-laramie-night-edition.webp',
+    {
+      sha256:
+        '9add2eaabbe161576fd5672dda6303bd677557110ed0b2513cb15538718e5d0a',
+      contentType: 'image/webp',
+      byteSize: 123324,
+      width: 1952,
+      height: 1116,
+    },
+  ],
+  [
+    'ram-3500-limited-longhorn.webp',
+    {
+      sha256:
+        '242d40fceb43d67faa673331a610c81d4c54fbc713394263ecb8b6a638129154',
+      contentType: 'image/webp',
+      byteSize: 140902,
+      width: 1952,
+      height: 1116,
+    },
+  ],
+  [
     'fiat-toro.webp',
     {
       sha256:

@@ -6,9 +6,9 @@ lineup, including established manufacturers and newer Chinese brands.
 ## Scope
 
 - 19 brands
-- 39 models
-- 173 configurations
-- 58 distinct official manufacturer images
+- 41 models
+- 176 configurations
+- 61 distinct official manufacturer images
 - 3 active GWM Poer configurations: `POER P30 Pro`, `POER P30 Trail`, and
   `POER P30 Exclusive`
 

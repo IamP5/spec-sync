@@ -264,6 +264,45 @@ const ram1500Configurations = [
   configuration(name, 2026, 'ram_1500', 'Picape cabine dupla', ['Gasolina']),
 );
 
+const ramHeavyDutySpecifications = (source) => [
+  specification(source, 'power_max', 436, '436 cv'),
+  specification(
+    source,
+    'transmission',
+    'Automática de 8 velocidades',
+    'Transmissão automática de 8 velocidades',
+  ),
+  specification(
+    source,
+    'drivetrain',
+    '4x4 com reduzida',
+    'Modos 4x2, 4x4 e 4x4 reduzida',
+  ),
+];
+
+const ram2500Configurations = [
+  configuration(
+    'Laramie',
+    2026,
+    'ram_2500',
+    'Picape cabine dupla',
+    ['Diesel'],
+    ramHeavyDutySpecifications('ram_2500'),
+  ),
+];
+
+const ram3500Configurations = ['Laramie Night Edition', 'Limited Longhorn'].map(
+  (name) =>
+    configuration(
+      name,
+      2026,
+      'ram_3500',
+      'Picape cabine dupla',
+      ['Diesel'],
+      ramHeavyDutySpecifications('ram_3500'),
+    ),
+);
+
 const compassConfigurations = [
   'Sport T270',
   'Longitude T270',
@@ -585,6 +624,8 @@ const brands = [
       model('Dakota', ['Ranger'], 'DIRECT', dakotaConfigurations),
       model('Rampage', ['Maverick'], 'DIRECT', rampageConfigurations),
       model('1500', ['F-150'], 'DIRECT', ram1500Configurations),
+      model('2500', ['F-150'], 'ADJACENT', ram2500Configurations),
+      model('3500', ['F-150'], 'ADJACENT', ram3500Configurations),
     ],
   },
   {
@@ -827,7 +868,7 @@ const configurationCount = brands.reduce(
 const modelCount = brands.reduce((sum, brand) => sum + brand.models.length, 0);
 
 export default {
-  version: 'ford-competitors-brasil-current-2026-09-12-v1',
+  version: 'ford-competitors-brasil-current-2026-09-12-v2',
   capturedOn,
   sources,
   attributes,

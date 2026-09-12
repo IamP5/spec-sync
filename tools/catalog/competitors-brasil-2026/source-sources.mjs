@@ -97,6 +97,16 @@ export default [
     'https://www.ram.com.br/picapes/1500/monte.html',
   ),
   page(
+    'ram_2500',
+    'RAM 2500 — produto e versão corrente',
+    'https://www.ram.com.br/picapes/2500.html',
+  ),
+  page(
+    'ram_3500',
+    'RAM 3500 — produto e versões correntes',
+    'https://www.ram.com.br/picapes/3500.html',
+  ),
+  page(
     'chevrolet_silverado',
     'Chevrolet Silverado — produto',
     'https://www.chevrolet.com.br/picapes/nova-silverado',
