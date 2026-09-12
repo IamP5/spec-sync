@@ -52,7 +52,8 @@ public class CatalogJdbcGateway implements CatalogGateway {
     @Override
     public Catalog.Page search(CatalogSearch search) {
         var sql = new StringBuilder(CONFIGURATIONS)
-                .append(" WHERE POSITION(LOWER(:q) IN LOWER(b.name || ' ' || m.name || ' ' || c.name)) > 0");
+                .append(" WHERE c.superseded_by IS NULL")
+                .append(" AND POSITION(LOWER(:q) IN LOWER(b.name || ' ' || m.name || ' ' || c.name)) > 0");
         var parameters = new MapSqlParameterSource("q", search.query())
                 .addValue("limit", search.limit() + 1)
                 .addValue("offset", search.offset());
@@ -94,7 +95,10 @@ public class CatalogJdbcGateway implements CatalogGateway {
 
     private Catalog.Comparison matrix(List<UUID> ids, List<String> codes) {
         var parameters = new MapSqlParameterSource("ids", ids);
-        var found = jdbc.query(CONFIGURATIONS + " WHERE c.id IN (:ids)", parameters, (rs, n) -> configuration(rs));
+        var found = jdbc.query(
+                CONFIGURATIONS + " WHERE c.superseded_by IS NULL AND c.id IN (:ids)",
+                parameters,
+                (rs, n) -> configuration(rs));
         var configurationsById = new LinkedHashMap<UUID, Catalog.Configuration>();
         found.forEach(c -> configurationsById.put(c.id(), c));
         for (var id : ids) {

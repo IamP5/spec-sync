@@ -1,4 +1,5 @@
 export { VehicleIngestionLaunchEdit } from './vehicle-ingestion-launch-edit';
+export { VehicleIngestionReviewDetail } from './vehicle-ingestion-review-detail';
 export { VehicleIngestionRunDetail } from './vehicle-ingestion-run-detail';
 export { VehicleIngestionSearch } from './vehicle-ingestion-search';
 

@@ -102,6 +102,25 @@ export const ingestionCurrentCellSchema = z.object({
 });
 export type IngestionCurrentCell = z.infer<typeof ingestionCurrentCellSchema>;
 
+/** Decision for one configuration of the reviewed draft, addressed by index. */
+export const ingestionConfigurationReviewSchema = z.object({
+  configuration: z.number(),
+  selectedClaims: z.array(z.number()),
+  identityConfirmed: z.boolean(),
+  /** A justification for this configuration alone; the review reason applies otherwise. */
+  reason: z.string().nullish(),
+});
+export type IngestionConfigurationReview = z.infer<
+  typeof ingestionConfigurationReviewSchema
+>;
+export const ingestionReviewSchema = z.object({
+  draftHash: z.string(),
+  baseRevision: z.number(),
+  configurations: z.array(ingestionConfigurationReviewSchema),
+  reason: z.string(),
+});
+export type IngestionReview = z.infer<typeof ingestionReviewSchema>;
+
 export const ingestionRunSchema = z.object({
   id: z.string().uuid(),
   request: ingestionRequestSchema,
@@ -132,6 +151,12 @@ export const ingestionRunSchema = z.object({
   currentValues: z.record(z.record(ingestionCurrentCellSchema)),
   createdAt: z.string().nullable(),
   updatedAt: z.string().nullable(),
+  /**
+   * Every publication made from this draft, oldest first. A review may publish
+   * part of the evidence and come back for the rest; the claims these decisions
+   * selected are final for the run.
+   */
+  decisions: z.array(ingestionReviewSchema).default([]),
 });
 export type IngestionRun = z.infer<typeof ingestionRunSchema>;
 
@@ -146,19 +171,6 @@ export const ingestionSummarySchema = z.object({
   updatedAt: z.string(),
 });
 export type IngestionSummary = z.infer<typeof ingestionSummarySchema>;
-
-/** Decision for one configuration of the reviewed draft, addressed by index. */
-export interface IngestionConfigurationReview {
-  configuration: number;
-  selectedClaims: number[];
-  identityConfirmed: boolean;
-}
-export interface IngestionReview {
-  draftHash: string;
-  baseRevision: number;
-  configurations: IngestionConfigurationReview[];
-  reason: string;
-}
 
 export function parseIngestion(value: unknown): IngestionRun {
   return z.object({ result: ingestionRunSchema }).parse(value).result;

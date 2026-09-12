@@ -1,3 +1,4 @@
+import type { IngestionRun } from '../domains/vehicles/data/ingestion-contracts';
 import type {
   ResearchSnapshot,
   ResearchSummary,
@@ -130,5 +131,39 @@ export function researchSummary(): ResearchSummary {
     stage: full.stage,
     createdAt: full.createdAt,
     updatedAt: full.updatedAt,
+  };
+}
+
+/** The review run the API opens for `researchDraft()`: same draft, nothing published yet. */
+export function reviewRun(overrides: Partial<IngestionRun> = {}): IngestionRun {
+  const draft = researchDraft();
+  return {
+    id: draft.workId,
+    request: draft.request,
+    status: 'REVIEW',
+    attempts: 1,
+    draftHash: 'c'.repeat(64),
+    baseRevision: 4,
+    configurationIds: {},
+    error: null,
+    projectionStatus: 'NOT_REQUESTED',
+    projectionError: null,
+    currentValues: {},
+    createdAt: draft.createdAt,
+    updatedAt: draft.updatedAt,
+    decisions: [],
+    draft: {
+      source: {
+        url: 'https://example.com/vehicle.pdf',
+        title: 'Vehicle specification source',
+        mimeType: 'application/pdf',
+        text: 'Ranger 2026\nSpecifications\nColumns: Limited | XLT\n\n250 cv at 3.250 rpm\n',
+        textSha256: 'b'.repeat(64),
+        parserVersion: 'fixture-reader-v1',
+      },
+      configurations: draft.configurations,
+      warnings: draft.warnings,
+    },
+    ...overrides,
   };
 }

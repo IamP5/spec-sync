@@ -10,6 +10,7 @@ import {
   RESEARCH_ID,
   researchDraft,
   researchSummary,
+  reviewRun,
 } from '../../../testing/research-fixtures';
 import { VehicleResearchSearch } from './vehicle-research-search';
 
@@ -51,6 +52,12 @@ describe('VehicleResearchSearch', () => {
     request?.dispatchEvent(new Event('toggle'));
     TestBed.tick();
     http.expectOne(`/ai/chat/research/${RESEARCH_ID}`).flush(researchDraft());
+    // The snapshot lands after a task; the review request follows from its render.
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.tick();
+    http
+      .expectOne(`/ai/chat/research/${RESEARCH_ID}/review`)
+      .flush({ result: reviewRun() });
     await fixture.whenStable();
     expect(element.querySelectorAll('[data-configuration]')).toHaveLength(2);
     expect(element.textContent).toContain(

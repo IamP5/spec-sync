@@ -43,6 +43,7 @@ const run: IngestionRun = {
   currentValues: {},
   createdAt: '2026-09-06T10:00:00Z',
   updatedAt: '2026-09-06T10:05:00Z',
+  decisions: [],
   draft: {
     source: {
       url: 'https://www.ford.com.br/specs',
@@ -174,18 +175,6 @@ describe('Vehicle ingestion run review', () => {
     expect(element.textContent).toContain('not requested: Raptor');
     expect(element.textContent).toContain('588.399 Nm');
     expect(element.textContent).toContain('Ambiguous source value');
-  });
-
-  it('opens shared research review with account access and no curator key input', async () => {
-    const { fixture, store, element } = await setup();
-    fixture.componentRef.setInput('runId', '');
-    fixture.componentRef.setInput('researchId', 'private-request');
-    await fixture.whenStable();
-    expect(store.load).toHaveBeenLastCalledWith('', 'private-request');
-    expect(element.querySelector('input[type="password"]')).toBeNull();
-    expect(element.querySelector('[data-action="reject"]')).toBeNull();
-    expect(element.textContent).toContain('588.399 Nm');
-    expect(publishButton(element).disabled).toBe(true);
   });
 
   it('requires identity confirmation per configuration, one claim per attribute and a reason', async () => {

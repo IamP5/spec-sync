@@ -54,8 +54,9 @@ interface ConfigurationReviewState {
 /**
  * One import run from queue to publication: progress, the captured source,
  * one tab per configuration with its evidence table, and the review
- * decision. The same component serves the ingestion page and the chat card;
- * the run id identifies persisted API state, so it can be reopened later.
+ * decision, for the curator's own imports. Chat research is reviewed by
+ * `VehicleIngestionReviewDetail` instead. The run id identifies persisted API
+ * state, so it can be reopened later.
  */
 @Component({
   selector: 'app-vehicle-ingestion-run-detail',
@@ -80,7 +81,6 @@ interface ConfigurationReviewState {
 })
 export class VehicleIngestionRunDetail {
   readonly runId = input('');
-  readonly researchId = input('');
   /** Compact chrome for the chat transcript. */
   readonly compact = input(false, { transform: booleanAttribute });
   /** Credential-free summary, emitted whenever the persisted run changes. */
@@ -163,13 +163,7 @@ export class VehicleIngestionRunDetail {
   constructor() {
     effect(() => {
       const id = this.runId();
-      const researchId = this.researchId();
-      const scope = this.store.sessionScope?.();
-      untracked(() =>
-        researchId
-          ? this.store.load(id, scope ? researchId : '')
-          : this.store.load(id),
-      );
+      untracked(() => this.store.load(id));
     });
     effect(() => {
       const run = this.run();

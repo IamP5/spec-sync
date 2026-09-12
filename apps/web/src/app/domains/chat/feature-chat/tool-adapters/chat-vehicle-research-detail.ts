@@ -19,7 +19,12 @@ const referenceSchema = z.object({
   selector: 'app-chat-vehicle-research-detail',
   imports: [VehicleResearchDetail],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block min-w-0 w-full' },
+  host: {
+    class:
+      'block min-w-0 w-full scroll-mt-4 rounded-xl focus-visible:outline-2 focus-visible:outline-ring',
+    tabindex: '-1',
+    '[attr.data-research-id]': 'reference()?.id ?? null',
+  },
   template: `
     @if (reference(); as reference) {
       <app-vehicle-research-detail

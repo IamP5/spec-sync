@@ -2,41 +2,25 @@
 <p class="py-4 text-sm text-muted-foreground" role="status" i18n>
   Sign in to view your research request.
 </p>
-} @else if (store.view(); as research) { @if (!reviewOpen() ||
-research.requestStatus !== 'ACTIVE' || (research.status !== 'REVIEW' &&
-research.status !== 'PUBLISHED')) {
+} @else if (store.view(); as research) {
 <app-research-comparison-pane
   [research]="research"
+  [condensed]="reviewable() && reviewOpen()"
   [updating]="store.researchIsLoading()"
   [error]="store.researchError() ? refreshFailed : ''"
   (evidenceRequested)="openEvidence($event)"
   (peopleRequested)="openDetails('people')"
   (refreshRequested)="store.reload()"
 />
-} @if (research.requestStatus === 'ACTIVE' && (research.status === 'REVIEW' ||
-research.status === 'PUBLISHED')) {
-<div class="mt-3 space-y-3">
-  <button
-    z-button
-    type="button"
-    (click)="reviewOpen.set(!reviewOpen())"
-    [attr.aria-expanded]="reviewOpen()"
-  >
-    {{ reviewOpen() ? backToResults : research.status === 'PUBLISHED' ?
-    seePublication : reviewAndImport }}
-  </button>
-  @if (reviewOpen()) {
-  <p class="text-sm text-muted-foreground" i18n>
-    Review the data already extracted and choose what to publish. No new
-    research is started.
-  </p>
-  <app-vehicle-ingestion-run-detail
-    [researchId]="research.id"
-    compact
-    (runChanged)="reviewed($event)"
-  />
-  }
-</div>
+@if (reviewable()) {
+<app-vehicle-ingestion-review-detail
+  class="mt-4"
+  [researchId]="research.id"
+  [open]="reviewOpen()"
+  (openChange)="reviewOpen.set($event)"
+  (evidenceRequested)="openEvidence($event)"
+  (runChanged)="reviewed($event)"
+/>
 }
 <z-drawer
   [(zVisible)]="detailsOpen"

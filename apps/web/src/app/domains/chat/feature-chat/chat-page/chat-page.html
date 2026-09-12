@@ -561,6 +561,19 @@
               <p>{{ note.text }}</p>
               @for (warning of note.warnings ?? []; track $index) {
               <p class="mt-2">{{ warning }}</p>
+              } @if (note.researchId; as researchId) {
+              <button
+                z-button
+                zType="outline"
+                zSize="sm"
+                type="button"
+                class="mt-2"
+                data-action="go-to-research"
+                (click)="goToResearch(researchId)"
+                i18n
+              >
+                Go to the research
+              </button>
               }
             </div>
             } }

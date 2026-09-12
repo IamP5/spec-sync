@@ -7,6 +7,7 @@ import type {
   IngestionStatus,
 } from '../data/ingestion-contracts';
 import { displayValue } from '../util/vehicle-display';
+import type { DecisionKind, DecisionStatus } from './review-decisions';
 
 /** Where a run stands, for the progress steps and badges. */
 export interface RunStage {
@@ -134,9 +135,9 @@ export function currentValue(
   cell: IngestionCurrentCell | undefined,
   unit: string | null,
 ): string {
-  if (!cell) return 'Not in catalog';
-  if (cell.knowledge_status === 'CONFLICTING') return 'Conflicting';
-  if (cell.knowledge_status !== 'KNOWN') return 'Not reported';
+  if (!cell) return $localize`Not in catalog`;
+  if (cell.knowledge_status === 'CONFLICTING') return $localize`Conflicting`;
+  if (cell.knowledge_status !== 'KNOWN') return $localize`Not reported`;
   if (cell.availability) return availabilityLabel(cell.availability);
   return `${displayValue(cell.value)}${unit ? ` ${unit}` : ''}`;
 }
@@ -325,4 +326,47 @@ export function scopeLabel(configurations: string[]): string {
   return configurations.length
     ? configurations.join(', ')
     : 'Every configuration the source presents';
+}
+
+/** What a decision kind means to the reviewer, for badges and the queue. */
+export function decisionKindLabel(kind: DecisionKind): string {
+  switch (kind) {
+    case 'auto':
+      return $localize`Pre-approved`;
+    case 'conflict':
+      return $localize`Source conflict`;
+    case 'unverified':
+      return $localize`Unverified evidence`;
+    case 'same':
+      return $localize`Already in catalog`;
+    case 'published':
+      return $localize`Published`;
+  }
+}
+
+/** Where one decision stands for the reviewer, as the queue and the pane say it. */
+export function decisionStatusLabel(
+  kind: DecisionKind,
+  status: DecisionStatus,
+): string {
+  switch (status) {
+    case 'published':
+      return $localize`Published`;
+    case 'selected':
+      return kind === 'conflict'
+        ? $localize`Candidate chosen`
+        : $localize`Pre-approved`;
+    case 'deferred':
+      return kind === 'unverified'
+        ? $localize`Acknowledged`
+        : $localize`Decided later`;
+    case 'same':
+      return $localize`Already in catalog`;
+    case 'pending':
+      return kind === 'conflict'
+        ? $localize`Choose a candidate`
+        : kind === 'unverified'
+          ? $localize`Needs evidence`
+          : $localize`Not selected`;
+  }
 }

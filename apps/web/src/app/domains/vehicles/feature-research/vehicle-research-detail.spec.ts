@@ -7,7 +7,11 @@ import {
 import { TestBed } from '@angular/core/testing';
 
 import { provideFakeAuth, testSession } from '../../../testing/fake-auth';
-import { RESEARCH_ID, researchDraft } from '../../../testing/research-fixtures';
+import {
+  RESEARCH_ID,
+  researchDraft,
+  reviewRun,
+} from '../../../testing/research-fixtures';
 import { VehicleResearchDetail } from './vehicle-research-detail';
 
 const url = `/ai/chat/research/${RESEARCH_ID}`;
@@ -28,6 +32,10 @@ describe('Research journal drawers', () => {
     TestBed.tick();
     const http = TestBed.inject(HttpTestingController);
     http.expectOne(url).flush(researchDraft());
+    // The snapshot lands after a task; the review request follows from its render.
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.tick();
+    http.expectOne(`${url}/review`).flush({ result: reviewRun() });
     await fixture.whenStable();
     const host = fixture.nativeElement as HTMLElement;
     const overlay = TestBed.inject(OverlayContainer).getContainerElement();

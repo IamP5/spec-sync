@@ -70,18 +70,33 @@ describe('tool display projection', () => {
     expect(messages).toEqual(snapshot);
   });
 
-  it('mounts one live detail per request in a response and permits explicit reopening in a later response', () => {
+  it('keeps one surface per research request and points later calls back at it', () => {
     const messages = [
       user('u1'),
       ...tool('start', 'researchVehicleSpecifications', { id: 'research' }),
-      ...tool('status', 'getVehicleResearch', { id: 'research' }),
+      ...tool('status', 'getVehicleResearch', {
+        id: 'research',
+        status: 'PROCESSING',
+      }),
       user('u2'),
-      ...tool('reopen', 'getVehicleResearch', { id: 'research' }),
+      ...tool('reopen', 'reviewVehicleResearch', {
+        id: 'research',
+        reviewReady: true,
+      }),
     ];
-    expect(rendered(messages).map((call) => call.id)).toEqual([
-      'start',
-      'reopen',
+    expect(rendered(messages).map((call) => call.id)).toEqual(['start']);
+    const views = toolPresentation(messages);
+    expect(views.get('a-status')?.notes).toEqual([
+      {
+        id: 'status',
+        text: 'Research status: processing. The research is shown above.',
+        researchId: 'research',
+      },
     ]);
+    expect(views.get('a-reopen')?.notes[0]).toMatchObject({
+      researchId: 'research',
+      text: 'The review of this research is in its card above.',
+    });
   });
 
   it('keeps distinct research interpretations and the replacement job while summarizing its earlier failed request', () => {
@@ -203,7 +218,7 @@ it('groups empty official lookups without losing their warnings', () => {
   expect(notes[0]?.warnings).toEqual(['Unsupported brand', 'Year missing']);
 });
 
-it('keeps only the latest review card for shared work while preserving every historical message', () => {
+it('mounts a review card only for a request without an earlier surface and never rewrites history', () => {
   const messages = [
     user('u1'),
     ...tool('start', 'researchVehicleSpecifications', {
@@ -222,6 +237,9 @@ it('keeps only the latest review card for shared work while preserving every his
     }),
   ];
   const before = structuredClone(messages);
-  expect(rendered(messages).map((call) => call.id)).toEqual(['review-again']);
+  expect(rendered(messages).map((call) => call.id)).toEqual([
+    'start',
+    'review-again',
+  ]);
   expect(messages).toEqual(before);
 });

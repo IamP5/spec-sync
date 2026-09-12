@@ -528,6 +528,15 @@ export class ChatPage {
     return this.store.toolPresentation().get(turn.id);
   }
 
+  /** Brings the research surface a note points at back into view. */
+  protected goToResearch(id: string): void {
+    const surface = this.transcript()?.nativeElement.querySelector<HTMLElement>(
+      `[data-research-id="${CSS.escape(id)}"]`,
+    );
+    surface?.scrollIntoView({ block: 'start' });
+    surface?.focus();
+  }
+
   protected statusLabel(status: ToolStatus): string {
     return toolStatusLabel(status);
   }

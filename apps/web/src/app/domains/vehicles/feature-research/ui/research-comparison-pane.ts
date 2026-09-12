@@ -44,6 +44,8 @@ import {
 })
 export class ResearchComparisonPane {
   readonly research = input.required<ResearchSnapshot>();
+  /** Header only, while the decisions of the same research are open below it. */
+  readonly condensed = input(false);
   readonly updating = input(false);
   readonly error = input('');
   readonly evidenceRequested = output<ResearchEvidenceFocus | null>();

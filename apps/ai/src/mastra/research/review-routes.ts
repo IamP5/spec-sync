@@ -15,6 +15,8 @@ const reviewSchema = z.object({
           configuration: z.number().int().nonnegative(),
           identityConfirmed: z.boolean(),
           selectedClaims: z.array(z.number().int().nonnegative()).max(100),
+          /** A justification for this configuration alone; the review reason applies otherwise. */
+          reason: z.string().trim().max(2000).optional(),
         }),
       )
       .min(1)

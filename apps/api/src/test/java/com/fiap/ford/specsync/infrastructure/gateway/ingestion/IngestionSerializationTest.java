@@ -21,6 +21,18 @@ class IngestionSerializationTest {
     }
 
     @Test
+    void readsDecisionsPublishedBeforeConfigurationReasonsExisted() {
+        var review = json.readValue(
+                "{\"draftHash\":\"" + "a".repeat(64)
+                        + "\",\"baseRevision\":3,\"configurations\":[{\"configuration\":0,\"selectedClaims\":[1],\"identityConfirmed\":true}],\"reason\":\"checked\"}",
+                Ingestion.Review.class);
+        var decision = review.configurations().getFirst();
+        assertNull(decision.reason());
+        assertEquals("checked", review.reasonFor(decision));
+        assertEquals(List.of(1), decision.selectedClaims());
+    }
+
+    @Test
     void readsLegacyPersistedDraftsWithoutOntologyMetadataOrUnmappedObservations() {
         var draft = json.readValue("""
                 {"source":{"url":"https://www.ford.com.br/source.pdf","title":"Ford","mimeType":"application/pdf","originalSha256":"original","text":"Ford Ranger","textSha256":"text","parserVersion":"specsync-visual-pdf-evidence-v4:model"},

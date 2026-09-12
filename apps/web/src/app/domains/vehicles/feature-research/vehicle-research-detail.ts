@@ -2,6 +2,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   input,
@@ -29,7 +30,7 @@ import { ZardInputComponent } from '@/ui/components/input';
 import type { IngestionRunSummary } from '../data/ingestion-contracts';
 import { researchContactUrlSchema } from '../data/research-contracts';
 import type { ResearchEvidenceFocus } from '../data/research-presentation';
-import { VehicleIngestionRunDetail } from '../feature-ingestion';
+import { VehicleIngestionReviewDetail } from '../feature-ingestion';
 import { ResearchDetailStore } from './research-detail-store';
 import { ResearchInterestDetailStore } from './research-interest-detail-store';
 import { ResearchInterestSearchStore } from './research-interest-search-store';
@@ -39,7 +40,7 @@ import { ResearchResultPane } from './ui/research-result-pane';
 @Component({
   selector: 'app-vehicle-research-detail',
   imports: [
-    VehicleIngestionRunDetail,
+    VehicleIngestionReviewDetail,
     FormField,
     ZardInputComponent,
     ResearchComparisonPane,
@@ -61,9 +62,6 @@ import { ResearchResultPane } from './ui/research-result-pane';
 })
 export class VehicleResearchDetail {
   protected readonly refreshFailed = $localize`The progress could not be updated. The research continues; we will try again.`;
-  protected readonly backToResults = $localize`Back to the research results`;
-  protected readonly seePublication = $localize`See the catalog publication`;
-  protected readonly reviewAndImport = $localize`Review and import into the catalog`;
   protected readonly evidenceTitle = $localize`Research evidence`;
   protected readonly peopleTitle = $localize`Interested people`;
   protected readonly myProfileTitle = $localize`Your profile on this research`;
@@ -110,9 +108,21 @@ export class VehicleResearchDetail {
   }
   readonly requestId = input.required<string>();
   readonly reviewInitiallyOpen = input(false);
+  /**
+   * The reader's view of the research: the journal, or the decisions inside
+   * the same surface. Separate from the research lifecycle on purpose, so a
+   * completion changes the status without moving the reader.
+   */
   protected readonly reviewOpen = linkedSignal({
     source: () => `${this.requestId()}:${this.reviewInitiallyOpen()}`,
     computation: () => this.reviewInitiallyOpen(),
+  });
+  protected readonly reviewable = computed(() => {
+    const research = this.store.view();
+    return (
+      research?.requestStatus === 'ACTIVE' &&
+      (research.status === 'REVIEW' || research.status === 'PUBLISHED')
+    );
   });
   protected reviewed(run: IngestionRunSummary): void {
     if (run.status === 'PUBLISHED' && this.store.view()?.status !== 'PUBLISHED')

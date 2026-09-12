@@ -1,0 +1,467 @@
+@if (run(); as run) {
+<section
+  class="rounded-xl border"
+  data-role="research-review"
+  i18n-aria-label
+  aria-label="Review and publication"
+>
+  <header class="flex flex-wrap items-center justify-between gap-3 p-4">
+    <div class="min-w-0">
+      <h3 class="font-semibold" i18n>Review and publication</h3>
+      <p class="mt-1 text-sm text-muted-foreground" data-role="review-totals">
+        <span i18n
+          >{totals().selected, plural, =1 {1 selected} other {{{
+          totals().selected }} selected}}</span
+        >
+        ·
+        <span i18n
+          >{totals().pending, plural, =1 {1 pending} other {{{ totals().pending
+          }} pending}}</span
+        >
+        ·
+        <span i18n
+          >{totals().published, plural, =1 {1 published} other {{{
+          totals().published }} published}}</span
+        >
+      </p>
+      @if (preApproved()) {
+      <p
+        class="mt-1 text-xs text-muted-foreground"
+        data-role="pre-approved"
+        i18n
+      >
+        {preApproved(), plural, =1 {1 attribute pre-approved} other {{{
+        preApproved() }} attributes pre-approved}}: one evidenced candidate and
+        no conflict. Only conflicts and unverified evidence wait for you.
+      </p>
+      }
+    </div>
+    @if (reviewable()) {
+    <button
+      z-button
+      [zType]="open() ? 'outline' : 'default'"
+      type="button"
+      data-action="toggle-review"
+      [attr.aria-expanded]="open()"
+      (click)="toggleOpen()"
+    >
+      {{ open() ? backLabel : reviewLabel }} @if (!open() && totals().pending) {
+      <z-badge zType="secondary" data-role="pending-count"
+        >{{ totals().pending }}</z-badge
+      >
+      }
+    </button>
+    }
+  </header>
+
+  @if (open()) {
+  <div class="space-y-4 border-t p-4">
+    @if (error()) {
+    <p
+      role="alert"
+      class="rounded-lg border border-destructive p-3 text-sm text-destructive"
+    >
+      {{ error() }}
+    </p>
+    } @if (receipt(); as receipt) {
+    <div
+      class="rounded-lg border p-3 text-sm"
+      role="status"
+      data-role="receipt"
+    >
+      <p i18n>
+        {{ receipt.claims }} specification(s) published for {{
+        receipt.configurations }} configuration(s). Pending decisions stay
+        available here; the graph tools see the new values once the update is
+        current.
+      </p>
+      <button
+        z-button
+        zType="outline"
+        zSize="sm"
+        type="button"
+        class="mt-2"
+        data-action="continue"
+        (click)="continueReviewing()"
+        i18n
+      >
+        Continue with the pending decisions
+      </button>
+    </div>
+    } @if (configurations().length > 1) {
+    <div
+      class="flex flex-wrap gap-1"
+      role="group"
+      i18n-aria-label
+      aria-label="Configuration under review"
+    >
+      @for (configuration of configurations(); track configuration.name; let
+      index = $index) {
+      <button
+        z-button
+        zSize="sm"
+        [zType]="activeIndex() === index ? 'secondary' : 'ghost'"
+        class="max-w-full rounded-full whitespace-normal text-left"
+        type="button"
+        [attr.aria-pressed]="activeIndex() === index"
+        [attr.data-configuration]="configuration.name"
+        (click)="selectConfiguration(index)"
+      >
+        {{ configuration.name }}
+        <span class="text-xs text-muted-foreground" i18n
+          >{counts()[index].pending, plural, =1 {1 pending} other {{{
+          counts()[index].pending }} pending}}</span
+        >
+      </button>
+      }
+    </div>
+    }
+
+    <form (submit)="publish($event)" class="space-y-4">
+      @if (publicationOpen()) {
+      <section
+        class="space-y-3"
+        data-role="publication"
+        i18n-aria-label
+        aria-label="Publication summary"
+      >
+        <h4 class="font-semibold" i18n>Publication summary</h4>
+        <p class="text-sm text-muted-foreground" i18n>
+          Only the selected specifications are published. Open conflicts,
+          unverified evidence and decisions set aside stay pending for a later
+          review of this same research.
+        </p>
+        @for (batch of batches(); track batch.name) {
+        <section
+          class="space-y-3 rounded-lg border p-3"
+          [attr.data-batch]="batch.name"
+        >
+          <header class="flex flex-wrap items-center justify-between gap-2">
+            <strong>{{ batch.name }}</strong>
+            <span class="flex flex-wrap gap-1">
+              <z-badge zType="secondary">{{ batchLabel(batch) }}</z-badge>
+              <z-badge
+                [zType]="batch.state.identityConfirmed ? 'default' : 'destructive'"
+                data-role="batch-state"
+                >{{ batch.state.identityConfirmed ? readyLabel :
+                needsIdentityLabel }}</z-badge
+              >
+            </span>
+          </header>
+          <ul class="divide-y text-sm">
+            @for (item of batch.items; track item.label) {
+            <li class="flex justify-between gap-3 py-1">
+              <span>{{ item.label }}</span
+              ><strong class="text-right">{{ item.proposed }}</strong>
+            </li>
+            }
+          </ul>
+          <label
+            class="flex items-start gap-2 rounded-lg border px-3 py-2 text-sm"
+            [class.border-primary]="batch.state.identityConfirmed"
+          >
+            <input
+              type="checkbox"
+              class="mt-0.5 size-4 accent-primary"
+              data-role="identity"
+              [formField]="fields.configurations[batch.index].identityConfirmed"
+            />
+            <span i18n
+              >This source applies to <strong>{{ batch.name }}</strong>, exactly
+              this model year</span
+            >
+          </label>
+          <label class="block text-sm">
+            <span class="mb-1 block font-medium" i18n
+              >Reason for this configuration (optional)</span
+            >
+            <textarea
+              z-textarea
+              rows="2"
+              data-role="configuration-reason"
+              [formField]="fields.configurations[batch.index].reason"
+              i18n-placeholder
+              placeholder="Only when this configuration needs its own justification."
+            ></textarea>
+          </label>
+        </section>
+        } @empty {
+        <p class="text-sm text-muted-foreground" i18n>
+          Select at least one specification to publish.
+        </p>
+        }
+        <label class="block text-sm">
+          <span class="mb-1 block font-medium" i18n>Review reason</span>
+          <textarea
+            z-textarea
+            rows="3"
+            data-role="review-reason"
+            [formField]="fields.reason"
+            i18n-placeholder
+            placeholder="Explain applicability and why these specifications should enter the catalog."
+          ></textarea>
+        </label>
+        @if (unconfirmed().length) {
+        <p
+          class="text-sm text-destructive"
+          role="status"
+          data-role="unconfirmed"
+          i18n
+        >
+          Confirm the identity of {{ unconfirmed().join(', ') }} before
+          publishing its specifications.
+        </p>
+        }
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            z-button
+            zType="ghost"
+            type="button"
+            data-action="back-to-decisions"
+            (click)="openPublication(false)"
+          >
+            <ng-icon name="lucideArrowLeft" aria-hidden="true" />
+            <span i18n>Back to the decisions</span>
+          </button>
+          <button
+            z-button
+            type="submit"
+            data-action="publish"
+            [zDisabled]="!canPublish()"
+          >
+            <ng-icon name="lucideSend" aria-hidden="true" />
+            @if (busy()) { {{ publishingLabel }} } @else {
+            <span i18n>Publish</span>
+            }
+            <z-badge zType="secondary" data-role="publish-count"
+              >{{ totals().selected }}</z-badge
+            >
+          </button>
+        </div>
+      </section>
+      } @else { @if (configuration(); as configuration) {
+      <label
+        class="flex items-start gap-2 rounded-lg border px-3 py-2 text-sm"
+        [class.border-primary]="activeState().identityConfirmed"
+      >
+        <input
+          type="checkbox"
+          class="mt-0.5 size-4 accent-primary"
+          data-role="identity"
+          [formField]="fields.configurations[activeIndex()].identityConfirmed"
+        />
+        <span i18n
+          >This source applies to <strong>{{ configuration.name }}</strong>,
+          exactly this model year. Identity evidence on lines {{
+          configuration.identityLineStart }}–{{ configuration.identityLineEnd
+          }}.</span
+        >
+      </label>
+      }
+      <div
+        class="flex flex-wrap items-center gap-2"
+        role="toolbar"
+        i18n-aria-label
+        aria-label="Decision filters"
+      >
+        @for (item of filters; track item.id) {
+        <button
+          z-button
+          [zType]="filter() === item.id ? 'secondary' : 'ghost'"
+          zSize="sm"
+          type="button"
+          [attr.aria-pressed]="filter() === item.id"
+          [attr.data-filter]="item.id"
+          (click)="filter.set(item.id)"
+        >
+          {{ item.label }}
+          <span class="text-xs text-muted-foreground"
+            >{{ countLabel(item.id) }}</span
+          >
+        </button>
+        } @if (reviewable()) {
+        <div class="ml-auto flex flex-wrap items-center gap-2">
+          <button
+            z-button
+            zType="outline"
+            zSize="sm"
+            type="button"
+            data-action="select-pre-approved"
+            (click)="selectPreApprovedHere()"
+            i18n
+          >
+            Select the pre-approved
+          </button>
+          <button
+            z-button
+            zType="ghost"
+            zSize="sm"
+            type="button"
+            data-action="clear-selection"
+            (click)="clearHere()"
+            i18n
+          >
+            Clear
+          </button>
+        </div>
+        }
+      </div>
+      <div class="grid gap-4 md:grid-cols-[14rem_minmax(0,1fr)]">
+        <nav
+          data-role="decision-queue"
+          i18n-aria-label
+          aria-label="Decision queue"
+        >
+          <ol class="space-y-1">
+            @for (decision of visible(); track decision.attributeCode; let index
+            = $index) {
+            <li>
+              <button
+                type="button"
+                class="flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring aria-[current=step]:bg-accent"
+                [attr.aria-current]="focused()?.attributeCode === decision.attributeCode ? 'step' : null"
+                [attr.data-decision]="decision.attributeCode"
+                [attr.data-status]="statusOf(decision)"
+                (click)="focus(decision.attributeCode)"
+              >
+                <span
+                  class="grid size-5 shrink-0 place-items-center rounded-full border text-xs"
+                  aria-hidden="true"
+                >
+                  @if (statusOf(decision) === 'selected' || statusOf(decision)
+                  === 'published') {
+                  <ng-icon name="lucideCheck" />
+                  } @else { {{ index + 1 }} }
+                </span>
+                <span class="min-w-0">
+                  <span class="block truncate font-medium"
+                    >{{ decision.label }}</span
+                  >
+                  <span class="block text-xs text-muted-foreground"
+                    >{{ statusLabel(decision) }}</span
+                  >
+                </span>
+              </button>
+            </li>
+            } @empty {
+            <li class="px-2 text-sm text-muted-foreground" i18n>
+              No decision matches this filter.
+            </li>
+            }
+          </ol>
+        </nav>
+        <div
+          #decisionRegion
+          tabindex="-1"
+          class="space-y-3 rounded-lg focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          @if (focused(); as decision) {
+          <p
+            class="text-xs text-muted-foreground"
+            role="status"
+            aria-live="polite"
+            data-role="decision-position"
+            i18n
+          >
+            Decision {{ position() }} of {{ visible().length }} · {{
+            configuration()?.name }}
+          </p>
+          <app-ingestion-decision-pane
+            [decision]="decision"
+            [configuration]="configuration()?.name ?? ''"
+            [status]="statusOf(decision)"
+            [selectedIndex]="activeState().selected[decision.attributeCode]"
+            [reviewing]="reviewable()"
+            (candidateChosen)="choose(decision, $event)"
+            (choiceCleared)="clear(decision)"
+            (decisionDeferred)="defer(decision)"
+            (evidenceRequested)="evidenceRequested.emit({ configuration: configuration()?.name ?? '', attribute: decision.attributeCode })"
+          />
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              z-button
+              zType="ghost"
+              zSize="sm"
+              type="button"
+              data-action="previous"
+              (click)="navigate(-1)"
+            >
+              <ng-icon name="lucideArrowLeft" aria-hidden="true" />
+              <span i18n>Previous</span>
+            </button>
+            <button
+              z-button
+              zType="outline"
+              zSize="sm"
+              type="button"
+              data-action="next"
+              (click)="navigate(1)"
+            >
+              <span i18n>Next</span>
+              <ng-icon name="lucideArrowRight" aria-hidden="true" />
+            </button>
+            <button
+              z-button
+              zType="secondary"
+              zSize="sm"
+              type="button"
+              class="ml-auto"
+              data-action="next-pending"
+              (click)="goToNextPending()"
+            >
+              {{ totals().pending ? nextPendingLabel : nothingPendingLabel }}
+              <ng-icon name="lucideArrowRight" aria-hidden="true" />
+            </button>
+          </div>
+          } @else {
+          <p class="text-sm text-muted-foreground" i18n>
+            No decision matches this filter.
+          </p>
+          }
+        </div>
+      </div>
+      <footer
+        class="flex flex-wrap items-center justify-between gap-3 border-t pt-3"
+      >
+        <p
+          class="text-sm text-muted-foreground"
+          data-role="selection-summary"
+          i18n
+        >
+          {{ totals().selected }} selected in {{ batches().length }}
+          configuration(s)
+        </p>
+        <button
+          z-button
+          type="button"
+          data-action="review-publication"
+          [zDisabled]="!totals().selected || !reviewable()"
+          (click)="openPublication(true)"
+        >
+          <span i18n>Review the publication</span>
+          <ng-icon name="lucideArrowRight" aria-hidden="true" />
+        </button>
+      </footer>
+      }
+    </form>
+  </div>
+  }
+</section>
+} @else if (loading()) {
+<div
+  class="space-y-3"
+  aria-busy="true"
+  i18n-aria-label
+  aria-label="Loading the review"
+>
+  <z-skeleton class="h-6 w-1/3" />
+  <z-skeleton class="h-4 w-2/3" />
+</div>
+} @else if (error()) {
+<p
+  role="alert"
+  class="rounded-lg border border-destructive p-3 text-sm text-destructive"
+>
+  {{ error() }}
+</p>
+}

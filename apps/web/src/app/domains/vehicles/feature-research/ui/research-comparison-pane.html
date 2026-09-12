@@ -1,5 +1,5 @@
 <section class="mx-auto w-full max-w-4xl text-sm" data-research-result>
-  <header class="mb-7 border-b border-border pb-6">
+  <header class="border-b border-border pb-6" [class.mb-7]="!condensed()">
     <p class="text-xs text-muted-foreground" i18n>
       Vehicle research · {{ dispositionLabel() }}
     </p>
@@ -41,6 +41,7 @@
     <p class="mt-3 text-destructive" role="alert">{{ error() }}</p>
     }
   </header>
+  @if (!condensed()) {
   <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_220px]">
     <ol class="ml-3 min-w-0 border-l border-border pl-6">
       <li class="relative pb-7">
@@ -283,7 +284,7 @@
   >
     {{ updating() ? updatingLabel : refreshLabel }}
   </button>
-  }
+  } }
 </section>
 <ng-template #claims let-cell let-configuration="configuration">
   @for (claim of cell; track $index) {

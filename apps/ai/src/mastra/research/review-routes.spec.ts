@@ -64,6 +64,19 @@ it('rejects anonymous access to every review surface before calling the API', as
     expect((await call(index, { review })).status).toBe(401);
   expect(mocks.request).not.toHaveBeenCalled();
 });
+it('forwards a per-configuration reason and keeps the review reason required', async () => {
+  const configured = {
+    ...review,
+    configurations: [{ ...review.configurations[0], reason: ' Trail only ' }],
+  };
+  expect((await call(1, { review: configured })).status).toBe(200);
+  expect(mocks.request.mock.calls[0]?.[2]).toEqual({
+    review: {
+      ...configured,
+      configurations: [{ ...review.configurations[0], reason: 'Trail only' }],
+    },
+  });
+});
 it('rejects invalid human decisions and downloads the existing captured bytes', async () => {
   expect((await call(1, { review: { ...review, reason: '' } })).status).toBe(
     400,

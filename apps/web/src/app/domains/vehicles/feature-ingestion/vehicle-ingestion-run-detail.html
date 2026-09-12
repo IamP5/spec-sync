@@ -1,6 +1,4 @@
-@if (researchId() && !hasKey()) {
-<p role="status" i18n>Sign in to review this research.</p>
-} @else if (!hasKey()) {
+@if (!hasKey()) {
 <form
   (submit)="connect($event)"
   class="flex flex-wrap items-end gap-2 rounded-xl border p-4"
@@ -49,7 +47,7 @@
         }
       </p>
     </div>
-    @if (!stage()?.terminal && !researchId()) {
+    @if (!stage()?.terminal) {
     <button
       z-button
       zType="outline"

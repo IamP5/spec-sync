@@ -1,0 +1,178 @@
+<section
+  class="rounded-xl border p-4"
+  [attr.data-decision]="decision().attributeCode"
+  [attr.data-kind]="decision().kind"
+  [attr.data-status]="status()"
+>
+  <div class="flex flex-wrap items-start justify-between gap-2">
+    <div class="min-w-0">
+      <h3 class="font-semibold">{{ decision().label }}</h3>
+      <p class="mt-0.5 text-xs text-muted-foreground">{{ configuration() }}</p>
+    </div>
+    <z-badge
+      [zType]="status() === 'published' ? 'outline' : status() === 'selected' ? 'default' : status() === 'pending' && decision().kind !== 'auto' ? 'destructive' : 'secondary'"
+      data-role="decision-status"
+    >
+      @if (decision().kind === 'conflict') {
+      <ng-icon name="lucideGitFork" aria-hidden="true" />
+      } @else if (decision().kind === 'unverified') {
+      <ng-icon name="lucideCircleAlert" aria-hidden="true" />
+      } @else if (status() === 'selected' || status() === 'published') {
+      <ng-icon name="lucideCheck" aria-hidden="true" />
+      } {{ statusLabel() }}
+    </z-badge>
+  </div>
+
+  <dl class="mt-3 grid gap-3 sm:grid-cols-2">
+    <div class="rounded-lg bg-muted p-3">
+      <dt class="text-xs text-muted-foreground" i18n>Current catalog</dt>
+      <dd class="mt-1 font-medium" data-role="current-value">
+        {{ decision().current || notInCatalog }}
+      </dd>
+    </div>
+    <div class="rounded-lg border p-3">
+      <dt class="text-xs text-muted-foreground" i18n>Proposed</dt>
+      <dd class="mt-1 font-medium" data-role="proposed-value">
+        {{ chosen()?.proposed || chosen()?.raw || '—' }}
+      </dd>
+    </div>
+  </dl>
+
+  @switch (decision().kind) { @case ('auto') { @if (status() === 'selected') {
+  <p class="mt-3 text-sm text-muted-foreground" i18n>
+    One evidenced candidate that adds to or changes the catalog. It is
+    pre-approved; leave it selected or set it aside.
+  </p>
+  } @else {
+  <p class="mt-3 text-sm text-muted-foreground" i18n>
+    One evidenced candidate that adds to or changes the catalog. It stays out of
+    this publication until you select it again.
+  </p>
+  } } @case ('conflict') {
+  <p class="mt-3 text-sm text-muted-foreground" i18n>
+    The source supports more than one value. Choose the candidate whose
+    conditions apply to this configuration; the others stay outside the catalog.
+  </p>
+  } @case ('unverified') {
+  <p class="mt-3 text-sm text-warning" i18n>
+    The cited lines do not confirm the proposed value, so nothing here can be
+    published. Check the evidence and acknowledge it to move on.
+  </p>
+  } @case ('same') {
+  <p class="mt-3 text-sm text-muted-foreground" i18n>
+    The catalog already holds this value. There is nothing to publish.
+  </p>
+  } @case ('published') {
+  <p class="mt-3 text-sm text-muted-foreground" i18n>
+    Published from this research. Changing it takes a new import.
+  </p>
+  } }
+
+  <ul class="mt-3 space-y-2" i18n-aria-label aria-label="Candidates">
+    @for (row of decision().rows; track row.index) {
+    <li
+      class="rounded-lg border p-3"
+      [class.border-primary]="chosen()?.index === row.index"
+      [attr.data-candidate]="row.index"
+    >
+      <div class="flex flex-wrap items-start justify-between gap-2">
+        <div class="min-w-0">
+          <p class="font-medium">{{ row.proposed || row.raw }}</p>
+          <p class="text-xs text-muted-foreground">
+            <span i18n>As printed:</span> {{ row.raw }} @if (row.qualifiers) { ·
+            {{ row.qualifiers }} }
+          </p>
+          @if (row.change === 'invalid') {
+          <p class="mt-1 text-xs text-destructive" data-role="issues">
+            {{ row.claim.issues.join('; ') }}
+          </p>
+          }
+        </div>
+        @if (open() && reviewing() && row.change !== 'invalid') {
+        <button
+          z-button
+          zSize="sm"
+          [zType]="chosen()?.index === row.index ? 'secondary' : 'outline'"
+          type="button"
+          data-action="choose"
+          [attr.aria-pressed]="chosen()?.index === row.index"
+          [attr.aria-label]="chooseLabel(row)"
+          (click)="candidateChosen.emit(row.index)"
+        >
+          @if (chosen()?.index === row.index) {
+          <ng-icon name="lucideCheck" aria-hidden="true" />
+          <span i18n>Selected</span>
+          } @else {
+          <span i18n>Select</span>
+          }
+        </button>
+        }
+      </div>
+      <button
+        type="button"
+        class="mt-2 inline-flex items-center gap-1 rounded text-left text-xs underline focus-visible:outline-2 focus-visible:outline-ring"
+        [attr.aria-expanded]="isExpanded(row.index)"
+        (click)="toggleExpanded(row.index)"
+      >
+        <ng-icon
+          name="lucideChevronDown"
+          class="transition-transform"
+          [class.rotate-180]="isExpanded(row.index)"
+          aria-hidden="true"
+        />
+        <span i18n
+          >Lines {{ row.claim.lineStart }}–{{ row.claim.lineEnd }}</span
+        >
+      </button>
+      <p class="mt-1 text-xs text-muted-foreground">{{ row.claim.locator }}</p>
+      @if (isExpanded(row.index)) {
+      <blockquote
+        class="mt-2 rounded-lg bg-muted p-2 text-xs whitespace-pre-wrap"
+        data-role="excerpt"
+      >
+        {{ row.claim.excerpt }}
+      </blockquote>
+      }
+    </li>
+    }
+  </ul>
+
+  <div class="mt-3 flex flex-wrap gap-2">
+    @if (open() && reviewing()) { @if (status() === 'selected') {
+    <button
+      z-button
+      zType="ghost"
+      zSize="sm"
+      type="button"
+      data-action="clear"
+      (click)="choiceCleared.emit()"
+      i18n
+    >
+      Remove from publication
+    </button>
+    } @if (status() !== 'deferred') {
+    <button
+      z-button
+      zType="ghost"
+      zSize="sm"
+      type="button"
+      data-action="defer"
+      (click)="decisionDeferred.emit()"
+    >
+      {{ deferLabel() }}
+    </button>
+    } }
+    <button
+      z-button
+      zType="outline"
+      zSize="sm"
+      type="button"
+      data-action="evidence"
+      aria-haspopup="dialog"
+      (click)="evidenceRequested.emit()"
+    >
+      <ng-icon name="lucideFileText" aria-hidden="true" />
+      <span i18n>Open the evidence</span>
+    </button>
+  </div>
+</section>

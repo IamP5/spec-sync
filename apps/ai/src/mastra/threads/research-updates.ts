@@ -17,15 +17,36 @@ const researchTools = new Set([
 ]);
 const referenceSchema = z.object({ id: z.string().uuid() });
 
+/** Prefix of the persisted completion message; the rest is a hash of the thread and work. */
+export const RESEARCH_READY_PREFIX = 'research-ready-';
+
 /**
- * OpenAI rejects a tool call id over 64 characters (Chat Completions once
- * capped it at 40), and the id replays with the thread on every later run, so
- * one oversized id makes the whole conversation unanswerable. A prefix of the
- * message hash keeps the call id deterministic and well inside both limits.
+ * What a completion message records about the research it announces. It lives
+ * in the message metadata, so the announcement is a plain assistant message:
+ * the research surface the real tool call mounted owns the review, and no
+ * invented tool call is replayed to the model on later runs.
  */
-const REVIEW_CALL_HASH_LENGTH = 32;
-function reviewCallId(hash: string): string {
-  return `rr-${hash.slice(0, REVIEW_CALL_HASH_LENGTH)}`;
+export const researchReadySchema = z.object({
+  kind: z.literal('research-ready'),
+  researchId: z.string().uuid(),
+  workId: z.string().uuid(),
+  status: z.enum(['REVIEW', 'PUBLISHED']),
+});
+export type ResearchReady = z.infer<typeof researchReadySchema>;
+
+/** The research a completion message announced, for a current or a legacy message. */
+function announcedResearchId(message: MastraDBMessage): string | undefined {
+  const ready = researchReadySchema.safeParse(
+    message.content.metadata?.['specsync'],
+  );
+  if (ready.success) return ready.data.researchId;
+  // Before 2026-09-12 the announcement carried a synthetic review invocation.
+  for (const part of message.content.parts ?? []) {
+    if (part.type !== 'tool-invocation') continue;
+    const reference = referenceSchema.safeParse(part.toolInvocation.args);
+    if (reference.success) return reference.data.id;
+  }
+  return undefined;
 }
 
 /** What one poll of a thread's research delivers. */
@@ -78,16 +99,10 @@ export async function researchUpdates(
     }
   }
   const updates = messages.filter((message) =>
-    message.id.startsWith('research-ready-'),
+    message.id.startsWith(RESEARCH_READY_PREFIX),
   );
   const delivered = new Set(
-    updates.flatMap((message) =>
-      (message.content.parts ?? []).flatMap((part) => {
-        if (part.type !== 'tool-invocation') return [];
-        const reference = referenceSchema.safeParse(part.toolInvocation.args);
-        return reference.success ? [reference.data.id] : [];
-      }),
-    ),
+    updates.flatMap((message) => announcedResearchId(message) ?? []),
   );
   let pending = false;
   for (const requestId of references) {
@@ -104,7 +119,7 @@ export async function researchUpdates(
       const hash = createHash('sha256')
         .update(`${threadId}:${research.workId}`)
         .digest('hex');
-      const id = `research-ready-${hash}`;
+      const id = `${RESEARCH_READY_PREFIX}${hash}`;
       if (ids.has(id)) continue;
       const summary = summarizeResearch(research);
       const counts = summary.configurations.reduce(
@@ -112,6 +127,12 @@ export async function researchUpdates(
         0,
       );
       const vehicle = `${summary.request.brand} ${summary.request.model} ${summary.request.modelYear}`;
+      const ready: ResearchReady = {
+        kind: 'research-ready',
+        researchId: requestId,
+        workId: research.workId,
+        status: research.status,
+      };
       const message: MastraDBMessage = {
         id,
         threadId,
@@ -120,20 +141,11 @@ export async function researchUpdates(
         createdAt: new Date(),
         content: {
           format: 2,
+          metadata: { specsync: ready },
           parts: [
             {
               type: 'text',
-              text: `A pesquisa de ${vehicle} foi concluída: ${summary.configurations.length} versão(ões) e ${counts} dados extraídos.${summary.warningCount ? ` Há ${summary.warningCount} aviso(s) para conferir.` : ''} ${research.status === 'PUBLISHED' ? 'A publicação no catálogo já está disponível.' : 'Revise as evidências, confirme a identidade e selecione os dados para importar ao catálogo.'} A revisão usa esta mesma pesquisa, sem uma nova extração.`,
-            },
-            {
-              type: 'tool-invocation',
-              toolInvocation: {
-                state: 'result',
-                toolCallId: reviewCallId(hash),
-                toolName: 'reviewVehicleResearch',
-                args: { id: requestId },
-                result: { ...summary, reviewReady: true },
-              },
+              text: `A pesquisa de ${vehicle} foi concluída: ${summary.configurations.length} versão(ões) e ${counts} dados extraídos.${summary.warningCount ? ` Há ${summary.warningCount} aviso(s) para conferir.` : ''} ${research.status === 'PUBLISHED' ? 'A publicação no catálogo já está disponível.' : 'Os dados sem conflito já estão pré-aprovados; revise os conflitos e as evidências pendentes no cartão da pesquisa acima e publique quando quiser.'} A revisão usa esta mesma pesquisa, sem uma nova extração.`,
             },
           ],
         },

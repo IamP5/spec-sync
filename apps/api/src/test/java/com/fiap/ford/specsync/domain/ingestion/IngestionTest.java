@@ -77,6 +77,71 @@ class IngestionTest {
     }
 
     @Test
+    void recordsAConfigurationReasonWithoutReplacingTheReviewReason() {
+        String hash = "a".repeat(64);
+        var own = new Ingestion.ConfigurationReview(0, List.of(0), true, "  Trail brochure names this package  ");
+        var inherited = new Ingestion.ConfigurationReview(1, List.of(0), true, "   ");
+        var review = new Ingestion.Review(hash, 0, List.of(own, inherited), "checked");
+        assertEquals("Trail brochure names this package", review.reasonFor(own));
+        assertNull(inherited.reason());
+        assertEquals("checked", review.reasonFor(inherited));
+        assertThrows(
+                DomainException.class, () -> new Ingestion.ConfigurationReview(0, List.of(0), true, "x".repeat(2001)));
+    }
+
+    @Test
+    void publishesTheRestOfADraftButNeverAnAttributeTwice() {
+        String hash = "a".repeat(64);
+        var draft = new Ingestion.Draft(
+                null,
+                List.of(
+                        configuration("Limited", "torque_max", "torque_max", "payload"),
+                        configuration("XLT", "torque_max")),
+                List.of());
+        var first =
+                new Ingestion.Review(hash, 0, List.of(new Ingestion.ConfigurationReview(0, List.of(0), true)), "first");
+        var rest = new Ingestion.Review(
+                hash,
+                1,
+                List.of(
+                        new Ingestion.ConfigurationReview(0, List.of(2), true),
+                        new Ingestion.ConfigurationReview(1, List.of(0), true)),
+                "rest");
+        var otherCandidate =
+                new Ingestion.Review(hash, 1, List.of(new Ingestion.ConfigurationReview(0, List.of(1), true)), "again");
+        Ingestion.requireUnpublished(draft, List.of(), first);
+        Ingestion.requireUnpublished(draft, List.of(first), rest);
+        assertThrows(DomainException.class, () -> Ingestion.requireUnpublished(draft, List.of(first), otherCandidate));
+        assertThrows(DomainException.class, () -> Ingestion.requireUnpublished(draft, List.of(first), first));
+    }
+
+    private static Ingestion.ConfigurationDraft configuration(String name, String... attributes) {
+        return new Ingestion.ConfigurationDraft(
+                name,
+                1,
+                1,
+                name,
+                java.util.Arrays.stream(attributes)
+                        .map(code -> new Ingestion.Claim(
+                                code,
+                                code,
+                                "Nm",
+                                "60",
+                                "Nm",
+                                null,
+                                null,
+                                java.util.Map.of(),
+                                2,
+                                2,
+                                "60 Nm",
+                                "row",
+                                new BigDecimal("60"),
+                                List.of()))
+                        .toList(),
+                List.of());
+    }
+
+    @Test
     void boundsRequestedConfigurations() {
         var request = new Ingestion.Request("https://www.ford.com.br/x", "Ford", "Ranger", "BR", 2026, null);
         assertEquals(List.of(), request.configurations());

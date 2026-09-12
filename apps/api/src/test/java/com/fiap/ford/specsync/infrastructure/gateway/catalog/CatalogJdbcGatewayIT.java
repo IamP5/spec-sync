@@ -47,7 +47,7 @@ class CatalogJdbcGatewayIT {
                 "vehicle_model (id uuid primary key, brand_id uuid, name varchar)",
                 "source_revision (id uuid primary key, path varchar, sha256 varchar, title varchar, provenance varchar, upstream_urls varchar, captured_on date, published_on date)",
                 "evidence (id uuid primary key, source_revision_id uuid, line_start int, line_end int, excerpt varchar, locator varchar)",
-                "vehicle_configuration (id uuid primary key, model_id uuid, name varchar, market varchar, model_year int, identity_status varchar, identity_evidence_id uuid, identity_note varchar)",
+                "vehicle_configuration (id uuid primary key, model_id uuid, name varchar, market varchar, model_year int, identity_status varchar, identity_evidence_id uuid, identity_note varchar, superseded_by uuid)",
                 "vehicle_image (configuration_id uuid primary key, storage_bucket varchar, storage_object varchar, sha256 varchar, width int, height int, alt_text varchar, match_scope varchar, source_page_url varchar)",
                 "attribute_definition (id uuid primary key, code varchar, label varchar, description varchar, value_type varchar, unit varchar)",
                 "spec_assertion (id uuid primary key, configuration_id uuid, attribute_id uuid, value_type varchar, value varchar, availability varchar, qualifiers varchar, raw_value varchar, review_status varchar)",
@@ -186,6 +186,28 @@ class CatalogJdbcGatewayIT {
         assertEquals(
                 0,
                 gateway.search(new CatalogSearch("", null, 2025, 20, 0)).items().size());
+    }
+
+    @Test
+    void hidesSupersededConfigurationsAndRejectsTheirIds() {
+        var canonicalId = id("Black");
+        var duplicateId = UUID.randomUUID();
+        jdbc.update("""
+                INSERT INTO catalog.vehicle_configuration (
+                    id, model_id, name, market, model_year, identity_status,
+                    identity_evidence_id, identity_note, superseded_by
+                )
+                SELECT ?, model_id, ?, market, model_year, identity_status,
+                    identity_evidence_id, identity_note, ?
+                FROM catalog.vehicle_configuration WHERE id = ?
+                """, duplicateId, "Black duplicate", canonicalId, canonicalId);
+
+        assertTrue(gateway.search(new CatalogSearch("Black duplicate", null, null, 20, 0))
+                .items()
+                .isEmpty());
+        assertThrows(
+                DomainException.class,
+                () -> gateway.specifications(new SpecificationSelection(List.of(duplicateId), null)));
     }
 
     @Test

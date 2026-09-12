@@ -9,6 +9,8 @@ export interface ToolPresentation {
     text: string;
     sources?: { url: string; title: string }[];
     warnings?: string[];
+    /** The research surface this note points at, mounted earlier in the transcript. */
+    researchId?: string;
   }[];
 }
 
@@ -24,7 +26,15 @@ const researchTools = new Set([
   'reviewVehicleResearch',
 ]);
 
-/** A display projection only: the agent and activity retain every call and result. */
+/**
+ * A display projection only: the agent and activity retain every call and result.
+ *
+ * Research policy: a research request has one surface in a conversation, the
+ * card of the first call that returned its id. That surface follows the
+ * research on its own, from capture to review and publication, so a later
+ * call about the same request (a status check, a review opened by the agent)
+ * becomes a note pointing back at it instead of a second card.
+ */
 export function toolPresentation(
   messages: Message[],
 ): Map<string, ToolPresentation> {
@@ -33,26 +43,11 @@ export function toolPresentation(
       message.role === 'tool' ? [[message.toolCallId, message] as const] : [],
     ),
   );
-  const latestReviews = new Map<string, string>();
-  for (const message of messages) {
-    if (message.role !== 'assistant') continue;
-    for (const call of message.toolCalls ?? []) {
-      const data = record(results.get(call.id)?.content);
-      const key = data['workId'] ?? data['id'];
-      if (
-        call.function.name === 'reviewVehicleResearch' &&
-        typeof key === 'string' &&
-        !results.get(call.id)?.error
-      )
-        latestReviews.set(key, call.id);
-    }
-  }
   const views = new Map<string, ToolPresentation>();
-  const previousResearch = new Set<string>();
+  const surfaces = new Map<string, string>();
   const displayedCalls = new Set<string>();
   let group: AssistantMessage[] = [];
   const finishGroup = () => {
-    const mountedResearch = new Set<string>();
     const hasResearchStart = group.some((message) =>
       message.toolCalls?.some(
         (call) =>
@@ -138,21 +133,16 @@ export function toolPresentation(
         }
         if (researchTools.has(name) && typeof data['id'] === 'string') {
           const id = data['id'];
-          const review = latestReviews.get(String(data['workId'] ?? id));
-          if (review && review !== call.id) continue;
-          if (mountedResearch.has(id)) continue;
-          if (
-            name === 'getVehicleResearch' &&
-            hasResearchStart &&
-            previousResearch.has(id)
-          ) {
+          const surface = surfaces.get(id);
+          if (surface && surface !== call.id) {
             view.notes.push({
               id: call.id,
-              text: `Earlier research status: ${String(data['status'] ?? 'checked').toLowerCase()}. Another research result is available in this response.`,
+              text: researchNote(name, data['status']),
+              researchId: id,
             });
             continue;
           }
-          mountedResearch.add(id);
+          surfaces.set(id, call.id);
         }
         view.message.toolCalls?.push(call);
       }
@@ -172,7 +162,6 @@ export function toolPresentation(
           : {}),
       });
     }
-    for (const id of mountedResearch) previousResearch.add(id);
     group = [];
   };
   for (const message of messages) {
@@ -181,6 +170,13 @@ export function toolPresentation(
   }
   finishGroup();
   return views;
+}
+
+function researchNote(tool: string, status: unknown): string {
+  if (tool === 'reviewVehicleResearch')
+    return $localize`The review of this research is in its card above.`;
+  const state = String(status ?? 'checked').toLowerCase();
+  return $localize`Research status: ${state}:status:. The research is shown above.`;
 }
 
 function scope(args: Record<string, unknown>): string {

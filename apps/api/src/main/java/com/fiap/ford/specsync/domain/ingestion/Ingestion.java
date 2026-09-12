@@ -172,6 +172,11 @@ public final class Ingestion {
         }
     }
 
+    /**
+     * One run as the reviewer sees it. {@code decisions} lists every publication made from this
+     * draft, oldest first: a review may publish part of the evidence and come back for the rest,
+     * so the claims those decisions selected are the ones no later review may address again.
+     */
     public record Run(
             UUID id,
             Request request,
@@ -186,8 +191,46 @@ public final class Ingestion {
             String projectionError,
             Map<String, Map<String, Object>> currentValues,
             Instant createdAt,
-            Instant updatedAt)
-            implements ValueObject {}
+            Instant updatedAt,
+            List<Review> decisions)
+            implements ValueObject {
+        public Run {
+            decisions = decisions == null ? List.of() : List.copyOf(decisions);
+        }
+
+        public Run(
+                UUID id,
+                Request request,
+                String status,
+                int attempts,
+                Draft draft,
+                String draftHash,
+                long baseRevision,
+                Map<String, UUID> configurationIds,
+                String error,
+                String projectionStatus,
+                String projectionError,
+                Map<String, Map<String, Object>> currentValues,
+                Instant createdAt,
+                Instant updatedAt) {
+            this(
+                    id,
+                    request,
+                    status,
+                    attempts,
+                    draft,
+                    draftHash,
+                    baseRevision,
+                    configurationIds,
+                    error,
+                    projectionStatus,
+                    projectionError,
+                    currentValues,
+                    createdAt,
+                    updatedAt,
+                    List.of());
+        }
+    }
 
     /** List entry of a curator's runs; the draft itself is loaded per run. */
     public record Summary(
@@ -215,8 +258,13 @@ public final class Ingestion {
 
     public record Projection(UUID leaseToken, long revision, String snapshot) implements ValueObject {}
 
-    /** Decision for one configuration of the draft, addressed by its index. */
-    public record ConfigurationReview(int configuration, List<Integer> selectedClaims, boolean identityConfirmed)
+    /**
+     * Decision for one configuration of the draft, addressed by its index. {@code reason} is the
+     * reviewer's justification for this configuration alone; when absent the review-level reason
+     * applies to it (see {@link Review#reasonFor}).
+     */
+    public record ConfigurationReview(
+            int configuration, List<Integer> selectedClaims, boolean identityConfirmed, String reason)
             implements ValueObject {
         public ConfigurationReview {
             require(configuration >= 0 && configuration < MAX_CONFIGURATIONS, "Unknown configuration selection");
@@ -226,6 +274,12 @@ public final class Ingestion {
             require(
                     selectedClaims.isEmpty() || identityConfirmed,
                     "Confirm the source applies to this exact vehicle identity before publishing its claims");
+            reason = reason == null || reason.isBlank() ? null : reason.strip();
+            require(reason == null || reason.length() <= 2000, "A configuration reason has at most 2000 characters");
+        }
+
+        public ConfigurationReview(int configuration, List<Integer> selectedClaims, boolean identityConfirmed) {
+            this(configuration, selectedClaims, identityConfirmed, null);
         }
     }
 
@@ -246,6 +300,37 @@ public final class Ingestion {
             require(selected > 0, "Select at least one claim to publish");
             require(reason != null && !reason.isBlank() && reason.length() <= 2000, "A review reason is required");
         }
+
+        /** The justification recorded for one configuration: its own, or the review's. */
+        public String reasonFor(ConfigurationReview decision) {
+            return decision.reason() == null ? reason : decision.reason();
+        }
+    }
+
+    /**
+     * A review may publish part of a draft and later reviews the rest, but an attribute a
+     * configuration already published from this draft is final for it: changing that value takes
+     * a new correction import, never a second decision on the same evidence. Both reviews address
+     * the same draft, so claim indexes are comparable.
+     */
+    public static void requireUnpublished(Draft draft, List<Review> decisions, Review review) {
+        var published = new HashSet<String>();
+        for (var earlier : decisions)
+            for (var decision : earlier.configurations())
+                for (int index : decision.selectedClaims())
+                    published.add(attributeKey(draft, decision.configuration(), index));
+        for (var decision : review.configurations())
+            for (int index : decision.selectedClaims())
+                require(
+                        !published.contains(attributeKey(draft, decision.configuration(), index)),
+                        "This attribute was already published for the configuration; a correction needs a new import");
+    }
+
+    private static String attributeKey(Draft draft, int configuration, int claim) {
+        require(configuration < draft.configurations().size(), "Unknown configuration selection");
+        var claims = draft.configurations().get(configuration).claims();
+        require(claim >= 0 && claim < claims.size(), "Unknown claim selection");
+        return configuration + ":" + claims.get(claim).attributeCode();
     }
 
     /**

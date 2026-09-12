@@ -74,7 +74,7 @@ beforeEach(() => {
     },
   ];
 });
-it('delivers review as a persisted assistant action, once across polls and concurrent tabs', async () => {
+it('delivers completion as a persisted plain assistant message, once across polls and concurrent tabs', async () => {
   const [first, second] = await Promise.all([
     researchUpdates(memory, 'thread', 'user:alice', 'alice'),
     researchUpdates(memory, 'thread', 'user:alice', 'alice'),
@@ -84,11 +84,23 @@ it('delivers review as a persisted assistant action, once across polls and concu
   );
   expect(stored).toHaveLength(2);
   expect(stored.every((message) => message.role === 'assistant')).toBe(true);
-  expect(first.messages[0]).toMatchObject({
+  expect(stored[1]).toMatchObject({
     role: 'assistant',
-    toolCalls: [{ function: { name: 'reviewVehicleResearch' } }],
+    content: {
+      metadata: {
+        specsync: {
+          kind: 'research-ready',
+          researchId: id,
+          workId: snapshot.workId,
+          status: 'REVIEW',
+        },
+      },
+    },
   });
-  expect(JSON.stringify(first.messages)).toContain('reviewReady');
+  expect(first.messages).toHaveLength(1);
+  expect(first.messages[0]).toMatchObject({ role: 'assistant' });
+  expect(first.messages[0]).not.toHaveProperty('toolCalls');
+  expect(JSON.stringify(first.messages)).toContain('pré-aprovados');
   const calls = save.mock.calls.length;
   expect(
     await researchUpdates(memory, 'thread', 'user:alice', 'alice'),
@@ -118,13 +130,44 @@ it('reports nothing pending for a thread without research', async () => {
   ).toEqual({ messages: [], pending: false });
   expect(read).not.toHaveBeenCalled();
 });
-it('keeps the review call id within the limit OpenAI enforces on replay', async () => {
-  const [message] = (
-    await researchUpdates(memory, 'thread', 'user:alice', 'alice')
-  ).messages;
-  const call = (message as { toolCalls?: { id: string }[] }).toolCalls?.[0];
-  expect(call?.id).toMatch(/^rr-[0-9a-f]{32}$/);
-  expect(call?.id.length).toBeLessThanOrEqual(40);
+it('never replays an invented tool call to the model for a completed research', async () => {
+  await researchUpdates(memory, 'thread', 'user:alice', 'alice');
+  const parts = stored[1]?.content.parts ?? [];
+  expect(parts.every((part) => part.type === 'text')).toBe(true);
+});
+it('treats the legacy synthetic review invocation as an already delivered announcement', async () => {
+  stored.push({
+    id: 'research-ready-legacy',
+    threadId: 'thread',
+    resourceId: 'user:alice',
+    createdAt: new Date(),
+    role: 'assistant',
+    content: {
+      format: 2,
+      parts: [
+        { type: 'text', text: 'A pesquisa foi concluída.' },
+        {
+          type: 'tool-invocation',
+          toolInvocation: {
+            state: 'result',
+            toolCallId: 'rr-legacy',
+            toolName: 'reviewVehicleResearch',
+            args: { id },
+            result: { id, reviewReady: true },
+          },
+        },
+      ],
+    },
+  });
+  const delivered = await researchUpdates(
+    memory,
+    'thread',
+    'user:alice',
+    'alice',
+  );
+  expect(save).not.toHaveBeenCalled();
+  expect(delivered.messages[0]?.id).toBe('research-ready-legacy');
+  expect(delivered.pending).toBe(false);
 });
 it.each([
   ['QUEUED', true],
@@ -167,7 +210,7 @@ it('retries transient failures without losing the eventual review action', async
     'user:alice',
     'alice',
   );
-  expect(delivered.messages).toHaveLength(2);
+  expect(delivered.messages).toHaveLength(1);
   expect(delivered.pending).toBe(false);
   expect(save).toHaveBeenCalledOnce();
 });
@@ -182,7 +225,6 @@ it('keeps waiting when the completion could not be persisted this time', async (
     'user:alice',
     'alice',
   );
-  // The announcement and its review result, as the browser receives them.
-  expect(delivered.messages).toHaveLength(2);
+  expect(delivered.messages).toHaveLength(1);
   expect(delivered.pending).toBe(false);
 });

@@ -9,6 +9,7 @@ import { provideFakeAuth, testSession } from '../../../../testing/fake-auth';
 import {
   RESEARCH_ID,
   researchDraft,
+  reviewRun,
 } from '../../../../testing/research-fixtures';
 import { ChatVehicleResearchDetail } from './chat-vehicle-research-detail';
 
@@ -39,9 +40,16 @@ describe('Chat vehicle research renderer', () => {
       TestBed.tick();
       const http = TestBed.inject(HttpTestingController);
       http.expectOne(`/ai/chat/research/${RESEARCH_ID}`).flush(researchDraft());
+      // The snapshot lands after a task; the review request follows from its render.
+      await new Promise((resolve) => setTimeout(resolve));
+      TestBed.tick();
+      http
+        .expectOne(`/ai/chat/research/${RESEARCH_ID}/review`)
+        .flush({ result: reviewRun() });
       await fixture.whenStable();
       const element = fixture.nativeElement as HTMLElement;
       expect(element.textContent).toContain('Ready for review');
+      expect(element.textContent).toContain('Review and publication');
       expect(element.textContent).not.toContain('Stale tool output');
       expect(element.textContent).not.toContain('curator key');
       testSession().invalidate();
@@ -79,6 +87,12 @@ describe('Chat vehicle research renderer', () => {
     const http = TestBed.inject(HttpTestingController);
     TestBed.tick();
     http.expectOne(`/ai/chat/research/${RESEARCH_ID}`).flush(researchDraft());
+    // The snapshot lands after a task; the review request follows from its render.
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.tick();
+    http
+      .expectOne(`/ai/chat/research/${RESEARCH_ID}/review`)
+      .flush({ result: reviewRun() });
     await fixture.whenStable();
     const generation = testSession().begin('bob');
     testSession().establish('bob', generation);

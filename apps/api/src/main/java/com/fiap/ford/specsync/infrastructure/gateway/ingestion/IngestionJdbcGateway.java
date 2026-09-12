@@ -189,7 +189,13 @@ public class IngestionJdbcGateway implements IngestionGateway {
                 projection.equals("PENDING") ? projectionError : null,
                 current,
                 instant(saved.get("created_at")),
-                instant(saved.get("updated_at")));
+                instant(saved.get("updated_at")),
+                decisions(saved.get("decisions")));
+    }
+
+    private List<Ingestion.Review> decisions(Object value) {
+        if (value == null) return List.of();
+        return json.readValue(value.toString(), new TypeReference<List<Ingestion.Review>>() {});
     }
 
     @Override
@@ -543,16 +549,14 @@ public class IngestionJdbcGateway implements IngestionGateway {
         long revision =
                 jdbc.queryForObject("SELECT revision FROM ingestion.catalog_version FOR UPDATE", Map.of(), Long.class);
         var saved = row(id, owner, true);
-        if (saved.get("status").equals("PUBLISHED")) {
-            require(
-                    decode(saved.get("decision"), Ingestion.Review.class).equals(review),
-                    "This import was already published with another decision");
-            return get(id, owner);
-        }
-        require(saved.get("status").equals("REVIEW"), "Only a completed draft can be published");
+        // A repeated request is the same decision again: nothing new to publish, nothing to refuse.
+        var decisions = decisions(saved.get("decisions"));
+        if (decisions.contains(review)) return get(id, owner);
+        require(Set.of("REVIEW", "PUBLISHED").contains(saved.get("status")), "Only a completed draft can be published");
         require(Objects.equals(saved.get("draft_hash"), review.draftHash()), "Draft changed; reload and review again");
         require(revision == review.baseRevision(), "Catalog changed; reload and review the current values again");
         var draft = decode(saved.get("draft"), Ingestion.Draft.class);
+        Ingestion.requireUnpublished(draft, decisions, review);
         var request = decode(saved.get("request"), Ingestion.Request.class);
         UUID sourceId =
                 stableId("source:" + draft.source().url() + ":" + draft.source().textSha256());
@@ -594,13 +598,13 @@ public class IngestionJdbcGateway implements IngestionGateway {
                     "Reviewed vehicle identity: " + configuration.name());
             UUID config = configuration(request, configuration.name());
             if (config == null)
-                config = createConfiguration(request, configuration.name(), identityId, review.reason());
+                config = createConfiguration(request, configuration.name(), identityId, review.reasonFor(decision));
             ids.put(configuration.name(), config);
             for (var claim : selected)
                 changed |= publishClaim(
                         id,
                         reviewer,
-                        review,
+                        review.reasonFor(decision),
                         sourceId,
                         config,
                         claim,
@@ -615,9 +619,11 @@ public class IngestionJdbcGateway implements IngestionGateway {
                     "INSERT INTO ingestion.projection_event(revision,run_id) VALUES(:revision,:id)",
                     Map.of("revision", revision + 1, "id", id));
         }
+        var history = new ArrayList<>(decisions);
+        history.add(review);
         jdbc.update(
-                "UPDATE ingestion.run SET status='PUBLISHED',configuration_ids=CAST(:ids AS jsonb),decision=CAST(:decision AS jsonb),updated_at=now() WHERE id=:id",
-                Map.of("ids", encode(ids), "decision", encode(review), "id", id));
+                "UPDATE ingestion.run SET status='PUBLISHED',configuration_ids=CAST(:ids AS jsonb),decision=CAST(:decision AS jsonb),decisions=CAST(:decisions AS jsonb),updated_at=now() WHERE id=:id",
+                Map.of("ids", encode(ids), "decision", encode(review), "decisions", encode(history), "id", id));
         return get(id, owner);
     }
 
@@ -660,7 +666,7 @@ public class IngestionJdbcGateway implements IngestionGateway {
     private boolean publishClaim(
             UUID run,
             String owner,
-            Ingestion.Review review,
+            String reason,
             UUID sourceId,
             UUID config,
             Ingestion.Claim claim,
@@ -705,7 +711,7 @@ public class IngestionJdbcGateway implements IngestionGateway {
         a.put("decision", UUID.randomUUID());
         a.put("run", run);
         a.put("owner", owner);
-        a.put("reason", review.reason());
+        a.put("reason", reason);
         a.put("revision", revision + 1);
         jdbc.update(
                 "INSERT INTO ingestion.selection_decision(id,run_id,reviewer,configuration_id,attribute_id,previous_selection,assertion_id,reason,revision) VALUES(:decision,:run,:owner,:config,:attr,(SELECT to_jsonb(s) FROM catalog.accepted_specification s WHERE configuration_id=:config AND attribute_id=:attr),:id,:reason,:revision)",
