@@ -74,7 +74,6 @@ export const PreferencesDetailStore = signalStore(
         displayName: store.displayName(),
         showActivity: store.showActivity(),
         mode: store.mode(),
-        roleModels: store.roleModels(),
         effort: store.effort(),
       });
       patchState(store, {

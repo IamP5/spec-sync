@@ -9,12 +9,7 @@ import {
 import { on, withReducer } from '@ngrx/signals/events';
 
 import { sessionEvents } from '../../../auth/api/events';
-import {
-  type CreditsModelPrice,
-  type CreditsRunCharge,
-  usedShare,
-  walletOf,
-} from '../../data/credits';
+import { type CreditsRunCharge, usedShare, walletOf } from '../../data/credits';
 import { CreditsClient } from '../../data/credits-client';
 
 /**
@@ -50,7 +45,6 @@ export const CreditsDetailStore = signalStore(
     granted: computed(() => store.view()?.granted ?? 0),
     spent: computed(() => store.view()?.spent ?? 0),
     exhausted: computed(() => store.view()?.exhausted ?? false),
-    models: computed((): CreditsModelPrice[] => store.view()?.models ?? []),
     recentRuns: computed(
       (): CreditsRunCharge[] => store.view()?.recentRuns ?? [],
     ),

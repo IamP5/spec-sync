@@ -8,17 +8,16 @@ import { InjectionToken } from '@angular/core';
 import type { CopilotKitCoreErrorCode } from '@copilotkit/core';
 
 import { toolLabel, type ToolStatus } from '../util/tool-label';
-import type { ChatMode, RoleModels } from './chat-model';
+import type { ChatMode } from './chat-model';
 
 /**
- * How the service should answer a run: the mode it answers in, the advanced
- * per-role overrides and the reasoning effort, all from the model catalog
- * (`chat-model.ts`). An empty or missing value leaves the choice to the
- * service, which answers in its default mode.
+ * How the service should answer a run: the mode it answers in and the
+ * reasoning effort, both from the model catalog (`chat-model.ts`). An empty or
+ * missing value leaves the choice to the service, which answers in its default
+ * mode.
  */
 export interface ChatRunOptions {
   mode?: ChatMode | '';
-  roleModels?: RoleModels;
   effort?: string;
 }
 

@@ -1,8 +1,4 @@
-import {
-  type ChatMode,
-  DEFAULT_CHAT_MODE,
-  type RoleModels,
-} from '../../chat/api/contracts';
+import { type ChatMode, DEFAULT_CHAT_MODE } from '../../chat/api/contracts';
 
 /** What the user can configure in the settings dialog. The theme is handled by the design system. */
 export interface Preferences {
@@ -17,11 +13,6 @@ export interface Preferences {
    */
   mode: ChatMode;
   /**
-   * Advanced per-role model overrides (see `chat-model.ts`); a role without
-   * one follows the mode. Picked in the composer, behind "Advanced".
-   */
-  roleModels: RoleModels;
-  /**
    * Id of the reasoning effort the assistant thinks with (see
    * `chat-model.ts`); empty leaves it to the AI service. Picked in the composer.
    */
@@ -33,7 +24,6 @@ export const DEFAULT_PREFERENCES: Preferences = {
   displayName: '',
   showActivity: true,
   mode: DEFAULT_CHAT_MODE,
-  roleModels: {},
   effort: '',
 };
 

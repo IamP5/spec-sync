@@ -10,6 +10,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   LOCALE_ID,
   signal,
   untracked,
@@ -78,13 +79,7 @@ import {
   ChatTurn,
   textOf,
 } from '../../data/chat-agent';
-import {
-  type ChatMode,
-  effectiveEffort,
-  effectiveMode,
-  type ModelRole,
-  modeOfRunModel,
-} from '../../data/chat-model';
+import { type ChatMode, effectiveMode } from '../../data/chat-model';
 import { MarkdownPipe } from '../../util/markdown-pipe';
 import { revealText } from '../../util/text-reveal';
 import {
@@ -99,6 +94,7 @@ import { RunOptionsPicker } from '../ui/run-options-picker';
 import { registerChatTools } from './chat-tools';
 import { ConversationDetailStore } from './conversation-detail-store';
 import { ModelSearchStore } from './model-search-store';
+import { ResearchPrototypePage } from './research-prototype-page';
 
 const PROMPT_REQUIRED_MESSAGE = $localize`Type a message to send.`;
 const OFFLINE_MESSAGE = $localize`The assistant is unavailable. Make sure the AI service is running.`;
@@ -161,14 +157,14 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
  * streams; tool calls render through the cards registered in
  * `chat-tools.ts` (generative UI).
  *
- * The composer offers the modes, the advanced per-role model overrides and
- * the reasoning efforts the AI service reports (`ModelSearchStore`) through
- * `RunOptionsPicker`; the picks are preferences and travel with every run
- * through the coordinator.
+ * The composer offers the modes the AI service reports (Instant / Balanced /
+ * Deep on a slider, `ModelSearchStore`) through `RunOptionsPicker`; the pick
+ * is a preference and travels with every run through the coordinator.
  */
 @Component({
   selector: 'app-chat-page',
   imports: [
+    ResearchPrototypePage,
     CdkTextareaAutosize,
     FormField,
     MarkdownPipe,
@@ -231,6 +227,11 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
   host: { class: 'flex min-h-0 flex-1 flex-col' },
 })
 export class ChatPage {
+  readonly prototype = input('');
+  readonly variant = input('A');
+  protected readonly prototypeEnabled = computed(
+    () => isDevMode() && this.prototype() === 'research',
+  );
   private readonly store = inject(ConversationDetailStore);
   private readonly preferences = inject(UserPreferencesCoordinator);
   private readonly modelSearch = inject(ModelSearchStore);
@@ -267,7 +268,6 @@ export class ChatPage {
   protected readonly creditsAvailable = computed(() =>
     this.creditsEnabled() ? this.coordinator.creditsAvailable() : undefined,
   );
-  protected readonly creditsModels = this.coordinator.creditsModels;
   protected readonly creditsRecentRuns = this.coordinator.creditsRecentRuns;
   /** No credits left: the conversation stays readable, but nothing can be sent. */
   protected readonly creditsExhausted = computed(
@@ -301,8 +301,9 @@ export class ChatPage {
   );
   protected readonly creditsUnavailableMessage = CREDITS_UNAVAILABLE_MESSAGE;
   /**
-   * Velocity is the cheapest mode, so it is the way out of a refused run.
-   * Offered only while the service still has it and the user is not in it.
+   * Instant (`velocity` on the wire) is the cheapest tier, so it is the way
+   * out of a refused run. Offered only while the service still has it and the
+   * user is not in it.
    */
   protected readonly canSwitchToVelocity = computed(
     () =>
@@ -378,46 +379,18 @@ export class ChatPage {
   protected readonly displayName = this.preferences.displayName;
   protected readonly hasName = this.preferences.hasName;
   protected readonly copyError = signal('');
-  /** Modes the service offers; the picker lists them only when there is a choice. */
+  /** Modes the service offers; the picker shows them only when there is a choice. */
   protected readonly modes = this.modelSearch.modes;
-  /** Roles and models the advanced selector may override. */
-  protected readonly roles = this.modelSearch.roles;
-  protected readonly models = this.modelSearch.models;
-  protected readonly roleModels = this.preferences.roleModels;
-  /**
-   * The mode auto settled on for the last run; the pill reads `Auto · Normal`.
-   * Derived from the model the last run was charged at, because the catalog
-   * route is shared between users and cannot carry a per-run value
-   * (`modeOfRunModel`). Only meaningful while the preference is `auto`.
-   */
-  protected readonly resolvedMode = computed((): ChatMode | null =>
-    this.selectedMode() === 'auto'
-      ? modeOfRunModel(
-          this.modelSearch.catalogValue(),
-          this.creditsRecentRuns()[0]?.modelId,
-        )
-      : null,
-  );
+  /** Where the picker's thumb rests before anything is picked. */
+  protected readonly defaultMode = this.modelSearch.defaultModeId;
   /** The mode the next run uses: the preference if still offered, else the service default. */
   protected readonly selectedMode = computed(
     (): ChatMode =>
       effectiveMode(this.preferences.mode(), this.modelSearch.catalogValue()) ||
       this.modelSearch.defaultModeId(),
   );
-  /** Reasoning efforts the service offers; the picker shows the track only when there are any. */
-  protected readonly efforts = this.modelSearch.efforts;
-  /** The picker shows as soon as there is anything to pick. */
-  protected readonly hasRunOptions = computed(
-    () => this.modes().length > 1 || this.efforts().length > 0,
-  );
-  /** The effort the next run uses: the preference if still offered, else the service default. */
-  protected readonly selectedEffort = computed(
-    () =>
-      effectiveEffort(
-        this.preferences.effort(),
-        this.modelSearch.catalogValue(),
-      ) || this.modelSearch.defaultEffortId(),
-  );
+  /** The picker shows as soon as there is a mode to choose. */
+  protected readonly hasRunOptions = computed(() => this.modes().length > 1);
   protected readonly maxPromptLength = MAX_PROMPT_LENGTH;
   protected readonly promptLength = computed(() => this.model().prompt.length);
   protected readonly promptInvalid = computed(() =>
@@ -691,7 +664,7 @@ export class ChatPage {
     this.preferences.update({ showActivity: !this.showActivity() });
   }
 
-  /** Retries the refused run in Velocity, the cheapest mode the service has. */
+  /** Retries the refused run in Instant, the cheapest tier the service has. */
   protected onSwitchToVelocity(): void {
     if (!this.canSwitchToVelocity()) return;
     this.onMode(VELOCITY_MODE);
@@ -707,23 +680,6 @@ export class ChatPage {
   protected onMode(mode: ChatMode): void {
     if (mode !== this.preferences.mode()) {
       this.preferences.update({ mode });
-    }
-  }
-
-  /** Sets or clears one advanced override; an empty id follows the mode again. */
-  protected onRoleModel(change: { role: ModelRole; modelId: string }): void {
-    const roleModels = { ...this.preferences.roleModels() };
-    if (change.modelId) {
-      roleModels[change.role] = change.modelId;
-    } else {
-      delete roleModels[change.role];
-    }
-    this.preferences.update({ roleModels });
-  }
-
-  protected onEffort(effort: string): void {
-    if (effort && effort !== this.preferences.effort()) {
-      this.preferences.update({ effort });
     }
   }
 

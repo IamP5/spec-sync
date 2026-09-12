@@ -38,20 +38,6 @@ function formatsFor(locale: string) {
   return format;
 }
 
-const modelPriceSchema = z.object({
-  provider: z.string().min(1),
-  modelId: z.string().min(1),
-  tariffVersion: z.number(),
-  /** Micro-credits per one million uncached input tokens. */
-  inputPerMillion: z.number(),
-  cachedInputPerMillion: z.number(),
-  outputPerMillion: z.number(),
-  /** What a minimum useful answer on this model costs. */
-  minimumCharge: z.number(),
-  /** True while the available balance covers `minimumCharge`. */
-  affordable: z.boolean(),
-});
-
 const runChargeSchema = z.object({
   runId: z.string().min(1),
   startedAt: z.string(),
@@ -74,7 +60,6 @@ const enabledWalletSchema = z.object({
   granted: z.number(),
   spent: z.number(),
   exhausted: z.boolean(),
-  models: z.array(modelPriceSchema).default([]),
   recentRuns: z.array(runChargeSchema).default([]),
 });
 
@@ -90,7 +75,6 @@ export const creditsViewSchema = z.discriminatedUnion('enabled', [
   disabledWalletSchema,
 ]);
 
-export type CreditsModelPrice = z.infer<typeof modelPriceSchema>;
 export type CreditsRunCharge = z.infer<typeof runChargeSchema>;
 export type CreditsWallet = z.infer<typeof enabledWalletSchema>;
 export type CreditsView = z.infer<typeof creditsViewSchema>;

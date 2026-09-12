@@ -14,18 +14,6 @@ const wallet = {
   granted: 200_000_000,
   spent: 53_600_000,
   exhausted: false,
-  models: [
-    {
-      provider: 'openrouter',
-      modelId: 'google/gemini-3.8-flash',
-      tariffVersion: 1,
-      inputPerMillion: 150_000_000,
-      cachedInputPerMillion: 37_500_000,
-      outputPerMillion: 900_000_000,
-      minimumCharge: 370_000,
-      affordable: true,
-    },
-  ],
   recentRuns: [
     {
       runId: 'r1',
@@ -72,7 +60,7 @@ describe('creditsViewSchema', () => {
     expect(view.enabled).toBe(true);
     expect(walletOf(view)?.unit).toBe('CREDITS');
     expect(walletOf(view)?.balance).toBe(146_400_000);
-    expect(walletOf(view)?.models[0].affordable).toBe(true);
+    expect(walletOf(view)?.recentRuns[0].charge).toBeDefined();
   });
 
   it('reads the disabled answer and has no wallet then', () => {
@@ -83,12 +71,7 @@ describe('creditsViewSchema', () => {
   });
 
   it('defaults the lists the service may leave out', () => {
-    const view = creditsViewSchema.parse({
-      ...wallet,
-      models: undefined,
-      recentRuns: undefined,
-    });
-    expect(walletOf(view)?.models).toEqual([]);
+    const view = creditsViewSchema.parse({ ...wallet, recentRuns: undefined });
     expect(walletOf(view)?.recentRuns).toEqual([]);
   });
 

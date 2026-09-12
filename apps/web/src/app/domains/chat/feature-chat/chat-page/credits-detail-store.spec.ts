@@ -40,7 +40,6 @@ describe('CreditsDetailStore', () => {
     expect(store.spent()).toBe(53_600_000);
     expect(store.exhausted()).toBe(false);
     expect(store.used()).toBeCloseTo(0.268);
-    expect(store.models().length).toBeGreaterThan(0);
     expect(store.recentRuns().length).toBeGreaterThan(0);
   });
 
@@ -53,7 +52,7 @@ describe('CreditsDetailStore', () => {
     expect(store.enabled()).toBe(false);
     expect(store.balance()).toBe(0);
     expect(store.exhausted()).toBe(false);
-    expect(store.models()).toEqual([]);
+    expect(store.recentRuns()).toEqual([]);
   });
 
   it('reports the exhausted wallet', async () => {

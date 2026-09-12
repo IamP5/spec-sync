@@ -1,10 +1,6 @@
 import { inject, Injectable, LOCALE_ID } from '@angular/core';
 
-import {
-  isChatMode,
-  isModelRole,
-  type RoleModels,
-} from '../../chat/api/contracts';
+import { isChatMode } from '../../chat/api/contracts';
 import {
   DEFAULT_LOCALE,
   isLocaleId,
@@ -57,7 +53,6 @@ export class UserPreferencesClient {
           typeof stored.mode === 'string' && isChatMode(stored.mode)
             ? stored.mode
             : DEFAULT_PREFERENCES.mode,
-        roleModels: roleModelsOf(stored.roleModels, stored.model),
         effort:
           typeof stored.effort === 'string'
             ? stored.effort
@@ -102,27 +97,4 @@ export class UserPreferencesClient {
   saveLanguage(language: LocaleId): boolean {
     return storeLocale(language);
   }
-}
-
-/**
- * The stored overrides, keeping only known roles with a non-empty model id.
- * The single `model` preference of the first release named the model the chat
- * answered with, which is exactly the `chat` role; it is migrated here and
- * never written back, so it disappears with the next save.
- */
-function roleModelsOf(stored: unknown, legacyModel: unknown): RoleModels {
-  const entries =
-    typeof stored === 'object' && stored !== null
-      ? Object.entries(stored as Record<string, unknown>).filter(
-          (entry): entry is [string, string] =>
-            isModelRole(entry[0]) &&
-            typeof entry[1] === 'string' &&
-            entry[1] !== '',
-        )
-      : [];
-  const roleModels: RoleModels = Object.fromEntries(entries);
-  if (!roleModels.chat && typeof legacyModel === 'string' && legacyModel) {
-    roleModels.chat = legacyModel;
-  }
-  return roleModels;
 }

@@ -2,11 +2,7 @@ import { inject, Injectable } from '@angular/core';
 
 import { UserPreferencesCoordinator } from '../../user/api/preferences';
 import type { ChatRunOptions } from '../data/chat-agent';
-import {
-  effectiveEffort,
-  effectiveMode,
-  effectiveRoleModels,
-} from '../data/chat-model';
+import { effectiveEffort, effectiveMode } from '../data/chat-model';
 import { ConversationDetailStore } from './chat-page/conversation-detail-store';
 import { CreditsDetailStore } from './chat-page/credits-detail-store';
 import { ModelSearchStore } from './chat-page/model-search-store';
@@ -20,9 +16,8 @@ import { ThreadSearchStore } from './thread-search/thread-search-store';
  * conversation, after the first reply, for the title the AI service
  * generates. Removing the open thread from the history starts a new
  * conversation.
- * Each run carries the mode, the advanced per-role overrides and the
- * reasoning effort picked in the preferences, as long as the AI service still
- * offers them.
+ * Each run carries the mode and the reasoning effort picked in the
+ * preferences, as long as the AI service still offers them.
  * Navigation stays with the components; the coordinator reports whether the
  * open thread was affected so they can update the URL.
  * A run is what spends AI credits, so the wallet is read again whenever a run
@@ -52,7 +47,6 @@ export class ChatCoordinator {
   readonly creditsSpent = this.credits.spent;
   readonly creditsAvailable = this.credits.available;
   readonly creditsExhausted = this.credits.exhausted;
-  readonly creditsModels = this.credits.models;
   readonly creditsRecentRuns = this.credits.recentRuns;
 
   /** Reads the wallet again, e.g. when the user asks to try a rejected run. */
@@ -125,16 +119,9 @@ export class ChatCoordinator {
     await this.threadDetail.clear();
   }
 
-  /**
-   * What a finished run leaves to read again: the wallet, always, and in auto
-   * mode the catalog, which is where the service reports the mode it resolved
-   * to for the pill.
-   */
+  /** What a finished run leaves to read again: the wallet, which it spent. */
   private afterRun(): void {
     this.credits.reload();
-    if (this.preferences.mode() === 'auto') {
-      this.models.reload();
-    }
   }
 
   /** What to run with: each preference while the catalog lists it, else the service default. */
@@ -142,7 +129,6 @@ export class ChatCoordinator {
     const catalog = this.models.catalogValue();
     return {
       mode: effectiveMode(this.preferences.mode(), catalog),
-      roleModels: effectiveRoleModels(this.preferences.roleModels(), catalog),
       effort: effectiveEffort(this.preferences.effort(), catalog),
     };
   }

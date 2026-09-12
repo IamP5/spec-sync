@@ -26,7 +26,6 @@ import {
   CHAT_EFFORT_PROPERTY,
   CHAT_LOCALE_PROPERTY,
   CHAT_MODE_PROPERTY,
-  CHAT_ROLE_MODELS_PROPERTY,
 } from './chat-model';
 import { comparisonSelection } from './comparison-selection';
 import { IngestionActivity } from './ingestion-activity';
@@ -198,9 +197,8 @@ export class ChatAgentClient {
   }
 
   /**
-   * Runs the agent on its current thread. The mode, the advanced per-role
-   * overrides and the effort travel as AG-UI forwarded properties (see
-   * `CHAT_MODE_PROPERTY`, `CHAT_ROLE_MODELS_PROPERTY` and
+   * Runs the agent on its current thread. The mode and the effort travel as
+   * AG-UI forwarded properties (see `CHAT_MODE_PROPERTY` and
    * `CHAT_EFFORT_PROPERTY`). The thread is
    * normalised afterwards (see `normalizeThread`) so the next run sends the
    * model the sequence in which things happened.
@@ -335,8 +333,6 @@ function forwardedPropsOf(
 ): Record<string, unknown> | undefined {
   const props: Record<string, unknown> = { [CHAT_LOCALE_PROPERTY]: locale };
   if (options.mode) props[CHAT_MODE_PROPERTY] = options.mode;
-  if (options.roleModels && Object.keys(options.roleModels).length)
-    props[CHAT_ROLE_MODELS_PROPERTY] = options.roleModels;
   if (options.effort) props[CHAT_EFFORT_PROPERTY] = options.effort;
   return props;
 }

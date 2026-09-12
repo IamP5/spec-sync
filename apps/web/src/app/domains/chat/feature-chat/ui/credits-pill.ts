@@ -15,11 +15,7 @@ import {
 } from '@/ui/components/popover';
 import { ZardProgressComponent } from '@/ui/components/progress';
 
-import {
-  type CreditsModelPrice,
-  type CreditsRunCharge,
-  formatCredits,
-} from '../../data/credits';
+import { type CreditsRunCharge, formatCredits } from '../../data/credits';
 
 /** How many of the recent runs the panel lists. */
 const RECENT_RUNS_SHOWN = 5;
@@ -27,8 +23,8 @@ const RECENT_RUNS_SHOWN = 5;
 /**
  * The AI credits of the signed-in user as a composer pill, in the style of
  * the run options next to it: the credits left, a thin bar for the share of
- * the promotional grant already spent, and a panel with where they went —
- * the prices of the models the service offers and the last runs.
+ * the promotional grant already spent, and a panel with where they went: the
+ * last runs and what each of them cost.
  *
  * Dumb component: the chat page reads the wallet and hands it over field by
  * field. Formatting an amount is presentation and stays here (through the
@@ -96,59 +92,6 @@ const RECENT_RUNS_SHOWN = 5;
           </p>
         </div>
 
-        @if (models().length) {
-          <div class="flex flex-col gap-1">
-            <h3 class="text-xs font-medium text-muted-foreground" i18n>
-              Credits per 1M tokens
-            </h3>
-            <table class="w-full text-xs" data-role="credits-models">
-              <caption class="sr-only" i18n>
-                Model prices in credits per one million tokens
-              </caption>
-              <thead>
-                <tr class="text-muted-foreground">
-                  <th scope="col" class="py-1 text-left font-normal" i18n>
-                    Model
-                  </th>
-                  <th scope="col" class="py-1 text-right font-normal" i18n>
-                    In
-                  </th>
-                  <th scope="col" class="py-1 text-right font-normal" i18n>
-                    Out
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (model of models(); track model.modelId) {
-                  <tr
-                    data-role="credits-model"
-                    [attr.data-affordable]="model.affordable"
-                    [class]="
-                      model.affordable ? 'text-foreground' : 'text-destructive'
-                    "
-                  >
-                    <th
-                      scope="row"
-                      class="max-w-36 truncate py-1 text-left font-normal"
-                    >
-                      {{ model.modelId }}
-                      @if (!model.affordable) {
-                        <span class="sr-only" i18n>(not affordable)</span>
-                      }
-                    </th>
-                    <td class="py-1 text-right tabular-nums">
-                      {{ price(model.inputPerMillion) }}
-                    </td>
-                    <td class="py-1 text-right tabular-nums">
-                      {{ price(model.outputPerMillion) }}
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-
         @if (runs().length) {
           <div class="flex flex-col gap-1">
             <h3 class="text-xs font-medium text-muted-foreground" i18n>
@@ -184,7 +127,6 @@ export class CreditsPill {
   /** What has been spent so far; drives the bar. */
   readonly spent = input(0);
   readonly exhausted = input(false);
-  readonly models = input<readonly CreditsModelPrice[]>([]);
   readonly recentRuns = input<readonly CreditsRunCharge[]>([]);
 
   /** Mirrors the popover, so the trigger can report its state. */

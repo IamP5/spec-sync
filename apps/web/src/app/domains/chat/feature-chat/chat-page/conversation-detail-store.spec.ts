@@ -427,17 +427,12 @@ describe('ConversationDetailStore', () => {
     expect(store.title()).toBe('Greeting');
   });
 
-  it('forwards the picked mode, overrides and effort with a run and omits what was not picked', async () => {
+  it('forwards the picked mode and effort with a run and omits what was not picked', async () => {
     agent.replyWith((input) => textReply(input, 'Hello'));
     const store = TestBed.inject(ConversationDetailStore);
-    await store.send('Hi', {
-      mode: 'intelligent',
-      roleModels: { chat: 'anthropic/claude-sonnet-5' },
-      effort: 'high',
-    });
+    await store.send('Hi', { mode: 'intelligent', effort: 'high' });
     expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
       mode: 'intelligent',
-      roleModels: { chat: 'anthropic/claude-sonnet-5' },
       effort: 'high',
       // The language is not a per-run choice: it travels with every run so
       // the agent answers in the language the interface is running in.
@@ -450,10 +445,8 @@ describe('ConversationDetailStore', () => {
         | undefined;
     expect(forwarded()).toMatchObject({ mode: 'velocity' });
     expect(forwarded()?.['effort']).toBeUndefined();
-    expect(forwarded()?.['roleModels']).toBeUndefined();
-    await store.regenerate({ mode: '', roleModels: {}, effort: '' });
+    await store.regenerate({ mode: '', effort: '' });
     expect(forwarded()?.['mode']).toBeUndefined();
-    expect(forwarded()?.['roleModels']).toBeUndefined();
     expect(forwarded()?.['effort']).toBeUndefined();
     expect(forwarded()?.['locale']).toBe('en-US');
   });

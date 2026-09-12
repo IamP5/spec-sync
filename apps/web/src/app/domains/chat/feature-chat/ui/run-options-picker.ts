@@ -13,13 +13,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideCheck,
-  lucideChevronDown,
-  lucideChevronLeft,
-  lucideChevronRight,
-  lucideSettings2,
-} from '@ng-icons/lucide';
+import { lucideChevronDown } from '@ng-icons/lucide';
 
 import {
   ZardPopoverComponent,
@@ -27,66 +21,53 @@ import {
 } from '@/ui/components/popover';
 
 import {
-  type ChatEffortOption,
   type ChatMode,
-  type ChatModelOption,
   type ChatModeOption,
-  type ChatRoleOption,
+  DEFAULT_CHAT_MODE,
   messagesCovered,
-  type ModelRole,
   needsCostConfirmation,
-  type RoleModels,
-  vendorLabelOf,
 } from '../../data/chat-model';
 import { formatCredits, isBelowSmallestShown } from '../../data/credits';
 
-type PickerView = 'options' | 'advanced' | 'confirm';
-
-/** What a role is set to when it has no override of its own. */
-const FOLLOW_MODE = '';
+type PickerView = 'options' | 'confirm';
 
 const OPTION_SELECTOR = '[role="radio"]';
+/** The one radio of a group that takes the tab stop. */
+const FOCUSABLE_OPTION_SELECTOR = '[role="radio"][tabindex="0"]';
 /** Below this width the panel spans the viewport instead of hanging off the pill. */
 const NARROW_VIEWPORT_PX = 640;
 const NARROW_MARGIN_PX = 16;
-const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
+/** The stops of the track are 2rem wide; their centres run from 1rem to 100% - 1rem. */
+const STOP_HALF_WIDTH_PX = 16;
 
 /**
- * The run options of the composer, in the style of ChatGPT: one compact pill
- * names the mode the assistant answers in (`Normal`, or `Auto · Normal` once
- * a run resolved one) and opens a panel with the four modes, the reasoning
- * effort track and an "Advanced" row.
+ * The run options of the composer, in the style of ChatGPT's thinking-time
+ * control: one compact pill names the tier the assistant answers in
+ * (`Balanced`) with a small level glyph, and opens a panel where the tiers sit
+ * on a slider — one stop per tier, cheapest first, the name, cost and purpose
+ * of the stop under the thumb above it.
  *
- * A mode is a map from role to model owned by the AI service; the panel only
- * names it and what it costs, in credits per message, with its multiplier
- * against Normal. "Advanced" opens the per-role overrides, each defaulting to
- * "Follow mode". Switching to an expensive mode on a nearly empty wallet asks
- * for confirmation inside the panel first, so nobody discovers the price of
- * Intelligent by running out.
+ * A tier is a map from role to model and reasoning effort owned by the AI
+ * service; the panel only names it and what it costs, in credits per message,
+ * with its multiplier against Balanced. Switching to an expensive tier on a
+ * nearly empty wallet asks for confirmation inside the panel first, so nobody
+ * discovers the price of Deep by running out.
  *
- * Every option is a radio: arrow keys move the selection inside a group, and
- * the group keeps one tab stop.
+ * Every stop is a radio: arrow keys move the selection along the track, the
+ * group keeps one tab stop, and the thumb can also be dragged.
  *
  * Dumb component: the page owns the catalog, the wallet and the preferences
- * and reacts to `modeChange` / `effortChange` / `roleModelChange`.
+ * and reacts to `modeChange`.
  */
 @Component({
   selector: 'app-run-options-picker',
   imports: [NgIcon, ZardPopoverComponent, ZardPopoverDirective],
-  viewProviders: [
-    provideIcons({
-      lucideCheck,
-      lucideChevronDown,
-      lucideChevronLeft,
-      lucideChevronRight,
-      lucideSettings2,
-    }),
-  ],
+  viewProviders: [provideIcons({ lucideChevronDown })],
   template: `
     <button
       type="button"
       data-role="run-options"
-      class="chat-run-options inline-flex min-h-8 max-w-64 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-foreground/80 transition-[background-color,color,transform] duration-150 ease-out hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none aria-expanded:bg-accent aria-expanded:text-foreground"
+      class="chat-run-options inline-flex min-h-8 max-w-64 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-foreground/80 transition-[background-color,color,transform] duration-150 ease-out hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none aria-expanded:bg-accent aria-expanded:text-foreground"
       zPopover
       [zContent]="panel"
       zPlacement="top"
@@ -97,17 +78,25 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
       [attr.aria-label]="triggerDescription()"
       (zVisibleChange)="onVisible($event)"
     >
+      @if (tiers().length > 1) {
+        <span
+          class="flex shrink-0 items-center gap-0.5"
+          data-role="run-options-level"
+          aria-hidden="true"
+        >
+          @for (tier of tiers(); track tier.id; let i = $index) {
+            <span
+              class="size-1 rounded-full transition-colors duration-150 motion-reduce:transition-none"
+              [class]="
+                i > trackIndex() ? 'bg-current opacity-25' : 'bg-current'
+              "
+            ></span>
+          }
+        </span>
+      }
       <span class="truncate" data-role="run-options-mode">{{
         modeLabel()
       }}</span>
-      @if (resolvedLabel()) {
-        <span class="text-muted-foreground" aria-hidden="true">·</span>
-        <span
-          class="shrink-0 text-muted-foreground"
-          data-role="run-options-resolved"
-          >{{ resolvedLabel() }}</span
-        >
-      }
       <ng-icon
         name="lucideChevronDown"
         class="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ease-out motion-reduce:transition-none"
@@ -172,235 +161,117 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
               </div>
             </div>
           }
-          @case ('advanced') {
-            <div
-              class="animate-in duration-150 fade-in-0 slide-in-from-right-1 motion-reduce:animate-none"
-            >
-              <div class="flex items-center gap-1 px-1 py-0.5">
-                <button
-                  type="button"
-                  data-action="back"
-                  class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                  i18n-aria-label
-                  aria-label="Back to modes"
-                  (click)="showOptions()"
-                >
-                  <ng-icon name="lucideChevronLeft" aria-hidden="true" />
-                </button>
-                <span class="text-xs font-medium text-muted-foreground" i18n
-                  >Advanced</span
-                >
-              </div>
-              <div data-role="advanced-roles" class="max-h-80 overflow-y-auto">
-                @for (role of roles(); track role.id) {
-                  @let expanded = expandedRole() === role.id;
-                  <button
-                    type="button"
-                    data-role="role-row"
-                    [attr.data-value]="role.id"
-                    [attr.aria-expanded]="expanded"
-                    class="flex min-h-10 w-full items-center justify-between gap-2 rounded-md px-2.5 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
-                    (click)="toggleRole(role.id)"
-                  >
-                    <span class="truncate">{{ role.label }}</span>
-                    <span
-                      class="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground"
-                    >
-                      <span class="max-w-32 truncate">{{
-                        roleValueLabel(role)
-                      }}</span>
-                      <ng-icon
-                        name="lucideChevronRight"
-                        class="size-4 transition-transform duration-150 ease-out motion-reduce:transition-none"
-                        [class.rotate-90]="expanded"
-                        aria-hidden="true"
-                      />
-                    </span>
-                  </button>
-                  @if (expanded) {
-                    <div
-                      role="radiogroup"
-                      tabindex="-1"
-                      data-role="role-models"
-                      [attr.aria-label]="role.label"
-                      class="mb-1 ml-2 border-l border-border pl-1"
-                      (keydown)="onOptionKeydown($event)"
-                    >
-                      @for (option of roleOptions(role); track option.id) {
-                        @let checked = option.id === roleModelOf(role.id);
-                        <button
-                          type="button"
-                          role="radio"
-                          data-role="role-model-option"
-                          [attr.data-value]="option.id"
-                          [attr.aria-checked]="checked"
-                          [tabIndex]="checked ? 0 : -1"
-                          class="flex min-h-9 w-full items-center justify-between gap-2 rounded-md px-2.5 text-left text-xs hover:bg-accent focus-visible:bg-accent focus-visible:outline-none aria-checked:font-medium"
-                          (click)="pickRoleModel(role.id, option.id)"
-                        >
-                          <span class="truncate">{{ option.label }}</span>
-                          @if (checked) {
-                            <ng-icon
-                              name="lucideCheck"
-                              class="size-3.5 shrink-0"
-                              aria-hidden="true"
-                            />
-                          }
-                        </button>
-                      }
-                    </div>
-                  }
-                }
-              </div>
-            </div>
-          }
           @default {
             <div
               class="animate-in duration-150 fade-in-0 slide-in-from-left-1 motion-reduce:animate-none"
             >
-              @if (showModes()) {
+              <div class="px-1 pt-1.5 pb-1" data-role="mode-select">
+                <div class="flex items-center gap-2 px-1.5">
+                  <span
+                    class="min-w-0 flex-1 truncate text-sm font-medium"
+                    id="run-options-mode-title"
+                    data-role="mode-title"
+                    >{{ headline() }}</span
+                  >
+                  @if (headlineMultiplier()) {
+                    <span
+                      class="shrink-0 rounded-full bg-foreground/10 px-1.5 text-[11px] tabular-nums text-muted-foreground"
+                      data-role="mode-multiplier"
+                      aria-hidden="true"
+                      >{{ headlineMultiplier() }}</span
+                    >
+                  }
+                </div>
+                <p
+                  class="min-h-4 px-1.5 text-[11px] text-muted-foreground"
+                  data-role="mode-detail"
+                >
+                  {{ headlineDetail() }}
+                </p>
+                <span class="sr-only" aria-live="polite" i18n
+                  >Mode: {{ headline() }}</span
+                >
                 <div
                   role="radiogroup"
                   tabindex="-1"
-                  i18n-aria-label
-                  aria-label="Mode"
-                  data-role="mode-select"
+                  aria-labelledby="run-options-mode-title"
+                  data-role="mode-track"
+                  class="chat-mode-track relative mt-2 h-6 touch-none select-none"
                   (keydown)="onOptionKeydown($event)"
+                  (pointerdown)="onTrackPointerDown($event)"
+                  (pointermove)="onTrackPointerMove($event)"
+                  (pointerup)="onTrackPointerUp($event)"
+                  (pointercancel)="onTrackPointerCancel($event)"
                 >
-                  @for (mode of modes(); track mode.id) {
-                    @let checked = mode.id === selectedMode();
+                  <span
+                    class="pointer-events-none absolute inset-0 overflow-hidden rounded-full bg-foreground/10"
+                    aria-hidden="true"
+                  >
+                    <span
+                      class="absolute inset-y-0 left-0 rounded-full bg-primary transition-[width,opacity] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none"
+                      [style.width]="fillWidth()"
+                    ></span>
+                  </span>
+                  <span
+                    class="chat-mode-thumb pointer-events-none absolute top-1/2 size-8 -translate-y-1/2 rounded-full bg-white shadow-[0_1px_4px_rgb(0_0_0/35%)] transition-[left,transform] ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none"
+                    [class]="dragging() ? 'duration-0' : 'duration-300'"
+                    [style.left]="thumbLeft()"
+                    aria-hidden="true"
+                  ></span>
+                  <div
+                    class="relative flex h-full items-center justify-between"
+                  >
+                    @for (tier of tiers(); track tier.id; let i = $index) {
+                      @let checked = i === selectedIndex();
+                      <button
+                        type="button"
+                        role="radio"
+                        data-role="mode-option"
+                        [attr.data-value]="tier.id"
+                        [attr.aria-checked]="checked"
+                        [attr.aria-label]="modeDescription(tier)"
+                        [tabIndex]="i === trackIndex() ? 0 : -1"
+                        class="group flex size-8 shrink-0 items-center justify-center rounded-full transition-transform duration-150 ease-out focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-popover focus-visible:outline-none active:scale-95 motion-reduce:transition-none"
+                        (click)="pickMode(tier.id)"
+                      >
+                        <span
+                          class="block size-1 rounded-full transition-[transform,opacity] duration-150 ease-out group-hover:scale-[1.75] motion-reduce:transition-none"
+                          [class]="
+                            i === thumbIndex()
+                              ? 'opacity-0'
+                              : i < thumbIndex()
+                                ? 'bg-white/70'
+                                : 'bg-foreground/45'
+                          "
+                          aria-hidden="true"
+                        ></span>
+                      </button>
+                    }
+                  </div>
+                </div>
+                <div
+                  class="mt-1.5 grid text-[11px] text-muted-foreground"
+                  [style.grid-template-columns]="labelColumns()"
+                  data-role="mode-labels"
+                  aria-hidden="true"
+                >
+                  @for (tier of tiers(); track tier.id; let i = $index) {
                     <button
                       type="button"
-                      role="radio"
-                      data-role="mode-option"
-                      [attr.data-value]="mode.id"
-                      [attr.aria-checked]="checked"
-                      [attr.aria-label]="modeDescription(mode)"
-                      [tabIndex]="checked ? 0 : -1"
-                      class="flex w-full flex-col gap-0.5 rounded-md px-2.5 py-1.5 text-left hover:bg-accent focus-visible:bg-accent focus-visible:outline-none aria-checked:bg-accent"
-                      (click)="pickMode(mode.id)"
+                      tabindex="-1"
+                      data-role="mode-label"
+                      [attr.data-value]="tier.id"
+                      class="truncate transition-colors duration-150 hover:text-foreground motion-reduce:transition-none"
+                      [class]="labelAlignment(i)"
+                      [class.font-medium]="i === thumbIndex()"
+                      [class.text-foreground]="i === thumbIndex()"
+                      (click)="pickMode(tier.id)"
                     >
-                      <span class="flex w-full items-center gap-2">
-                        <span
-                          class="min-w-0 flex-1 truncate text-sm aria-checked:font-medium"
-                          [class.font-medium]="checked"
-                          >{{ mode.label }}</span
-                        >
-                        @if (multiplier(mode)) {
-                          <span
-                            class="shrink-0 rounded-full bg-foreground/10 px-1.5 text-[11px] tabular-nums text-muted-foreground"
-                            data-role="mode-multiplier"
-                            aria-hidden="true"
-                            >{{ multiplier(mode) }}</span
-                          >
-                        }
-                        @if (checked) {
-                          <ng-icon
-                            name="lucideCheck"
-                            class="size-4 shrink-0"
-                            aria-hidden="true"
-                          />
-                        }
-                      </span>
-                      <span
-                        class="truncate text-[11px] text-muted-foreground"
-                        data-role="mode-detail"
-                        >{{ detail(mode) }}</span
-                      >
+                      {{ tier.label }}
                     </button>
                   }
                 </div>
-              }
-              @if (showEfforts()) {
-                <div class="px-1 pt-1 pb-0.5" data-role="effort-select">
-                  <span
-                    class="px-1.5 text-[11px] font-medium text-muted-foreground"
-                    id="run-options-effort-label"
-                    i18n
-                    >Reasoning effort</span
-                  >
-                  <span class="sr-only" aria-live="polite" i18n
-                    >Reasoning effort: {{ effortLabel() }}</span
-                  >
-                  <div
-                    role="radiogroup"
-                    tabindex="-1"
-                    aria-labelledby="run-options-effort-label"
-                    class="chat-effort-track relative mt-1 h-6 touch-none select-none"
-                    (keydown)="onOptionKeydown($event)"
-                  >
-                    <span
-                      class="pointer-events-none absolute inset-0 overflow-hidden rounded-full bg-foreground/10"
-                      aria-hidden="true"
-                    >
-                      <span
-                        class="absolute inset-y-0 left-0 rounded-full bg-primary transition-[width] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none"
-                        [style.width]="fillWidth()"
-                      ></span>
-                    </span>
-                    <span
-                      class="chat-effort-thumb pointer-events-none absolute top-1/2 size-8 -translate-y-1/2 rounded-full bg-white shadow-[0_1px_4px_rgb(0_0_0/35%)] transition-[left,transform] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none"
-                      [style.left]="thumbLeft()"
-                      aria-hidden="true"
-                    ></span>
-                    <div
-                      class="relative flex h-full items-center justify-between"
-                    >
-                      @for (
-                        effort of efforts();
-                        track effort.id;
-                        let i = $index
-                      ) {
-                        @let checked = effort.id === selectedEffort();
-                        <button
-                          type="button"
-                          role="radio"
-                          data-role="effort-option"
-                          [attr.data-value]="effort.id"
-                          [attr.aria-checked]="checked"
-                          [attr.aria-label]="effort.label"
-                          [tabIndex]="checked ? 0 : -1"
-                          class="group flex size-8 shrink-0 items-center justify-center rounded-full transition-transform duration-150 ease-out focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-popover focus-visible:outline-none active:scale-95 motion-reduce:transition-none"
-                          (click)="pickEffort(effort.id)"
-                        >
-                          <span
-                            class="block size-1 rounded-full transition-[transform,opacity] duration-150 ease-out group-hover:scale-[1.75] motion-reduce:transition-none"
-                            [class]="
-                              checked
-                                ? 'opacity-0'
-                                : i < selectedIndex()
-                                  ? 'bg-white/70'
-                                  : 'bg-foreground/45'
-                            "
-                            aria-hidden="true"
-                          ></span>
-                        </button>
-                      }
-                    </div>
-                  </div>
-                </div>
-              }
-              @if (showAdvanced()) {
-                <button
-                  type="button"
-                  data-role="advanced-open"
-                  class="mt-0.5 flex min-h-9 w-full items-center gap-2 rounded-md px-2.5 text-left text-xs text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:bg-accent focus-visible:outline-none"
-                  aria-haspopup="true"
-                  (click)="showAdvancedRoles()"
-                >
-                  <ng-icon
-                    name="lucideSettings2"
-                    class="size-4 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span class="flex-1" i18n>Advanced</span>
-                  <ng-icon
-                    name="lucideChevronRight"
-                    class="size-4 shrink-0"
-                    aria-hidden="true"
-                  />
-                </button>
-              }
+              </div>
             </div>
           }
         }
@@ -413,23 +284,14 @@ const CHECKED_OPTION_SELECTOR = '[role="radio"][aria-checked="true"]';
 export class RunOptionsPicker {
   private readonly document = inject(DOCUMENT);
   private readonly locale = inject(LOCALE_ID);
-  /** What a role reads as while it has no override of its own. */
-  protected readonly followModeLabel = $localize`Follow mode`;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly popover = viewChild.required(ZardPopoverDirective);
 
-  /** Modes the service offers, cheapest first; the list only shows when there is a choice. */
+  /** Modes the service offers, cheapest first; the panel only shows when there is a choice. */
   readonly modes = input<ChatModeOption[]>([]);
   readonly selectedMode = input<ChatMode | ''>('');
-  /** The mode auto resolved to for the last run; the pill reads `Auto · Normal`. */
-  readonly resolvedMode = input<ChatMode | null>(null);
-  /** Reasoning efforts the service offers, in ascending order; the track only shows when there are any. */
-  readonly efforts = input<ChatEffortOption[]>([]);
-  readonly selectedEffort = input('');
-  /** Roles the advanced selector may override, and the models it may offer. */
-  readonly roles = input<ChatRoleOption[]>([]);
-  readonly models = input<ChatModelOption[]>([]);
-  readonly roleModels = input<RoleModels>({});
+  /** The mode the service answers in when nothing is picked; where the thumb rests. */
+  readonly defaultMode = input<ChatMode | ''>('');
   /**
    * Credits the wallet still covers, in micro-credits, or nothing while
    * credits are disabled or unread. Only the confirm step reads it.
@@ -438,12 +300,8 @@ export class RunOptionsPicker {
   readonly disabled = input(false);
 
   readonly modeChange = output<ChatMode>();
-  readonly effortChange = output<string>();
-  readonly roleModelChange = output<{ role: ModelRole; modelId: string }>();
 
   protected readonly view = signal<PickerView>('options');
-  /** The role whose model list is expanded inside the advanced view, if any. */
-  protected readonly expandedRole = signal<ModelRole | null>(null);
   /** The mode waiting for a confirmation; nothing outside the confirm step. */
   private readonly pendingMode = signal<ChatModeOption | null>(null);
   /** Mirrors the popover, for the chevron on the pill. */
@@ -453,6 +311,11 @@ export class RunOptionsPicker {
    * distance that puts the viewport-wide panel one margin from the left edge.
    */
   protected readonly alignOffset = signal(0);
+  /** The stop under the pointer while the thumb is being dragged. */
+  private readonly dragIndex = signal<number | null>(null);
+  private dragPointerId: number | null = null;
+  /** A drag just committed a stop: the click that may follow it is not a second pick. */
+  private skipClick = false;
 
   constructor() {
     afterRenderEffect((onCleanup) => {
@@ -465,11 +328,8 @@ export class RunOptionsPicker {
     });
   }
 
-  protected readonly showModes = computed(() => this.modes().length > 1);
-  protected readonly showEfforts = computed(() => this.efforts().length > 0);
-  protected readonly showAdvanced = computed(
-    () => this.roles().length > 0 && this.models().length > 0,
-  );
+  /** The stops of the track, in the order the service lists them. */
+  protected readonly tiers = computed(() => this.modes());
 
   private readonly mode = computed(() =>
     this.modes().find((mode) => mode.id === this.selectedMode()),
@@ -477,33 +337,45 @@ export class RunOptionsPicker {
   protected readonly modeLabel = computed(
     () => this.mode()?.label ?? labelOf(this.selectedMode()),
   );
-  /** The mode auto settled on, named only while auto is the pick. */
-  protected readonly resolvedLabel = computed(() => {
-    const resolved = this.resolvedMode();
-    if (this.selectedMode() !== 'auto' || !resolved || resolved === 'auto') {
-      return '';
-    }
-    return (
-      this.modes().find((mode) => mode.id === resolved)?.label ??
-      labelOf(resolved)
+  /** The stop that is the pick; -1 before the catalog lists it. */
+  protected readonly selectedIndex = computed(() =>
+    this.tiers().findIndex((tier) => tier.id === this.selectedMode()),
+  );
+  /**
+   * The stop the thumb rests on: the pick, or the service default, so the
+   * track never shows an empty state.
+   */
+  protected readonly trackIndex = computed(() => {
+    const tiers = this.tiers();
+    const selected = this.selectedIndex();
+    if (selected >= 0) return selected;
+    const fallback = this.defaultMode() || DEFAULT_CHAT_MODE;
+    return Math.max(
+      tiers.findIndex((tier) => tier.id === fallback),
+      0,
     );
   });
-  protected readonly selectedIndex = computed(() =>
-    this.efforts().findIndex((effort) => effort.id === this.selectedEffort()),
+  protected readonly dragging = computed(() => this.dragIndex() !== null);
+  /** Where the thumb is drawn: under the pointer while dragging, else on `trackIndex`. */
+  protected readonly thumbIndex = computed(
+    () => this.dragIndex() ?? this.trackIndex(),
   );
-  protected readonly effortLabel = computed(
-    () => this.efforts()[this.selectedIndex()]?.label ?? '',
+  private readonly thumbTier = computed(
+    (): ChatModeOption | undefined => this.tiers()[this.thumbIndex()],
   );
+  /** What the panel names above the track: the tier under the thumb. */
+  protected readonly headline = computed(() => this.thumbTier()?.label ?? '');
+  protected readonly headlineDetail = computed(() => {
+    const tier = this.thumbTier();
+    return tier ? this.detail(tier) : '';
+  });
+  protected readonly headlineMultiplier = computed(() => {
+    const tier = this.thumbTier();
+    return tier ? this.multiplier(tier) : '';
+  });
   protected readonly triggerDescription = computed(() => {
     const mode = this.modeLabel();
-    const parts = [$localize`Mode: ${mode}:mode:`];
-    const resolved = this.resolvedLabel();
-    if (resolved) parts.push($localize`answering in ${resolved}:mode:`);
-    if (this.showEfforts()) {
-      const effort = this.effortLabel();
-      parts.push($localize`Reasoning effort: ${effort}:effort:`);
-    }
-    return parts.join('. ');
+    return $localize`Mode: ${mode}:mode:`;
   });
 
   protected readonly pendingLabel = computed(
@@ -519,14 +391,14 @@ export class RunOptionsPicker {
     ),
   );
 
-  /** Position of the selected stop along the track, 0..1. */
+  /** Position of the thumb along the track, 0..1. */
   private readonly ratio = computed(() => {
-    const stops = this.efforts().length;
-    return stops < 2 ? 0 : Math.max(this.selectedIndex(), 0) / (stops - 1);
+    const stops = this.tiers().length;
+    return stops < 2 ? 0 : Math.max(this.thumbIndex(), 0) / (stops - 1);
   });
   /**
    * The stops are 2rem wide and spread across the row, so their centres run
-   * from 1rem to 100% - 1rem; the fill ends at the selected centre.
+   * from 1rem to 100% - 1rem; the fill ends at the thumb's centre.
    */
   protected readonly fillWidth = computed(
     () => `calc(1rem + (100% - 2rem) * ${this.ratio()})`,
@@ -535,6 +407,16 @@ export class RunOptionsPicker {
   protected readonly thumbLeft = computed(
     () => `calc((100% - 2rem) * ${this.ratio()})`,
   );
+  protected readonly labelColumns = computed(
+    () => `repeat(${Math.max(this.tiers().length, 1)}, minmax(0, 1fr))`,
+  );
+
+  /** The outer labels hug the edges, under the outer stops; the rest sit centred. */
+  protected labelAlignment(index: number): string {
+    if (index === 0) return 'text-left';
+    if (index === this.tiers().length - 1) return 'text-right';
+    return 'text-center';
+  }
 
   /** What a mode costs per message, and what it is for; the cost comes first. */
   protected detail(mode: ChatModeOption): string {
@@ -542,51 +424,27 @@ export class RunOptionsPicker {
     return [cost, mode.description].filter(Boolean).join(' · ');
   }
 
-  /** How much more than Normal a mode costs; nothing at or below it. */
+  /** How much more than Balanced a tier costs; nothing at or below it. */
   protected multiplier(mode: ChatModeOption): string {
     const relative = mode.relativeCost;
     return relative && relative > 1 ? `${relative}×` : '';
   }
 
-  /** The row's own sentence for a screen reader: the badge is decoration. */
+  /** The stop's own sentence for a screen reader: the badge is decoration. */
   protected modeDescription(mode: ChatModeOption): string {
     const parts = [mode.label, this.detail(mode)].filter(Boolean);
     const relative = mode.relativeCost;
     if (relative && relative > 1) {
-      parts.push($localize`${relative}:factor:× Normal`);
+      parts.push($localize`${relative}:factor:× Balanced`);
     }
     return parts.join('. ');
-  }
-
-  /** The models a role may run on, "Follow mode" first. */
-  protected roleOptions(role: ChatRoleOption): { id: string; label: string }[] {
-    const models = this.models();
-    return [
-      { id: FOLLOW_MODE, label: this.followModeLabel },
-      ...role.models.map((id) => {
-        const model = models.find((option) => option.id === id);
-        return {
-          id,
-          label: model ? `${vendorLabelOf(model.vendor)} ${model.label}` : id,
-        };
-      }),
-    ];
-  }
-
-  protected roleModelOf(role: ModelRole): string {
-    return this.roleModels()[role] ?? FOLLOW_MODE;
-  }
-
-  protected roleValueLabel(role: ChatRoleOption): string {
-    const picked = this.roleModelOf(role.id);
-    if (!picked) return this.followModeLabel;
-    return this.models().find((model) => model.id === picked)?.label ?? picked;
   }
 
   protected onVisible(visible: boolean): void {
     this.open.set(visible);
     if (!visible) {
       this.pendingMode.set(null);
+      this.endDrag();
       return;
     }
     this.showOptions();
@@ -594,25 +452,19 @@ export class RunOptionsPicker {
 
   protected showOptions(): void {
     this.pendingMode.set(null);
-    this.expandedRole.set(null);
     this.view.set('options');
     this.focusChecked();
   }
 
-  protected showAdvancedRoles(): void {
-    this.view.set('advanced');
-    this.focusChecked();
-  }
-
-  protected toggleRole(role: ModelRole): void {
-    this.expandedRole.update((current) => (current === role ? null : role));
-  }
-
   /**
-   * Picks a mode, or asks first when it costs more than three times Normal
-   * and the wallet covers fewer than twenty of its replies.
+   * Picks a mode, or asks first when the wallet covers fewer than twenty of
+   * its replies. A click that follows a committed drag is the same pick.
    */
   protected pickMode(id: ChatMode): void {
+    if (this.skipClick) {
+      this.skipClick = false;
+      return;
+    }
     if (id === this.selectedMode()) return;
     const mode = this.modes().find((option) => option.id === id);
     if (needsCostConfirmation(mode, this.availableCredits())) {
@@ -642,15 +494,6 @@ export class RunOptionsPicker {
     event.preventDefault();
     event.stopPropagation();
     this.cancelSwitch();
-  }
-
-  protected pickEffort(id: string): void {
-    if (id !== this.selectedEffort()) this.effortChange.emit(id);
-  }
-
-  protected pickRoleModel(role: ModelRole, modelId: string): void {
-    if (modelId !== this.roleModelOf(role))
-      this.roleModelChange.emit({ role, modelId });
   }
 
   /** Radio-group keyboard pattern: arrows move and select, Home/End jump. */
@@ -687,6 +530,61 @@ export class RunOptionsPicker {
     options[next]?.click();
   }
 
+  /**
+   * The thumb follows the pointer along the track and the stop it is released
+   * on becomes the pick. The track captures the pointer, so a drag that leaves
+   * it still ends here.
+   */
+  protected onTrackPointerDown(event: PointerEvent): void {
+    if (event.button !== 0 || this.disabled() || this.tiers().length < 2)
+      return;
+    const track = event.currentTarget as HTMLElement;
+    try {
+      track.setPointerCapture(event.pointerId);
+    } catch {
+      // Not a live pointer (synthetic events): the drag still works inside the track.
+    }
+    this.dragPointerId = event.pointerId;
+    this.dragIndex.set(this.stopAt(track, event.clientX));
+  }
+
+  protected onTrackPointerMove(event: PointerEvent): void {
+    if (event.pointerId !== this.dragPointerId) return;
+    const track = event.currentTarget as HTMLElement;
+    const index = this.stopAt(track, event.clientX);
+    if (index !== this.dragIndex()) this.dragIndex.set(index);
+  }
+
+  protected onTrackPointerUp(event: PointerEvent): void {
+    if (event.pointerId !== this.dragPointerId) return;
+    const index = this.dragIndex();
+    this.endDrag();
+    const tier = index === null ? undefined : this.tiers()[index];
+    if (!tier || index === this.selectedIndex()) return;
+    this.pickMode(tier.id);
+    // A tap on a stop also fires a click, in this same task.
+    this.skipClick = true;
+    setTimeout(() => (this.skipClick = false));
+  }
+
+  protected onTrackPointerCancel(event: PointerEvent): void {
+    if (event.pointerId === this.dragPointerId) this.endDrag();
+  }
+
+  private endDrag(): void {
+    this.dragPointerId = null;
+    this.dragIndex.set(null);
+  }
+
+  /** The stop nearest to a viewport x on the track. */
+  private stopAt(track: HTMLElement, clientX: number): number {
+    const stops = this.tiers().length;
+    const rect = track.getBoundingClientRect();
+    const span = Math.max(rect.width - 2 * STOP_HALF_WIDTH_PX, 1);
+    const ratio = (clientX - rect.left - STOP_HALF_WIDTH_PX) / span;
+    return Math.round(Math.min(Math.max(ratio, 0), 1) * (stops - 1));
+  }
+
   private measureAlignment(view: Window): void {
     if (view.innerWidth >= NARROW_VIEWPORT_PX) {
       this.alignOffset.set(0);
@@ -696,9 +594,9 @@ export class RunOptionsPicker {
     this.alignOffset.set(Math.round(NARROW_MARGIN_PX - left));
   }
 
-  /** Move focus into the open panel, onto the checked option of the current view. */
+  /** Move focus into the open panel, onto the focusable option of the current view. */
   private focusChecked(): void {
-    this.focusIn(CHECKED_OPTION_SELECTOR, OPTION_SELECTOR, 'button');
+    this.focusIn(FOCUSABLE_OPTION_SELECTOR, OPTION_SELECTOR, 'button');
   }
 
   private focusIn(...selectors: string[]): void {

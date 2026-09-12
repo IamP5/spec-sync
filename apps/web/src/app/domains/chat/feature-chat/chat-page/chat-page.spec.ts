@@ -1068,42 +1068,78 @@ describe('ChatPage', () => {
       );
       expect(trigger).not.toBeNull();
       // Nothing picked yet: the mode the service answers in by default.
-      expect(trigger?.textContent).toContain('Normal');
-      expect(trigger?.getAttribute('aria-label')).toContain('Mode: Normal');
+      expect(trigger?.textContent).toContain('Balanced');
+      expect(trigger?.getAttribute('aria-label')).toContain('Mode: Balanced');
 
       trigger?.click();
       await fixture.whenStable();
+      const select = document.querySelector<HTMLElement>(
+        '[data-role="mode-select"]',
+      );
+      // The tiers are the stops of one slider, cheapest first; the stop under
+      // the thumb is named above the track with what it costs per message.
+      const stops = [
+        ...document.querySelectorAll<HTMLElement>('[data-role="mode-option"]'),
+      ].map((stop) => stop.getAttribute('data-value'));
+      // Only the named tiers: the service also lists `auto`, which the
+      // composer does not offer.
+      expect(stops).toEqual(['velocity', 'normal', 'intelligent']);
+      expect(
+        select?.querySelector('[data-role="mode-title"]')?.textContent,
+      ).toContain('Balanced');
+      expect(
+        select?.querySelector('[data-role="mode-detail"]')?.textContent,
+      ).toContain('1 credits per message');
+      expect(
+        select?.querySelector('[data-role="mode-labels"]')?.textContent,
+      ).toContain('Instant');
+      // Every stop reads its own sentence to a screen reader.
       const velocity = document.querySelector<HTMLElement>(
         '[data-role="mode-option"][data-value="velocity"]',
       );
-      // Every row names what it costs per message, cheapest mode first.
-      expect(velocity?.textContent).toContain('0.20 credits per message');
-      expect(velocity?.textContent).toContain('Fastest answers, lowest cost.');
-      // Only what costs more than Normal carries a multiplier.
-      expect(
-        velocity?.querySelector('[data-role="mode-multiplier"]'),
-      ).toBeNull();
-      expect(
-        document
-          .querySelector('[data-role="mode-option"][data-value="intelligent"]')
-          ?.querySelector('[data-role="mode-multiplier"]')?.textContent,
-      ).toContain('3.2×');
-      // Auto has no estimate of its own.
-      expect(
-        document.querySelector(
-          '[data-role="mode-option"][data-value="auto"] [data-role="mode-detail"]',
-        )?.textContent,
-      ).toContain('Picks a mode from your message.');
+      expect(velocity?.getAttribute('role')).toBe('radio');
+      expect(velocity?.getAttribute('aria-label')).toContain(
+        '0.20 credits per message',
+      );
+      expect(velocity?.getAttribute('aria-label')).toContain(
+        'Quick answers at the lowest cost.',
+      );
+      // Balanced is the reference: no multiplier on it.
+      expect(select?.querySelector('[data-role="mode-multiplier"]')).toBeNull();
+      // Nothing of the retired Auto switch or the advanced per-role
+      // overrides, whatever the service still lists.
+      expect(document.querySelector('[data-value="auto"]')).toBeNull();
+      expect(document.querySelector('[data-role="advanced-open"]')).toBeNull();
+      // Nothing of the retired effort track, whatever the service still lists.
+      expect(document.querySelector('[data-role="effort-select"]')).toBeNull();
+      expect(trigger?.getAttribute('aria-label')).not.toContain('effort');
 
       velocity?.click();
       await fixture.whenStable();
       expect(TestBed.inject(UserPreferencesCoordinator).mode()).toBe(
         'velocity',
       );
-      expect(trigger?.textContent).toContain('Velocity');
+      expect(velocity?.getAttribute('aria-checked')).toBe('true');
+      expect(
+        select?.querySelector('[data-role="mode-title"]')?.textContent,
+      ).toContain('Instant');
+      expect(trigger?.textContent).toContain('Instant');
       expect(localStorage.getItem('specsync.chat.preferences.v1')).toContain(
         '"mode":"velocity"',
       );
+
+      // Only what costs more than Balanced carries a multiplier.
+      document
+        .querySelector<HTMLElement>(
+          '[data-role="mode-option"][data-value="intelligent"]',
+        )
+        ?.click();
+      await fixture.whenStable();
+      expect(
+        select?.querySelector('[data-role="mode-multiplier"]')?.textContent,
+      ).toContain('3.2×');
+      velocity?.click();
+      await fixture.whenStable();
 
       await sendPrompt(element, 'Hi');
       await settled(TestBed.inject(ConversationDetailStore));
@@ -1123,85 +1159,63 @@ describe('ChatPage', () => {
     }
   });
 
-  it('names the mode auto resolved to on the pill', async () => {
-    stubCatalog({ ...MODEL_CATALOG, resolvedMode: 'normal' });
-    try {
-      const fixture = TestBed.createComponent(ChatPage);
-      await fixture.whenStable();
-      await fixture.whenStable();
-      const element = fixture.nativeElement as HTMLElement;
-      element.querySelector<HTMLElement>('[data-role="run-options"]')?.click();
-      await fixture.whenStable();
-      document
-        .querySelector<HTMLElement>(
-          '[data-role="mode-option"][data-value="auto"]',
-        )
-        ?.click();
-      await fixture.whenStable();
-
-      const trigger = element.querySelector<HTMLElement>(
-        '[data-role="run-options"]',
-      );
-      expect(trigger?.textContent).toContain('Auto');
-      expect(
-        trigger?.querySelector('[data-role="run-options-resolved"]')
-          ?.textContent,
-      ).toContain('Normal');
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
-  it('overrides one role behind Advanced and sends it with the run', async () => {
+  it('moves the mode along the track with the arrow keys and by dragging the thumb', async () => {
     stubCatalog(MODEL_CATALOG);
     try {
-      agent.replyWith((input) => textReply(input, 'Hello'));
       const fixture = TestBed.createComponent(ChatPage);
       await fixture.whenStable();
       await fixture.whenStable();
-      const element = fixture.nativeElement as HTMLElement;
-      element.querySelector<HTMLElement>('[data-role="run-options"]')?.click();
-      await fixture.whenStable();
-
-      document
-        .querySelector<HTMLElement>('[data-role="advanced-open"]')
+      (fixture.nativeElement as HTMLElement)
+        .querySelector<HTMLElement>('[data-role="run-options"]')
         ?.click();
       await fixture.whenStable();
-      const role = document.querySelector<HTMLElement>(
-        '[data-role="role-row"][data-value="chat"]',
-      );
-      // Every role follows the mode until it is given a model of its own.
-      expect(role?.textContent).toContain('Follow mode');
-      expect(role?.getAttribute('aria-expanded')).toBe('false');
-      role?.click();
-      await fixture.whenStable();
-      expect(role?.getAttribute('aria-expanded')).toBe('true');
-      // "Follow mode" is the first radio and is the one checked.
-      const options = document.querySelectorAll(
-        '[data-role="role-model-option"]',
-      );
-      expect(options[0].getAttribute('data-value')).toBe('');
-      expect(options[0].getAttribute('aria-checked')).toBe('true');
+      const preferences = TestBed.inject(UserPreferencesCoordinator);
+      const stop = (id: string) =>
+        document.querySelector<HTMLElement>(
+          `[data-role="mode-option"][data-value="${id}"]`,
+        );
 
-      document
-        .querySelector<HTMLElement>(
-          '[data-role="role-model-option"][data-value="anthropic/claude-sonnet-5"]',
-        )
-        ?.click();
+      // One tab stop, on the pick; arrows move and select like a radio group.
+      expect(stop('normal')?.tabIndex).toBe(0);
+      expect(stop('velocity')?.tabIndex).toBe(-1);
+      stop('normal')?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
+      );
       await fixture.whenStable();
-      expect(TestBed.inject(UserPreferencesCoordinator).roleModels()).toEqual({
-        chat: 'anthropic/claude-sonnet-5',
-      });
+      expect(preferences.mode()).toBe('velocity');
+      stop('velocity')?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'End', bubbles: true }),
+      );
+      await fixture.whenStable();
+      expect(preferences.mode()).toBe('intelligent');
+
+      // Dragging: the stop the pointer is released on becomes the pick.
+      const track = document.querySelector<HTMLElement>(
+        '[data-role="mode-track"]',
+      );
+      expect(track).not.toBeNull();
+      if (!track) return;
+      vi.spyOn(track, 'getBoundingClientRect').mockReturnValue({
+        left: 100,
+        width: 300,
+      } as DOMRect);
+      const pointer = (type: string, clientX: number) =>
+        track.dispatchEvent(
+          new MouseEvent(type, { bubbles: true, button: 0, clientX }),
+        );
+      pointer('pointerdown', 380);
+      pointer('pointermove', 250);
+      await fixture.whenStable();
+      // The thumb follows the finger before anything is committed.
+      expect(preferences.mode()).toBe('intelligent');
       expect(
-        document.querySelector('[data-role="role-row"][data-value="chat"]')
-          ?.textContent,
-      ).toContain('Claude Sonnet 5');
-
-      await sendPrompt(element, 'Hi');
-      await settled(TestBed.inject(ConversationDetailStore));
-      expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
-        roleModels: { chat: 'anthropic/claude-sonnet-5' },
-      });
+        document.querySelector('[data-role="mode-title"]')?.textContent,
+      ).toContain('Balanced');
+      pointer('pointermove', 116);
+      pointer('pointerup', 116);
+      await fixture.whenStable();
+      expect(preferences.mode()).toBe('velocity');
+      expect(stop('velocity')?.getAttribute('aria-checked')).toBe('true');
     } finally {
       vi.unstubAllGlobals();
     }
@@ -1226,7 +1240,7 @@ describe('ChatPage', () => {
       await fixture.whenStable();
 
       const confirm = document.querySelector('[data-role="mode-confirm"]');
-      expect(confirm?.textContent).toContain('Switch to Intelligent?');
+      expect(confirm?.textContent).toContain('Switch to Deep?');
       expect(confirm?.textContent).toContain('3 credits per message');
       // 0.60 credits left is not one reply in that mode.
       expect(confirm?.textContent).toContain('cover about 0 messages');
@@ -1284,130 +1298,10 @@ describe('ChatPage', () => {
     }
   });
 
-  it('offers the reasoning efforts the service reports and sends the picked one with the run', async () => {
-    stubCatalog(MODEL_CATALOG);
-    try {
-      agent.replyWith((input) => textReply(input, 'Hello'));
-      const fixture = TestBed.createComponent(ChatPage);
-      await fixture.whenStable();
-      await fixture.whenStable();
-      const element = fixture.nativeElement as HTMLElement;
-      const trigger = element.querySelector<HTMLElement>(
-        '[data-role="run-options"]',
-      );
-      expect(trigger).not.toBeNull();
-      // The pill names the mode; the effort sits inside the panel.
-      expect(trigger?.getAttribute('aria-label')).toContain(
-        'Reasoning effort: Auto',
-      );
-
-      trigger?.click();
-      await fixture.whenStable();
-      const track = document.querySelector<HTMLElement>(
-        '[data-role="effort-select"]',
-      );
-      // Nothing picked yet: the effort the service applies by default.
-      expect(track?.textContent).toContain('Reasoning effort: Auto');
-      const option = track?.querySelector<HTMLElement>(
-        '[data-role="effort-option"][data-value="high"]',
-      );
-      expect(option?.getAttribute('aria-label')).toBe('High');
-      option?.click();
-      await fixture.whenStable();
-      expect(TestBed.inject(UserPreferencesCoordinator).effort()).toBe('high');
-      expect(option?.getAttribute('aria-checked')).toBe('true');
-      expect(track?.textContent).toContain('High');
-      // The panel stays open, like a slider.
-      expect(trigger?.getAttribute('aria-label')).toContain(
-        'Reasoning effort: High',
-      );
-      expect(localStorage.getItem('specsync.chat.preferences.v1')).toContain(
-        '"effort":"high"',
-      );
-
-      // Arrow keys move the selection like a radio group.
-      option?.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
-      );
-      await fixture.whenStable();
-      expect(TestBed.inject(UserPreferencesCoordinator).effort()).toBe('low');
-
-      await sendPrompt(element, 'Hi');
-      await settled(TestBed.inject(ConversationDetailStore));
-      expect(agent.runs[agent.runs.length - 1]?.forwardedProps).toMatchObject({
-        effort: 'low',
-      });
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
-  it('shows the modes alone while the service offers no efforts', async () => {
-    stubCatalog({ ...MODEL_CATALOG, efforts: [] });
-    try {
-      const fixture = TestBed.createComponent(ChatPage);
-      await fixture.whenStable();
-      await fixture.whenStable();
-      const trigger = (
-        fixture.nativeElement as HTMLElement
-      ).querySelector<HTMLElement>('[data-role="run-options"]');
-      expect(trigger?.textContent).toContain('Normal');
-      expect(trigger?.getAttribute('aria-label')).not.toContain('effort');
-      trigger?.click();
-      await fixture.whenStable();
-      expect(document.querySelector('[data-role="effort-select"]')).toBeNull();
-      expect(
-        document.querySelector('[data-role="mode-select"]'),
-      ).not.toBeNull();
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
-  it('hides the advanced row while the service offers no per-role choice', async () => {
-    stubCatalog({ ...MODEL_CATALOG, roles: [], models: [] });
-    try {
-      const fixture = TestBed.createComponent(ChatPage);
-      await fixture.whenStable();
-      await fixture.whenStable();
-      (fixture.nativeElement as HTMLElement)
-        .querySelector<HTMLElement>('[data-role="run-options"]')
-        ?.click();
-      await fixture.whenStable();
-      expect(document.querySelector('[data-role="advanced-open"]')).toBeNull();
-      expect(
-        document.querySelector('[data-role="effort-select"]'),
-      ).not.toBeNull();
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
-  it('hides the mode list while the service offers a single mode', async () => {
-    stubCatalog({ ...MODEL_CATALOG, modes: MODEL_CATALOG.modes.slice(1, 2) });
-    try {
-      const fixture = TestBed.createComponent(ChatPage);
-      await fixture.whenStable();
-      await fixture.whenStable();
-      const trigger = (
-        fixture.nativeElement as HTMLElement
-      ).querySelector<HTMLElement>('[data-role="run-options"]');
-      trigger?.click();
-      await fixture.whenStable();
-      expect(document.querySelector('[data-role="mode-select"]')).toBeNull();
-      expect(
-        document.querySelector('[data-role="effort-select"]'),
-      ).not.toBeNull();
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
-  it('hides the picker while the service offers nothing to pick', async () => {
+  it('hides the picker while the service offers a single mode', async () => {
     stubCatalog({
       ...MODEL_CATALOG,
       modes: MODEL_CATALOG.modes.slice(1, 2),
-      efforts: [],
     });
     try {
       const fixture = TestBed.createComponent(ChatPage);
@@ -1433,7 +1327,7 @@ describe('ChatPage', () => {
     expect(pill?.getAttribute('aria-label')).toContain('146 of 200');
   });
 
-  it('lists the model prices and the recent replies in the credits panel', async () => {
+  it('lists the recent replies in the credits panel', async () => {
     const fixture = TestBed.createComponent(ChatPage);
     await fixture.whenStable();
     await fixture.whenStable();
@@ -1449,9 +1343,8 @@ describe('ChatPage', () => {
     expect(panel?.textContent).toContain('Used 54');
     // Money never reaches the surface.
     expect(panel?.textContent).not.toContain('R$');
-    expect(
-      panel?.querySelectorAll('[data-role="credits-model"]').length,
-    ).toBeGreaterThan(0);
+    // The model rate card is not part of the composer.
+    expect(panel?.querySelector('[data-role="credits-models"]')).toBeNull();
     expect(
       panel?.querySelectorAll('[data-role="credits-runs"] li').length,
     ).toBeGreaterThan(0);
@@ -1479,7 +1372,7 @@ describe('ChatPage', () => {
     ).toContain('0 credits');
   });
 
-  it('offers Velocity mode when the service refuses the run for lack of credits', async () => {
+  it('offers Instant mode when the service refuses the run for lack of credits', async () => {
     stubCatalog(MODEL_CATALOG);
     try {
       TestBed.inject(FakeCreditsClient).answerWith(lowWallet());
@@ -1504,7 +1397,7 @@ describe('ChatPage', () => {
       const button = element.querySelector<HTMLButtonElement>(
         '[data-action="switch-mode"]',
       );
-      expect(button?.textContent).toContain('Switch to Velocity mode');
+      expect(button?.textContent).toContain('Switch to Instant mode');
 
       button?.click();
       await fixture.whenStable();

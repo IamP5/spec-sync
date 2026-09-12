@@ -15,7 +15,6 @@ export class UserPreferencesCoordinator {
   readonly displayName = this.store.displayName;
   readonly showActivity = this.store.showActivity;
   readonly mode = this.store.mode;
-  readonly roleModels = this.store.roleModels;
   readonly effort = this.store.effort;
   readonly hasName = this.store.hasName;
   readonly initials = this.store.initials;

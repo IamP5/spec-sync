@@ -1,7 +1,6 @@
 import { Injectable, resource, signal } from '@angular/core';
 
 import type {
-  CreditsModelPrice,
   CreditsRunCharge,
   CreditsView,
 } from '../domains/chat/data/credits';
@@ -49,52 +48,12 @@ export function richWallet(): CreditsView {
 
 /** Enough for the cheapest mode only; the expensive ones are out of reach. */
 export function lowWallet(): CreditsView {
-  return wallet({
-    balance: 600_000,
-    spent: 199_400_000,
-    models: [
-      price(
-        'google/gemini-3.1-pro-preview',
-        200_000_000,
-        1_200_000_000,
-        14_800_000,
-        false,
-      ),
-      price('google/gemini-3.8-flash', 75_000_000, 375_000_000, 370_000, true),
-      price(
-        'google/gemini-3.5-flash-lite',
-        30_000_000,
-        250_000_000,
-        80_000,
-        true,
-      ),
-    ],
-  });
+  return wallet({ balance: 600_000, spent: 199_400_000 });
 }
 
 /** Nothing left: the transcript stays readable, the composer does not. */
 export function exhaustedWallet(): CreditsView {
-  return wallet({
-    balance: 0,
-    spent: 200_000_000,
-    exhausted: true,
-    models: [
-      price(
-        'google/gemini-3.8-flash',
-        150_000_000,
-        900_000_000,
-        370_000,
-        false,
-      ),
-      price(
-        'google/gemini-3.5-flash-lite',
-        30_000_000,
-        250_000_000,
-        80_000,
-        false,
-      ),
-    ],
-  });
+  return wallet({ balance: 0, spent: 200_000_000, exhausted: true });
 }
 
 /** What the service answers while the feature flag is unset. */
@@ -115,37 +74,8 @@ function wallet(
     granted: 200_000_000,
     spent: overrides.spent ?? 0,
     exhausted: false,
-    models: [
-      price('google/gemini-3.8-flash', 75_000_000, 375_000_000, 370_000, true),
-      price(
-        'google/gemini-3.5-flash-lite',
-        30_000_000,
-        250_000_000,
-        80_000,
-        true,
-      ),
-    ],
     recentRuns: [run('run-1', 'google/gemini-3.8-flash', 1_300_000)],
     ...overrides,
-  };
-}
-
-function price(
-  modelId: string,
-  inputPerMillion: number,
-  outputPerMillion: number,
-  minimumCharge: number,
-  affordable: boolean,
-): CreditsModelPrice {
-  return {
-    provider: 'openrouter',
-    modelId,
-    tariffVersion: 1,
-    inputPerMillion,
-    cachedInputPerMillion: Math.round(inputPerMillion / 4),
-    outputPerMillion,
-    minimumCharge,
-    affordable,
   };
 }
 

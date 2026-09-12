@@ -2,20 +2,16 @@ import {
   CHAT_EFFORT_PROPERTY,
   CHAT_MODE_PROPERTY,
   CHAT_MODELS_URL,
-  CHAT_ROLE_MODELS_PROPERTY,
   type ChatModelCatalog,
   chatModelCatalogSchema,
   effectiveEffort,
   effectiveMode,
-  effectiveRoleModels,
   messagesCovered,
   needsCostConfirmation,
-  vendorLabelOf,
 } from './chat-model';
 
 const catalog: ChatModelCatalog = {
   defaultModeId: 'normal',
-  resolvedMode: null,
   modes: [
     {
       id: 'velocity',
@@ -44,41 +40,6 @@ const catalog: ChatModelCatalog = {
       relativeCost: 2.7,
       affordable: true,
     },
-    {
-      id: 'auto',
-      label: 'Auto',
-      description: 'Picks a mode from your message.',
-      chatModelId: null,
-      estimatedCredits: null,
-      relativeCost: null,
-      affordable: true,
-    },
-  ],
-  roles: [
-    {
-      id: 'chat',
-      label: 'Chat',
-      models: ['google/gemini-3.8-flash', 'anthropic/claude-sonnet-5'],
-    },
-    {
-      id: 'vision',
-      label: 'Document reading',
-      models: ['google/gemini-3.8-flash'],
-    },
-  ],
-  models: [
-    {
-      id: 'google/gemini-3.8-flash',
-      label: 'Gemini 3.5 Flash',
-      vendor: 'google',
-      provider: 'openrouter',
-    },
-    {
-      id: 'anthropic/claude-sonnet-5',
-      label: 'Claude Sonnet 5',
-      vendor: 'anthropic',
-      provider: 'openrouter',
-    },
   ],
   defaultEffortId: 'auto',
   efforts: [
@@ -91,18 +52,28 @@ describe('chat model contract', () => {
   it('keeps the names shared with the AI service', () => {
     expect(CHAT_MODELS_URL).toBe('/ai/chat/models');
     expect(CHAT_MODE_PROPERTY).toBe('mode');
-    expect(CHAT_ROLE_MODELS_PROPERTY).toBe('roleModels');
     expect(CHAT_EFFORT_PROPERTY).toBe('effort');
   });
 
-  it('accepts the catalog the service returns and rejects unknown modes', () => {
+  it('accepts the catalog the service returns and drops modes it does not offer', () => {
     expect(chatModelCatalogSchema.parse(catalog)).toEqual(catalog);
-    expect(() =>
+    // Auto and anything else the service may add stay out of the composer
+    // without failing the read.
+    expect(
       chatModelCatalogSchema.parse({
         ...catalog,
-        modes: [{ id: 'turbo', label: 'Turbo' }],
-      }),
-    ).toThrow();
+        modes: [
+          ...catalog.modes,
+          { id: 'auto', label: 'Auto' },
+          { id: 'turbo', label: 'Turbo' },
+        ],
+      }).modes,
+    ).toEqual(catalog.modes);
+    // A default the browser does not know falls back to its own.
+    expect(
+      chatModelCatalogSchema.parse({ ...catalog, defaultModeId: 'auto' })
+        .defaultModeId,
+    ).toBe('normal');
   });
 
   it('fills in what the service may leave out of a mode', () => {
@@ -120,9 +91,6 @@ describe('chat model contract', () => {
       relativeCost: null,
       affordable: null,
     });
-    expect(parsed.resolvedMode).toBeNull();
-    expect(parsed.roles).toEqual([]);
-    expect(parsed.models).toEqual([]);
     expect(parsed.efforts).toEqual([]);
   });
 
@@ -141,49 +109,11 @@ describe('chat model contract', () => {
     expect(effectiveMode('velocity', undefined)).toBe('velocity');
   });
 
-  it('sends only the overrides the service offers for that role', () => {
-    expect(
-      effectiveRoleModels(
-        {
-          chat: 'anthropic/claude-sonnet-5',
-          // The service does not offer this model for `vision`.
-          vision: 'anthropic/claude-sonnet-5',
-          // Not a configurable role.
-          title: 'google/gemini-3.8-flash',
-          identification: '',
-        },
-        catalog,
-      ),
-    ).toEqual({ chat: 'anthropic/claude-sonnet-5' });
-  });
-
-  it('keeps the overrides while the catalog is not loaded and drops junk', () => {
-    expect(
-      effectiveRoleModels(
-        { chat: 'anthropic/claude-sonnet-5', vision: '' },
-        undefined,
-      ),
-    ).toEqual({ chat: 'anthropic/claude-sonnet-5' });
-    expect(
-      effectiveRoleModels(
-        { nonsense: 'x' } as unknown as Record<string, string>,
-        undefined,
-      ),
-    ).toEqual({});
-  });
-
   it('sends the effort only while the service still offers it', () => {
     expect(effectiveEffort('high', catalog)).toBe('high');
     expect(effectiveEffort('max', catalog)).toBe('');
     expect(effectiveEffort('', catalog)).toBe('');
     expect(effectiveEffort('high', undefined)).toBe('high');
-  });
-
-  it('names vendors for the advanced selector', () => {
-    expect(vendorLabelOf('google')).toBe('Google');
-    expect(vendorLabelOf('openai')).toBe('OpenAI');
-    expect(vendorLabelOf('anthropic')).toBe('Anthropic');
-    expect(vendorLabelOf('deepseek')).toBe('Deepseek');
   });
 
   it('counts the reference turns the balance still covers', () => {
