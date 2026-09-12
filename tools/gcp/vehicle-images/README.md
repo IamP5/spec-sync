@@ -1,10 +1,15 @@
 # Vehicle image backfill
 
-Backfilled on 2026-09-11: all seven local configurations and all five cloud
-configurations have a primary image record in `catalog.vehicle_image`.
-Shark GS and Territory Titanium currently exist only in the local catalog.
+Backfilled through 2026-09-12: all 61 active local configurations have a primary
+image record in `catalog.vehicle_image`. Four obsolete identities (two duplicate
+GWM Poer and two replaced Ford Ranger configurations) are superseded and hidden
+from catalog reads while their immutable ingestion history is retained. The Ford
+Brasil expansion added 44 current Ford configurations backed by 27 official
+assets; its reproducible importer lives in `tools/catalog/ford-brasil-2026/`.
+The five cloud configurations retained their existing image records; this local
+catalog expansion did not change Cloud SQL.
 
-The seven original manufacturer files are stored under
+The original 16-file manufacturer batch and the Ford Brasil expansion are stored under
 `gs://fiap-challenge-ford-specsync-dev-vehicle-images/vehicles/primary/` in content-addressed
 paths. This dedicated image bucket allows public reads; the original files bucket
 retains enforced public-access prevention. Terraform owns both the new bucket
@@ -12,10 +17,16 @@ and its public-reader binding (imported into the dev state). PostgreSQL stores t
 SHA-256, content type, byte size, dimensions, alt text, source URLs, capture time,
 and applicability and rights notes. Image bytes are not stored in PostgreSQL.
 
-`manifest.json` records every configuration and object. All images are marked
-`ILLUSTRATIVE`: some manufacturer assets are MY2025, and exact trim/year
-applicability is not established for the model-level images. The Hilux image
-is a 368×176 model-page photograph; Toyota's selected MY2026 SRX Plus colorizer
+`manifest.json` records the original 22 local identities and their objects,
+including the two Poer records marked with `supersededBy` for audit. The current
+Ford identities and 27 assets are declared separately in
+`tools/catalog/ford-brasil-2026/`. In the original batch, eight records are
+`EXACT_CONFIGURATION`, including current
+Chevrolet MY2026 inventory renders and the official S10 100 Anos launch
+photograph. The remaining 12 active records are `ILLUSTRATIVE` because a source
+is model-level, its model year is not explicit, or the catalog identity does not
+fully specify the configuration. The Hilux image is a 368×176 model-page
+photograph; Toyota's selected MY2026 SRX Plus colorizer
 uses a 31-frame sprite sheet, which is unsuitable as a standalone card image.
 Manufacturer ownership is retained in the rights note; this backfill does not
 claim a verified reuse license or commercial-use permission.
@@ -48,6 +59,17 @@ The SQL uses a transaction, matches UUID plus brand/model/trim/market/year, skip
 configurations absent from the target database, and preserves existing primary
 images. It does not create configurations or alter specifications.
 
+After applying `V17__vehicle_configuration_supersession.sql`, consolidate the
+two duplicate Poer identities with the checked-in transaction. It copies their
+assertions and evidence to the canonical configurations, preserves existing
+canonical selections on overlapping attributes, and then marks the duplicates
+as superseded. Repeating it is safe.
+
+```sh
+docker compose exec -T postgres psql -U myuser -d mydatabase \
+  -v ON_ERROR_STOP=1 < tools/catalog/consolidate-poer-duplicates.sql
+```
+
 For Cloud SQL, this run used temporary Cloud Run jobs on the existing
 `specsync-dev` VPC and `specsync-dev-run` subnet, with the API service identity
 and the database password supplied by Secret Manager. Flyway validated all 14
@@ -56,10 +78,13 @@ migrations before applying V14; the backfill then used `psql` with
 
 ## Verification and rendering
 
-- Local: 7 configurations, 7 image records, 0 missing; rerun inserted 0 rows.
-- Cloud: 5 configurations, 5 image records, 0 missing.
-- All 7 uploaded objects were read back and matched their original SHA-256 and
-  byte size.
+- Local: 61 active configurations, 61 active image records, 0 missing; four
+  superseded identities and their image records remain as audit history. The
+  Ford image batch contains 44 records backed by 27 publicly verified objects.
+- Cloud: 5 configurations, 5 existing image records, 0 missing as last verified
+  on 2026-09-11; not modified by the 2026-09-12 local catalog update.
+- All 22 original public objects and all 27 Ford expansion objects were read
+  back without credentials and matched their manifest SHA-256 and byte size.
 - Flyway validated the existing history and applied V14 in both environments.
 
 The API returns nullable `primaryImage` metadata on catalog search, specifications,
@@ -86,7 +111,7 @@ All seven public URLs were verified without credentials against their SHA-256.
 To repeat the HTTP smoke test against local development:
 
 ```sh
-EXPECTED_VEHICLES=7 node tools/gcp/vehicle-images/verify.mjs
+EXPECTED_VEHICLES=61 node tools/gcp/vehicle-images/verify.mjs
 ```
 
 For the cloud API, set `API_BASE_URL` and run with `CLOUD_RUN_IDENTITY=true`
@@ -104,9 +129,9 @@ The API, AI and web containers were deployed on 2026-09-11 with image tag
 - AI: `specsync-dev-ai-00023-bfd`
 - Web: `specsync-dev-web-00036-246`
 
-The HTTP verifier passed for seven local and five cloud vehicles. Local browser
-checks confirmed loaded photos in catalog cards, lists, detail panes and
-comparison headers. The public app serves the new image renderer.
+For that release, the HTTP verifier passed for seven local and five cloud
+vehicles. Local browser checks confirmed loaded photos in catalog cards, lists,
+detail panes and comparison headers. The public app serves the new image renderer.
 Angular's 340 tests, the API suite and the AI service's 382 tests passed, alongside
 lint, architecture and type checks. Production container builds passed for all
 three apps. The local aggregate verification reached the AI bundle step, which
@@ -132,7 +157,7 @@ name. On narrow screens, a minimum 256px header leaves room for wrapping labels;
 the photo itself retains 16:9. Missing/error states and photo-source attribution
 remain available. No duplicate image section appears beneath the header.
 
-Original files are served today (15–113KB), with lazy loading and intrinsic-size
+Original files are served today (11–511KB), with lazy loading and intrinsic-size
 metadata; `sizes` describes layout and does not create resized files. Prefer
 masters at least 1920px wide and 900px high when sourcing replacements. Do not
 upscale a thumbnail and call it a high-resolution source. The present Hilux

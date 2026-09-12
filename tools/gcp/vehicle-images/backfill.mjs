@@ -46,11 +46,14 @@ if (command === 'sql') {
   }
   console.log('COMMIT;');
   console.log(`SELECT json_build_object(
-    'configurations', (SELECT count(*) FROM catalog.vehicle_configuration),
-    'images', (SELECT count(*) FROM catalog.vehicle_image),
+    'configurations', (SELECT count(*) FROM catalog.vehicle_configuration
+      WHERE superseded_by IS NULL),
+    'images', (SELECT count(*) FROM catalog.vehicle_image i
+      JOIN catalog.vehicle_configuration c ON c.id = i.configuration_id
+      WHERE c.superseded_by IS NULL),
     'missing', (SELECT count(*) FROM catalog.vehicle_configuration c
       LEFT JOIN catalog.vehicle_image i ON i.configuration_id = c.id
-      WHERE i.configuration_id IS NULL)
+      WHERE c.superseded_by IS NULL AND i.configuration_id IS NULL)
   );`);
 } else if (command === 'relocate') {
   console.log('BEGIN;');
