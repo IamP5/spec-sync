@@ -1,0 +1,19 @@
+{
+  "request_hash": "41c6c354db077bbe8afa46b9d10b581e45f50c2a1be1de88eb1d62461b64d885",
+  "request": {
+    "url": "https://api.elevenlabs.io/v1/text-to-speech/Uag7PYOaSMVtYRkk9R00/with-timestamps?output_format=mp3_44100_128",
+    "payload": {
+      "text": "[confident] Nossa visão é conectar emplacamentos, market share por segmento e posicionamento de preço. Identificar lacunas de portfólio e oportunidades no mix de versões. [short pause] E gerar, com agentes de IA, apresentações PowerPoint e relatórios estratégicos. Análise competitiva, cenários de posicionamento e recomendações, com fontes e premissas rastreáveis. [short pause] Inteligência pronta para o comitê executivo. Para alinhar produto, marketing e vendas, e orientar a próxima decisão.",
+      "model_id": "eleven_v3",
+      "language_code": "pt",
+      "voice_settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "use_speaker_boost": true,
+        "speed": 1.0
+      }
+    }
+  },
+  "started_at": "2026-09-13T16:13:47.583612+00:00"
+}

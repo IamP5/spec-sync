@@ -1,0 +1,242 @@
+{
+  "identity": {
+    "text": "Para entender a concorrência, a Ford reúne informações espalhadas por sites, fichas técnicas e reportagens. No desafio apresentado, a pesquisa manual leva cerca de uma hora por versão.",
+    "voice": "pt-BR-AntonioNeural"
+  },
+  "result": {
+    "id": "01-challenge",
+    "file": "audio/01-challenge.mp3",
+    "duration": 12.96,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 0,
+    "captions": [
+      {
+        "text": "Para entender a concorrência a Ford reúne informações espalhadas",
+        "startMs": 100.0,
+        "endMs": 3840.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "por sites fichas técnicas e reportagens",
+        "startMs": 3762.5,
+        "endMs": 6690.0,
+        "timestampMs": 3762.5,
+        "confidence": null
+      },
+      {
+        "text": "No desafio apresentado a pesquisa manual leva cerca de uma",
+        "startMs": 7462.5,
+        "endMs": 11252.5,
+        "timestampMs": 7462.5,
+        "confidence": null
+      },
+      {
+        "text": "hora por versão",
+        "startMs": 11175.0,
+        "endMs": 12287.5,
+        "timestampMs": 11175.0,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "Para",
+        "startMs": 100.0,
+        "endMs": 287.5,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "entender",
+        "startMs": 300.0,
+        "endMs": 725.0,
+        "timestampMs": 300.0,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 737.5,
+        "endMs": 787.5,
+        "timestampMs": 737.5,
+        "confidence": null
+      },
+      {
+        "text": "concorrência",
+        "startMs": 800.0,
+        "endMs": 1475.0,
+        "timestampMs": 800.0,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 1750.0,
+        "endMs": 1837.5,
+        "timestampMs": 1750.0,
+        "confidence": null
+      },
+      {
+        "text": "Ford",
+        "startMs": 1850.0,
+        "endMs": 2212.5,
+        "timestampMs": 1850.0,
+        "confidence": null
+      },
+      {
+        "text": "reúne",
+        "startMs": 2225.0,
+        "endMs": 2525.0,
+        "timestampMs": 2225.0,
+        "confidence": null
+      },
+      {
+        "text": "informações",
+        "startMs": 2537.5,
+        "endMs": 3125.0,
+        "timestampMs": 2537.5,
+        "confidence": null
+      },
+      {
+        "text": "espalhadas",
+        "startMs": 3137.5,
+        "endMs": 3750.0,
+        "timestampMs": 3137.5,
+        "confidence": null
+      },
+      {
+        "text": "por",
+        "startMs": 3762.5,
+        "endMs": 3912.5,
+        "timestampMs": 3762.5,
+        "confidence": null
+      },
+      {
+        "text": "sites",
+        "startMs": 3925.0,
+        "endMs": 4400.0,
+        "timestampMs": 3925.0,
+        "confidence": null
+      },
+      {
+        "text": "fichas",
+        "startMs": 4712.5,
+        "endMs": 5100.0,
+        "timestampMs": 4712.5,
+        "confidence": null
+      },
+      {
+        "text": "técnicas",
+        "startMs": 5112.5,
+        "endMs": 5587.5,
+        "timestampMs": 5112.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 5600.0,
+        "endMs": 5700.0,
+        "timestampMs": 5600.0,
+        "confidence": null
+      },
+      {
+        "text": "reportagens",
+        "startMs": 5712.5,
+        "endMs": 6600.0,
+        "timestampMs": 5712.5,
+        "confidence": null
+      },
+      {
+        "text": "No",
+        "startMs": 7462.5,
+        "endMs": 7625.0,
+        "timestampMs": 7462.5,
+        "confidence": null
+      },
+      {
+        "text": "desafio",
+        "startMs": 7637.5,
+        "endMs": 8087.5,
+        "timestampMs": 7637.5,
+        "confidence": null
+      },
+      {
+        "text": "apresentado",
+        "startMs": 8100.0,
+        "endMs": 8800.0,
+        "timestampMs": 8100.0,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 9075.0,
+        "endMs": 9150.0,
+        "timestampMs": 9075.0,
+        "confidence": null
+      },
+      {
+        "text": "pesquisa",
+        "startMs": 9162.5,
+        "endMs": 9637.5,
+        "timestampMs": 9162.5,
+        "confidence": null
+      },
+      {
+        "text": "manual",
+        "startMs": 9650.0,
+        "endMs": 10100.0,
+        "timestampMs": 9650.0,
+        "confidence": null
+      },
+      {
+        "text": "leva",
+        "startMs": 10112.5,
+        "endMs": 10375.0,
+        "timestampMs": 10112.5,
+        "confidence": null
+      },
+      {
+        "text": "cerca",
+        "startMs": 10387.5,
+        "endMs": 10775.0,
+        "timestampMs": 10387.5,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 10787.5,
+        "endMs": 10912.5,
+        "timestampMs": 10787.5,
+        "confidence": null
+      },
+      {
+        "text": "uma",
+        "startMs": 10925.0,
+        "endMs": 11162.5,
+        "timestampMs": 10925.0,
+        "confidence": null
+      },
+      {
+        "text": "hora",
+        "startMs": 11175.0,
+        "endMs": 11462.5,
+        "timestampMs": 11175.0,
+        "confidence": null
+      },
+      {
+        "text": "por",
+        "startMs": 11475.0,
+        "endMs": 11625.0,
+        "timestampMs": 11475.0,
+        "confidence": null
+      },
+      {
+        "text": "versão",
+        "startMs": 11637.5,
+        "endMs": 12087.5,
+        "timestampMs": 11637.5,
+        "confidence": null
+      }
+    ]
+  }
+}

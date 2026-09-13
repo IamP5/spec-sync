@@ -1,0 +1,8 @@
+{
+  "model": "gpt-4o-mini-tts-2025-12-15",
+  "voice": "onyx",
+  "input": "Para ir além da concorrência, cada decisão precisa de fundamento.\n\nCom o SpecSync, sua equipe pesquisa. Compara. E entende o que faz a diferença.\n\nVeículos, especificações e evidências, conectados.\n\nConhecimento para orientar o próximo projeto.\n\nSpecSync. Inteligência para ir além.",
+  "instructions": "Original Brazilian Portuguese male bass-baritone commercial voice. Very deep, dark, chest-resonant, naturally gravelly and rugged. This is a cinematic pickup-truck campaign style, powerful and commanding. Deliver low, controlled intensity at first, then project with strong conviction. Put weight on the verbs and give each short sentence room to land. Use firm consonants, deliberate pauses and resolved falling endings. Keep the voice deep when increasing energy. A mature, authoritative voice with a dry natural rasp. Native neutral Brazilian accent. Clean isolated studio speech. Read every word of the input, including both final sentences: SpecSync. Inteligência para ir além. Do not stop before the final word além. Do not read these instructions. Pronounce SpecSync as spék-sink. No music or sound effects. Around 125 words per minute with expressive pauses.",
+  "response_format": "wav",
+  "speed": 1
+}

@@ -1,0 +1,151 @@
+1
+00:00:00,850 --> 00:00:04,590
+Para entender a concorrência, a Ford reúne informações espalhadas
+
+2
+00:00:04,512 --> 00:00:07,440
+por sites, fichas técnicas e reportagens.
+
+3
+00:00:08,212 --> 00:00:12,002
+No desafio apresentado, a pesquisa manual leva cerca de uma
+
+4
+00:00:11,925 --> 00:00:13,038
+hora por versão.
+
+5
+00:00:15,850 --> 00:00:18,978
+Com o SpecSync, a equipe começa pela pergunta.
+
+6
+00:00:19,750 --> 00:00:23,452
+Define o veículo, a versão e as especificações que importam.
+
+7
+00:00:24,225 --> 00:00:28,150
+Vamos usar a Ranger Raptor, o caso proposto pela Ford.
+
+8
+00:00:32,850 --> 00:00:36,828
+A plataforma pesquisa fontes na internet, reúne as informações
+
+9
+00:00:36,750 --> 00:00:39,552
+encontradas e apresenta os resultados para revisão.
+
+10
+00:00:40,325 --> 00:00:43,440
+Cada informação pode ser examinada com sua evidência.
+
+11
+00:00:44,212 --> 00:00:47,115
+A equipe confirma o que será incorporado ao catálogo.
+
+12
+00:00:47,888 --> 00:00:51,578
+Assim, pesquisar um novo veículo também enriquece a base para
+
+13
+00:00:51,500 --> 00:00:52,688
+outras análises.
+
+14
+00:00:55,846 --> 00:00:59,246
+Por trás dessa experiência, uma ontologia relaciona veículos,
+
+15
+00:00:59,388 --> 00:01:03,027
+especificações e termos dos fabricantes. Os dados
+
+16
+00:01:02,949 --> 00:01:06,731
+ganham um significado comum, preservando unidades e condições.
+
+17
+00:01:07,440 --> 00:01:10,250
+Essa base pode ser alinhada ao vocabulário da Ford.
+
+18
+00:01:10,958 --> 00:01:13,392
+Conhecimento compartilhado pelos agentes.
+
+19
+00:01:15,850 --> 00:01:20,065
+Agora, as versões podem ser comparadas pelos atributos escolhidos.
+
+20
+00:01:20,838 --> 00:01:24,928
+As diferenças ficam em destaque. As fontes continuam
+
+21
+00:01:24,850 --> 00:01:28,578
+acessíveis. E o que não foi informado permanece
+
+22
+00:01:28,500 --> 00:01:32,415
+explícito. Cada comparação conserva seu contexto.
+
+23
+00:01:33,188 --> 00:01:36,362
+A análise evolui conforme chegam novas evidências.
+
+24
+00:01:38,846 --> 00:01:42,532
+A conversa avança da ficha técnica para a análise. Quais
+
+25
+00:01:42,454 --> 00:01:46,097
+diferenças importam para o uso que estamos avaliando? O
+
+26
+00:01:46,018 --> 00:01:49,801
+SpecSync ajuda a interpretar as evidências, apontar limitações
+
+27
+00:01:49,722 --> 00:01:53,470
+e orientar a próxima pergunta. A equipe mantém o controle
+
+28
+00:01:53,391 --> 00:01:57,526
+da decisão. Com rastreabilidade para conferir as conclusões.
+
+29
+00:02:00,850 --> 00:02:04,178
+A próxima etapa que queremos construir amplia essa base com
+
+30
+00:02:04,100 --> 00:02:07,452
+emplacamentos, participação de mercado e preços de venda.
+
+31
+00:02:08,225 --> 00:02:12,152
+E transforma as análises em apresentações, documentos e artigos.
+
+32
+00:02:12,925 --> 00:02:17,015
+Materiais para reuniões executivas, decisões de posicionamento
+
+33
+00:02:16,938 --> 00:02:19,702
+e hipóteses de diferenciação para um novo veículo.
+
+34
+00:02:20,475 --> 00:02:23,978
+Conhecimento reutilizável para que o próximo projeto comece com
+
+35
+00:02:23,900 --> 00:02:24,988
+mais contexto.
+
+36
+00:02:28,846 --> 00:02:32,845
+SpecSync. Das especificações dispersas às decisões
+
+37
+00:02:32,766 --> 00:02:36,514
+competitivas. Vamos validar esse fluxo com a Ford
+
+38
+00:02:36,435 --> 00:02:38,360
+e medir o ganho no trabalho da equipe.

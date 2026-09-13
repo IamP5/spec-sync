@@ -1,0 +1,525 @@
+{
+  "id": "07-future",
+  "file": "audio/eleven-v1/07-future-41c6c354db077bbe.wav",
+  "duration": 30.88,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "Nossa visão é conectar emplacamentos,",
+      "startMs": 72.0,
+      "endMs": 1930.0,
+      "timestampMs": 72.0,
+      "confidence": null
+    },
+    {
+      "text": "market share por segmento e posicionamento de preço.",
+      "startMs": 2137.0,
+      "endMs": 5290.0,
+      "timestampMs": 2137.0,
+      "confidence": null
+    },
+    {
+      "text": "Identificar lacunas de portfólio e oportunidades no mix de versões.",
+      "startMs": 5800.0,
+      "endMs": 10010.0,
+      "timestampMs": 5800.0,
+      "confidence": null
+    },
+    {
+      "text": "E gerar, com agentes de IA,",
+      "startMs": 11128.0,
+      "endMs": 12650.0,
+      "timestampMs": 11128.0,
+      "confidence": null
+    },
+    {
+      "text": "apresentações PowerPoint e relatórios estratégicos.",
+      "startMs": 12729.0,
+      "endMs": 16090.0,
+      "timestampMs": 12729.0,
+      "confidence": null
+    },
+    {
+      "text": "Análise competitiva, cenários de posicionamento e recomendações,",
+      "startMs": 16373.0,
+      "endMs": 20650.0,
+      "timestampMs": 16373.0,
+      "confidence": null
+    },
+    {
+      "text": "com fontes e premissas rastreáveis.",
+      "startMs": 20820.0,
+      "endMs": 23050.0,
+      "timestampMs": 20820.0,
+      "confidence": null
+    },
+    {
+      "text": "Inteligência pronta para o comitê executivo.",
+      "startMs": 23970.0,
+      "endMs": 26180.0,
+      "timestampMs": 23970.0,
+      "confidence": null
+    },
+    {
+      "text": "Para alinhar produto, marketing e vendas,",
+      "startMs": 26330.0,
+      "endMs": 28980.0,
+      "timestampMs": 26330.0,
+      "confidence": null
+    },
+    {
+      "text": "e orientar a próxima decisão.",
+      "startMs": 29210.0,
+      "endMs": 30880.0,
+      "timestampMs": 29210.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "Nossa",
+      "startMs": 72.0,
+      "endMs": 240.0,
+      "timestampMs": 72.0,
+      "confidence": null
+    },
+    {
+      "text": "visão",
+      "startMs": 280.0,
+      "endMs": 560.0,
+      "timestampMs": 280.0,
+      "confidence": null
+    },
+    {
+      "text": "é",
+      "startMs": 600.0,
+      "endMs": 640.0,
+      "timestampMs": 600.0,
+      "confidence": null
+    },
+    {
+      "text": "conectar",
+      "startMs": 684.0,
+      "endMs": 1040.0,
+      "timestampMs": 684.0,
+      "confidence": null
+    },
+    {
+      "text": "emplacamentos,",
+      "startMs": 1067.0,
+      "endMs": 1840.0,
+      "timestampMs": 1067.0,
+      "confidence": null
+    },
+    {
+      "text": "market",
+      "startMs": 2137.0,
+      "endMs": 2480.0,
+      "timestampMs": 2137.0,
+      "confidence": null
+    },
+    {
+      "text": "share",
+      "startMs": 2520.0,
+      "endMs": 2720.0,
+      "timestampMs": 2520.0,
+      "confidence": null
+    },
+    {
+      "text": "por",
+      "startMs": 2740.0,
+      "endMs": 2800.0,
+      "timestampMs": 2740.0,
+      "confidence": null
+    },
+    {
+      "text": "segmento",
+      "startMs": 2870.0,
+      "endMs": 3361.0,
+      "timestampMs": 2870.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 3600.0,
+      "endMs": 3840.0,
+      "timestampMs": 3600.0,
+      "confidence": null
+    },
+    {
+      "text": "posicionamento",
+      "startMs": 3893.0,
+      "endMs": 4640.0,
+      "timestampMs": 3893.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 4667.0,
+      "endMs": 4720.0,
+      "timestampMs": 4667.0,
+      "confidence": null
+    },
+    {
+      "text": "preço.",
+      "startMs": 4800.0,
+      "endMs": 5200.0,
+      "timestampMs": 4800.0,
+      "confidence": null
+    },
+    {
+      "text": "Identificar",
+      "startMs": 5800.0,
+      "endMs": 6320.0,
+      "timestampMs": 5800.0,
+      "confidence": null
+    },
+    {
+      "text": "lacunas",
+      "startMs": 6360.0,
+      "endMs": 6720.0,
+      "timestampMs": 6360.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 6773.0,
+      "endMs": 6880.0,
+      "timestampMs": 6773.0,
+      "confidence": null
+    },
+    {
+      "text": "portfólio",
+      "startMs": 6944.0,
+      "endMs": 7600.0,
+      "timestampMs": 6944.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 7800.0,
+      "endMs": 8000.0,
+      "timestampMs": 7800.0,
+      "confidence": null
+    },
+    {
+      "text": "oportunidades",
+      "startMs": 8050.0,
+      "endMs": 8800.0,
+      "timestampMs": 8050.0,
+      "confidence": null
+    },
+    {
+      "text": "no",
+      "startMs": 8827.0,
+      "endMs": 8880.0,
+      "timestampMs": 8827.0,
+      "confidence": null
+    },
+    {
+      "text": "mix",
+      "startMs": 8980.0,
+      "endMs": 9280.0,
+      "timestampMs": 8980.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 9307.0,
+      "endMs": 9360.0,
+      "timestampMs": 9307.0,
+      "confidence": null
+    },
+    {
+      "text": "versões.",
+      "startMs": 9408.0,
+      "endMs": 9920.0,
+      "timestampMs": 9408.0,
+      "confidence": null
+    },
+    {
+      "text": "E",
+      "startMs": 11128.0,
+      "endMs": 11152.0,
+      "timestampMs": 11128.0,
+      "confidence": null
+    },
+    {
+      "text": "gerar,",
+      "startMs": 11164.0,
+      "endMs": 11360.0,
+      "timestampMs": 11164.0,
+      "confidence": null
+    },
+    {
+      "text": "com",
+      "startMs": 11460.0,
+      "endMs": 11520.0,
+      "timestampMs": 11460.0,
+      "confidence": null
+    },
+    {
+      "text": "agentes",
+      "startMs": 11587.0,
+      "endMs": 12000.0,
+      "timestampMs": 11587.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 12053.0,
+      "endMs": 12160.0,
+      "timestampMs": 12053.0,
+      "confidence": null
+    },
+    {
+      "text": "IA,",
+      "startMs": 12293.0,
+      "endMs": 12560.0,
+      "timestampMs": 12293.0,
+      "confidence": null
+    },
+    {
+      "text": "apresentações",
+      "startMs": 12729.0,
+      "endMs": 13680.0,
+      "timestampMs": 12729.0,
+      "confidence": null
+    },
+    {
+      "text": "PowerPoint",
+      "startMs": 13745.0,
+      "endMs": 14400.0,
+      "timestampMs": 13745.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 14480.0,
+      "endMs": 14560.0,
+      "timestampMs": 14480.0,
+      "confidence": null
+    },
+    {
+      "text": "relatórios",
+      "startMs": 14600.0,
+      "endMs": 15120.0,
+      "timestampMs": 14600.0,
+      "confidence": null
+    },
+    {
+      "text": "estratégicos.",
+      "startMs": 15184.0,
+      "endMs": 16000.0,
+      "timestampMs": 15184.0,
+      "confidence": null
+    },
+    {
+      "text": "Análise",
+      "startMs": 16373.0,
+      "endMs": 17200.0,
+      "timestampMs": 16373.0,
+      "confidence": null
+    },
+    {
+      "text": "competitiva,",
+      "startMs": 17244.0,
+      "endMs": 17920.0,
+      "timestampMs": 17244.0,
+      "confidence": null
+    },
+    {
+      "text": "cenários",
+      "startMs": 18120.0,
+      "endMs": 18800.0,
+      "timestampMs": 18120.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 18827.0,
+      "endMs": 18880.0,
+      "timestampMs": 18827.0,
+      "confidence": null
+    },
+    {
+      "text": "posicionamento",
+      "startMs": 18924.0,
+      "endMs": 19680.0,
+      "timestampMs": 18924.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 19760.0,
+      "endMs": 19840.0,
+      "timestampMs": 19760.0,
+      "confidence": null
+    },
+    {
+      "text": "recomendações,",
+      "startMs": 19867.0,
+      "endMs": 20560.0,
+      "timestampMs": 19867.0,
+      "confidence": null
+    },
+    {
+      "text": "com",
+      "startMs": 20820.0,
+      "endMs": 21120.0,
+      "timestampMs": 20820.0,
+      "confidence": null
+    },
+    {
+      "text": "fontes",
+      "startMs": 21184.0,
+      "endMs": 21520.0,
+      "timestampMs": 21184.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 21560.0,
+      "endMs": 21600.0,
+      "timestampMs": 21560.0,
+      "confidence": null
+    },
+    {
+      "text": "premissas",
+      "startMs": 21640.0,
+      "endMs": 22160.0,
+      "timestampMs": 21640.0,
+      "confidence": null
+    },
+    {
+      "text": "rastreáveis.",
+      "startMs": 22208.0,
+      "endMs": 22960.0,
+      "timestampMs": 22208.0,
+      "confidence": null
+    },
+    {
+      "text": "Inteligência",
+      "startMs": 23970.0,
+      "endMs": 24490.0,
+      "timestampMs": 23970.0,
+      "confidence": null
+    },
+    {
+      "text": "pronta",
+      "startMs": 24543.0,
+      "endMs": 24890.0,
+      "timestampMs": 24543.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 24922.0,
+      "endMs": 25050.0,
+      "timestampMs": 24922.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 25090.0,
+      "endMs": 25130.0,
+      "timestampMs": 25090.0,
+      "confidence": null
+    },
+    {
+      "text": "comitê",
+      "startMs": 25170.0,
+      "endMs": 25450.0,
+      "timestampMs": 25170.0,
+      "confidence": null
+    },
+    {
+      "text": "executivo.",
+      "startMs": 25507.0,
+      "endMs": 26090.0,
+      "timestampMs": 25507.0,
+      "confidence": null
+    },
+    {
+      "text": "Para",
+      "startMs": 26330.0,
+      "endMs": 26970.0,
+      "timestampMs": 26330.0,
+      "confidence": null
+    },
+    {
+      "text": "alinhar",
+      "startMs": 26997.0,
+      "endMs": 27290.0,
+      "timestampMs": 26997.0,
+      "confidence": null
+    },
+    {
+      "text": "produto,",
+      "startMs": 27350.0,
+      "endMs": 27770.0,
+      "timestampMs": 27350.0,
+      "confidence": null
+    },
+    {
+      "text": "marketing",
+      "startMs": 27906.0,
+      "endMs": 28410.0,
+      "timestampMs": 27906.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 28490.0,
+      "endMs": 28570.0,
+      "timestampMs": 28490.0,
+      "confidence": null
+    },
+    {
+      "text": "vendas,",
+      "startMs": 28602.0,
+      "endMs": 28890.0,
+      "timestampMs": 28602.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 29210.0,
+      "endMs": 29370.0,
+      "timestampMs": 29210.0,
+      "confidence": null
+    },
+    {
+      "text": "orientar",
+      "startMs": 29416.0,
+      "endMs": 29850.0,
+      "timestampMs": 29416.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 29890.0,
+      "endMs": 29930.0,
+      "timestampMs": 29890.0,
+      "confidence": null
+    },
+    {
+      "text": "próxima",
+      "startMs": 29980.0,
+      "endMs": 30330.0,
+      "timestampMs": 29980.0,
+      "confidence": null
+    },
+    {
+      "text": "decisão.",
+      "startMs": 30383.0,
+      "endMs": 30810.0,
+      "timestampMs": 30383.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "41c6c354db077bbe8afa46b9d10b581e45f50c2a1be1de88eb1d62461b64d885"
+}

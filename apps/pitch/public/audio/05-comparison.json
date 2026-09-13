@@ -1,0 +1,319 @@
+{
+  "identity": {
+    "text": "Agora, as versões podem ser comparadas pelos atributos escolhidos. As diferenças ficam em destaque. As fontes continuam acessíveis. E o que não foi informado permanece explícito. Cada comparação conserva seu contexto. A análise evolui conforme chegam novas evidências.",
+    "voice": "pt-BR-AntonioNeural"
+  },
+  "result": {
+    "id": "05-comparison",
+    "file": "audio/05-comparison.mp3",
+    "duration": 21.288,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 0,
+    "captions": [
+      {
+        "text": "Agora as versões podem ser comparadas pelos atributos escolhidos",
+        "startMs": 100.0,
+        "endMs": 4315.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "As diferenças ficam em destaque As fontes continuam",
+        "startMs": 5087.5,
+        "endMs": 9177.5,
+        "timestampMs": 5087.5,
+        "confidence": null
+      },
+      {
+        "text": "acessíveis E o que não foi informado permanece",
+        "startMs": 9100.0,
+        "endMs": 12827.5,
+        "timestampMs": 9100.0,
+        "confidence": null
+      },
+      {
+        "text": "explícito Cada comparação conserva seu contexto",
+        "startMs": 12750.0,
+        "endMs": 16665.0,
+        "timestampMs": 12750.0,
+        "confidence": null
+      },
+      {
+        "text": "A análise evolui conforme chegam novas evidências",
+        "startMs": 17437.5,
+        "endMs": 20612.5,
+        "timestampMs": 17437.5,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "Agora",
+        "startMs": 100.0,
+        "endMs": 600.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 862.5,
+        "endMs": 1025.0,
+        "timestampMs": 862.5,
+        "confidence": null
+      },
+      {
+        "text": "versões",
+        "startMs": 1037.5,
+        "endMs": 1512.5,
+        "timestampMs": 1037.5,
+        "confidence": null
+      },
+      {
+        "text": "podem",
+        "startMs": 1525.0,
+        "endMs": 1762.5,
+        "timestampMs": 1525.0,
+        "confidence": null
+      },
+      {
+        "text": "ser",
+        "startMs": 1775.0,
+        "endMs": 1925.0,
+        "timestampMs": 1775.0,
+        "confidence": null
+      },
+      {
+        "text": "comparadas",
+        "startMs": 1937.5,
+        "endMs": 2587.5,
+        "timestampMs": 1937.5,
+        "confidence": null
+      },
+      {
+        "text": "pelos",
+        "startMs": 2600.0,
+        "endMs": 2787.5,
+        "timestampMs": 2600.0,
+        "confidence": null
+      },
+      {
+        "text": "atributos",
+        "startMs": 2800.0,
+        "endMs": 3412.5,
+        "timestampMs": 2800.0,
+        "confidence": null
+      },
+      {
+        "text": "escolhidos",
+        "startMs": 3425.0,
+        "endMs": 4225.0,
+        "timestampMs": 3425.0,
+        "confidence": null
+      },
+      {
+        "text": "As",
+        "startMs": 5087.5,
+        "endMs": 5262.5,
+        "timestampMs": 5087.5,
+        "confidence": null
+      },
+      {
+        "text": "diferenças",
+        "startMs": 5275.0,
+        "endMs": 5975.0,
+        "timestampMs": 5275.0,
+        "confidence": null
+      },
+      {
+        "text": "ficam",
+        "startMs": 5987.5,
+        "endMs": 6300.0,
+        "timestampMs": 5987.5,
+        "confidence": null
+      },
+      {
+        "text": "em",
+        "startMs": 6312.5,
+        "endMs": 6375.0,
+        "timestampMs": 6312.5,
+        "confidence": null
+      },
+      {
+        "text": "destaque",
+        "startMs": 6387.5,
+        "endMs": 7012.5,
+        "timestampMs": 6387.5,
+        "confidence": null
+      },
+      {
+        "text": "As",
+        "startMs": 7875.0,
+        "endMs": 8087.5,
+        "timestampMs": 7875.0,
+        "confidence": null
+      },
+      {
+        "text": "fontes",
+        "startMs": 8100.0,
+        "endMs": 8537.5,
+        "timestampMs": 8100.0,
+        "confidence": null
+      },
+      {
+        "text": "continuam",
+        "startMs": 8550.0,
+        "endMs": 9087.5,
+        "timestampMs": 8550.0,
+        "confidence": null
+      },
+      {
+        "text": "acessíveis",
+        "startMs": 9100.0,
+        "endMs": 9925.0,
+        "timestampMs": 9100.0,
+        "confidence": null
+      },
+      {
+        "text": "E",
+        "startMs": 10787.5,
+        "endMs": 10912.5,
+        "timestampMs": 10787.5,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 10925.0,
+        "endMs": 10975.0,
+        "timestampMs": 10925.0,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 10987.5,
+        "endMs": 11112.5,
+        "timestampMs": 10987.5,
+        "confidence": null
+      },
+      {
+        "text": "não",
+        "startMs": 11125.0,
+        "endMs": 11325.0,
+        "timestampMs": 11125.0,
+        "confidence": null
+      },
+      {
+        "text": "foi",
+        "startMs": 11337.5,
+        "endMs": 11487.5,
+        "timestampMs": 11337.5,
+        "confidence": null
+      },
+      {
+        "text": "informado",
+        "startMs": 11500.0,
+        "endMs": 12125.0,
+        "timestampMs": 11500.0,
+        "confidence": null
+      },
+      {
+        "text": "permanece",
+        "startMs": 12137.5,
+        "endMs": 12737.5,
+        "timestampMs": 12137.5,
+        "confidence": null
+      },
+      {
+        "text": "explícito",
+        "startMs": 12750.0,
+        "endMs": 13400.0,
+        "timestampMs": 12750.0,
+        "confidence": null
+      },
+      {
+        "text": "Cada",
+        "startMs": 14262.5,
+        "endMs": 14537.5,
+        "timestampMs": 14262.5,
+        "confidence": null
+      },
+      {
+        "text": "comparação",
+        "startMs": 14550.0,
+        "endMs": 15175.0,
+        "timestampMs": 14550.0,
+        "confidence": null
+      },
+      {
+        "text": "conserva",
+        "startMs": 15187.5,
+        "endMs": 15750.0,
+        "timestampMs": 15187.5,
+        "confidence": null
+      },
+      {
+        "text": "seu",
+        "startMs": 15762.5,
+        "endMs": 15937.5,
+        "timestampMs": 15762.5,
+        "confidence": null
+      },
+      {
+        "text": "contexto",
+        "startMs": 15950.0,
+        "endMs": 16575.0,
+        "timestampMs": 15950.0,
+        "confidence": null
+      },
+      {
+        "text": "A",
+        "startMs": 17437.5,
+        "endMs": 17575.0,
+        "timestampMs": 17437.5,
+        "confidence": null
+      },
+      {
+        "text": "análise",
+        "startMs": 17587.5,
+        "endMs": 18000.0,
+        "timestampMs": 17587.5,
+        "confidence": null
+      },
+      {
+        "text": "evolui",
+        "startMs": 18012.5,
+        "endMs": 18425.0,
+        "timestampMs": 18012.5,
+        "confidence": null
+      },
+      {
+        "text": "conforme",
+        "startMs": 18437.5,
+        "endMs": 18937.5,
+        "timestampMs": 18437.5,
+        "confidence": null
+      },
+      {
+        "text": "chegam",
+        "startMs": 18950.0,
+        "endMs": 19287.5,
+        "timestampMs": 18950.0,
+        "confidence": null
+      },
+      {
+        "text": "novas",
+        "startMs": 19300.0,
+        "endMs": 19587.5,
+        "timestampMs": 19300.0,
+        "confidence": null
+      },
+      {
+        "text": "evidências",
+        "startMs": 19600.0,
+        "endMs": 20412.5,
+        "timestampMs": 19600.0,
+        "confidence": null
+      }
+    ]
+  }
+}

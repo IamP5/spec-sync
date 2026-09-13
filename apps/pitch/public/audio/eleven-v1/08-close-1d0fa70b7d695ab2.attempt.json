@@ -1,0 +1,19 @@
+{
+  "request_hash": "1d0fa70b7d695ab28043cd541893e73fe13dcc16be136e1304b4ac86ce5c8b1b",
+  "request": {
+    "url": "https://api.elevenlabs.io/v1/text-to-speech/Uag7PYOaSMVtYRkk9R00/with-timestamps?output_format=mp3_44100_128",
+    "payload": {
+      "text": "[confident] SpecSync. Conhecimento conectado. Decisões que movem o próximo projeto. Vamos colocar essa inteligência a serviço da Ford. [short pause] E construir, juntos, a próxima decisão.",
+      "model_id": "eleven_v3",
+      "language_code": "pt",
+      "voice_settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "use_speaker_boost": true,
+        "speed": 1.0
+      }
+    }
+  },
+  "started_at": "2026-09-13T15:15:41.048629+00:00"
+}

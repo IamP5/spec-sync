@@ -1,0 +1,280 @@
+{
+  "id": "04-output",
+  "file": "audio/eleven-v1/04-output-4cba16974972e29c.wav",
+  "duration": 15.52,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "Motor, potência, torque, transmissão.",
+      "startMs": 400.0,
+      "endMs": 2890.0,
+      "timestampMs": 400.0,
+      "confidence": null
+    },
+    {
+      "text": "As especificações chegam organizadas, com unidades, contexto e fontes",
+      "startMs": 3227.0,
+      "endMs": 7667.0,
+      "timestampMs": 3227.0,
+      "confidence": null
+    },
+    {
+      "text": "acessíveis. O que falta permanece visível.",
+      "startMs": 7667.0,
+      "endMs": 10490.0,
+      "timestampMs": 7667.0,
+      "confidence": null
+    },
+    {
+      "text": "Você deixa de reconstruir fichas e passa a trabalhar com uma base para",
+      "startMs": 10640.0,
+      "endMs": 14949.0,
+      "timestampMs": 10640.0,
+      "confidence": null
+    },
+    {
+      "text": "comparar.",
+      "startMs": 14949.0,
+      "endMs": 15520.0,
+      "timestampMs": 14949.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "Motor,",
+      "startMs": 400.0,
+      "endMs": 480.0,
+      "timestampMs": 400.0,
+      "confidence": null
+    },
+    {
+      "text": "potência,",
+      "startMs": 780.0,
+      "endMs": 1360.0,
+      "timestampMs": 780.0,
+      "confidence": null
+    },
+    {
+      "text": "torque,",
+      "startMs": 1589.0,
+      "endMs": 2000.0,
+      "timestampMs": 1589.0,
+      "confidence": null
+    },
+    {
+      "text": "transmissão.",
+      "startMs": 2200.0,
+      "endMs": 2800.0,
+      "timestampMs": 2200.0,
+      "confidence": null
+    },
+    {
+      "text": "As",
+      "startMs": 3227.0,
+      "endMs": 3440.0,
+      "timestampMs": 3227.0,
+      "confidence": null
+    },
+    {
+      "text": "especificações",
+      "startMs": 3480.0,
+      "endMs": 4320.0,
+      "timestampMs": 3480.0,
+      "confidence": null
+    },
+    {
+      "text": "chegam",
+      "startMs": 4340.0,
+      "endMs": 4560.0,
+      "timestampMs": 4340.0,
+      "confidence": null
+    },
+    {
+      "text": "organizadas,",
+      "startMs": 4610.0,
+      "endMs": 5280.0,
+      "timestampMs": 4610.0,
+      "confidence": null
+    },
+    {
+      "text": "com",
+      "startMs": 5540.0,
+      "endMs": 5840.0,
+      "timestampMs": 5540.0,
+      "confidence": null
+    },
+    {
+      "text": "unidades,",
+      "startMs": 5911.0,
+      "endMs": 6480.0,
+      "timestampMs": 5911.0,
+      "confidence": null
+    },
+    {
+      "text": "contexto",
+      "startMs": 6836.0,
+      "endMs": 7120.0,
+      "timestampMs": 6836.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 7160.0,
+      "endMs": 7200.0,
+      "timestampMs": 7160.0,
+      "confidence": null
+    },
+    {
+      "text": "fontes",
+      "startMs": 7264.0,
+      "endMs": 7600.0,
+      "timestampMs": 7264.0,
+      "confidence": null
+    },
+    {
+      "text": "acessíveis.",
+      "startMs": 7667.0,
+      "endMs": 8320.0,
+      "timestampMs": 7667.0,
+      "confidence": null
+    },
+    {
+      "text": "O",
+      "startMs": 8720.0,
+      "endMs": 8960.0,
+      "timestampMs": 8720.0,
+      "confidence": null
+    },
+    {
+      "text": "que",
+      "startMs": 9000.0,
+      "endMs": 9120.0,
+      "timestampMs": 9000.0,
+      "confidence": null
+    },
+    {
+      "text": "falta",
+      "startMs": 9173.0,
+      "endMs": 9440.0,
+      "timestampMs": 9173.0,
+      "confidence": null
+    },
+    {
+      "text": "permanece",
+      "startMs": 9486.0,
+      "endMs": 9920.0,
+      "timestampMs": 9486.0,
+      "confidence": null
+    },
+    {
+      "text": "visível.",
+      "startMs": 9960.0,
+      "endMs": 10400.0,
+      "timestampMs": 9960.0,
+      "confidence": null
+    },
+    {
+      "text": "Você",
+      "startMs": 10640.0,
+      "endMs": 11280.0,
+      "timestampMs": 10640.0,
+      "confidence": null
+    },
+    {
+      "text": "deixa",
+      "startMs": 11307.0,
+      "endMs": 11600.0,
+      "timestampMs": 11307.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 11627.0,
+      "endMs": 11680.0,
+      "timestampMs": 11627.0,
+      "confidence": null
+    },
+    {
+      "text": "reconstruir",
+      "startMs": 11733.0,
+      "endMs": 12240.0,
+      "timestampMs": 11733.0,
+      "confidence": null
+    },
+    {
+      "text": "fichas",
+      "startMs": 12304.0,
+      "endMs": 12880.0,
+      "timestampMs": 12304.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 13040.0,
+      "endMs": 13200.0,
+      "timestampMs": 13040.0,
+      "confidence": null
+    },
+    {
+      "text": "passa",
+      "startMs": 13248.0,
+      "endMs": 13520.0,
+      "timestampMs": 13248.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 13560.0,
+      "endMs": 13600.0,
+      "timestampMs": 13560.0,
+      "confidence": null
+    },
+    {
+      "text": "trabalhar",
+      "startMs": 13646.0,
+      "endMs": 14080.0,
+      "timestampMs": 13646.0,
+      "confidence": null
+    },
+    {
+      "text": "com",
+      "startMs": 14120.0,
+      "endMs": 14240.0,
+      "timestampMs": 14120.0,
+      "confidence": null
+    },
+    {
+      "text": "uma",
+      "startMs": 14260.0,
+      "endMs": 14320.0,
+      "timestampMs": 14260.0,
+      "confidence": null
+    },
+    {
+      "text": "base",
+      "startMs": 14400.0,
+      "endMs": 14720.0,
+      "timestampMs": 14400.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 14752.0,
+      "endMs": 14880.0,
+      "timestampMs": 14752.0,
+      "confidence": null
+    },
+    {
+      "text": "comparar.",
+      "startMs": 14949.0,
+      "endMs": 15440.0,
+      "timestampMs": 14949.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "4cba16974972e29c2cec389e0c625d22225bb32e88241999d36034f1710b9edc"
+}

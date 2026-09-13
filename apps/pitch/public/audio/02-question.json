@@ -1,0 +1,235 @@
+{
+  "identity": {
+    "text": "Com o SpecSync, a equipe começa pela pergunta. Define o veículo, a versão e as especificações que importam. Vamos usar a Ranger Raptor, o caso proposto pela Ford.",
+    "voice": "pt-BR-AntonioNeural"
+  },
+  "result": {
+    "id": "02-question",
+    "file": "audio/02-question.mp3",
+    "duration": 13.08,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 0,
+    "captions": [
+      {
+        "text": "Com o SpecSync a equipe começa pela pergunta",
+        "startMs": 100.0,
+        "endMs": 3227.5,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "Define o veículo a versão e as especificações que importam",
+        "startMs": 4000.0,
+        "endMs": 7702.5,
+        "timestampMs": 4000.0,
+        "confidence": null
+      },
+      {
+        "text": "Vamos usar a Ranger Raptor o caso proposto pela Ford",
+        "startMs": 8475.0,
+        "endMs": 12400.0,
+        "timestampMs": 8475.0,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "Com",
+        "startMs": 100.0,
+        "endMs": 275.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 287.5,
+        "endMs": 337.5,
+        "timestampMs": 287.5,
+        "confidence": null
+      },
+      {
+        "text": "SpecSync",
+        "startMs": 350.0,
+        "endMs": 1062.5,
+        "timestampMs": 350.0,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 1362.5,
+        "endMs": 1450.0,
+        "timestampMs": 1362.5,
+        "confidence": null
+      },
+      {
+        "text": "equipe",
+        "startMs": 1462.5,
+        "endMs": 1850.0,
+        "timestampMs": 1462.5,
+        "confidence": null
+      },
+      {
+        "text": "começa",
+        "startMs": 1862.5,
+        "endMs": 2325.0,
+        "timestampMs": 1862.5,
+        "confidence": null
+      },
+      {
+        "text": "pela",
+        "startMs": 2337.5,
+        "endMs": 2550.0,
+        "timestampMs": 2337.5,
+        "confidence": null
+      },
+      {
+        "text": "pergunta",
+        "startMs": 2562.5,
+        "endMs": 3137.5,
+        "timestampMs": 2562.5,
+        "confidence": null
+      },
+      {
+        "text": "Define",
+        "startMs": 4000.0,
+        "endMs": 4437.5,
+        "timestampMs": 4000.0,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 4450.0,
+        "endMs": 4475.0,
+        "timestampMs": 4450.0,
+        "confidence": null
+      },
+      {
+        "text": "veículo",
+        "startMs": 4487.5,
+        "endMs": 4987.5,
+        "timestampMs": 4487.5,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 5187.5,
+        "endMs": 5275.0,
+        "timestampMs": 5187.5,
+        "confidence": null
+      },
+      {
+        "text": "versão",
+        "startMs": 5287.5,
+        "endMs": 5812.5,
+        "timestampMs": 5287.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 5825.0,
+        "endMs": 5875.0,
+        "timestampMs": 5825.0,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 5887.5,
+        "endMs": 5950.0,
+        "timestampMs": 5887.5,
+        "confidence": null
+      },
+      {
+        "text": "especificações",
+        "startMs": 5962.5,
+        "endMs": 6925.0,
+        "timestampMs": 5962.5,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 6937.5,
+        "endMs": 7025.0,
+        "timestampMs": 6937.5,
+        "confidence": null
+      },
+      {
+        "text": "importam",
+        "startMs": 7037.5,
+        "endMs": 7612.5,
+        "timestampMs": 7037.5,
+        "confidence": null
+      },
+      {
+        "text": "Vamos",
+        "startMs": 8475.0,
+        "endMs": 8800.0,
+        "timestampMs": 8475.0,
+        "confidence": null
+      },
+      {
+        "text": "usar",
+        "startMs": 8812.5,
+        "endMs": 9150.0,
+        "timestampMs": 8812.5,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 9162.5,
+        "endMs": 9212.5,
+        "timestampMs": 9162.5,
+        "confidence": null
+      },
+      {
+        "text": "Ranger",
+        "startMs": 9225.0,
+        "endMs": 9550.0,
+        "timestampMs": 9225.0,
+        "confidence": null
+      },
+      {
+        "text": "Raptor",
+        "startMs": 9562.5,
+        "endMs": 10075.0,
+        "timestampMs": 9562.5,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 10437.5,
+        "endMs": 10550.0,
+        "timestampMs": 10437.5,
+        "confidence": null
+      },
+      {
+        "text": "caso",
+        "startMs": 10562.5,
+        "endMs": 10887.5,
+        "timestampMs": 10562.5,
+        "confidence": null
+      },
+      {
+        "text": "proposto",
+        "startMs": 10900.0,
+        "endMs": 11462.5,
+        "timestampMs": 10900.0,
+        "confidence": null
+      },
+      {
+        "text": "pela",
+        "startMs": 11475.0,
+        "endMs": 11712.5,
+        "timestampMs": 11475.0,
+        "confidence": null
+      },
+      {
+        "text": "Ford",
+        "startMs": 11725.0,
+        "endMs": 12200.0,
+        "timestampMs": 11725.0,
+        "confidence": null
+      }
+    ]
+  }
+}

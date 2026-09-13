@@ -1,0 +1,193 @@
+{
+  "identity": {
+    "text": "SpecSync. Das especificações dispersas às decisões competitivas. Vamos validar esse fluxo com a Ford e medir o ganho no trabalho da equipe.",
+    "voice": "pt-BR-AntonioNeural"
+  },
+  "result": {
+    "id": "08-close",
+    "file": "audio/08-close.mp3",
+    "duration": 10.224,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 8,
+    "captions": [
+      {
+        "text": "SpecSync Das especificações dispersas às decisões",
+        "startMs": 96.291,
+        "endMs": 4094.625,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "competitivas Vamos validar esse fluxo com a Ford",
+        "startMs": 4016.208,
+        "endMs": 7763.583,
+        "timestampMs": 4016.208,
+        "confidence": null
+      },
+      {
+        "text": "e medir o ganho no trabalho da equipe",
+        "startMs": 7685.166,
+        "endMs": 9609.708,
+        "timestampMs": 7685.166,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "SpecSync",
+        "startMs": 96.291,
+        "endMs": 894.916,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "Das",
+        "startMs": 1689.833,
+        "endMs": 1863.458,
+        "timestampMs": 1689.833,
+        "confidence": null
+      },
+      {
+        "text": "especificações",
+        "startMs": 1875.0,
+        "endMs": 2743.041,
+        "timestampMs": 1875.0,
+        "confidence": null
+      },
+      {
+        "text": "dispersas",
+        "startMs": 2754.625,
+        "endMs": 3298.625,
+        "timestampMs": 2754.625,
+        "confidence": null
+      },
+      {
+        "text": "às",
+        "startMs": 3310.166,
+        "endMs": 3425.916,
+        "timestampMs": 3310.166,
+        "confidence": null
+      },
+      {
+        "text": "decisões",
+        "startMs": 3437.5,
+        "endMs": 4004.625,
+        "timestampMs": 3437.5,
+        "confidence": null
+      },
+      {
+        "text": "competitivas",
+        "startMs": 4016.208,
+        "endMs": 4907.416,
+        "timestampMs": 4016.208,
+        "confidence": null
+      },
+      {
+        "text": "Vamos",
+        "startMs": 5706.0,
+        "endMs": 6018.5,
+        "timestampMs": 5706.0,
+        "confidence": null
+      },
+      {
+        "text": "validar",
+        "startMs": 6030.083,
+        "endMs": 6423.583,
+        "timestampMs": 6030.083,
+        "confidence": null
+      },
+      {
+        "text": "esse",
+        "startMs": 6435.166,
+        "endMs": 6620.332,
+        "timestampMs": 6435.166,
+        "confidence": null
+      },
+      {
+        "text": "fluxo",
+        "startMs": 6631.958,
+        "endMs": 7037.041,
+        "timestampMs": 6631.958,
+        "confidence": null
+      },
+      {
+        "text": "com",
+        "startMs": 7048.625,
+        "endMs": 7199.083,
+        "timestampMs": 7048.625,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 7210.666,
+        "endMs": 7256.9569,
+        "timestampMs": 7210.666,
+        "confidence": null
+      },
+      {
+        "text": "Ford",
+        "startMs": 7268.5,
+        "endMs": 7673.583,
+        "timestampMs": 7268.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 7685.166,
+        "endMs": 7754.624,
+        "timestampMs": 7685.166,
+        "confidence": null
+      },
+      {
+        "text": "medir",
+        "startMs": 7766.208,
+        "endMs": 8032.416,
+        "timestampMs": 7766.208,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 8044.0,
+        "endMs": 8090.2909,
+        "timestampMs": 8044.0,
+        "confidence": null
+      },
+      {
+        "text": "ganho",
+        "startMs": 8101.833,
+        "endMs": 8379.624,
+        "timestampMs": 8101.833,
+        "confidence": null
+      },
+      {
+        "text": "no",
+        "startMs": 8391.208,
+        "endMs": 8483.791,
+        "timestampMs": 8391.208,
+        "confidence": null
+      },
+      {
+        "text": "trabalho",
+        "startMs": 8495.375,
+        "endMs": 8900.458,
+        "timestampMs": 8495.375,
+        "confidence": null
+      },
+      {
+        "text": "da",
+        "startMs": 8912.041,
+        "endMs": 8993.041,
+        "timestampMs": 8912.041,
+        "confidence": null
+      },
+      {
+        "text": "equipe",
+        "startMs": 9004.625,
+        "endMs": 9409.708,
+        "timestampMs": 9004.625,
+        "confidence": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,438 @@
+{
+  "identity": {
+    "text": "A próxima etapa que queremos construir amplia essa base com emplacamentos, participação de mercado e preços de venda. E transforma as análises em apresentações, documentos e artigos. Materiais para reuniões executivas, decisões de posicionamento e hipóteses de diferenciação para um novo veículo. Conhecimento reutilizável para que o próximo projeto comece com mais contexto.",
+    "voice": "pt-BR-AntonioNeural"
+  },
+  "result": {
+    "id": "07-future",
+    "file": "audio/07-future.mp3",
+    "duration": 24.912,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 0,
+    "captions": [
+      {
+        "text": "A próxima etapa que queremos construir amplia essa base com",
+        "startMs": 100.0,
+        "endMs": 3427.5,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "emplacamentos participação de mercado e preços de venda",
+        "startMs": 3350.0,
+        "endMs": 6702.5,
+        "timestampMs": 3350.0,
+        "confidence": null
+      },
+      {
+        "text": "E transforma as análises em apresentações documentos e artigos",
+        "startMs": 7475.0,
+        "endMs": 11402.5,
+        "timestampMs": 7475.0,
+        "confidence": null
+      },
+      {
+        "text": "Materiais para reuniões executivas decisões de posicionamento",
+        "startMs": 12175.0,
+        "endMs": 16265.0,
+        "timestampMs": 12175.0,
+        "confidence": null
+      },
+      {
+        "text": "e hipóteses de diferenciação para um novo veículo",
+        "startMs": 16187.5,
+        "endMs": 18952.5,
+        "timestampMs": 16187.5,
+        "confidence": null
+      },
+      {
+        "text": "Conhecimento reutilizável para que o próximo projeto comece com",
+        "startMs": 19725.0,
+        "endMs": 23227.5,
+        "timestampMs": 19725.0,
+        "confidence": null
+      },
+      {
+        "text": "mais contexto",
+        "startMs": 23150.0,
+        "endMs": 24237.5,
+        "timestampMs": 23150.0,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "A",
+        "startMs": 100.0,
+        "endMs": 225.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "próxima",
+        "startMs": 237.5,
+        "endMs": 637.5,
+        "timestampMs": 237.5,
+        "confidence": null
+      },
+      {
+        "text": "etapa",
+        "startMs": 650.0,
+        "endMs": 1062.5,
+        "timestampMs": 650.0,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 1075.0,
+        "endMs": 1187.5,
+        "timestampMs": 1075.0,
+        "confidence": null
+      },
+      {
+        "text": "queremos",
+        "startMs": 1200.0,
+        "endMs": 1575.0,
+        "timestampMs": 1200.0,
+        "confidence": null
+      },
+      {
+        "text": "construir",
+        "startMs": 1587.5,
+        "endMs": 2075.0,
+        "timestampMs": 1587.5,
+        "confidence": null
+      },
+      {
+        "text": "amplia",
+        "startMs": 2087.5,
+        "endMs": 2512.5,
+        "timestampMs": 2087.5,
+        "confidence": null
+      },
+      {
+        "text": "essa",
+        "startMs": 2525.0,
+        "endMs": 2800.0,
+        "timestampMs": 2525.0,
+        "confidence": null
+      },
+      {
+        "text": "base",
+        "startMs": 2812.5,
+        "endMs": 3187.5,
+        "timestampMs": 2812.5,
+        "confidence": null
+      },
+      {
+        "text": "com",
+        "startMs": 3200.0,
+        "endMs": 3337.5,
+        "timestampMs": 3200.0,
+        "confidence": null
+      },
+      {
+        "text": "emplacamentos",
+        "startMs": 3350.0,
+        "endMs": 4150.0,
+        "timestampMs": 3350.0,
+        "confidence": null
+      },
+      {
+        "text": "participação",
+        "startMs": 4387.5,
+        "endMs": 5100.0,
+        "timestampMs": 4387.5,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 5112.5,
+        "endMs": 5200.0,
+        "timestampMs": 5112.5,
+        "confidence": null
+      },
+      {
+        "text": "mercado",
+        "startMs": 5212.5,
+        "endMs": 5675.0,
+        "timestampMs": 5212.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 5687.5,
+        "endMs": 5725.0,
+        "timestampMs": 5687.5,
+        "confidence": null
+      },
+      {
+        "text": "preços",
+        "startMs": 5737.5,
+        "endMs": 6125.0,
+        "timestampMs": 5737.5,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 6137.5,
+        "endMs": 6225.0,
+        "timestampMs": 6137.5,
+        "confidence": null
+      },
+      {
+        "text": "venda",
+        "startMs": 6237.5,
+        "endMs": 6612.5,
+        "timestampMs": 6237.5,
+        "confidence": null
+      },
+      {
+        "text": "E",
+        "startMs": 7475.0,
+        "endMs": 7575.0,
+        "timestampMs": 7475.0,
+        "confidence": null
+      },
+      {
+        "text": "transforma",
+        "startMs": 7587.5,
+        "endMs": 8175.0,
+        "timestampMs": 7587.5,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 8187.5,
+        "endMs": 8200.0,
+        "timestampMs": 8187.5,
+        "confidence": null
+      },
+      {
+        "text": "análises",
+        "startMs": 8212.5,
+        "endMs": 8750.0,
+        "timestampMs": 8212.5,
+        "confidence": null
+      },
+      {
+        "text": "em",
+        "startMs": 8762.5,
+        "endMs": 8912.5,
+        "timestampMs": 8762.5,
+        "confidence": null
+      },
+      {
+        "text": "apresentações",
+        "startMs": 8925.0,
+        "endMs": 9775.0,
+        "timestampMs": 8925.0,
+        "confidence": null
+      },
+      {
+        "text": "documentos",
+        "startMs": 10000.0,
+        "endMs": 10600.0,
+        "timestampMs": 10000.0,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 10612.5,
+        "endMs": 10700.0,
+        "timestampMs": 10612.5,
+        "confidence": null
+      },
+      {
+        "text": "artigos",
+        "startMs": 10712.5,
+        "endMs": 11312.5,
+        "timestampMs": 10712.5,
+        "confidence": null
+      },
+      {
+        "text": "Materiais",
+        "startMs": 12175.0,
+        "endMs": 12837.5,
+        "timestampMs": 12175.0,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 12850.0,
+        "endMs": 13025.0,
+        "timestampMs": 12850.0,
+        "confidence": null
+      },
+      {
+        "text": "reuniões",
+        "startMs": 13037.5,
+        "endMs": 13500.0,
+        "timestampMs": 13037.5,
+        "confidence": null
+      },
+      {
+        "text": "executivas",
+        "startMs": 13512.5,
+        "endMs": 14350.0,
+        "timestampMs": 13512.5,
+        "confidence": null
+      },
+      {
+        "text": "decisões",
+        "startMs": 14625.0,
+        "endMs": 15237.5,
+        "timestampMs": 14625.0,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 15250.0,
+        "endMs": 15350.0,
+        "timestampMs": 15250.0,
+        "confidence": null
+      },
+      {
+        "text": "posicionamento",
+        "startMs": 15362.5,
+        "endMs": 16175.0,
+        "timestampMs": 15362.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 16187.5,
+        "endMs": 16212.5,
+        "timestampMs": 16187.5,
+        "confidence": null
+      },
+      {
+        "text": "hipóteses",
+        "startMs": 16225.0,
+        "endMs": 16750.0,
+        "timestampMs": 16225.0,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 16762.5,
+        "endMs": 16850.0,
+        "timestampMs": 16762.5,
+        "confidence": null
+      },
+      {
+        "text": "diferenciação",
+        "startMs": 16862.5,
+        "endMs": 17712.5,
+        "timestampMs": 16862.5,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 17725.0,
+        "endMs": 17887.5,
+        "timestampMs": 17725.0,
+        "confidence": null
+      },
+      {
+        "text": "um",
+        "startMs": 17900.0,
+        "endMs": 18000.0,
+        "timestampMs": 17900.0,
+        "confidence": null
+      },
+      {
+        "text": "novo",
+        "startMs": 18012.5,
+        "endMs": 18362.5,
+        "timestampMs": 18012.5,
+        "confidence": null
+      },
+      {
+        "text": "veículo",
+        "startMs": 18375.0,
+        "endMs": 18862.5,
+        "timestampMs": 18375.0,
+        "confidence": null
+      },
+      {
+        "text": "Conhecimento",
+        "startMs": 19725.0,
+        "endMs": 20450.0,
+        "timestampMs": 19725.0,
+        "confidence": null
+      },
+      {
+        "text": "reutilizável",
+        "startMs": 20462.5,
+        "endMs": 21225.0,
+        "timestampMs": 20462.5,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 21237.5,
+        "endMs": 21425.0,
+        "timestampMs": 21237.5,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 21437.5,
+        "endMs": 21512.5,
+        "timestampMs": 21437.5,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 21525.0,
+        "endMs": 21562.5,
+        "timestampMs": 21525.0,
+        "confidence": null
+      },
+      {
+        "text": "próximo",
+        "startMs": 21575.0,
+        "endMs": 21962.5,
+        "timestampMs": 21575.0,
+        "confidence": null
+      },
+      {
+        "text": "projeto",
+        "startMs": 21975.0,
+        "endMs": 22487.5,
+        "timestampMs": 21975.0,
+        "confidence": null
+      },
+      {
+        "text": "comece",
+        "startMs": 22500.0,
+        "endMs": 22962.5,
+        "timestampMs": 22500.0,
+        "confidence": null
+      },
+      {
+        "text": "com",
+        "startMs": 22975.0,
+        "endMs": 23137.5,
+        "timestampMs": 22975.0,
+        "confidence": null
+      },
+      {
+        "text": "mais",
+        "startMs": 23150.0,
+        "endMs": 23425.0,
+        "timestampMs": 23150.0,
+        "confidence": null
+      },
+      {
+        "text": "contexto",
+        "startMs": 23437.5,
+        "endMs": 24037.5,
+        "timestampMs": 23437.5,
+        "confidence": null
+      }
+    ]
+  }
+}

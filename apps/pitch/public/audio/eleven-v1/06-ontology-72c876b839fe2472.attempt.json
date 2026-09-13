@@ -1,0 +1,19 @@
+{
+  "request_hash": "72c876b839fe24720c7d23955b5d4b20a9e39954b9e81ccd6f33560d5eeac483",
+  "request": {
+    "url": "https://api.elevenlabs.io/v1/text-to-speech/Uag7PYOaSMVtYRkk9R00/with-timestamps?output_format=mp3_44100_128",
+    "payload": {
+      "text": "[confident] Um grafo conecta veículos, atributos e fontes. A ontologia aproxima os termos de diferentes fabricantes e permite alinhar as especificações ao vocabulário da Ford. Uma base compartilhada para agentes pesquisarem e análises evoluírem.",
+      "model_id": "eleven_v3",
+      "language_code": "pt",
+      "voice_settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "use_speaker_boost": true,
+        "speed": 1.0
+      }
+    }
+  },
+  "started_at": "2026-09-13T15:15:19.303093+00:00"
+}

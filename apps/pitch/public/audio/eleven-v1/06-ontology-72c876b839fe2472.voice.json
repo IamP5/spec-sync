@@ -1,0 +1,280 @@
+{
+  "id": "06-ontology",
+  "file": "audio/eleven-v1/06-ontology-72c876b839fe2472.wav",
+  "duration": 14.8,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "Um grafo conecta veículos, atributos e fontes.",
+      "startMs": 69.0,
+      "endMs": 2810.0,
+      "timestampMs": 69.0,
+      "confidence": null
+    },
+    {
+      "text": "A ontologia aproxima os termos de diferentes fabricantes e permite",
+      "startMs": 3260.0,
+      "endMs": 7147.0,
+      "timestampMs": 3260.0,
+      "confidence": null
+    },
+    {
+      "text": "alinhar as especificações ao vocabulário da Ford.",
+      "startMs": 7147.0,
+      "endMs": 9770.0,
+      "timestampMs": 7147.0,
+      "confidence": null
+    },
+    {
+      "text": "Uma base compartilhada para agentes pesquisarem e análises",
+      "startMs": 10060.0,
+      "endMs": 14133.0,
+      "timestampMs": 10060.0,
+      "confidence": null
+    },
+    {
+      "text": "evoluírem.",
+      "startMs": 14133.0,
+      "endMs": 14800.0,
+      "timestampMs": 14133.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "Um",
+      "startMs": 69.0,
+      "endMs": 80.0,
+      "timestampMs": 69.0,
+      "confidence": null
+    },
+    {
+      "text": "grafo",
+      "startMs": 140.0,
+      "endMs": 400.0,
+      "timestampMs": 140.0,
+      "confidence": null
+    },
+    {
+      "text": "conecta",
+      "startMs": 469.0,
+      "endMs": 960.0,
+      "timestampMs": 469.0,
+      "confidence": null
+    },
+    {
+      "text": "veículos,",
+      "startMs": 987.0,
+      "endMs": 1440.0,
+      "timestampMs": 987.0,
+      "confidence": null
+    },
+    {
+      "text": "atributos",
+      "startMs": 1560.0,
+      "endMs": 2080.0,
+      "timestampMs": 1560.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 2120.0,
+      "endMs": 2160.0,
+      "timestampMs": 2120.0,
+      "confidence": null
+    },
+    {
+      "text": "fontes.",
+      "startMs": 2224.0,
+      "endMs": 2720.0,
+      "timestampMs": 2224.0,
+      "confidence": null
+    },
+    {
+      "text": "A",
+      "startMs": 3260.0,
+      "endMs": 3440.0,
+      "timestampMs": 3260.0,
+      "confidence": null
+    },
+    {
+      "text": "ontologia",
+      "startMs": 3480.0,
+      "endMs": 4000.0,
+      "timestampMs": 3480.0,
+      "confidence": null
+    },
+    {
+      "text": "aproxima",
+      "startMs": 4053.0,
+      "endMs": 4400.0,
+      "timestampMs": 4053.0,
+      "confidence": null
+    },
+    {
+      "text": "os",
+      "startMs": 4453.0,
+      "endMs": 4560.0,
+      "timestampMs": 4453.0,
+      "confidence": null
+    },
+    {
+      "text": "termos",
+      "startMs": 4608.0,
+      "endMs": 4880.0,
+      "timestampMs": 4608.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 4933.0,
+      "endMs": 5040.0,
+      "timestampMs": 4933.0,
+      "confidence": null
+    },
+    {
+      "text": "diferentes",
+      "startMs": 5076.0,
+      "endMs": 5440.0,
+      "timestampMs": 5076.0,
+      "confidence": null
+    },
+    {
+      "text": "fabricantes",
+      "startMs": 5497.0,
+      "endMs": 6240.0,
+      "timestampMs": 5497.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 6480.0,
+      "endMs": 6720.0,
+      "timestampMs": 6480.0,
+      "confidence": null
+    },
+    {
+      "text": "permite",
+      "startMs": 6770.0,
+      "endMs": 7120.0,
+      "timestampMs": 6770.0,
+      "confidence": null
+    },
+    {
+      "text": "alinhar",
+      "startMs": 7147.0,
+      "endMs": 7520.0,
+      "timestampMs": 7147.0,
+      "confidence": null
+    },
+    {
+      "text": "as",
+      "startMs": 7547.0,
+      "endMs": 7600.0,
+      "timestampMs": 7547.0,
+      "confidence": null
+    },
+    {
+      "text": "especificações",
+      "startMs": 7656.0,
+      "endMs": 8480.0,
+      "timestampMs": 7656.0,
+      "confidence": null
+    },
+    {
+      "text": "ao",
+      "startMs": 8507.0,
+      "endMs": 8560.0,
+      "timestampMs": 8507.0,
+      "confidence": null
+    },
+    {
+      "text": "vocabulário",
+      "startMs": 8613.0,
+      "endMs": 9200.0,
+      "timestampMs": 8613.0,
+      "confidence": null
+    },
+    {
+      "text": "da",
+      "startMs": 9227.0,
+      "endMs": 9280.0,
+      "timestampMs": 9227.0,
+      "confidence": null
+    },
+    {
+      "text": "Ford.",
+      "startMs": 9360.0,
+      "endMs": 9680.0,
+      "timestampMs": 9360.0,
+      "confidence": null
+    },
+    {
+      "text": "Uma",
+      "startMs": 10060.0,
+      "endMs": 10720.0,
+      "timestampMs": 10060.0,
+      "confidence": null
+    },
+    {
+      "text": "base",
+      "startMs": 10784.0,
+      "endMs": 11040.0,
+      "timestampMs": 10784.0,
+      "confidence": null
+    },
+    {
+      "text": "compartilhada",
+      "startMs": 11080.0,
+      "endMs": 11760.0,
+      "timestampMs": 11080.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 11792.0,
+      "endMs": 11920.0,
+      "timestampMs": 11792.0,
+      "confidence": null
+    },
+    {
+      "text": "agentes",
+      "startMs": 11973.0,
+      "endMs": 12320.0,
+      "timestampMs": 11973.0,
+      "confidence": null
+    },
+    {
+      "text": "pesquisarem",
+      "startMs": 12380.0,
+      "endMs": 13040.0,
+      "timestampMs": 12380.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 13280.0,
+      "endMs": 13520.0,
+      "timestampMs": 13280.0,
+      "confidence": null
+    },
+    {
+      "text": "análises",
+      "startMs": 13584.0,
+      "endMs": 14080.0,
+      "timestampMs": 13584.0,
+      "confidence": null
+    },
+    {
+      "text": "evoluírem.",
+      "startMs": 14133.0,
+      "endMs": 14720.0,
+      "timestampMs": 14133.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "72c876b839fe24720c7d23955b5d4b20a9e39954b9e81ccd6f33560d5eeac483"
+}

@@ -1,0 +1,231 @@
+{
+  "id": "02-ask",
+  "file": "audio/eleven-v1/02-ask-0adc2f5c949e68b3.wav",
+  "duration": 10.08,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "Uma pergunta coloca a pesquisa em movimento.",
+      "startMs": 68.0,
+      "endMs": 2010.0,
+      "timestampMs": 68.0,
+      "confidence": null
+    },
+    {
+      "text": "Escolha o veículo, a versão e os atributos que importam.",
+      "startMs": 2427.0,
+      "endMs": 5370.0,
+      "timestampMs": 2427.0,
+      "confidence": null
+    },
+    {
+      "text": "O SpecSync organiza o trabalho e conduz a busca pelas informações.",
+      "startMs": 5680.0,
+      "endMs": 10080.0,
+      "timestampMs": 5680.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "Uma",
+      "startMs": 68.0,
+      "endMs": 80.0,
+      "timestampMs": 68.0,
+      "confidence": null
+    },
+    {
+      "text": "pergunta",
+      "startMs": 140.0,
+      "endMs": 560.0,
+      "timestampMs": 140.0,
+      "confidence": null
+    },
+    {
+      "text": "coloca",
+      "startMs": 580.0,
+      "endMs": 880.0,
+      "timestampMs": 580.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 980.0,
+      "endMs": 1080.0,
+      "timestampMs": 980.0,
+      "confidence": null
+    },
+    {
+      "text": "pesquisa",
+      "startMs": 1102.0,
+      "endMs": 1280.0,
+      "timestampMs": 1102.0,
+      "confidence": null
+    },
+    {
+      "text": "em",
+      "startMs": 1307.0,
+      "endMs": 1360.0,
+      "timestampMs": 1307.0,
+      "confidence": null
+    },
+    {
+      "text": "movimento.",
+      "startMs": 1400.0,
+      "endMs": 1920.0,
+      "timestampMs": 1400.0,
+      "confidence": null
+    },
+    {
+      "text": "Escolha",
+      "startMs": 2427.0,
+      "endMs": 2720.0,
+      "timestampMs": 2427.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 2760.0,
+      "endMs": 2800.0,
+      "timestampMs": 2760.0,
+      "confidence": null
+    },
+    {
+      "text": "veículo,",
+      "startMs": 2827.0,
+      "endMs": 3200.0,
+      "timestampMs": 2827.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 3560.0,
+      "endMs": 3600.0,
+      "timestampMs": 3560.0,
+      "confidence": null
+    },
+    {
+      "text": "versão",
+      "startMs": 3648.0,
+      "endMs": 4000.0,
+      "timestampMs": 3648.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 4040.0,
+      "endMs": 4080.0,
+      "timestampMs": 4040.0,
+      "confidence": null
+    },
+    {
+      "text": "os",
+      "startMs": 4107.0,
+      "endMs": 4160.0,
+      "timestampMs": 4107.0,
+      "confidence": null
+    },
+    {
+      "text": "atributos",
+      "startMs": 4227.0,
+      "endMs": 4720.0,
+      "timestampMs": 4227.0,
+      "confidence": null
+    },
+    {
+      "text": "que",
+      "startMs": 4740.0,
+      "endMs": 4800.0,
+      "timestampMs": 4740.0,
+      "confidence": null
+    },
+    {
+      "text": "importam.",
+      "startMs": 4857.0,
+      "endMs": 5280.0,
+      "timestampMs": 4857.0,
+      "confidence": null
+    },
+    {
+      "text": "O",
+      "startMs": 5680.0,
+      "endMs": 6000.0,
+      "timestampMs": 5680.0,
+      "confidence": null
+    },
+    {
+      "text": "SpecSync",
+      "startMs": 6080.0,
+      "endMs": 6720.0,
+      "timestampMs": 6080.0,
+      "confidence": null
+    },
+    {
+      "text": "organiza",
+      "startMs": 6813.0,
+      "endMs": 7440.0,
+      "timestampMs": 6813.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 7480.0,
+      "endMs": 7520.0,
+      "timestampMs": 7480.0,
+      "confidence": null
+    },
+    {
+      "text": "trabalho",
+      "startMs": 7573.0,
+      "endMs": 8000.0,
+      "timestampMs": 7573.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 8040.0,
+      "endMs": 8080.0,
+      "timestampMs": 8040.0,
+      "confidence": null
+    },
+    {
+      "text": "conduz",
+      "startMs": 8133.0,
+      "endMs": 8479.0,
+      "timestampMs": 8133.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 8480.0,
+      "endMs": 8481.0,
+      "timestampMs": 8480.0,
+      "confidence": null
+    },
+    {
+      "text": "busca",
+      "startMs": 8547.0,
+      "endMs": 8880.0,
+      "timestampMs": 8547.0,
+      "confidence": null
+    },
+    {
+      "text": "pelas",
+      "startMs": 8920.0,
+      "endMs": 9120.0,
+      "timestampMs": 8920.0,
+      "confidence": null
+    },
+    {
+      "text": "informações.",
+      "startMs": 9193.0,
+      "endMs": 10000.0,
+      "timestampMs": 9193.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "0adc2f5c949e68b3d0da300bf793359f1b55e75650690799387d9022628fe12c"
+}

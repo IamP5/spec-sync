@@ -1,0 +1,19 @@
+{
+  "request_hash": "edcbe81cd413b673e128b851c83e5c9830ca8ca6a0c04f5de9ac2c2573aff4fc",
+  "request": {
+    "url": "https://api.elevenlabs.io/v1/text-to-speech/Uag7PYOaSMVtYRkk9R00/with-timestamps?output_format=mp3_44100_128",
+    "payload": {
+      "text": "[confident] A próxima vantagem competitiva começa antes do lançamento. [short pause] Começa na qualidade da decisão. [short pause] SpecSync. Inteligência para conectar o que o mercado oferece ao que seu próximo veículo precisa entregar.",
+      "model_id": "eleven_v3",
+      "language_code": "pt",
+      "voice_settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "use_speaker_boost": true,
+        "speed": 1.0
+      }
+    }
+  },
+  "started_at": "2026-09-13T15:14:29.216008+00:00"
+}

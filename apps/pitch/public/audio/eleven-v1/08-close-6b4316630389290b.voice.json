@@ -1,0 +1,385 @@
+{
+  "id": "08-close",
+  "file": "audio/eleven-v1/08-close-6b4316630389290b.wav",
+  "duration": 20.88,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "Como entregamos. Dados na sua nuvem.",
+      "startMs": 139.0,
+      "endMs": 2250.0,
+      "timestampMs": 139.0,
+      "confidence": null
+    },
+    {
+      "text": "Evidência rastreável.",
+      "startMs": 2440.0,
+      "endMs": 3850.0,
+      "timestampMs": 2440.0,
+      "confidence": null
+    },
+    {
+      "text": "Pessoas no comando.",
+      "startMs": 4040.0,
+      "endMs": 5210.0,
+      "timestampMs": 4040.0,
+      "confidence": null
+    },
+    {
+      "text": "Agentes trabalham.",
+      "startMs": 5347.0,
+      "endMs": 6810.0,
+      "timestampMs": 5347.0,
+      "confidence": null
+    },
+    {
+      "text": "Sua equipe decide.",
+      "startMs": 7000.0,
+      "endMs": 8250.0,
+      "timestampMs": 7000.0,
+      "confidence": null
+    },
+    {
+      "text": "A meta é clara: de cerca de uma hora por versão, para minutos.",
+      "startMs": 9190.0,
+      "endMs": 13210.0,
+      "timestampMs": 9190.0,
+      "confidence": null
+    },
+    {
+      "text": "Mais tempo para analisar.",
+      "startMs": 14048.0,
+      "endMs": 15210.0,
+      "timestampMs": 14048.0,
+      "confidence": null
+    },
+    {
+      "text": "Mais espaço para inovar.",
+      "startMs": 15328.0,
+      "endMs": 17050.0,
+      "timestampMs": 15328.0,
+      "confidence": null
+    },
+    {
+      "text": "SpecSync.",
+      "startMs": 17248.0,
+      "endMs": 18490.0,
+      "timestampMs": 17248.0,
+      "confidence": null
+    },
+    {
+      "text": "Vamos construir a próxima decisão.",
+      "startMs": 19190.0,
+      "endMs": 20880.0,
+      "timestampMs": 19190.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "Como",
+      "startMs": 139.0,
+      "endMs": 160.0,
+      "timestampMs": 139.0,
+      "confidence": null
+    },
+    {
+      "text": "entregamos.",
+      "startMs": 194.0,
+      "endMs": 800.0,
+      "timestampMs": 194.0,
+      "confidence": null
+    },
+    {
+      "text": "Dados",
+      "startMs": 1100.0,
+      "endMs": 1440.0,
+      "timestampMs": 1100.0,
+      "confidence": null
+    },
+    {
+      "text": "na",
+      "startMs": 1493.0,
+      "endMs": 1600.0,
+      "timestampMs": 1493.0,
+      "confidence": null
+    },
+    {
+      "text": "sua",
+      "startMs": 1640.0,
+      "endMs": 1760.0,
+      "timestampMs": 1640.0,
+      "confidence": null
+    },
+    {
+      "text": "nuvem.",
+      "startMs": 1840.0,
+      "endMs": 2160.0,
+      "timestampMs": 1840.0,
+      "confidence": null
+    },
+    {
+      "text": "Evidência",
+      "startMs": 2440.0,
+      "endMs": 3040.0,
+      "timestampMs": 2440.0,
+      "confidence": null
+    },
+    {
+      "text": "rastreável.",
+      "startMs": 3088.0,
+      "endMs": 3760.0,
+      "timestampMs": 3088.0,
+      "confidence": null
+    },
+    {
+      "text": "Pessoas",
+      "startMs": 4040.0,
+      "endMs": 4560.0,
+      "timestampMs": 4040.0,
+      "confidence": null
+    },
+    {
+      "text": "no",
+      "startMs": 4587.0,
+      "endMs": 4640.0,
+      "timestampMs": 4587.0,
+      "confidence": null
+    },
+    {
+      "text": "comando.",
+      "startMs": 4700.0,
+      "endMs": 5120.0,
+      "timestampMs": 4700.0,
+      "confidence": null
+    },
+    {
+      "text": "Agentes",
+      "startMs": 5347.0,
+      "endMs": 6160.0,
+      "timestampMs": 5347.0,
+      "confidence": null
+    },
+    {
+      "text": "trabalham.",
+      "startMs": 6217.0,
+      "endMs": 6720.0,
+      "timestampMs": 6217.0,
+      "confidence": null
+    },
+    {
+      "text": "Sua",
+      "startMs": 7000.0,
+      "endMs": 7280.0,
+      "timestampMs": 7000.0,
+      "confidence": null
+    },
+    {
+      "text": "equipe",
+      "startMs": 7337.0,
+      "endMs": 7680.0,
+      "timestampMs": 7337.0,
+      "confidence": null
+    },
+    {
+      "text": "decide.",
+      "startMs": 7749.0,
+      "endMs": 8160.0,
+      "timestampMs": 7749.0,
+      "confidence": null
+    },
+    {
+      "text": "A",
+      "startMs": 9190.0,
+      "endMs": 9200.0,
+      "timestampMs": 9190.0,
+      "confidence": null
+    },
+    {
+      "text": "meta",
+      "startMs": 9248.0,
+      "endMs": 9440.0,
+      "timestampMs": 9248.0,
+      "confidence": null
+    },
+    {
+      "text": "é",
+      "startMs": 9480.0,
+      "endMs": 9520.0,
+      "timestampMs": 9480.0,
+      "confidence": null
+    },
+    {
+      "text": "clara:",
+      "startMs": 9573.0,
+      "endMs": 9840.0,
+      "timestampMs": 9573.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 10133.0,
+      "endMs": 10560.0,
+      "timestampMs": 10133.0,
+      "confidence": null
+    },
+    {
+      "text": "cerca",
+      "startMs": 10613.0,
+      "endMs": 10880.0,
+      "timestampMs": 10613.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 10933.0,
+      "endMs": 11040.0,
+      "timestampMs": 10933.0,
+      "confidence": null
+    },
+    {
+      "text": "uma",
+      "startMs": 11080.0,
+      "endMs": 11200.0,
+      "timestampMs": 11080.0,
+      "confidence": null
+    },
+    {
+      "text": "hora",
+      "startMs": 11248.0,
+      "endMs": 11440.0,
+      "timestampMs": 11248.0,
+      "confidence": null
+    },
+    {
+      "text": "por",
+      "startMs": 11480.0,
+      "endMs": 11600.0,
+      "timestampMs": 11480.0,
+      "confidence": null
+    },
+    {
+      "text": "versão,",
+      "startMs": 11664.0,
+      "endMs": 12080.0,
+      "timestampMs": 11664.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 12240.0,
+      "endMs": 12560.0,
+      "timestampMs": 12240.0,
+      "confidence": null
+    },
+    {
+      "text": "minutos.",
+      "startMs": 12630.0,
+      "endMs": 13120.0,
+      "timestampMs": 12630.0,
+      "confidence": null
+    },
+    {
+      "text": "Mais",
+      "startMs": 14048.0,
+      "endMs": 14080.0,
+      "timestampMs": 14048.0,
+      "confidence": null
+    },
+    {
+      "text": "tempo",
+      "startMs": 14133.0,
+      "endMs": 14400.0,
+      "timestampMs": 14133.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 14432.0,
+      "endMs": 14560.0,
+      "timestampMs": 14432.0,
+      "confidence": null
+    },
+    {
+      "text": "analisar.",
+      "startMs": 14608.0,
+      "endMs": 15120.0,
+      "timestampMs": 14608.0,
+      "confidence": null
+    },
+    {
+      "text": "Mais",
+      "startMs": 15328.0,
+      "endMs": 15840.0,
+      "timestampMs": 15328.0,
+      "confidence": null
+    },
+    {
+      "text": "espaço",
+      "startMs": 15909.0,
+      "endMs": 16320.0,
+      "timestampMs": 15909.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 16352.0,
+      "endMs": 16480.0,
+      "timestampMs": 16352.0,
+      "confidence": null
+    },
+    {
+      "text": "inovar.",
+      "startMs": 16533.0,
+      "endMs": 16960.0,
+      "timestampMs": 16533.0,
+      "confidence": null
+    },
+    {
+      "text": "SpecSync.",
+      "startMs": 17248.0,
+      "endMs": 18400.0,
+      "timestampMs": 17248.0,
+      "confidence": null
+    },
+    {
+      "text": "Vamos",
+      "startMs": 19190.0,
+      "endMs": 19360.0,
+      "timestampMs": 19190.0,
+      "confidence": null
+    },
+    {
+      "text": "construir",
+      "startMs": 19406.0,
+      "endMs": 19840.0,
+      "timestampMs": 19406.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 19880.0,
+      "endMs": 19920.0,
+      "timestampMs": 19880.0,
+      "confidence": null
+    },
+    {
+      "text": "próxima",
+      "startMs": 19970.0,
+      "endMs": 20320.0,
+      "timestampMs": 19970.0,
+      "confidence": null
+    },
+    {
+      "text": "decisão.",
+      "startMs": 20373.0,
+      "endMs": 20800.0,
+      "timestampMs": 20373.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "6b4316630389290bb81c05881140284b4b5115904895d157ae107029d50a36e2"
+}

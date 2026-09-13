@@ -1,0 +1,421 @@
+{
+  "schemaVersion": 1,
+  "kind": "VIDEO_RESEARCH_ENRICHMENT",
+  "reviewedOn": "2026-09-13",
+  "market": "BR",
+  "originalSnapshot": "demo3100/data/comparison-raptor-amarok-shark.json",
+  "scope": "Curated, source-backed video comparison. Does not claim these enrichments were returned by the live SpecSync API or committed to its production catalog.",
+  "vehicles": [
+    {
+      "id": "ford",
+      "index": 1,
+      "name": "Ranger Raptor",
+      "meta": "Ford · 3.0 V6 · BR 2026"
+    },
+    {
+      "id": "vw",
+      "index": 2,
+      "name": "Amarok V6 Extreme",
+      "meta": "Volkswagen · V6 TDI · BR MY26"
+    },
+    {
+      "id": "byd",
+      "index": 3,
+      "name": "Shark GS",
+      "meta": "BYD · Híbrida plug-in · BR 2025"
+    }
+  ],
+  "sources": [
+    {
+      "id": "ford-2026",
+      "title": "Ranger Raptor — versão brasileira 2026",
+      "url": "https://www.ford.com.br/picapes/ranger-raptor/raptor-4wd-at/",
+      "capturedOn": "2026-09-13",
+      "provenance": "PRIMARY_SOURCE",
+      "scope": "Raptor 3.0 V6 Bi-turbo 4WD AT 2026 (AOD6), current Brazilian product page; verified using the web reader."
+    },
+    {
+      "id": "vw-page",
+      "title": "Amarok V6 — Volkswagen do Brasil",
+      "url": "https://www.vw.com.br/pt/carros/amarok.html",
+      "capturedOn": "2026-09-13",
+      "provenance": "PRIMARY_SOURCE",
+      "scope": "Current Brazilian V6 line; page identifies MY26 and V6 Extreme."
+    },
+    {
+      "id": "vw-manual",
+      "title": "Manual Amarok MY26 Brasil",
+      "url": "https://www.vw.com.br/idhub/content/dam/onehub_pkw/importers/br/literatura-de-bordo/manual-amarok/my26/Manual%20de%20instru%C3%A7%C3%B5es_Amarok_MY26_Brasil.pdf",
+      "capturedOn": "2026-09-13",
+      "provenance": "PRIMARY_SOURCE",
+      "scope": "MY26 Brazilian manual, edition 08/2025; general model dimensions and operational limits, not individual VIN homologation.",
+      "artifact": "out/research-v7/amarok/Manual_Amarok_MY26_Brasil.pdf",
+      "sha256": "0005816506eabffedb390fac4a1630c30770440a01740c9ae6dea25534e58b14"
+    },
+    {
+      "id": "byd-2025",
+      "title": "BYD Shark — ficha técnica 06/2025",
+      "url": "https://www.byd.com/material/byd-site/br/fichas-t%C3%A9cnicas---update-2025/Ficha_Tecnica_Shark_06_2025.pdf",
+      "capturedOn": "2026-09-13",
+      "provenance": "PRIMARY_SOURCE",
+      "scope": "Period technical sheet for the Brazilian Shark; edition date is not an explicit GS model-year declaration.",
+      "artifact": "out/research-v7/byd/shark-ficha-06-2025.pdf",
+      "sha256": "c7f9ba2c3c2ca80c0c9986a8c363323446f7d387e0c8f051c03e33cfe756d74c"
+    },
+    {
+      "id": "byd-launch",
+      "title": "BYD Shark — lançamento brasileiro",
+      "url": "https://www.byd.com/br/noticias-byd-brasil/chega-ao-brasil-a-byd-shark---primeira-caminhonete-super-hibrida1",
+      "capturedOn": "2026-09-13",
+      "provenance": "PRIMARY_SOURCE",
+      "scope": "Published 2024-10-25 for the Brazilian launch configuration; original combined torque rating."
+    },
+    {
+      "id": "byd-page",
+      "title": "BYD Shark — plataforma DMO",
+      "url": "https://www.byd.com/br/car/shark",
+      "capturedOn": "2026-09-13",
+      "provenance": "PRIMARY_SOURCE",
+      "scope": "Current page used only to confirm EHS and electric all-wheel-drive terminology."
+    },
+    {
+      "id": "byd-manual",
+      "title": "Manual do proprietário BYD Shark — 24101",
+      "url": "https://www.byd.com/material/byd-site/br/manuais-auto-byd/updates-11-11-2024/SHARK_MP_24101_Site.pdf",
+      "capturedOn": "2026-09-13",
+      "provenance": "PRIMARY_SOURCE",
+      "scope": "Shark-specific manual associated with all years by the official Brazilian owner-manual portal.",
+      "artifact": "out/research-v7/byd/shark-manual-24101.pdf",
+      "sha256": "f7b2daa3594d7aa3e262a957ffa15e8becabd1e9e567f94bd97174f862002114"
+    }
+  ],
+  "rows": [
+    {
+      "code": "engine",
+      "label": "Motor",
+      "cells": [
+        {
+          "vehicleId": "ford",
+          "v": "3.0 V6 biturbo",
+          "value": "3.0L V6 Bi-turbo",
+          "unit": null,
+          "known": true,
+          "note": "gasolina",
+          "sourceId": "ford-2026",
+          "locator": "Performance off-road / Motor",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "vw",
+          "v": "3.0 V6 TDI",
+          "value": "3.0 V6 TDI",
+          "unit": null,
+          "known": true,
+          "note": "diesel",
+          "sourceId": "vw-page",
+          "locator": "Motor",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "byd",
+          "v": "1.5 turbo + elétricos",
+          "value": "1.5 L turbo + front/rear electric motors",
+          "unit": null,
+          "known": true,
+          "note": "híbrido plug-in",
+          "sourceId": "byd-launch",
+          "locator": "Introductory powertrain paragraph: 1.5 L turbo and EHS",
+          "qualifiers": {},
+          "supportingSources": [
+            {
+              "sourceId": "byd-2025",
+              "locator": "PDF p.3, separate front and rear electric motor tables"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "power_max",
+      "label": "Potência máxima",
+      "cells": [
+        {
+          "vehicleId": "ford",
+          "v": "397 cv",
+          "value": 397,
+          "unit": "cv",
+          "known": true,
+          "note": "",
+          "sourceId": "ford-2026",
+          "locator": "Performance off-road / Potência",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "vw",
+          "v": "258 cv",
+          "value": 258,
+          "unit": "cv",
+          "known": true,
+          "note": "272 cv em overboost",
+          "sourceId": "vw-page",
+          "locator": "Motor / Mais potência para o campo",
+          "qualifiers": {
+            "overboostCv": 272,
+            "overboostSeconds": 10,
+            "rating": "nominal"
+          }
+        },
+        {
+          "vehicleId": "byd",
+          "v": "437 cv",
+          "value": 437,
+          "unit": "cv",
+          "known": true,
+          "note": "combinada",
+          "sourceId": "byd-2025",
+          "locator": "PDF p.3 / Potência máxima combinada",
+          "qualifiers": {
+            "scope": "combined system"
+          }
+        }
+      ]
+    },
+    {
+      "code": "torque_max",
+      "label": "Torque máximo",
+      "cells": [
+        {
+          "vehicleId": "ford",
+          "v": "583 Nm",
+          "value": 583,
+          "unit": "Nm",
+          "known": true,
+          "note": "",
+          "sourceId": "ford-2026",
+          "locator": "Performance off-road / Torque",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "vw",
+          "v": "580 Nm",
+          "value": 580,
+          "unit": "Nm",
+          "known": true,
+          "note": "",
+          "sourceId": "vw-page",
+          "locator": "FAQ / Qual a potência da Amarok para o campo?",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "byd",
+          "v": "≈637 Nm",
+          "value": 637.43225,
+          "unit": "Nm",
+          "known": true,
+          "note": "combinado · convertido",
+          "sourceId": "byd-launch",
+          "locator": "Paragraph before the connectivity subsection",
+          "qualifiers": {
+            "scope": "combined system",
+            "originalValue": 65,
+            "sourceUnit": "kgf.m",
+            "conversionFactor": 9.80665,
+            "derivation": "65 × 9.80665",
+            "rounding": "nearest whole Nm with approximate sign"
+          }
+        }
+      ]
+    },
+    {
+      "code": "transmission",
+      "label": "Transmissão / sistema",
+      "cells": [
+        {
+          "vehicleId": "ford",
+          "v": "AT · 10 marchas",
+          "value": "Automática de 10 velocidades",
+          "unit": null,
+          "known": true,
+          "note": "",
+          "sourceId": "ford-2026",
+          "locator": "Performance off-road / Transmissão",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "vw",
+          "v": "AT · 8 marchas",
+          "value": "Automática de 8 velocidades",
+          "unit": null,
+          "known": true,
+          "note": "",
+          "sourceId": "vw-page",
+          "locator": "Technical summary / Transmissão",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "byd",
+          "v": "Sistema EHS",
+          "value": "Sistema híbrido elétrico longitudinal (EHS)",
+          "unit": null,
+          "known": true,
+          "note": "conjunto híbrido",
+          "sourceId": "byd-page",
+          "locator": "DMO platform / EHS",
+          "qualifiers": {
+            "gearCount": null,
+            "scope": "hybrid drive-system description; no gear count inferred"
+          }
+        }
+      ]
+    },
+    {
+      "code": "drivetrain",
+      "label": "Tração",
+      "cells": [
+        {
+          "vehicleId": "ford",
+          "v": "4WD",
+          "value": "4WD",
+          "unit": null,
+          "known": true,
+          "note": "",
+          "sourceId": "ford-2026",
+          "locator": "Performance off-road / Tração",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "vw",
+          "v": "4MOTION",
+          "value": "4Motion (4x4 Permanente)",
+          "unit": null,
+          "known": true,
+          "note": "4×4 permanente",
+          "sourceId": "vw-page",
+          "locator": "Technical summary / Tração",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "byd",
+          "v": "Integral elétrica",
+          "value": "Integral",
+          "unit": null,
+          "known": true,
+          "note": "dois motores elétricos",
+          "sourceId": "byd-2025",
+          "locator": "PDF p.3 / Tipo de tração",
+          "qualifiers": {}
+        }
+      ]
+    },
+    {
+      "code": "wheelbase",
+      "label": "Entre-eixos",
+      "cells": [
+        {
+          "vehicleId": "ford",
+          "v": "3.270 mm",
+          "value": 3270,
+          "unit": "mm",
+          "known": true,
+          "note": "",
+          "sourceId": "ford-2026",
+          "locator": "Dimensões e capacidade / Distância entre eixos",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "vw",
+          "v": "3.097 mm",
+          "value": 3097,
+          "unit": "mm",
+          "known": true,
+          "note": "",
+          "sourceId": "vw-manual",
+          "locator": "Printed p.268 (PDF p.269), table Dimensões, row G",
+          "qualifiers": {
+            "scope": "MY26 general model table; not trim-specific"
+          }
+        },
+        {
+          "vehicleId": "byd",
+          "v": "3.260 mm",
+          "value": 3260,
+          "unit": "mm",
+          "known": true,
+          "note": "",
+          "sourceId": "byd-2025",
+          "locator": "PDF p.2 / Distância entre-eixos",
+          "qualifiers": {}
+        }
+      ]
+    },
+    {
+      "code": "wading_depth",
+      "label": "Travessia de água*",
+      "cells": [
+        {
+          "vehicleId": "ford",
+          "v": "850 mm",
+          "value": 850,
+          "unit": "mm",
+          "known": true,
+          "note": "",
+          "sourceId": "ford-2026",
+          "locator": "Dimensões e capacidade / Capacidade de imersão",
+          "qualifiers": {}
+        },
+        {
+          "vehicleId": "vw",
+          "v": "Sem cota em mm",
+          "value": null,
+          "unit": "mm",
+          "known": false,
+          "note": "limite físico no manual",
+          "sourceId": "vw-manual",
+          "locator": "Printed p.107 (PDF p.108), Travessia de trechos alagados em ruas",
+          "qualifiers": {
+            "status": "NOT_NUMERICALLY_REPORTED",
+            "physicalLimit": "lower edge of vehicle body",
+            "reason": "MY26 manual provides a physical limit, not a millimetre value; no value from another model year was transferred."
+          }
+        },
+        {
+          "vehicleId": "byd",
+          "v": "700 mm",
+          "value": 700,
+          "unit": "mm",
+          "known": true,
+          "note": "condições no manual",
+          "sourceId": "byd-manual",
+          "locator": "PDF p.121 (printed4-42), conditions on PDF p.122 (4-43)",
+          "qualifiers": {
+            "scope": "specific Shark manual; subject to all crossing conditions and warnings"
+          }
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "at": 12,
+      "who": "Ford · Ranger Raptor",
+      "text": "V6 biturbo · 397 cv · 583 Nm",
+      "takeaway": "Automática de 10 marchas. Dados da versão brasileira 2026.",
+      "sourceId": "ford-2026"
+    },
+    {
+      "at": 26,
+      "who": "Volkswagen · Amarok V6 Extreme",
+      "text": "V6 diesel · 258 cv · 580 Nm",
+      "takeaway": "272 cv por 10 s em overboost; 4MOTION permanente.",
+      "sourceId": "vw-page"
+    },
+    {
+      "at": 40,
+      "who": "BYD · Shark GS",
+      "text": "437 cv combinados · sistema EHS",
+      "takeaway": "65 kgf·m combinados, normalizados para ≈637 Nm.",
+      "sourceId": "byd-launch"
+    }
+  ],
+  "footnote": "Shark: potência/torque combinados; 65 kgf·m ≈ 637 Nm. *Travessia: condições nos manuais."
+}

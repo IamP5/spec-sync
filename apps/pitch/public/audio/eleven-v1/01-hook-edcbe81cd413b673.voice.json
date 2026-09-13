@@ -1,0 +1,245 @@
+{
+  "id": "01-hook",
+  "file": "audio/eleven-v1/01-hook-edcbe81cd413b673.wav",
+  "duration": 13.84,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "A próxima vantagem competitiva começa antes do lançamento.",
+      "startMs": 72.0,
+      "endMs": 3530.0,
+      "timestampMs": 72.0,
+      "confidence": null
+    },
+    {
+      "text": "Começa na qualidade da decisão.",
+      "startMs": 4208.0,
+      "endMs": 5850.0,
+      "timestampMs": 4208.0,
+      "confidence": null
+    },
+    {
+      "text": "SpecSync. Inteligência para conectar o que o mercado oferece ao que",
+      "startMs": 7296.0,
+      "endMs": 11640.0,
+      "timestampMs": 7296.0,
+      "confidence": null
+    },
+    {
+      "text": "seu próximo veículo precisa entregar.",
+      "startMs": 11640.0,
+      "endMs": 13840.0,
+      "timestampMs": 11640.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "A",
+      "startMs": 72.0,
+      "endMs": 80.0,
+      "timestampMs": 72.0,
+      "confidence": null
+    },
+    {
+      "text": "próxima",
+      "startMs": 130.0,
+      "endMs": 480.0,
+      "timestampMs": 130.0,
+      "confidence": null
+    },
+    {
+      "text": "vantagem",
+      "startMs": 528.0,
+      "endMs": 880.0,
+      "timestampMs": 528.0,
+      "confidence": null
+    },
+    {
+      "text": "competitiva",
+      "startMs": 933.0,
+      "endMs": 1600.0,
+      "timestampMs": 933.0,
+      "confidence": null
+    },
+    {
+      "text": "começa",
+      "startMs": 1712.0,
+      "endMs": 2320.0,
+      "timestampMs": 1712.0,
+      "confidence": null
+    },
+    {
+      "text": "antes",
+      "startMs": 2387.0,
+      "endMs": 2720.0,
+      "timestampMs": 2387.0,
+      "confidence": null
+    },
+    {
+      "text": "do",
+      "startMs": 2747.0,
+      "endMs": 2800.0,
+      "timestampMs": 2747.0,
+      "confidence": null
+    },
+    {
+      "text": "lançamento.",
+      "startMs": 2848.0,
+      "endMs": 3440.0,
+      "timestampMs": 2848.0,
+      "confidence": null
+    },
+    {
+      "text": "Começa",
+      "startMs": 4208.0,
+      "endMs": 4400.0,
+      "timestampMs": 4208.0,
+      "confidence": null
+    },
+    {
+      "text": "na",
+      "startMs": 4427.0,
+      "endMs": 4480.0,
+      "timestampMs": 4427.0,
+      "confidence": null
+    },
+    {
+      "text": "qualidade",
+      "startMs": 4544.0,
+      "endMs": 5120.0,
+      "timestampMs": 4544.0,
+      "confidence": null
+    },
+    {
+      "text": "da",
+      "startMs": 5147.0,
+      "endMs": 5200.0,
+      "timestampMs": 5147.0,
+      "confidence": null
+    },
+    {
+      "text": "decisão.",
+      "startMs": 5267.0,
+      "endMs": 5760.0,
+      "timestampMs": 5267.0,
+      "confidence": null
+    },
+    {
+      "text": "SpecSync.",
+      "startMs": 7296.0,
+      "endMs": 7680.0,
+      "timestampMs": 7296.0,
+      "confidence": null
+    },
+    {
+      "text": "Inteligência",
+      "startMs": 7907.0,
+      "endMs": 9040.0,
+      "timestampMs": 7907.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 9072.0,
+      "endMs": 9200.0,
+      "timestampMs": 9072.0,
+      "confidence": null
+    },
+    {
+      "text": "conectar",
+      "startMs": 9262.0,
+      "endMs": 9760.0,
+      "timestampMs": 9262.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 9800.0,
+      "endMs": 9840.0,
+      "timestampMs": 9800.0,
+      "confidence": null
+    },
+    {
+      "text": "que",
+      "startMs": 9860.0,
+      "endMs": 9920.0,
+      "timestampMs": 9860.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 10020.0,
+      "endMs": 10120.0,
+      "timestampMs": 10020.0,
+      "confidence": null
+    },
+    {
+      "text": "mercado",
+      "startMs": 10145.0,
+      "endMs": 10320.0,
+      "timestampMs": 10145.0,
+      "confidence": null
+    },
+    {
+      "text": "oferece",
+      "startMs": 10387.0,
+      "endMs": 10880.0,
+      "timestampMs": 10387.0,
+      "confidence": null
+    },
+    {
+      "text": "ao",
+      "startMs": 11093.0,
+      "endMs": 11520.0,
+      "timestampMs": 11093.0,
+      "confidence": null
+    },
+    {
+      "text": "que",
+      "startMs": 11540.0,
+      "endMs": 11600.0,
+      "timestampMs": 11540.0,
+      "confidence": null
+    },
+    {
+      "text": "seu",
+      "startMs": 11640.0,
+      "endMs": 11760.0,
+      "timestampMs": 11640.0,
+      "confidence": null
+    },
+    {
+      "text": "próximo",
+      "startMs": 11820.0,
+      "endMs": 12240.0,
+      "timestampMs": 11820.0,
+      "confidence": null
+    },
+    {
+      "text": "veículo",
+      "startMs": 12293.0,
+      "endMs": 12640.0,
+      "timestampMs": 12293.0,
+      "confidence": null
+    },
+    {
+      "text": "precisa",
+      "startMs": 12710.0,
+      "endMs": 13200.0,
+      "timestampMs": 12710.0,
+      "confidence": null
+    },
+    {
+      "text": "entregar.",
+      "startMs": 13240.0,
+      "endMs": 13760.0,
+      "timestampMs": 13240.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "edcbe81cd413b673e128b851c83e5c9830ca8ca6a0c04f5de9ac2c2573aff4fc"
+}

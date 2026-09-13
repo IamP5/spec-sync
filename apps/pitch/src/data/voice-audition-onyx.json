@@ -1,0 +1,8 @@
+{
+  "model": "gpt-4o-mini-tts-2025-12-15",
+  "voice": "onyx",
+  "input": "Quanto tempo sua equipe precisa para entender um concorrente?\n\nNo desafio apresentado pela Ford, a pesquisa manual leva cerca de uma hora por versão.\n\nCom o SpecSync, você começa pela pergunta. A plataforma busca informações na internet, compara especificações de veículos e mantém as fontes acessíveis.\n\nA equipe confere as evidências e avança para o que importa: a próxima decisão.",
+  "instructions": "Voz original masculina brasileira de campanha automotiva cinematográfica. Um baixo-barítono adulto, muito grave, escuro e ressonante, com textura naturalmente áspera e rouca. Use ressonância de peito, consoantes firmes e uma interpretação imponente, com convicção e peso. Sotaque brasileiro neutro. A pergunta inicial é um desafio deliberado, dita com intensidade baixa e tensa. Pausa. O dado 'cerca de uma hora por versão' recebe peso factual, mantendo a atribuição ao desafio da Ford. Em 'Com o SpecSync', abra a projeção e dê presença ao produto. Os verbos busca, compara e mantém avançam com decisão. Deixe uma pausa antes de 'a próxima decisão' e termine grave, firme e conclusivo. Mantenha o grave ao aumentar a energia. Preserve respirações naturais e variação de intenção. Fale exatamente o roteiro, sem adicionar palavras, música, reverberação ou efeitos. Pronuncie SpecSync como spék-sink. Ritmo cadenciado, aproximadamente 125 palavras por minuto, com pausas expressivas. Grave e robusto, com clareza e naturalidade.",
+  "response_format": "wav",
+  "speed": 1
+}

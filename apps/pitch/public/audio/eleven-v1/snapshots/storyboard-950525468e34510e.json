@@ -1,0 +1,90 @@
+[
+  {
+    "id": "01-hook",
+    "title": "A próxima vantagem",
+    "start": 0.0,
+    "duration": 15.6,
+    "minimumDuration": 14.0,
+    "text": "A próxima vantagem competitiva começa antes do lançamento. Começa na qualidade da decisão. SpecSync. Inteligência para conectar o que o mercado oferece ao que seu próximo veículo precisa entregar.",
+    "spokenText": "[confident] A próxima vantagem competitiva começa antes do lançamento. [short pause] Começa na qualidade da decisão. [short pause] SpecSync. Inteligência para conectar o que o mercado oferece ao que seu próximo veículo precisa entregar.",
+    "startFrame": 0,
+    "durationInFrames": 468
+  },
+  {
+    "id": "02-ask",
+    "title": "Uma pergunta coloca tudo em movimento",
+    "start": 15.6,
+    "duration": 14.0,
+    "minimumDuration": 13.0,
+    "text": "Uma pergunta coloca a pesquisa em movimento. Escolha o veículo, a versão e os atributos que importam. O SpecSync organiza o trabalho e conduz a busca pelas informações.",
+    "spokenText": "[confident] Uma pergunta coloca a pesquisa em movimento. Escolha o veículo, a versão e os atributos que importam. O SpecSync organiza o trabalho e conduz a busca pelas informações.",
+    "startFrame": 468,
+    "durationInFrames": 420
+  },
+  {
+    "id": "03-research",
+    "title": "Pesquisa com evidência",
+    "start": 29.6,
+    "duration": 22.0,
+    "minimumDuration": 22.0,
+    "text": "Os agentes pesquisam na internet, localizam fichas técnicas e reúnem as evidências em uma única experiência. Sua equipe acompanha a origem dos dados, revisa os achados e decide o que entra no catálogo. Cada informação validada amplia o conhecimento disponível para a próxima análise.",
+    "spokenText": "[confident] Os agentes pesquisam na internet, localizam fichas técnicas e reúnem as evidências em uma única experiência. Sua equipe acompanha a origem dos dados, revisa os achados e decide o que entra no catálogo. Cada informação validada amplia o conhecimento disponível para a próxima análise.",
+    "startFrame": 888,
+    "durationInFrames": 660
+  },
+  {
+    "id": "04-output",
+    "title": "Especificações prontas para analisar",
+    "start": 51.6,
+    "duration": 17.3,
+    "minimumDuration": 17.0,
+    "text": "Motor, potência, torque, transmissão. As especificações chegam organizadas, com unidades, contexto e fontes acessíveis. O que falta permanece visível. Você deixa de reconstruir fichas e passa a trabalhar com uma base para comparar.",
+    "spokenText": "[confident] Motor, potência, torque, transmissão. As especificações chegam organizadas, com unidades, contexto e fontes acessíveis. O que falta permanece visível. Você deixa de reconstruir fichas e passa a trabalhar com uma base para comparar.",
+    "startFrame": 1548,
+    "durationInFrames": 519
+  },
+  {
+    "id": "05-compare",
+    "title": "O que diferencia cada proposta",
+    "start": 68.9,
+    "duration": 23.0,
+    "minimumDuration": 23.0,
+    "text": "Compare versões lado a lado. Destaque diferenças e investigue a evidência por trás de cada valor. Da motorização à transmissão, o SpecSync ajuda sua equipe a enxergar o que diferencia cada proposta. E a formular perguntas melhores sobre posicionamento e oportunidades.",
+    "spokenText": "[confident] Compare versões lado a lado. Destaque diferenças e investigue a evidência por trás de cada valor. Da motorização à transmissão, o SpecSync ajuda sua equipe a enxergar o que diferencia cada proposta. E a formular perguntas melhores sobre posicionamento e oportunidades.",
+    "startFrame": 2067,
+    "durationInFrames": 690
+  },
+  {
+    "id": "06-ontology",
+    "title": "Nomes diferentes. Conhecimento conectado.",
+    "start": 91.9,
+    "duration": 28.0,
+    "minimumDuration": 28.0,
+    "text": "Cada marca tem seu nome. AdvanceTrac, na Ford. VSC, na Toyota. VSA, na Honda. A ontologia conecta a função em comum: controle eletrônico de estabilidade. E preserva as diferenças de cada sistema. Veículo, versão e fonte passam a formar uma rede. No vocabulário da Ford, os agentes encontram o que comparar. E sua equipe enxerga novas oportunidades.",
+    "spokenText": "[confident] Cada marca tem seu nome. AdvanceTrac, na Ford. VSC, na Toyota. VSA, na Honda. A ontologia conecta a função em comum: controle eletrônico de estabilidade. E preserva as diferenças de cada sistema. Veículo, versão e fonte passam a formar uma rede. No vocabulário da Ford, os agentes encontram o que comparar. E sua equipe enxerga novas oportunidades.",
+    "startFrame": 2757,
+    "durationInFrames": 840
+  },
+  {
+    "id": "07-future",
+    "title": "Inteligência de mercado. Entregáveis executivos.",
+    "start": 119.9,
+    "duration": 32.63333333333333,
+    "minimumDuration": 31.0,
+    "text": "Nossa visão é conectar emplacamentos, market share por segmento e posicionamento de preço. Identificar lacunas de portfólio e oportunidades no mix de versões. E gerar, com agentes de IA, apresentações PowerPoint e relatórios estratégicos. Análise competitiva, cenários de posicionamento e recomendações, com fontes e premissas rastreáveis. Inteligência pronta para o comitê executivo. Para alinhar produto, marketing e vendas, e orientar a próxima decisão.",
+    "spokenText": "[confident] Nossa visão é conectar emplacamentos, market share por segmento e posicionamento de preço. Identificar lacunas de portfólio e oportunidades no mix de versões. [short pause] E gerar, com agentes de IA, apresentações PowerPoint e relatórios estratégicos. Análise competitiva, cenários de posicionamento e recomendações, com fontes e premissas rastreáveis. [short pause] Inteligência pronta para o comitê executivo. Para alinhar produto, marketing e vendas, e orientar a próxima decisão.",
+    "startFrame": 3597,
+    "durationInFrames": 979
+  },
+  {
+    "id": "08-close",
+    "title": "Como entregamos. A próxima decisão.",
+    "start": 152.53333333333333,
+    "duration": 28.0,
+    "minimumDuration": 28.0,
+    "text": "Como entregamos. Dados na sua nuvem. Evidência rastreável. Pessoas no comando. Agentes trabalham. Sua equipe decide. A meta é clara: de cerca de uma hora por versão, para minutos. Mais tempo para analisar. Mais espaço para inovar. SpecSync. Vamos construir a próxima decisão.",
+    "spokenText": "[confident] Como entregamos. Dados na sua nuvem. Evidência rastreável. Pessoas no comando. Agentes trabalham. Sua equipe decide. [short pause] A meta é clara: de cerca de uma hora por versão, para minutos. [short pause] Mais tempo para analisar. Mais espaço para inovar. SpecSync. [short pause] Vamos construir a próxima decisão.",
+    "startFrame": 4576,
+    "durationInFrames": 840
+  }
+]

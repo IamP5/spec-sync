@@ -1,0 +1,336 @@
+{
+  "id": "05-compare",
+  "file": "audio/eleven-v1/05-compare-6d0d143c1f9ff529.wav",
+  "duration": 17.2,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "Compare versões lado a lado.",
+      "startMs": 264.0,
+      "endMs": 1530.0,
+      "timestampMs": 264.0,
+      "confidence": null
+    },
+    {
+      "text": "Destaque diferenças e investigue a evidência por trás de cada valor.",
+      "startMs": 2048.0,
+      "endMs": 6090.0,
+      "timestampMs": 2048.0,
+      "confidence": null
+    },
+    {
+      "text": "Da motorização à transmissão, o SpecSync ajuda sua equipe a",
+      "startMs": 6453.0,
+      "endMs": 10613.0,
+      "timestampMs": 6453.0,
+      "confidence": null
+    },
+    {
+      "text": "enxergar o que diferencia cada proposta.",
+      "startMs": 10613.0,
+      "endMs": 12810.0,
+      "timestampMs": 10613.0,
+      "confidence": null
+    },
+    {
+      "text": "E a formular perguntas melhores sobre posicionamento e oportunidades.",
+      "startMs": 13200.0,
+      "endMs": 17130.0,
+      "timestampMs": 13200.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "Compare",
+      "startMs": 264.0,
+      "endMs": 320.0,
+      "timestampMs": 264.0,
+      "confidence": null
+    },
+    {
+      "text": "versões",
+      "startMs": 368.0,
+      "endMs": 800.0,
+      "timestampMs": 368.0,
+      "confidence": null
+    },
+    {
+      "text": "lado",
+      "startMs": 832.0,
+      "endMs": 960.0,
+      "timestampMs": 832.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 1000.0,
+      "endMs": 1040.0,
+      "timestampMs": 1000.0,
+      "confidence": null
+    },
+    {
+      "text": "lado.",
+      "startMs": 1120.0,
+      "endMs": 1440.0,
+      "timestampMs": 1120.0,
+      "confidence": null
+    },
+    {
+      "text": "Destaque",
+      "startMs": 2048.0,
+      "endMs": 2400.0,
+      "timestampMs": 2048.0,
+      "confidence": null
+    },
+    {
+      "text": "diferenças",
+      "startMs": 2440.0,
+      "endMs": 3120.0,
+      "timestampMs": 2440.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 3360.0,
+      "endMs": 3600.0,
+      "timestampMs": 3360.0,
+      "confidence": null
+    },
+    {
+      "text": "investigue",
+      "startMs": 3653.0,
+      "endMs": 4120.0,
+      "timestampMs": 3653.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 4140.0,
+      "endMs": 4160.0,
+      "timestampMs": 4140.0,
+      "confidence": null
+    },
+    {
+      "text": "evidência",
+      "startMs": 4240.0,
+      "endMs": 4720.0,
+      "timestampMs": 4240.0,
+      "confidence": null
+    },
+    {
+      "text": "por",
+      "startMs": 4780.0,
+      "endMs": 4960.0,
+      "timestampMs": 4780.0,
+      "confidence": null
+    },
+    {
+      "text": "trás",
+      "startMs": 5013.0,
+      "endMs": 5280.0,
+      "timestampMs": 5013.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 5307.0,
+      "endMs": 5360.0,
+      "timestampMs": 5307.0,
+      "confidence": null
+    },
+    {
+      "text": "cada",
+      "startMs": 5408.0,
+      "endMs": 5600.0,
+      "timestampMs": 5408.0,
+      "confidence": null
+    },
+    {
+      "text": "valor.",
+      "startMs": 5667.0,
+      "endMs": 6000.0,
+      "timestampMs": 5667.0,
+      "confidence": null
+    },
+    {
+      "text": "Da",
+      "startMs": 6453.0,
+      "endMs": 7040.0,
+      "timestampMs": 6453.0,
+      "confidence": null
+    },
+    {
+      "text": "motorização",
+      "startMs": 7080.0,
+      "endMs": 7760.0,
+      "timestampMs": 7080.0,
+      "confidence": null
+    },
+    {
+      "text": "à",
+      "startMs": 7800.0,
+      "endMs": 7840.0,
+      "timestampMs": 7800.0,
+      "confidence": null
+    },
+    {
+      "text": "transmissão,",
+      "startMs": 7893.0,
+      "endMs": 8480.0,
+      "timestampMs": 7893.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 9000.0,
+      "endMs": 9040.0,
+      "timestampMs": 9000.0,
+      "confidence": null
+    },
+    {
+      "text": "SpecSync",
+      "startMs": 9104.0,
+      "endMs": 9600.0,
+      "timestampMs": 9104.0,
+      "confidence": null
+    },
+    {
+      "text": "ajuda",
+      "startMs": 9653.0,
+      "endMs": 9920.0,
+      "timestampMs": 9653.0,
+      "confidence": null
+    },
+    {
+      "text": "sua",
+      "startMs": 9980.0,
+      "endMs": 10160.0,
+      "timestampMs": 9980.0,
+      "confidence": null
+    },
+    {
+      "text": "equipe",
+      "startMs": 10206.0,
+      "endMs": 10480.0,
+      "timestampMs": 10206.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 10520.0,
+      "endMs": 10560.0,
+      "timestampMs": 10520.0,
+      "confidence": null
+    },
+    {
+      "text": "enxergar",
+      "startMs": 10613.0,
+      "endMs": 11040.0,
+      "timestampMs": 10613.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 11080.0,
+      "endMs": 11120.0,
+      "timestampMs": 11080.0,
+      "confidence": null
+    },
+    {
+      "text": "que",
+      "startMs": 11160.0,
+      "endMs": 11280.0,
+      "timestampMs": 11160.0,
+      "confidence": null
+    },
+    {
+      "text": "diferencia",
+      "startMs": 11338.0,
+      "endMs": 11920.0,
+      "timestampMs": 11338.0,
+      "confidence": null
+    },
+    {
+      "text": "cada",
+      "startMs": 11968.0,
+      "endMs": 12160.0,
+      "timestampMs": 11968.0,
+      "confidence": null
+    },
+    {
+      "text": "proposta.",
+      "startMs": 12208.0,
+      "endMs": 12720.0,
+      "timestampMs": 12208.0,
+      "confidence": null
+    },
+    {
+      "text": "E",
+      "startMs": 13200.0,
+      "endMs": 13520.0,
+      "timestampMs": 13200.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 13600.0,
+      "endMs": 13680.0,
+      "timestampMs": 13600.0,
+      "confidence": null
+    },
+    {
+      "text": "formular",
+      "startMs": 13712.0,
+      "endMs": 14000.0,
+      "timestampMs": 13712.0,
+      "confidence": null
+    },
+    {
+      "text": "perguntas",
+      "startMs": 14048.0,
+      "endMs": 14480.0,
+      "timestampMs": 14048.0,
+      "confidence": null
+    },
+    {
+      "text": "melhores",
+      "startMs": 14533.0,
+      "endMs": 14960.0,
+      "timestampMs": 14533.0,
+      "confidence": null
+    },
+    {
+      "text": "sobre",
+      "startMs": 15000.0,
+      "endMs": 15200.0,
+      "timestampMs": 15000.0,
+      "confidence": null
+    },
+    {
+      "text": "posicionamento",
+      "startMs": 15244.0,
+      "endMs": 16080.0,
+      "timestampMs": 15244.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 16120.0,
+      "endMs": 16160.0,
+      "timestampMs": 16120.0,
+      "confidence": null
+    },
+    {
+      "text": "oportunidades.",
+      "startMs": 16210.0,
+      "endMs": 17040.0,
+      "timestampMs": 16210.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "6d0d143c1f9ff529d763c84b8fce13a09a98e139023e3b31a49a9fa9ad71f96a"
+}

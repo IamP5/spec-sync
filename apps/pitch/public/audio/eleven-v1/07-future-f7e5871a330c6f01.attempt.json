@@ -1,0 +1,19 @@
+{
+  "request_hash": "f7e5871a330c6f0116b34bb040a4018d7b10e4e50e524060ff25889b808c03c2",
+  "request": {
+    "url": "https://api.elevenlabs.io/v1/text-to-speech/Uag7PYOaSMVtYRkk9R00/with-timestamps?output_format=mp3_44100_128",
+    "payload": {
+      "text": "[confident] Agora, imagine ampliar essa inteligência com emplacamentos, participação de mercado e preços de venda. Nossa visão é conectar produto e mercado para orientar posicionamento e o desenvolvimento de novos veículos. E transformar essa análise em apresentações, documentos e artigos, prontos para levar o contexto à reunião executiva.",
+      "model_id": "eleven_v3",
+      "language_code": "pt",
+      "voice_settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "use_speaker_boost": true,
+        "speed": 1.0
+      }
+    }
+  },
+  "started_at": "2026-09-13T15:15:30.258474+00:00"
+}

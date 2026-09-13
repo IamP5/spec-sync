@@ -1,0 +1,476 @@
+{
+  "id": "06-ontology",
+  "file": "audio/eleven-v1/06-ontology-cefa23465b7c2d56.wav",
+  "duration": 23.52,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "Cada marca tem seu nome.",
+      "startMs": 130.0,
+      "endMs": 1289.0,
+      "timestampMs": 130.0,
+      "confidence": null
+    },
+    {
+      "text": "AdvanceTrac, na Ford.",
+      "startMs": 1310.0,
+      "endMs": 2890.0,
+      "timestampMs": 1310.0,
+      "confidence": null
+    },
+    {
+      "text": "VSC, na Toyota. VSA, na Honda.",
+      "startMs": 3200.0,
+      "endMs": 6010.0,
+      "timestampMs": 3200.0,
+      "confidence": null
+    },
+    {
+      "text": "A ontologia conecta a função em comum:",
+      "startMs": 6320.0,
+      "endMs": 8410.0,
+      "timestampMs": 6320.0,
+      "confidence": null
+    },
+    {
+      "text": "controle eletrônico de estabilidade.",
+      "startMs": 8773.0,
+      "endMs": 10730.0,
+      "timestampMs": 8773.0,
+      "confidence": null
+    },
+    {
+      "text": "E preserva as diferenças de cada sistema.",
+      "startMs": 10920.0,
+      "endMs": 13210.0,
+      "timestampMs": 10920.0,
+      "confidence": null
+    },
+    {
+      "text": "Veículo, versão e fonte passam a formar uma rede.",
+      "startMs": 13467.0,
+      "endMs": 16650.0,
+      "timestampMs": 13467.0,
+      "confidence": null
+    },
+    {
+      "text": "No vocabulário da Ford, os agentes encontram o que comparar.",
+      "startMs": 16907.0,
+      "endMs": 20730.0,
+      "timestampMs": 16907.0,
+      "confidence": null
+    },
+    {
+      "text": "E sua equipe enxerga novas oportunidades.",
+      "startMs": 21000.0,
+      "endMs": 23450.0,
+      "timestampMs": 21000.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "Cada",
+      "startMs": 130.0,
+      "endMs": 160.0,
+      "timestampMs": 130.0,
+      "confidence": null
+    },
+    {
+      "text": "marca",
+      "startMs": 213.0,
+      "endMs": 480.0,
+      "timestampMs": 213.0,
+      "confidence": null
+    },
+    {
+      "text": "tem",
+      "startMs": 540.0,
+      "endMs": 720.0,
+      "timestampMs": 540.0,
+      "confidence": null
+    },
+    {
+      "text": "seu",
+      "startMs": 760.0,
+      "endMs": 880.0,
+      "timestampMs": 760.0,
+      "confidence": null
+    },
+    {
+      "text": "nome.",
+      "startMs": 944.0,
+      "endMs": 1199.0,
+      "timestampMs": 944.0,
+      "confidence": null
+    },
+    {
+      "text": "AdvanceTrac,",
+      "startMs": 1310.0,
+      "endMs": 2320.0,
+      "timestampMs": 1310.0,
+      "confidence": null
+    },
+    {
+      "text": "na",
+      "startMs": 2427.0,
+      "endMs": 2480.0,
+      "timestampMs": 2427.0,
+      "confidence": null
+    },
+    {
+      "text": "Ford.",
+      "startMs": 2544.0,
+      "endMs": 2800.0,
+      "timestampMs": 2544.0,
+      "confidence": null
+    },
+    {
+      "text": "VSC,",
+      "startMs": 3200.0,
+      "endMs": 3840.0,
+      "timestampMs": 3200.0,
+      "confidence": null
+    },
+    {
+      "text": "na",
+      "startMs": 3947.0,
+      "endMs": 4000.0,
+      "timestampMs": 3947.0,
+      "confidence": null
+    },
+    {
+      "text": "Toyota.",
+      "startMs": 4069.0,
+      "endMs": 4480.0,
+      "timestampMs": 4069.0,
+      "confidence": null
+    },
+    {
+      "text": "VSA,",
+      "startMs": 4960.0,
+      "endMs": 5440.0,
+      "timestampMs": 4960.0,
+      "confidence": null
+    },
+    {
+      "text": "na",
+      "startMs": 5493.0,
+      "endMs": 5520.0,
+      "timestampMs": 5493.0,
+      "confidence": null
+    },
+    {
+      "text": "Honda.",
+      "startMs": 5587.0,
+      "endMs": 5920.0,
+      "timestampMs": 5587.0,
+      "confidence": null
+    },
+    {
+      "text": "A",
+      "startMs": 6320.0,
+      "endMs": 6560.0,
+      "timestampMs": 6320.0,
+      "confidence": null
+    },
+    {
+      "text": "ontologia",
+      "startMs": 6580.0,
+      "endMs": 7040.0,
+      "timestampMs": 6580.0,
+      "confidence": null
+    },
+    {
+      "text": "conecta",
+      "startMs": 7097.0,
+      "endMs": 7480.0,
+      "timestampMs": 7097.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 7500.0,
+      "endMs": 7520.0,
+      "timestampMs": 7500.0,
+      "confidence": null
+    },
+    {
+      "text": "função",
+      "startMs": 7577.0,
+      "endMs": 7920.0,
+      "timestampMs": 7577.0,
+      "confidence": null
+    },
+    {
+      "text": "em",
+      "startMs": 7947.0,
+      "endMs": 8000.0,
+      "timestampMs": 7947.0,
+      "confidence": null
+    },
+    {
+      "text": "comum:",
+      "startMs": 8060.0,
+      "endMs": 8320.0,
+      "timestampMs": 8060.0,
+      "confidence": null
+    },
+    {
+      "text": "controle",
+      "startMs": 8773.0,
+      "endMs": 9200.0,
+      "timestampMs": 8773.0,
+      "confidence": null
+    },
+    {
+      "text": "eletrônico",
+      "startMs": 9240.0,
+      "endMs": 9760.0,
+      "timestampMs": 9240.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 9787.0,
+      "endMs": 9840.0,
+      "timestampMs": 9787.0,
+      "confidence": null
+    },
+    {
+      "text": "estabilidade.",
+      "startMs": 9900.0,
+      "endMs": 10640.0,
+      "timestampMs": 9900.0,
+      "confidence": null
+    },
+    {
+      "text": "E",
+      "startMs": 10920.0,
+      "endMs": 11120.0,
+      "timestampMs": 10920.0,
+      "confidence": null
+    },
+    {
+      "text": "preserva",
+      "startMs": 11168.0,
+      "endMs": 11600.0,
+      "timestampMs": 11168.0,
+      "confidence": null
+    },
+    {
+      "text": "as",
+      "startMs": 11627.0,
+      "endMs": 11680.0,
+      "timestampMs": 11627.0,
+      "confidence": null
+    },
+    {
+      "text": "diferenças",
+      "startMs": 11720.0,
+      "endMs": 12240.0,
+      "timestampMs": 11720.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 12267.0,
+      "endMs": 12320.0,
+      "timestampMs": 12267.0,
+      "confidence": null
+    },
+    {
+      "text": "cada",
+      "startMs": 12368.0,
+      "endMs": 12560.0,
+      "timestampMs": 12368.0,
+      "confidence": null
+    },
+    {
+      "text": "sistema.",
+      "startMs": 12630.0,
+      "endMs": 13120.0,
+      "timestampMs": 12630.0,
+      "confidence": null
+    },
+    {
+      "text": "Veículo,",
+      "startMs": 13467.0,
+      "endMs": 14320.0,
+      "timestampMs": 13467.0,
+      "confidence": null
+    },
+    {
+      "text": "versão",
+      "startMs": 14512.0,
+      "endMs": 14800.0,
+      "timestampMs": 14512.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 14840.0,
+      "endMs": 14880.0,
+      "timestampMs": 14840.0,
+      "confidence": null
+    },
+    {
+      "text": "fonte",
+      "startMs": 14944.0,
+      "endMs": 15280.0,
+      "timestampMs": 14944.0,
+      "confidence": null
+    },
+    {
+      "text": "passam",
+      "startMs": 15344.0,
+      "endMs": 15680.0,
+      "timestampMs": 15344.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 15720.0,
+      "endMs": 15760.0,
+      "timestampMs": 15720.0,
+      "confidence": null
+    },
+    {
+      "text": "formar",
+      "startMs": 15792.0,
+      "endMs": 16080.0,
+      "timestampMs": 15792.0,
+      "confidence": null
+    },
+    {
+      "text": "uma",
+      "startMs": 16120.0,
+      "endMs": 16240.0,
+      "timestampMs": 16120.0,
+      "confidence": null
+    },
+    {
+      "text": "rede.",
+      "startMs": 16304.0,
+      "endMs": 16560.0,
+      "timestampMs": 16304.0,
+      "confidence": null
+    },
+    {
+      "text": "No",
+      "startMs": 16907.0,
+      "endMs": 17280.0,
+      "timestampMs": 16907.0,
+      "confidence": null
+    },
+    {
+      "text": "vocabulário",
+      "startMs": 17333.0,
+      "endMs": 17840.0,
+      "timestampMs": 17333.0,
+      "confidence": null
+    },
+    {
+      "text": "da",
+      "startMs": 17893.0,
+      "endMs": 18000.0,
+      "timestampMs": 17893.0,
+      "confidence": null
+    },
+    {
+      "text": "Ford,",
+      "startMs": 18080.0,
+      "endMs": 18400.0,
+      "timestampMs": 18080.0,
+      "confidence": null
+    },
+    {
+      "text": "os",
+      "startMs": 18853.0,
+      "endMs": 18960.0,
+      "timestampMs": 18853.0,
+      "confidence": null
+    },
+    {
+      "text": "agentes",
+      "startMs": 19013.0,
+      "endMs": 19360.0,
+      "timestampMs": 19013.0,
+      "confidence": null
+    },
+    {
+      "text": "encontram",
+      "startMs": 19410.0,
+      "endMs": 19920.0,
+      "timestampMs": 19410.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 19960.0,
+      "endMs": 20000.0,
+      "timestampMs": 19960.0,
+      "confidence": null
+    },
+    {
+      "text": "que",
+      "startMs": 20020.0,
+      "endMs": 20080.0,
+      "timestampMs": 20020.0,
+      "confidence": null
+    },
+    {
+      "text": "comparar.",
+      "startMs": 20137.0,
+      "endMs": 20640.0,
+      "timestampMs": 20137.0,
+      "confidence": null
+    },
+    {
+      "text": "E",
+      "startMs": 21000.0,
+      "endMs": 21280.0,
+      "timestampMs": 21000.0,
+      "confidence": null
+    },
+    {
+      "text": "sua",
+      "startMs": 21320.0,
+      "endMs": 21440.0,
+      "timestampMs": 21320.0,
+      "confidence": null
+    },
+    {
+      "text": "equipe",
+      "startMs": 21486.0,
+      "endMs": 21760.0,
+      "timestampMs": 21486.0,
+      "confidence": null
+    },
+    {
+      "text": "enxerga",
+      "startMs": 21813.0,
+      "endMs": 22160.0,
+      "timestampMs": 21813.0,
+      "confidence": null
+    },
+    {
+      "text": "novas",
+      "startMs": 22220.0,
+      "endMs": 22560.0,
+      "timestampMs": 22220.0,
+      "confidence": null
+    },
+    {
+      "text": "oportunidades.",
+      "startMs": 22610.0,
+      "endMs": 23360.0,
+      "timestampMs": 22610.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "cefa23465b7c2d56594b228b1fce2b17879e9ddeaf9bc53452ee5506ea199bff"
+}

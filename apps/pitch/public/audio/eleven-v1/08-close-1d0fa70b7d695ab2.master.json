@@ -1,0 +1,65 @@
+{
+  "identity": {
+    "request_hash": "1d0fa70b7d695ab28043cd541893e73fe13dcc16be136e1304b4ac86ce5c8b1b",
+    "raw_sha256": "56453fd0aeea0705976480503b48cbdcfe6185728a09962fa6be3a1dc32becbc",
+    "normalizer_sha256": "f2ee27683b74528c638dc10f8cedad461b91d157b1048494485d7c342853b3e7"
+  },
+  "output_sha256": "921f1f33977363bd8147823df1203b904f862240f8783eb3911a09daadd4c717",
+  "result": {
+    "source": "/Users/tuba/Dev/projects/fiap-ford-spec-sync/apps/pitch/public/audio/eleven-v1/08-close-1d0fa70b7d695ab2.raw.mp3",
+    "output": "/Users/tuba/Dev/projects/fiap-ford-spec-sync/apps/pitch/public/audio/eleven-v1/08-close-1d0fa70b7d695ab2.wav",
+    "target": {
+      "integrated_lufs": -16,
+      "true_peak_dbtp": -1.5,
+      "loudness_range_lu": 9
+    },
+    "first_pass": {
+      "input_i": "-16.69",
+      "input_tp": "-4.01",
+      "input_lra": "1.60",
+      "input_thresh": "-27.10",
+      "output_i": "-15.93",
+      "output_tp": "-2.20",
+      "output_lra": "2.50",
+      "output_thresh": "-26.37",
+      "normalization_type": "dynamic",
+      "target_offset": "-0.07"
+    },
+    "second_pass": {
+      "input_i": "-16.53",
+      "input_tp": "-4.01",
+      "input_lra": "2.00",
+      "input_thresh": "-27.02",
+      "output_i": "-15.84",
+      "output_tp": "-3.32",
+      "output_lra": "2.00",
+      "output_thresh": "-26.32",
+      "normalization_type": "linear",
+      "target_offset": "-0.16"
+    },
+    "verified_output": {
+      "duration_seconds": 11.76,
+      "sample_count": 564480,
+      "codec": "pcm_s16le",
+      "sample_rate_hz": 48000,
+      "channels": 2,
+      "bits_per_sample": 16,
+      "integrated_lufs": -16.01,
+      "true_peak_dbtp": -3.32,
+      "loudness_range_lu": 1.7,
+      "full_decode_passed": true,
+      "loudnorm_measurement": {
+        "input_i": "-16.01",
+        "input_tp": "-3.32",
+        "input_lra": "1.70",
+        "input_thresh": "-26.42",
+        "output_i": "-15.92",
+        "output_tp": "-2.20",
+        "output_lra": "2.50",
+        "output_thresh": "-26.37",
+        "normalization_type": "dynamic",
+        "target_offset": "-0.08"
+      }
+    }
+  }
+}

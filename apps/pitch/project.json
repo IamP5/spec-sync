@@ -1,0 +1,78 @@
+{
+  "name": "pitch",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/pitch/src",
+  "tags": ["type:tooling", "scope:pitch"],
+  "targets": {
+    "studio": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "npm run studio",
+        "cwd": "apps/pitch"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "npm run lint",
+        "cwd": "apps/pitch"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "npm run typecheck",
+        "cwd": "apps/pitch"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "npm run build",
+        "cwd": "apps/pitch"
+      }
+    },
+    "render": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/out"],
+      "options": {
+        "command": "npm run render",
+        "cwd": "apps/pitch"
+      }
+    },
+    "stills": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run stills",
+        "cwd": "apps/pitch"
+      }
+    },
+    "verify": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run verify",
+        "cwd": "apps/pitch"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run format",
+        "cwd": "apps/pitch"
+      }
+    },
+    "master": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run render -- --master-only",
+        "cwd": "apps/pitch"
+      }
+    }
+  }
+}

@@ -2,6 +2,7 @@ import { gatewayChecks } from '../../apps/gateway/checks.mjs';
 import { aiChecks } from '../../apps/ai/checks.mjs';
 import { apiChecks } from '../../apps/api/checks.mjs';
 import { webChecks } from '../../apps/web/checks.mjs';
+import { pitchChecks } from '../../apps/pitch/checks.mjs';
 
 // Registry of per-project checks. Each app owns its definition next to its
 // code (`apps/web/checks.mjs`, `apps/api/checks.mjs`); register it here so the
@@ -16,6 +17,7 @@ export const projects = [
   apiChecks,
   aiChecks,
   gatewayChecks,
+  pitchChecks,
   {
     name: 'scripts',
     paths: ['scripts/'],

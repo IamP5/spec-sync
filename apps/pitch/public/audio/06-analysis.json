@@ -1,0 +1,368 @@
+{
+  "identity": {
+    "text": "A conversa avança da ficha técnica para a análise. Quais diferenças importam para o uso que estamos avaliando? O SpecSync ajuda a interpretar as evidências, apontar limitações e orientar a próxima pergunta. A equipe mantém o controle da decisão. Com rastreabilidade para conferir as conclusões.",
+    "voice": "pt-BR-AntonioNeural"
+  },
+  "result": {
+    "id": "06-analysis",
+    "file": "audio/06-analysis.mp3",
+    "duration": 19.392,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 8,
+    "captions": [
+      {
+        "text": "A conversa avança da ficha técnica para a análise Quais",
+        "startMs": 96.291,
+        "endMs": 3782.124,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "diferenças importam para o uso que estamos avaliando O",
+        "startMs": 3703.708,
+        "endMs": 7346.958,
+        "timestampMs": 3703.708,
+        "confidence": null
+      },
+      {
+        "text": "SpecSync ajuda a interpretar as evidências apontar limitações",
+        "startMs": 7268.5,
+        "endMs": 11050.624,
+        "timestampMs": 7268.5,
+        "confidence": null
+      },
+      {
+        "text": "e orientar a próxima pergunta A equipe mantém o controle",
+        "startMs": 10972.208,
+        "endMs": 14719.666,
+        "timestampMs": 10972.208,
+        "confidence": null
+      },
+      {
+        "text": "da decisão Com rastreabilidade para conferir as conclusões",
+        "startMs": 14641.208,
+        "endMs": 18776.416,
+        "timestampMs": 14641.208,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "A",
+        "startMs": 96.291,
+        "endMs": 200.457,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "conversa",
+        "startMs": 212.041,
+        "endMs": 709.707,
+        "timestampMs": 212.041,
+        "confidence": null
+      },
+      {
+        "text": "avança",
+        "startMs": 721.291,
+        "endMs": 1080.082,
+        "timestampMs": 721.291,
+        "confidence": null
+      },
+      {
+        "text": "da",
+        "startMs": 1091.666,
+        "endMs": 1195.832,
+        "timestampMs": 1091.666,
+        "confidence": null
+      },
+      {
+        "text": "ficha",
+        "startMs": 1207.416,
+        "endMs": 1508.332,
+        "timestampMs": 1207.416,
+        "confidence": null
+      },
+      {
+        "text": "técnica",
+        "startMs": 1519.916,
+        "endMs": 1948.166,
+        "timestampMs": 1519.916,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 1959.708,
+        "endMs": 2110.166,
+        "timestampMs": 1959.708,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 2121.75,
+        "endMs": 2133.333,
+        "timestampMs": 2121.75,
+        "confidence": null
+      },
+      {
+        "text": "análise",
+        "startMs": 2144.916,
+        "endMs": 2596.291,
+        "timestampMs": 2144.916,
+        "confidence": null
+      },
+      {
+        "text": "Quais",
+        "startMs": 3391.208,
+        "endMs": 3692.124,
+        "timestampMs": 3391.208,
+        "confidence": null
+      },
+      {
+        "text": "diferenças",
+        "startMs": 3703.708,
+        "endMs": 4236.124,
+        "timestampMs": 3703.708,
+        "confidence": null
+      },
+      {
+        "text": "importam",
+        "startMs": 4247.666,
+        "endMs": 4780.082,
+        "timestampMs": 4247.666,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 4791.666,
+        "endMs": 4976.832,
+        "timestampMs": 4791.666,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 4988.416,
+        "endMs": 5057.874,
+        "timestampMs": 4988.416,
+        "confidence": null
+      },
+      {
+        "text": "uso",
+        "startMs": 5069.458,
+        "endMs": 5277.791,
+        "timestampMs": 5069.458,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 5289.333,
+        "endMs": 5370.333,
+        "timestampMs": 5289.333,
+        "confidence": null
+      },
+      {
+        "text": "estamos",
+        "startMs": 5381.958,
+        "endMs": 5717.624,
+        "timestampMs": 5381.958,
+        "confidence": null
+      },
+      {
+        "text": "avaliando",
+        "startMs": 5729.166,
+        "endMs": 6342.582,
+        "timestampMs": 5729.166,
+        "confidence": null
+      },
+      {
+        "text": "O",
+        "startMs": 7141.208,
+        "endMs": 7256.958,
+        "timestampMs": 7141.208,
+        "confidence": null
+      },
+      {
+        "text": "SpecSync",
+        "startMs": 7268.5,
+        "endMs": 7870.333,
+        "timestampMs": 7268.5,
+        "confidence": null
+      },
+      {
+        "text": "ajuda",
+        "startMs": 7881.958,
+        "endMs": 8206.041,
+        "timestampMs": 7881.958,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 8217.583,
+        "endMs": 8240.749,
+        "timestampMs": 8217.583,
+        "confidence": null
+      },
+      {
+        "text": "interpretar",
+        "startMs": 8252.333,
+        "endMs": 8842.624,
+        "timestampMs": 8252.333,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 8854.166,
+        "endMs": 8888.874,
+        "timestampMs": 8854.166,
+        "confidence": null
+      },
+      {
+        "text": "evidências",
+        "startMs": 8900.458,
+        "endMs": 9594.916,
+        "timestampMs": 8900.458,
+        "confidence": null
+      },
+      {
+        "text": "apontar",
+        "startMs": 9872.666,
+        "endMs": 10347.207,
+        "timestampMs": 9872.666,
+        "confidence": null
+      },
+      {
+        "text": "limitações",
+        "startMs": 10358.791,
+        "endMs": 10960.624,
+        "timestampMs": 10358.791,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 10972.208,
+        "endMs": 11064.791,
+        "timestampMs": 10972.208,
+        "confidence": null
+      },
+      {
+        "text": "orientar",
+        "startMs": 11076.375,
+        "endMs": 11481.458,
+        "timestampMs": 11076.375,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 11493.041,
+        "endMs": 11550.916,
+        "timestampMs": 11493.041,
+        "confidence": null
+      },
+      {
+        "text": "próxima",
+        "startMs": 11562.5,
+        "endMs": 11967.583,
+        "timestampMs": 11562.5,
+        "confidence": null
+      },
+      {
+        "text": "pergunta",
+        "startMs": 11979.166,
+        "endMs": 12465.291,
+        "timestampMs": 11979.166,
+        "confidence": null
+      },
+      {
+        "text": "A",
+        "startMs": 13263.875,
+        "endMs": 13368.041,
+        "timestampMs": 13263.875,
+        "confidence": null
+      },
+      {
+        "text": "equipe",
+        "startMs": 13379.625,
+        "endMs": 13761.583,
+        "timestampMs": 13379.625,
+        "confidence": null
+      },
+      {
+        "text": "mantém",
+        "startMs": 13773.166,
+        "endMs": 14108.832,
+        "timestampMs": 13773.166,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 14120.375,
+        "endMs": 14178.25,
+        "timestampMs": 14120.375,
+        "confidence": null
+      },
+      {
+        "text": "controle",
+        "startMs": 14189.833,
+        "endMs": 14629.666,
+        "timestampMs": 14189.833,
+        "confidence": null
+      },
+      {
+        "text": "da",
+        "startMs": 14641.208,
+        "endMs": 14733.791,
+        "timestampMs": 14641.208,
+        "confidence": null
+      },
+      {
+        "text": "decisão",
+        "startMs": 14745.375,
+        "endMs": 15254.625,
+        "timestampMs": 14745.375,
+        "confidence": null
+      },
+      {
+        "text": "Com",
+        "startMs": 16053.25,
+        "endMs": 16238.416,
+        "timestampMs": 16053.25,
+        "confidence": null
+      },
+      {
+        "text": "rastreabilidade",
+        "startMs": 16250.0,
+        "endMs": 17060.166,
+        "timestampMs": 16250.0,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 17071.75,
+        "endMs": 17256.916,
+        "timestampMs": 17071.75,
+        "confidence": null
+      },
+      {
+        "text": "conferir",
+        "startMs": 17268.5,
+        "endMs": 17696.75,
+        "timestampMs": 17268.5,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 17708.333,
+        "endMs": 17812.499,
+        "timestampMs": 17708.333,
+        "confidence": null
+      },
+      {
+        "text": "conclusões",
+        "startMs": 17824.083,
+        "endMs": 18576.416,
+        "timestampMs": 17824.083,
+        "confidence": null
+      }
+    ]
+  }
+}

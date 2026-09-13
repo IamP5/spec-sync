@@ -1,0 +1,13 @@
+{
+  "model": "gemini-2.5-pro-tts",
+  "direction": "Interprete o texto em português brasileiro como uma locução masculina de uma grande campanha de picapes. Voz de baixo-barítono, MUITO GRAVE, adulta, escura, com bastante ressonância de peito e uma rouquidão natural, seca. Força contida e autoridade. Dicção incisiva e palavras com peso. Comece em intensidade baixa e tensa; abra a projeção na entrada do produto e termine com convicção. Frases cadenciadas, pausas expressivas e finais descendentes. É uma interpretação robusta e visceral. Mantenha a naturalidade e a clareza. Grave a voz isolada, sem música ou efeitos. Fale somente as palavras do roteiro. Pronuncie SpecSync como 'spék-sink', uma palavra. Preserve 'cerca de' e a atribuição ao desafio da Ford.",
+  "text": "Quanto tempo sua equipe precisa para entender um concorrente?\n\nNo desafio apresentado pela Ford, a pesquisa manual leva cerca de uma hora por versão.\n\nCom o SpecSync, você começa pela pergunta. A plataforma busca informações na internet, compara especificações de veículos e mantém as fontes acessíveis.\n\nA equipe confere as evidências e avança para o que importa: a próxima decisão.",
+  "takes": [
+    {
+      "id": "d-voz-robusta",
+      "voice": "Orus",
+      "label": "Voz robusta — autoridade e peso",
+      "direction": "Voz original. Tessitura grave e encorpada. Dê peso especial a 'uma hora por versão', 'SpecSync' e 'a próxima decisão'. Respire antes das ideias principais. Use ritmo deliberado, aproximadamente 125 palavras por minuto. Preserve o grave ao projetar a voz. Não acrescente palavras. Não comprima as pausas para caber em uma duração fixa."
+    }
+  ]
+}

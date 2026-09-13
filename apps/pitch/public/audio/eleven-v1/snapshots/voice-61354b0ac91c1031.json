@@ -1,0 +1,2429 @@
+[
+  {
+    "id": "01-challenge",
+    "file": "audio/01-challenge.mp3",
+    "duration": 12.96,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 0,
+    "captions": [
+      {
+        "text": "Para entender a concorrência, a Ford reúne informações espalhadas",
+        "startMs": 100.0,
+        "endMs": 3840.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "por sites, fichas técnicas e reportagens.",
+        "startMs": 3762.5,
+        "endMs": 6690.0,
+        "timestampMs": 3762.5,
+        "confidence": null
+      },
+      {
+        "text": "No desafio apresentado, a pesquisa manual leva cerca de uma",
+        "startMs": 7462.5,
+        "endMs": 11252.5,
+        "timestampMs": 7462.5,
+        "confidence": null
+      },
+      {
+        "text": "hora por versão.",
+        "startMs": 11175.0,
+        "endMs": 12287.5,
+        "timestampMs": 11175.0,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "Para",
+        "startMs": 100.0,
+        "endMs": 287.5,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "entender",
+        "startMs": 300.0,
+        "endMs": 725.0,
+        "timestampMs": 300.0,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 737.5,
+        "endMs": 787.5,
+        "timestampMs": 737.5,
+        "confidence": null
+      },
+      {
+        "text": "concorrência",
+        "startMs": 800.0,
+        "endMs": 1475.0,
+        "timestampMs": 800.0,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 1750.0,
+        "endMs": 1837.5,
+        "timestampMs": 1750.0,
+        "confidence": null
+      },
+      {
+        "text": "Ford",
+        "startMs": 1850.0,
+        "endMs": 2212.5,
+        "timestampMs": 1850.0,
+        "confidence": null
+      },
+      {
+        "text": "reúne",
+        "startMs": 2225.0,
+        "endMs": 2525.0,
+        "timestampMs": 2225.0,
+        "confidence": null
+      },
+      {
+        "text": "informações",
+        "startMs": 2537.5,
+        "endMs": 3125.0,
+        "timestampMs": 2537.5,
+        "confidence": null
+      },
+      {
+        "text": "espalhadas",
+        "startMs": 3137.5,
+        "endMs": 3750.0,
+        "timestampMs": 3137.5,
+        "confidence": null
+      },
+      {
+        "text": "por",
+        "startMs": 3762.5,
+        "endMs": 3912.5,
+        "timestampMs": 3762.5,
+        "confidence": null
+      },
+      {
+        "text": "sites",
+        "startMs": 3925.0,
+        "endMs": 4400.0,
+        "timestampMs": 3925.0,
+        "confidence": null
+      },
+      {
+        "text": "fichas",
+        "startMs": 4712.5,
+        "endMs": 5100.0,
+        "timestampMs": 4712.5,
+        "confidence": null
+      },
+      {
+        "text": "técnicas",
+        "startMs": 5112.5,
+        "endMs": 5587.5,
+        "timestampMs": 5112.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 5600.0,
+        "endMs": 5700.0,
+        "timestampMs": 5600.0,
+        "confidence": null
+      },
+      {
+        "text": "reportagens",
+        "startMs": 5712.5,
+        "endMs": 6600.0,
+        "timestampMs": 5712.5,
+        "confidence": null
+      },
+      {
+        "text": "No",
+        "startMs": 7462.5,
+        "endMs": 7625.0,
+        "timestampMs": 7462.5,
+        "confidence": null
+      },
+      {
+        "text": "desafio",
+        "startMs": 7637.5,
+        "endMs": 8087.5,
+        "timestampMs": 7637.5,
+        "confidence": null
+      },
+      {
+        "text": "apresentado",
+        "startMs": 8100.0,
+        "endMs": 8800.0,
+        "timestampMs": 8100.0,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 9075.0,
+        "endMs": 9150.0,
+        "timestampMs": 9075.0,
+        "confidence": null
+      },
+      {
+        "text": "pesquisa",
+        "startMs": 9162.5,
+        "endMs": 9637.5,
+        "timestampMs": 9162.5,
+        "confidence": null
+      },
+      {
+        "text": "manual",
+        "startMs": 9650.0,
+        "endMs": 10100.0,
+        "timestampMs": 9650.0,
+        "confidence": null
+      },
+      {
+        "text": "leva",
+        "startMs": 10112.5,
+        "endMs": 10375.0,
+        "timestampMs": 10112.5,
+        "confidence": null
+      },
+      {
+        "text": "cerca",
+        "startMs": 10387.5,
+        "endMs": 10775.0,
+        "timestampMs": 10387.5,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 10787.5,
+        "endMs": 10912.5,
+        "timestampMs": 10787.5,
+        "confidence": null
+      },
+      {
+        "text": "uma",
+        "startMs": 10925.0,
+        "endMs": 11162.5,
+        "timestampMs": 10925.0,
+        "confidence": null
+      },
+      {
+        "text": "hora",
+        "startMs": 11175.0,
+        "endMs": 11462.5,
+        "timestampMs": 11175.0,
+        "confidence": null
+      },
+      {
+        "text": "por",
+        "startMs": 11475.0,
+        "endMs": 11625.0,
+        "timestampMs": 11475.0,
+        "confidence": null
+      },
+      {
+        "text": "versão",
+        "startMs": 11637.5,
+        "endMs": 12087.5,
+        "timestampMs": 11637.5,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "02-question",
+    "file": "audio/02-question.mp3",
+    "duration": 13.08,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 0,
+    "captions": [
+      {
+        "text": "Com o SpecSync, a equipe começa pela pergunta.",
+        "startMs": 100.0,
+        "endMs": 3227.5,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "Define o veículo, a versão e as especificações que importam.",
+        "startMs": 4000.0,
+        "endMs": 7702.5,
+        "timestampMs": 4000.0,
+        "confidence": null
+      },
+      {
+        "text": "Vamos usar a Ranger Raptor, o caso proposto pela Ford.",
+        "startMs": 8475.0,
+        "endMs": 12400.0,
+        "timestampMs": 8475.0,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "Com",
+        "startMs": 100.0,
+        "endMs": 275.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 287.5,
+        "endMs": 337.5,
+        "timestampMs": 287.5,
+        "confidence": null
+      },
+      {
+        "text": "SpecSync",
+        "startMs": 350.0,
+        "endMs": 1062.5,
+        "timestampMs": 350.0,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 1362.5,
+        "endMs": 1450.0,
+        "timestampMs": 1362.5,
+        "confidence": null
+      },
+      {
+        "text": "equipe",
+        "startMs": 1462.5,
+        "endMs": 1850.0,
+        "timestampMs": 1462.5,
+        "confidence": null
+      },
+      {
+        "text": "começa",
+        "startMs": 1862.5,
+        "endMs": 2325.0,
+        "timestampMs": 1862.5,
+        "confidence": null
+      },
+      {
+        "text": "pela",
+        "startMs": 2337.5,
+        "endMs": 2550.0,
+        "timestampMs": 2337.5,
+        "confidence": null
+      },
+      {
+        "text": "pergunta",
+        "startMs": 2562.5,
+        "endMs": 3137.5,
+        "timestampMs": 2562.5,
+        "confidence": null
+      },
+      {
+        "text": "Define",
+        "startMs": 4000.0,
+        "endMs": 4437.5,
+        "timestampMs": 4000.0,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 4450.0,
+        "endMs": 4475.0,
+        "timestampMs": 4450.0,
+        "confidence": null
+      },
+      {
+        "text": "veículo",
+        "startMs": 4487.5,
+        "endMs": 4987.5,
+        "timestampMs": 4487.5,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 5187.5,
+        "endMs": 5275.0,
+        "timestampMs": 5187.5,
+        "confidence": null
+      },
+      {
+        "text": "versão",
+        "startMs": 5287.5,
+        "endMs": 5812.5,
+        "timestampMs": 5287.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 5825.0,
+        "endMs": 5875.0,
+        "timestampMs": 5825.0,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 5887.5,
+        "endMs": 5950.0,
+        "timestampMs": 5887.5,
+        "confidence": null
+      },
+      {
+        "text": "especificações",
+        "startMs": 5962.5,
+        "endMs": 6925.0,
+        "timestampMs": 5962.5,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 6937.5,
+        "endMs": 7025.0,
+        "timestampMs": 6937.5,
+        "confidence": null
+      },
+      {
+        "text": "importam",
+        "startMs": 7037.5,
+        "endMs": 7612.5,
+        "timestampMs": 7037.5,
+        "confidence": null
+      },
+      {
+        "text": "Vamos",
+        "startMs": 8475.0,
+        "endMs": 8800.0,
+        "timestampMs": 8475.0,
+        "confidence": null
+      },
+      {
+        "text": "usar",
+        "startMs": 8812.5,
+        "endMs": 9150.0,
+        "timestampMs": 8812.5,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 9162.5,
+        "endMs": 9212.5,
+        "timestampMs": 9162.5,
+        "confidence": null
+      },
+      {
+        "text": "Ranger",
+        "startMs": 9225.0,
+        "endMs": 9550.0,
+        "timestampMs": 9225.0,
+        "confidence": null
+      },
+      {
+        "text": "Raptor",
+        "startMs": 9562.5,
+        "endMs": 10075.0,
+        "timestampMs": 9562.5,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 10437.5,
+        "endMs": 10550.0,
+        "timestampMs": 10437.5,
+        "confidence": null
+      },
+      {
+        "text": "caso",
+        "startMs": 10562.5,
+        "endMs": 10887.5,
+        "timestampMs": 10562.5,
+        "confidence": null
+      },
+      {
+        "text": "proposto",
+        "startMs": 10900.0,
+        "endMs": 11462.5,
+        "timestampMs": 10900.0,
+        "confidence": null
+      },
+      {
+        "text": "pela",
+        "startMs": 11475.0,
+        "endMs": 11712.5,
+        "timestampMs": 11475.0,
+        "confidence": null
+      },
+      {
+        "text": "Ford",
+        "startMs": 11725.0,
+        "endMs": 12200.0,
+        "timestampMs": 11725.0,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "03-research",
+    "file": "audio/03-research.mp3",
+    "duration": 20.616,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 0,
+    "captions": [
+      {
+        "text": "A plataforma pesquisa fontes na internet, reúne as informações",
+        "startMs": 100.0,
+        "endMs": 4077.5,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "encontradas e apresenta os resultados para revisão.",
+        "startMs": 4000.0,
+        "endMs": 6802.5,
+        "timestampMs": 4000.0,
+        "confidence": null
+      },
+      {
+        "text": "Cada informação pode ser examinada com sua evidência.",
+        "startMs": 7575.0,
+        "endMs": 10690.0,
+        "timestampMs": 7575.0,
+        "confidence": null
+      },
+      {
+        "text": "A equipe confirma o que será incorporado ao catálogo.",
+        "startMs": 11462.5,
+        "endMs": 14365.0,
+        "timestampMs": 11462.5,
+        "confidence": null
+      },
+      {
+        "text": "Assim, pesquisar um novo veículo também enriquece a base para",
+        "startMs": 15137.5,
+        "endMs": 18827.5,
+        "timestampMs": 15137.5,
+        "confidence": null
+      },
+      {
+        "text": "outras análises.",
+        "startMs": 18750.0,
+        "endMs": 19937.5,
+        "timestampMs": 18750.0,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "A",
+        "startMs": 100.0,
+        "endMs": 225.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "plataforma",
+        "startMs": 237.5,
+        "endMs": 987.5,
+        "timestampMs": 237.5,
+        "confidence": null
+      },
+      {
+        "text": "pesquisa",
+        "startMs": 1000.0,
+        "endMs": 1487.5,
+        "timestampMs": 1000.0,
+        "confidence": null
+      },
+      {
+        "text": "fontes",
+        "startMs": 1500.0,
+        "endMs": 1925.0,
+        "timestampMs": 1500.0,
+        "confidence": null
+      },
+      {
+        "text": "na",
+        "startMs": 1937.5,
+        "endMs": 2000.0,
+        "timestampMs": 1937.5,
+        "confidence": null
+      },
+      {
+        "text": "internet",
+        "startMs": 2012.5,
+        "endMs": 2637.5,
+        "timestampMs": 2012.5,
+        "confidence": null
+      },
+      {
+        "text": "reúne",
+        "startMs": 2900.0,
+        "endMs": 3212.5,
+        "timestampMs": 2900.0,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 3225.0,
+        "endMs": 3262.5,
+        "timestampMs": 3225.0,
+        "confidence": null
+      },
+      {
+        "text": "informações",
+        "startMs": 3275.0,
+        "endMs": 3987.5,
+        "timestampMs": 3275.0,
+        "confidence": null
+      },
+      {
+        "text": "encontradas",
+        "startMs": 4000.0,
+        "endMs": 4650.0,
+        "timestampMs": 4000.0,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 4662.5,
+        "endMs": 4750.0,
+        "timestampMs": 4662.5,
+        "confidence": null
+      },
+      {
+        "text": "apresenta",
+        "startMs": 4762.5,
+        "endMs": 5237.5,
+        "timestampMs": 4762.5,
+        "confidence": null
+      },
+      {
+        "text": "os",
+        "startMs": 5250.0,
+        "endMs": 5312.5,
+        "timestampMs": 5250.0,
+        "confidence": null
+      },
+      {
+        "text": "resultados",
+        "startMs": 5325.0,
+        "endMs": 5987.5,
+        "timestampMs": 5325.0,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 6000.0,
+        "endMs": 6187.5,
+        "timestampMs": 6000.0,
+        "confidence": null
+      },
+      {
+        "text": "revisão",
+        "startMs": 6200.0,
+        "endMs": 6712.5,
+        "timestampMs": 6200.0,
+        "confidence": null
+      },
+      {
+        "text": "Cada",
+        "startMs": 7575.0,
+        "endMs": 7787.5,
+        "timestampMs": 7575.0,
+        "confidence": null
+      },
+      {
+        "text": "informação",
+        "startMs": 7800.0,
+        "endMs": 8487.5,
+        "timestampMs": 7800.0,
+        "confidence": null
+      },
+      {
+        "text": "pode",
+        "startMs": 8500.0,
+        "endMs": 8725.0,
+        "timestampMs": 8500.0,
+        "confidence": null
+      },
+      {
+        "text": "ser",
+        "startMs": 8737.5,
+        "endMs": 8900.0,
+        "timestampMs": 8737.5,
+        "confidence": null
+      },
+      {
+        "text": "examinada",
+        "startMs": 8912.5,
+        "endMs": 9512.5,
+        "timestampMs": 8912.5,
+        "confidence": null
+      },
+      {
+        "text": "com",
+        "startMs": 9525.0,
+        "endMs": 9700.0,
+        "timestampMs": 9525.0,
+        "confidence": null
+      },
+      {
+        "text": "sua",
+        "startMs": 9712.5,
+        "endMs": 9975.0,
+        "timestampMs": 9712.5,
+        "confidence": null
+      },
+      {
+        "text": "evidência",
+        "startMs": 9987.5,
+        "endMs": 10600.0,
+        "timestampMs": 9987.5,
+        "confidence": null
+      },
+      {
+        "text": "A",
+        "startMs": 11462.5,
+        "endMs": 11587.5,
+        "timestampMs": 11462.5,
+        "confidence": null
+      },
+      {
+        "text": "equipe",
+        "startMs": 11600.0,
+        "endMs": 12000.0,
+        "timestampMs": 11600.0,
+        "confidence": null
+      },
+      {
+        "text": "confirma",
+        "startMs": 12012.5,
+        "endMs": 12500.0,
+        "timestampMs": 12012.5,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 12512.5,
+        "endMs": 12537.5,
+        "timestampMs": 12512.5,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 12550.0,
+        "endMs": 12650.0,
+        "timestampMs": 12550.0,
+        "confidence": null
+      },
+      {
+        "text": "será",
+        "startMs": 12662.5,
+        "endMs": 12875.0,
+        "timestampMs": 12662.5,
+        "confidence": null
+      },
+      {
+        "text": "incorporado",
+        "startMs": 12887.5,
+        "endMs": 13537.5,
+        "timestampMs": 12887.5,
+        "confidence": null
+      },
+      {
+        "text": "ao",
+        "startMs": 13550.0,
+        "endMs": 13625.0,
+        "timestampMs": 13550.0,
+        "confidence": null
+      },
+      {
+        "text": "catálogo",
+        "startMs": 13637.5,
+        "endMs": 14275.0,
+        "timestampMs": 13637.5,
+        "confidence": null
+      },
+      {
+        "text": "Assim",
+        "startMs": 15137.5,
+        "endMs": 15612.5,
+        "timestampMs": 15137.5,
+        "confidence": null
+      },
+      {
+        "text": "pesquisar",
+        "startMs": 15800.0,
+        "endMs": 16337.5,
+        "timestampMs": 15800.0,
+        "confidence": null
+      },
+      {
+        "text": "um",
+        "startMs": 16350.0,
+        "endMs": 16450.0,
+        "timestampMs": 16350.0,
+        "confidence": null
+      },
+      {
+        "text": "novo",
+        "startMs": 16462.5,
+        "endMs": 16762.5,
+        "timestampMs": 16462.5,
+        "confidence": null
+      },
+      {
+        "text": "veículo",
+        "startMs": 16775.0,
+        "endMs": 17262.5,
+        "timestampMs": 16775.0,
+        "confidence": null
+      },
+      {
+        "text": "também",
+        "startMs": 17275.0,
+        "endMs": 17600.0,
+        "timestampMs": 17275.0,
+        "confidence": null
+      },
+      {
+        "text": "enriquece",
+        "startMs": 17612.5,
+        "endMs": 18050.0,
+        "timestampMs": 17612.5,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 18062.5,
+        "endMs": 18112.5,
+        "timestampMs": 18062.5,
+        "confidence": null
+      },
+      {
+        "text": "base",
+        "startMs": 18125.0,
+        "endMs": 18525.0,
+        "timestampMs": 18125.0,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 18537.5,
+        "endMs": 18737.5,
+        "timestampMs": 18537.5,
+        "confidence": null
+      },
+      {
+        "text": "outras",
+        "startMs": 18750.0,
+        "endMs": 19012.5,
+        "timestampMs": 18750.0,
+        "confidence": null
+      },
+      {
+        "text": "análises",
+        "startMs": 19025.0,
+        "endMs": 19737.5,
+        "timestampMs": 19025.0,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "04-ontology",
+    "file": "audio/04-ontology.mp3",
+    "duration": 18.264,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 8,
+    "captions": [
+      {
+        "text": "Por trás dessa experiência, uma ontologia relaciona veículos,",
+        "startMs": 96.291,
+        "endMs": 3496.499,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "especificações e termos dos fabricantes. Os dados",
+        "startMs": 3637.958,
+        "endMs": 7277.499,
+        "timestampMs": 3637.958,
+        "confidence": null
+      },
+      {
+        "text": "ganham um significado comum, preservando unidades e condições.",
+        "startMs": 7199.083,
+        "endMs": 10981.208,
+        "timestampMs": 7199.083,
+        "confidence": null
+      },
+      {
+        "text": "Essa base pode ser alinhada ao vocabulário da Ford.",
+        "startMs": 11689.833,
+        "endMs": 14499.708,
+        "timestampMs": 11689.833,
+        "confidence": null
+      },
+      {
+        "text": "Conhecimento compartilhado pelos agentes.",
+        "startMs": 15208.333,
+        "endMs": 17642.166,
+        "timestampMs": 15208.333,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "Por",
+        "startMs": 96.291,
+        "endMs": 246.749,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "trás",
+        "startMs": 258.333,
+        "endMs": 512.958,
+        "timestampMs": 258.333,
+        "confidence": null
+      },
+      {
+        "text": "dessa",
+        "startMs": 524.541,
+        "endMs": 709.707,
+        "timestampMs": 524.541,
+        "confidence": null
+      },
+      {
+        "text": "experiência",
+        "startMs": 721.291,
+        "endMs": 1311.582,
+        "timestampMs": 721.291,
+        "confidence": null
+      },
+      {
+        "text": "uma",
+        "startMs": 1624.083,
+        "endMs": 1762.958,
+        "timestampMs": 1624.083,
+        "confidence": null
+      },
+      {
+        "text": "ontologia",
+        "startMs": 1774.541,
+        "endMs": 2318.541,
+        "timestampMs": 1774.541,
+        "confidence": null
+      },
+      {
+        "text": "relaciona",
+        "startMs": 2330.083,
+        "endMs": 2862.499,
+        "timestampMs": 2330.083,
+        "confidence": null
+      },
+      {
+        "text": "veículos",
+        "startMs": 2874.083,
+        "endMs": 3406.499,
+        "timestampMs": 2874.083,
+        "confidence": null
+      },
+      {
+        "text": "especificações",
+        "startMs": 3637.958,
+        "endMs": 4436.583,
+        "timestampMs": 3637.958,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 4448.166,
+        "endMs": 4587.041,
+        "timestampMs": 4448.166,
+        "confidence": null
+      },
+      {
+        "text": "termos",
+        "startMs": 4598.625,
+        "endMs": 4899.541,
+        "timestampMs": 4598.625,
+        "confidence": null
+      },
+      {
+        "text": "dos",
+        "startMs": 4911.125,
+        "endMs": 5084.75,
+        "timestampMs": 4911.125,
+        "confidence": null
+      },
+      {
+        "text": "fabricantes",
+        "startMs": 5096.291,
+        "endMs": 5848.624,
+        "timestampMs": 5096.291,
+        "confidence": null
+      },
+      {
+        "text": "Os",
+        "startMs": 6643.5,
+        "endMs": 6793.958,
+        "timestampMs": 6643.5,
+        "confidence": null
+      },
+      {
+        "text": "dados",
+        "startMs": 6805.541,
+        "endMs": 7187.499,
+        "timestampMs": 6805.541,
+        "confidence": null
+      },
+      {
+        "text": "ganham",
+        "startMs": 7199.083,
+        "endMs": 7557.874,
+        "timestampMs": 7199.083,
+        "confidence": null
+      },
+      {
+        "text": "um",
+        "startMs": 7569.458,
+        "endMs": 7638.916,
+        "timestampMs": 7569.458,
+        "confidence": null
+      },
+      {
+        "text": "significado",
+        "startMs": 7650.458,
+        "endMs": 8321.749,
+        "timestampMs": 7650.458,
+        "confidence": null
+      },
+      {
+        "text": "comum",
+        "startMs": 8333.333,
+        "endMs": 8703.708,
+        "timestampMs": 8333.333,
+        "confidence": null
+      },
+      {
+        "text": "preservando",
+        "startMs": 8981.5,
+        "endMs": 9537.041,
+        "timestampMs": 8981.5,
+        "confidence": null
+      },
+      {
+        "text": "unidades",
+        "startMs": 9548.625,
+        "endMs": 9988.458,
+        "timestampMs": 9548.625,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 10000.0,
+        "endMs": 10115.75,
+        "timestampMs": 10000.0,
+        "confidence": null
+      },
+      {
+        "text": "condições",
+        "startMs": 10127.333,
+        "endMs": 10891.208,
+        "timestampMs": 10127.333,
+        "confidence": null
+      },
+      {
+        "text": "Essa",
+        "startMs": 11689.833,
+        "endMs": 11979.166,
+        "timestampMs": 11689.833,
+        "confidence": null
+      },
+      {
+        "text": "base",
+        "startMs": 11990.75,
+        "endMs": 12326.416,
+        "timestampMs": 11990.75,
+        "confidence": null
+      },
+      {
+        "text": "pode",
+        "startMs": 12337.958,
+        "endMs": 12534.708,
+        "timestampMs": 12337.958,
+        "confidence": null
+      },
+      {
+        "text": "ser",
+        "startMs": 12546.291,
+        "endMs": 12685.166,
+        "timestampMs": 12546.291,
+        "confidence": null
+      },
+      {
+        "text": "alinhada",
+        "startMs": 12696.75,
+        "endMs": 13125.0,
+        "timestampMs": 12696.75,
+        "confidence": null
+      },
+      {
+        "text": "ao",
+        "startMs": 13136.583,
+        "endMs": 13206.041,
+        "timestampMs": 13136.583,
+        "confidence": null
+      },
+      {
+        "text": "vocabulário",
+        "startMs": 13217.583,
+        "endMs": 13819.416,
+        "timestampMs": 13217.583,
+        "confidence": null
+      },
+      {
+        "text": "da",
+        "startMs": 13831.0,
+        "endMs": 13946.75,
+        "timestampMs": 13831.0,
+        "confidence": null
+      },
+      {
+        "text": "Ford",
+        "startMs": 13958.333,
+        "endMs": 14409.708,
+        "timestampMs": 13958.333,
+        "confidence": null
+      },
+      {
+        "text": "Conhecimento",
+        "startMs": 15208.333,
+        "endMs": 15902.791,
+        "timestampMs": 15208.333,
+        "confidence": null
+      },
+      {
+        "text": "compartilhado",
+        "startMs": 15914.333,
+        "endMs": 16585.624,
+        "timestampMs": 15914.333,
+        "confidence": null
+      },
+      {
+        "text": "pelos",
+        "startMs": 16597.208,
+        "endMs": 16782.374,
+        "timestampMs": 16597.208,
+        "confidence": null
+      },
+      {
+        "text": "agentes",
+        "startMs": 16794.0,
+        "endMs": 17442.166,
+        "timestampMs": 16794.0,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "05-comparison",
+    "file": "audio/05-comparison.mp3",
+    "duration": 21.288,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 0,
+    "captions": [
+      {
+        "text": "Agora, as versões podem ser comparadas pelos atributos escolhidos.",
+        "startMs": 100.0,
+        "endMs": 4315.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "As diferenças ficam em destaque. As fontes continuam",
+        "startMs": 5087.5,
+        "endMs": 9177.5,
+        "timestampMs": 5087.5,
+        "confidence": null
+      },
+      {
+        "text": "acessíveis. E o que não foi informado permanece",
+        "startMs": 9100.0,
+        "endMs": 12827.5,
+        "timestampMs": 9100.0,
+        "confidence": null
+      },
+      {
+        "text": "explícito. Cada comparação conserva seu contexto.",
+        "startMs": 12750.0,
+        "endMs": 16665.0,
+        "timestampMs": 12750.0,
+        "confidence": null
+      },
+      {
+        "text": "A análise evolui conforme chegam novas evidências.",
+        "startMs": 17437.5,
+        "endMs": 20612.5,
+        "timestampMs": 17437.5,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "Agora",
+        "startMs": 100.0,
+        "endMs": 600.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 862.5,
+        "endMs": 1025.0,
+        "timestampMs": 862.5,
+        "confidence": null
+      },
+      {
+        "text": "versões",
+        "startMs": 1037.5,
+        "endMs": 1512.5,
+        "timestampMs": 1037.5,
+        "confidence": null
+      },
+      {
+        "text": "podem",
+        "startMs": 1525.0,
+        "endMs": 1762.5,
+        "timestampMs": 1525.0,
+        "confidence": null
+      },
+      {
+        "text": "ser",
+        "startMs": 1775.0,
+        "endMs": 1925.0,
+        "timestampMs": 1775.0,
+        "confidence": null
+      },
+      {
+        "text": "comparadas",
+        "startMs": 1937.5,
+        "endMs": 2587.5,
+        "timestampMs": 1937.5,
+        "confidence": null
+      },
+      {
+        "text": "pelos",
+        "startMs": 2600.0,
+        "endMs": 2787.5,
+        "timestampMs": 2600.0,
+        "confidence": null
+      },
+      {
+        "text": "atributos",
+        "startMs": 2800.0,
+        "endMs": 3412.5,
+        "timestampMs": 2800.0,
+        "confidence": null
+      },
+      {
+        "text": "escolhidos",
+        "startMs": 3425.0,
+        "endMs": 4225.0,
+        "timestampMs": 3425.0,
+        "confidence": null
+      },
+      {
+        "text": "As",
+        "startMs": 5087.5,
+        "endMs": 5262.5,
+        "timestampMs": 5087.5,
+        "confidence": null
+      },
+      {
+        "text": "diferenças",
+        "startMs": 5275.0,
+        "endMs": 5975.0,
+        "timestampMs": 5275.0,
+        "confidence": null
+      },
+      {
+        "text": "ficam",
+        "startMs": 5987.5,
+        "endMs": 6300.0,
+        "timestampMs": 5987.5,
+        "confidence": null
+      },
+      {
+        "text": "em",
+        "startMs": 6312.5,
+        "endMs": 6375.0,
+        "timestampMs": 6312.5,
+        "confidence": null
+      },
+      {
+        "text": "destaque",
+        "startMs": 6387.5,
+        "endMs": 7012.5,
+        "timestampMs": 6387.5,
+        "confidence": null
+      },
+      {
+        "text": "As",
+        "startMs": 7875.0,
+        "endMs": 8087.5,
+        "timestampMs": 7875.0,
+        "confidence": null
+      },
+      {
+        "text": "fontes",
+        "startMs": 8100.0,
+        "endMs": 8537.5,
+        "timestampMs": 8100.0,
+        "confidence": null
+      },
+      {
+        "text": "continuam",
+        "startMs": 8550.0,
+        "endMs": 9087.5,
+        "timestampMs": 8550.0,
+        "confidence": null
+      },
+      {
+        "text": "acessíveis",
+        "startMs": 9100.0,
+        "endMs": 9925.0,
+        "timestampMs": 9100.0,
+        "confidence": null
+      },
+      {
+        "text": "E",
+        "startMs": 10787.5,
+        "endMs": 10912.5,
+        "timestampMs": 10787.5,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 10925.0,
+        "endMs": 10975.0,
+        "timestampMs": 10925.0,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 10987.5,
+        "endMs": 11112.5,
+        "timestampMs": 10987.5,
+        "confidence": null
+      },
+      {
+        "text": "não",
+        "startMs": 11125.0,
+        "endMs": 11325.0,
+        "timestampMs": 11125.0,
+        "confidence": null
+      },
+      {
+        "text": "foi",
+        "startMs": 11337.5,
+        "endMs": 11487.5,
+        "timestampMs": 11337.5,
+        "confidence": null
+      },
+      {
+        "text": "informado",
+        "startMs": 11500.0,
+        "endMs": 12125.0,
+        "timestampMs": 11500.0,
+        "confidence": null
+      },
+      {
+        "text": "permanece",
+        "startMs": 12137.5,
+        "endMs": 12737.5,
+        "timestampMs": 12137.5,
+        "confidence": null
+      },
+      {
+        "text": "explícito",
+        "startMs": 12750.0,
+        "endMs": 13400.0,
+        "timestampMs": 12750.0,
+        "confidence": null
+      },
+      {
+        "text": "Cada",
+        "startMs": 14262.5,
+        "endMs": 14537.5,
+        "timestampMs": 14262.5,
+        "confidence": null
+      },
+      {
+        "text": "comparação",
+        "startMs": 14550.0,
+        "endMs": 15175.0,
+        "timestampMs": 14550.0,
+        "confidence": null
+      },
+      {
+        "text": "conserva",
+        "startMs": 15187.5,
+        "endMs": 15750.0,
+        "timestampMs": 15187.5,
+        "confidence": null
+      },
+      {
+        "text": "seu",
+        "startMs": 15762.5,
+        "endMs": 15937.5,
+        "timestampMs": 15762.5,
+        "confidence": null
+      },
+      {
+        "text": "contexto",
+        "startMs": 15950.0,
+        "endMs": 16575.0,
+        "timestampMs": 15950.0,
+        "confidence": null
+      },
+      {
+        "text": "A",
+        "startMs": 17437.5,
+        "endMs": 17575.0,
+        "timestampMs": 17437.5,
+        "confidence": null
+      },
+      {
+        "text": "análise",
+        "startMs": 17587.5,
+        "endMs": 18000.0,
+        "timestampMs": 17587.5,
+        "confidence": null
+      },
+      {
+        "text": "evolui",
+        "startMs": 18012.5,
+        "endMs": 18425.0,
+        "timestampMs": 18012.5,
+        "confidence": null
+      },
+      {
+        "text": "conforme",
+        "startMs": 18437.5,
+        "endMs": 18937.5,
+        "timestampMs": 18437.5,
+        "confidence": null
+      },
+      {
+        "text": "chegam",
+        "startMs": 18950.0,
+        "endMs": 19287.5,
+        "timestampMs": 18950.0,
+        "confidence": null
+      },
+      {
+        "text": "novas",
+        "startMs": 19300.0,
+        "endMs": 19587.5,
+        "timestampMs": 19300.0,
+        "confidence": null
+      },
+      {
+        "text": "evidências",
+        "startMs": 19600.0,
+        "endMs": 20412.5,
+        "timestampMs": 19600.0,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "06-analysis",
+    "file": "audio/06-analysis.mp3",
+    "duration": 19.392,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 8,
+    "captions": [
+      {
+        "text": "A conversa avança da ficha técnica para a análise. Quais",
+        "startMs": 96.291,
+        "endMs": 3782.124,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "diferenças importam para o uso que estamos avaliando? O",
+        "startMs": 3703.708,
+        "endMs": 7346.958,
+        "timestampMs": 3703.708,
+        "confidence": null
+      },
+      {
+        "text": "SpecSync ajuda a interpretar as evidências, apontar limitações",
+        "startMs": 7268.5,
+        "endMs": 11050.624,
+        "timestampMs": 7268.5,
+        "confidence": null
+      },
+      {
+        "text": "e orientar a próxima pergunta. A equipe mantém o controle",
+        "startMs": 10972.208,
+        "endMs": 14719.666,
+        "timestampMs": 10972.208,
+        "confidence": null
+      },
+      {
+        "text": "da decisão. Com rastreabilidade para conferir as conclusões.",
+        "startMs": 14641.208,
+        "endMs": 18776.416,
+        "timestampMs": 14641.208,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "A",
+        "startMs": 96.291,
+        "endMs": 200.457,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "conversa",
+        "startMs": 212.041,
+        "endMs": 709.707,
+        "timestampMs": 212.041,
+        "confidence": null
+      },
+      {
+        "text": "avança",
+        "startMs": 721.291,
+        "endMs": 1080.082,
+        "timestampMs": 721.291,
+        "confidence": null
+      },
+      {
+        "text": "da",
+        "startMs": 1091.666,
+        "endMs": 1195.832,
+        "timestampMs": 1091.666,
+        "confidence": null
+      },
+      {
+        "text": "ficha",
+        "startMs": 1207.416,
+        "endMs": 1508.332,
+        "timestampMs": 1207.416,
+        "confidence": null
+      },
+      {
+        "text": "técnica",
+        "startMs": 1519.916,
+        "endMs": 1948.166,
+        "timestampMs": 1519.916,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 1959.708,
+        "endMs": 2110.166,
+        "timestampMs": 1959.708,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 2121.75,
+        "endMs": 2133.333,
+        "timestampMs": 2121.75,
+        "confidence": null
+      },
+      {
+        "text": "análise",
+        "startMs": 2144.916,
+        "endMs": 2596.291,
+        "timestampMs": 2144.916,
+        "confidence": null
+      },
+      {
+        "text": "Quais",
+        "startMs": 3391.208,
+        "endMs": 3692.124,
+        "timestampMs": 3391.208,
+        "confidence": null
+      },
+      {
+        "text": "diferenças",
+        "startMs": 3703.708,
+        "endMs": 4236.124,
+        "timestampMs": 3703.708,
+        "confidence": null
+      },
+      {
+        "text": "importam",
+        "startMs": 4247.666,
+        "endMs": 4780.082,
+        "timestampMs": 4247.666,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 4791.666,
+        "endMs": 4976.832,
+        "timestampMs": 4791.666,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 4988.416,
+        "endMs": 5057.874,
+        "timestampMs": 4988.416,
+        "confidence": null
+      },
+      {
+        "text": "uso",
+        "startMs": 5069.458,
+        "endMs": 5277.791,
+        "timestampMs": 5069.458,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 5289.333,
+        "endMs": 5370.333,
+        "timestampMs": 5289.333,
+        "confidence": null
+      },
+      {
+        "text": "estamos",
+        "startMs": 5381.958,
+        "endMs": 5717.624,
+        "timestampMs": 5381.958,
+        "confidence": null
+      },
+      {
+        "text": "avaliando",
+        "startMs": 5729.166,
+        "endMs": 6342.582,
+        "timestampMs": 5729.166,
+        "confidence": null
+      },
+      {
+        "text": "O",
+        "startMs": 7141.208,
+        "endMs": 7256.958,
+        "timestampMs": 7141.208,
+        "confidence": null
+      },
+      {
+        "text": "SpecSync",
+        "startMs": 7268.5,
+        "endMs": 7870.333,
+        "timestampMs": 7268.5,
+        "confidence": null
+      },
+      {
+        "text": "ajuda",
+        "startMs": 7881.958,
+        "endMs": 8206.041,
+        "timestampMs": 7881.958,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 8217.583,
+        "endMs": 8240.749,
+        "timestampMs": 8217.583,
+        "confidence": null
+      },
+      {
+        "text": "interpretar",
+        "startMs": 8252.333,
+        "endMs": 8842.624,
+        "timestampMs": 8252.333,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 8854.166,
+        "endMs": 8888.874,
+        "timestampMs": 8854.166,
+        "confidence": null
+      },
+      {
+        "text": "evidências",
+        "startMs": 8900.458,
+        "endMs": 9594.916,
+        "timestampMs": 8900.458,
+        "confidence": null
+      },
+      {
+        "text": "apontar",
+        "startMs": 9872.666,
+        "endMs": 10347.207,
+        "timestampMs": 9872.666,
+        "confidence": null
+      },
+      {
+        "text": "limitações",
+        "startMs": 10358.791,
+        "endMs": 10960.624,
+        "timestampMs": 10358.791,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 10972.208,
+        "endMs": 11064.791,
+        "timestampMs": 10972.208,
+        "confidence": null
+      },
+      {
+        "text": "orientar",
+        "startMs": 11076.375,
+        "endMs": 11481.458,
+        "timestampMs": 11076.375,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 11493.041,
+        "endMs": 11550.916,
+        "timestampMs": 11493.041,
+        "confidence": null
+      },
+      {
+        "text": "próxima",
+        "startMs": 11562.5,
+        "endMs": 11967.583,
+        "timestampMs": 11562.5,
+        "confidence": null
+      },
+      {
+        "text": "pergunta",
+        "startMs": 11979.166,
+        "endMs": 12465.291,
+        "timestampMs": 11979.166,
+        "confidence": null
+      },
+      {
+        "text": "A",
+        "startMs": 13263.875,
+        "endMs": 13368.041,
+        "timestampMs": 13263.875,
+        "confidence": null
+      },
+      {
+        "text": "equipe",
+        "startMs": 13379.625,
+        "endMs": 13761.583,
+        "timestampMs": 13379.625,
+        "confidence": null
+      },
+      {
+        "text": "mantém",
+        "startMs": 13773.166,
+        "endMs": 14108.832,
+        "timestampMs": 13773.166,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 14120.375,
+        "endMs": 14178.25,
+        "timestampMs": 14120.375,
+        "confidence": null
+      },
+      {
+        "text": "controle",
+        "startMs": 14189.833,
+        "endMs": 14629.666,
+        "timestampMs": 14189.833,
+        "confidence": null
+      },
+      {
+        "text": "da",
+        "startMs": 14641.208,
+        "endMs": 14733.791,
+        "timestampMs": 14641.208,
+        "confidence": null
+      },
+      {
+        "text": "decisão",
+        "startMs": 14745.375,
+        "endMs": 15254.625,
+        "timestampMs": 14745.375,
+        "confidence": null
+      },
+      {
+        "text": "Com",
+        "startMs": 16053.25,
+        "endMs": 16238.416,
+        "timestampMs": 16053.25,
+        "confidence": null
+      },
+      {
+        "text": "rastreabilidade",
+        "startMs": 16250.0,
+        "endMs": 17060.166,
+        "timestampMs": 16250.0,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 17071.75,
+        "endMs": 17256.916,
+        "timestampMs": 17071.75,
+        "confidence": null
+      },
+      {
+        "text": "conferir",
+        "startMs": 17268.5,
+        "endMs": 17696.75,
+        "timestampMs": 17268.5,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 17708.333,
+        "endMs": 17812.499,
+        "timestampMs": 17708.333,
+        "confidence": null
+      },
+      {
+        "text": "conclusões",
+        "startMs": 17824.083,
+        "endMs": 18576.416,
+        "timestampMs": 17824.083,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "07-future",
+    "file": "audio/07-future.mp3",
+    "duration": 24.912,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 0,
+    "captions": [
+      {
+        "text": "A próxima etapa que queremos construir amplia essa base com",
+        "startMs": 100.0,
+        "endMs": 3427.5,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "emplacamentos, participação de mercado e preços de venda.",
+        "startMs": 3350.0,
+        "endMs": 6702.5,
+        "timestampMs": 3350.0,
+        "confidence": null
+      },
+      {
+        "text": "E transforma as análises em apresentações, documentos e artigos.",
+        "startMs": 7475.0,
+        "endMs": 11402.5,
+        "timestampMs": 7475.0,
+        "confidence": null
+      },
+      {
+        "text": "Materiais para reuniões executivas, decisões de posicionamento",
+        "startMs": 12175.0,
+        "endMs": 16265.0,
+        "timestampMs": 12175.0,
+        "confidence": null
+      },
+      {
+        "text": "e hipóteses de diferenciação para um novo veículo.",
+        "startMs": 16187.5,
+        "endMs": 18952.5,
+        "timestampMs": 16187.5,
+        "confidence": null
+      },
+      {
+        "text": "Conhecimento reutilizável para que o próximo projeto comece com",
+        "startMs": 19725.0,
+        "endMs": 23227.5,
+        "timestampMs": 19725.0,
+        "confidence": null
+      },
+      {
+        "text": "mais contexto.",
+        "startMs": 23150.0,
+        "endMs": 24237.5,
+        "timestampMs": 23150.0,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "A",
+        "startMs": 100.0,
+        "endMs": 225.0,
+        "timestampMs": 100.0,
+        "confidence": null
+      },
+      {
+        "text": "próxima",
+        "startMs": 237.5,
+        "endMs": 637.5,
+        "timestampMs": 237.5,
+        "confidence": null
+      },
+      {
+        "text": "etapa",
+        "startMs": 650.0,
+        "endMs": 1062.5,
+        "timestampMs": 650.0,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 1075.0,
+        "endMs": 1187.5,
+        "timestampMs": 1075.0,
+        "confidence": null
+      },
+      {
+        "text": "queremos",
+        "startMs": 1200.0,
+        "endMs": 1575.0,
+        "timestampMs": 1200.0,
+        "confidence": null
+      },
+      {
+        "text": "construir",
+        "startMs": 1587.5,
+        "endMs": 2075.0,
+        "timestampMs": 1587.5,
+        "confidence": null
+      },
+      {
+        "text": "amplia",
+        "startMs": 2087.5,
+        "endMs": 2512.5,
+        "timestampMs": 2087.5,
+        "confidence": null
+      },
+      {
+        "text": "essa",
+        "startMs": 2525.0,
+        "endMs": 2800.0,
+        "timestampMs": 2525.0,
+        "confidence": null
+      },
+      {
+        "text": "base",
+        "startMs": 2812.5,
+        "endMs": 3187.5,
+        "timestampMs": 2812.5,
+        "confidence": null
+      },
+      {
+        "text": "com",
+        "startMs": 3200.0,
+        "endMs": 3337.5,
+        "timestampMs": 3200.0,
+        "confidence": null
+      },
+      {
+        "text": "emplacamentos",
+        "startMs": 3350.0,
+        "endMs": 4150.0,
+        "timestampMs": 3350.0,
+        "confidence": null
+      },
+      {
+        "text": "participação",
+        "startMs": 4387.5,
+        "endMs": 5100.0,
+        "timestampMs": 4387.5,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 5112.5,
+        "endMs": 5200.0,
+        "timestampMs": 5112.5,
+        "confidence": null
+      },
+      {
+        "text": "mercado",
+        "startMs": 5212.5,
+        "endMs": 5675.0,
+        "timestampMs": 5212.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 5687.5,
+        "endMs": 5725.0,
+        "timestampMs": 5687.5,
+        "confidence": null
+      },
+      {
+        "text": "preços",
+        "startMs": 5737.5,
+        "endMs": 6125.0,
+        "timestampMs": 5737.5,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 6137.5,
+        "endMs": 6225.0,
+        "timestampMs": 6137.5,
+        "confidence": null
+      },
+      {
+        "text": "venda",
+        "startMs": 6237.5,
+        "endMs": 6612.5,
+        "timestampMs": 6237.5,
+        "confidence": null
+      },
+      {
+        "text": "E",
+        "startMs": 7475.0,
+        "endMs": 7575.0,
+        "timestampMs": 7475.0,
+        "confidence": null
+      },
+      {
+        "text": "transforma",
+        "startMs": 7587.5,
+        "endMs": 8175.0,
+        "timestampMs": 7587.5,
+        "confidence": null
+      },
+      {
+        "text": "as",
+        "startMs": 8187.5,
+        "endMs": 8200.0,
+        "timestampMs": 8187.5,
+        "confidence": null
+      },
+      {
+        "text": "análises",
+        "startMs": 8212.5,
+        "endMs": 8750.0,
+        "timestampMs": 8212.5,
+        "confidence": null
+      },
+      {
+        "text": "em",
+        "startMs": 8762.5,
+        "endMs": 8912.5,
+        "timestampMs": 8762.5,
+        "confidence": null
+      },
+      {
+        "text": "apresentações",
+        "startMs": 8925.0,
+        "endMs": 9775.0,
+        "timestampMs": 8925.0,
+        "confidence": null
+      },
+      {
+        "text": "documentos",
+        "startMs": 10000.0,
+        "endMs": 10600.0,
+        "timestampMs": 10000.0,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 10612.5,
+        "endMs": 10700.0,
+        "timestampMs": 10612.5,
+        "confidence": null
+      },
+      {
+        "text": "artigos",
+        "startMs": 10712.5,
+        "endMs": 11312.5,
+        "timestampMs": 10712.5,
+        "confidence": null
+      },
+      {
+        "text": "Materiais",
+        "startMs": 12175.0,
+        "endMs": 12837.5,
+        "timestampMs": 12175.0,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 12850.0,
+        "endMs": 13025.0,
+        "timestampMs": 12850.0,
+        "confidence": null
+      },
+      {
+        "text": "reuniões",
+        "startMs": 13037.5,
+        "endMs": 13500.0,
+        "timestampMs": 13037.5,
+        "confidence": null
+      },
+      {
+        "text": "executivas",
+        "startMs": 13512.5,
+        "endMs": 14350.0,
+        "timestampMs": 13512.5,
+        "confidence": null
+      },
+      {
+        "text": "decisões",
+        "startMs": 14625.0,
+        "endMs": 15237.5,
+        "timestampMs": 14625.0,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 15250.0,
+        "endMs": 15350.0,
+        "timestampMs": 15250.0,
+        "confidence": null
+      },
+      {
+        "text": "posicionamento",
+        "startMs": 15362.5,
+        "endMs": 16175.0,
+        "timestampMs": 15362.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 16187.5,
+        "endMs": 16212.5,
+        "timestampMs": 16187.5,
+        "confidence": null
+      },
+      {
+        "text": "hipóteses",
+        "startMs": 16225.0,
+        "endMs": 16750.0,
+        "timestampMs": 16225.0,
+        "confidence": null
+      },
+      {
+        "text": "de",
+        "startMs": 16762.5,
+        "endMs": 16850.0,
+        "timestampMs": 16762.5,
+        "confidence": null
+      },
+      {
+        "text": "diferenciação",
+        "startMs": 16862.5,
+        "endMs": 17712.5,
+        "timestampMs": 16862.5,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 17725.0,
+        "endMs": 17887.5,
+        "timestampMs": 17725.0,
+        "confidence": null
+      },
+      {
+        "text": "um",
+        "startMs": 17900.0,
+        "endMs": 18000.0,
+        "timestampMs": 17900.0,
+        "confidence": null
+      },
+      {
+        "text": "novo",
+        "startMs": 18012.5,
+        "endMs": 18362.5,
+        "timestampMs": 18012.5,
+        "confidence": null
+      },
+      {
+        "text": "veículo",
+        "startMs": 18375.0,
+        "endMs": 18862.5,
+        "timestampMs": 18375.0,
+        "confidence": null
+      },
+      {
+        "text": "Conhecimento",
+        "startMs": 19725.0,
+        "endMs": 20450.0,
+        "timestampMs": 19725.0,
+        "confidence": null
+      },
+      {
+        "text": "reutilizável",
+        "startMs": 20462.5,
+        "endMs": 21225.0,
+        "timestampMs": 20462.5,
+        "confidence": null
+      },
+      {
+        "text": "para",
+        "startMs": 21237.5,
+        "endMs": 21425.0,
+        "timestampMs": 21237.5,
+        "confidence": null
+      },
+      {
+        "text": "que",
+        "startMs": 21437.5,
+        "endMs": 21512.5,
+        "timestampMs": 21437.5,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 21525.0,
+        "endMs": 21562.5,
+        "timestampMs": 21525.0,
+        "confidence": null
+      },
+      {
+        "text": "próximo",
+        "startMs": 21575.0,
+        "endMs": 21962.5,
+        "timestampMs": 21575.0,
+        "confidence": null
+      },
+      {
+        "text": "projeto",
+        "startMs": 21975.0,
+        "endMs": 22487.5,
+        "timestampMs": 21975.0,
+        "confidence": null
+      },
+      {
+        "text": "comece",
+        "startMs": 22500.0,
+        "endMs": 22962.5,
+        "timestampMs": 22500.0,
+        "confidence": null
+      },
+      {
+        "text": "com",
+        "startMs": 22975.0,
+        "endMs": 23137.5,
+        "timestampMs": 22975.0,
+        "confidence": null
+      },
+      {
+        "text": "mais",
+        "startMs": 23150.0,
+        "endMs": 23425.0,
+        "timestampMs": 23150.0,
+        "confidence": null
+      },
+      {
+        "text": "contexto",
+        "startMs": 23437.5,
+        "endMs": 24037.5,
+        "timestampMs": 23437.5,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "08-close",
+    "file": "audio/08-close.mp3",
+    "duration": 10.224,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 8,
+    "captions": [
+      {
+        "text": "SpecSync. Das especificações dispersas às decisões",
+        "startMs": 96.291,
+        "endMs": 4094.625,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "competitivas. Vamos validar esse fluxo com a Ford",
+        "startMs": 4016.208,
+        "endMs": 7763.583,
+        "timestampMs": 4016.208,
+        "confidence": null
+      },
+      {
+        "text": "e medir o ganho no trabalho da equipe.",
+        "startMs": 7685.166,
+        "endMs": 9609.708,
+        "timestampMs": 7685.166,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "SpecSync",
+        "startMs": 96.291,
+        "endMs": 894.916,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "Das",
+        "startMs": 1689.833,
+        "endMs": 1863.458,
+        "timestampMs": 1689.833,
+        "confidence": null
+      },
+      {
+        "text": "especificações",
+        "startMs": 1875.0,
+        "endMs": 2743.041,
+        "timestampMs": 1875.0,
+        "confidence": null
+      },
+      {
+        "text": "dispersas",
+        "startMs": 2754.625,
+        "endMs": 3298.625,
+        "timestampMs": 2754.625,
+        "confidence": null
+      },
+      {
+        "text": "às",
+        "startMs": 3310.166,
+        "endMs": 3425.916,
+        "timestampMs": 3310.166,
+        "confidence": null
+      },
+      {
+        "text": "decisões",
+        "startMs": 3437.5,
+        "endMs": 4004.625,
+        "timestampMs": 3437.5,
+        "confidence": null
+      },
+      {
+        "text": "competitivas",
+        "startMs": 4016.208,
+        "endMs": 4907.416,
+        "timestampMs": 4016.208,
+        "confidence": null
+      },
+      {
+        "text": "Vamos",
+        "startMs": 5706.0,
+        "endMs": 6018.5,
+        "timestampMs": 5706.0,
+        "confidence": null
+      },
+      {
+        "text": "validar",
+        "startMs": 6030.083,
+        "endMs": 6423.583,
+        "timestampMs": 6030.083,
+        "confidence": null
+      },
+      {
+        "text": "esse",
+        "startMs": 6435.166,
+        "endMs": 6620.332,
+        "timestampMs": 6435.166,
+        "confidence": null
+      },
+      {
+        "text": "fluxo",
+        "startMs": 6631.958,
+        "endMs": 7037.041,
+        "timestampMs": 6631.958,
+        "confidence": null
+      },
+      {
+        "text": "com",
+        "startMs": 7048.625,
+        "endMs": 7199.083,
+        "timestampMs": 7048.625,
+        "confidence": null
+      },
+      {
+        "text": "a",
+        "startMs": 7210.666,
+        "endMs": 7256.9569,
+        "timestampMs": 7210.666,
+        "confidence": null
+      },
+      {
+        "text": "Ford",
+        "startMs": 7268.5,
+        "endMs": 7673.583,
+        "timestampMs": 7268.5,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 7685.166,
+        "endMs": 7754.624,
+        "timestampMs": 7685.166,
+        "confidence": null
+      },
+      {
+        "text": "medir",
+        "startMs": 7766.208,
+        "endMs": 8032.416,
+        "timestampMs": 7766.208,
+        "confidence": null
+      },
+      {
+        "text": "o",
+        "startMs": 8044.0,
+        "endMs": 8090.2909,
+        "timestampMs": 8044.0,
+        "confidence": null
+      },
+      {
+        "text": "ganho",
+        "startMs": 8101.833,
+        "endMs": 8379.624,
+        "timestampMs": 8101.833,
+        "confidence": null
+      },
+      {
+        "text": "no",
+        "startMs": 8391.208,
+        "endMs": 8483.791,
+        "timestampMs": 8391.208,
+        "confidence": null
+      },
+      {
+        "text": "trabalho",
+        "startMs": 8495.375,
+        "endMs": 8900.458,
+        "timestampMs": 8495.375,
+        "confidence": null
+      },
+      {
+        "text": "da",
+        "startMs": 8912.041,
+        "endMs": 8993.041,
+        "timestampMs": 8912.041,
+        "confidence": null
+      },
+      {
+        "text": "equipe",
+        "startMs": 9004.625,
+        "endMs": 9409.708,
+        "timestampMs": 9004.625,
+        "confidence": null
+      }
+    ]
+  }
+]

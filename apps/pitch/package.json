@@ -1,0 +1,41 @@
+{
+  "name": "@specsync/pitch",
+  "version": "1.0.0",
+  "description": "SpecSync for Ford — 160-second product pitch",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@remotion/bundler": "4.0.524",
+    "@remotion/captions": "4.0.524",
+    "@remotion/cli": "4.0.524",
+    "@remotion/google-fonts": "4.0.524",
+    "@remotion/media": "4.0.524",
+    "@remotion/renderer": "4.0.524",
+    "@remotion/transitions": "4.0.524",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.524",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.524",
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "eslint": "9.19.0",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "studio": "remotion studio --no-open --port 3300",
+    "build": "remotion bundle --out-dir dist",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "render": "node scripts/render-video.mjs",
+    "stills": "node scripts/render-stills.mjs",
+    "verify": "node scripts/verify-artifacts.mjs",
+    "format": "prettier --write src scripts/*.mjs package.json project.json checks.mjs remotion.config.ts tsconfig.json"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}

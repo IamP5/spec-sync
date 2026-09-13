@@ -1,0 +1,203 @@
+1
+00:00:00,822 --> 00:00:04,280
+A próxima vantagem competitiva começa antes do lançamento.
+
+2
+00:00:04,958 --> 00:00:06,600
+Começa na qualidade da decisão.
+
+3
+00:00:08,046 --> 00:00:12,390
+SpecSync. Inteligência para conectar o que o mercado oferece ao que
+
+4
+00:00:12,390 --> 00:00:14,590
+seu próximo veículo precisa entregar.
+
+5
+00:00:16,418 --> 00:00:18,360
+Uma pergunta coloca a pesquisa em movimento.
+
+6
+00:00:18,777 --> 00:00:21,720
+Escolha o veículo, a versão e os atributos que importam.
+
+7
+00:00:22,030 --> 00:00:26,430
+O SpecSync organiza o trabalho e conduz a busca pelas informações.
+
+8
+00:00:29,419 --> 00:00:33,723
+Os agentes pesquisam na internet, localizam fichas técnicas e reúnem
+
+9
+00:00:33,723 --> 00:00:35,920
+as evidências em uma única experiência.
+
+10
+00:00:36,390 --> 00:00:40,767
+Sua equipe acompanha a origem dos dados, revisa os achados e
+
+11
+00:00:40,767 --> 00:00:42,400
+decide o que entra no catálogo.
+
+12
+00:00:42,870 --> 00:00:46,590
+Cada informação validada amplia o conhecimento disponível para a
+
+13
+00:00:46,590 --> 00:00:47,510
+próxima análise.
+
+14
+00:00:51,750 --> 00:00:54,240
+Motor, potência, torque, transmissão.
+
+15
+00:00:54,577 --> 00:00:59,017
+As especificações chegam organizadas, com unidades, contexto e fontes
+
+16
+00:00:59,017 --> 00:01:01,840
+acessíveis. O que falta permanece visível.
+
+17
+00:01:01,990 --> 00:01:06,299
+Você deixa de reconstruir fichas e passa a trabalhar com uma base para
+
+18
+00:01:06,299 --> 00:01:06,870
+comparar.
+
+19
+00:01:08,914 --> 00:01:10,180
+Compare versões lado a lado.
+
+20
+00:01:10,698 --> 00:01:14,740
+Destaque diferenças e investigue a evidência por trás de cada valor.
+
+21
+00:01:15,103 --> 00:01:19,263
+Da motorização à transmissão, o SpecSync ajuda sua equipe a
+
+22
+00:01:19,263 --> 00:01:21,460
+enxergar o que diferencia cada proposta.
+
+23
+00:01:21,850 --> 00:01:25,780
+E a formular perguntas melhores sobre posicionamento e oportunidades.
+
+24
+00:01:31,780 --> 00:01:32,939
+Cada marca tem seu nome.
+
+25
+00:01:32,960 --> 00:01:34,540
+AdvanceTrac, na Ford.
+
+26
+00:01:34,850 --> 00:01:37,660
+VSC, na Toyota. VSA, na Honda.
+
+27
+00:01:37,970 --> 00:01:40,060
+A ontologia conecta a função em comum:
+
+28
+00:01:40,423 --> 00:01:42,380
+controle eletrônico de estabilidade.
+
+29
+00:01:42,570 --> 00:01:44,860
+E preserva as diferenças de cada sistema.
+
+30
+00:01:45,117 --> 00:01:48,300
+Veículo, versão e fonte passam a formar uma rede.
+
+31
+00:01:48,557 --> 00:01:52,380
+No vocabulário da Ford, os agentes encontram o que comparar.
+
+32
+00:01:52,650 --> 00:01:55,100
+E sua equipe enxerga novas oportunidades.
+
+33
+00:01:59,722 --> 00:02:03,543
+Nossa visão é conectar emplacamentos, market share por segmento e
+
+34
+00:02:03,543 --> 00:02:04,940
+posicionamento de preço.
+
+35
+00:02:05,450 --> 00:02:09,660
+Identificar lacunas de portfólio e oportunidades no mix de versões.
+
+36
+00:02:10,778 --> 00:02:14,834
+E gerar, com agentes de IA, apresentações PowerPoint e relatórios
+
+37
+00:02:14,834 --> 00:02:19,410
+estratégicos. Análise competitiva, cenários de posicionamento
+
+38
+00:02:19,410 --> 00:02:22,700
+e recomendações, com fontes e premissas rastreáveis.
+
+39
+00:02:23,620 --> 00:02:25,830
+Inteligência pronta para o comitê executivo.
+
+40
+00:02:25,980 --> 00:02:30,033
+Para alinhar produto, marketing e vendas, e orientar a próxima
+
+41
+00:02:30,033 --> 00:02:30,530
+decisão.
+
+42
+00:02:32,422 --> 00:02:34,533
+Como entregamos. Dados na sua nuvem.
+
+43
+00:02:34,723 --> 00:02:36,133
+Evidência rastreável.
+
+44
+00:02:36,323 --> 00:02:37,493
+Pessoas no comando.
+
+45
+00:02:37,630 --> 00:02:39,093
+Agentes trabalham.
+
+46
+00:02:39,283 --> 00:02:40,533
+Sua equipe decide.
+
+47
+00:02:41,473 --> 00:02:45,493
+A meta é clara: de cerca de uma hora por versão, para minutos.
+
+48
+00:02:46,331 --> 00:02:47,493
+Mais tempo para analisar.
+
+49
+00:02:47,611 --> 00:02:49,333
+Mais espaço para inovar.
+
+50
+00:02:49,531 --> 00:02:50,773
+SpecSync.
+
+51
+00:02:51,473 --> 00:02:53,163
+Vamos construir a próxima decisão.

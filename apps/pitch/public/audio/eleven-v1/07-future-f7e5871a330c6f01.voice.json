@@ -1,0 +1,392 @@
+{
+  "id": "07-future",
+  "file": "audio/eleven-v1/07-future-f7e5871a330c6f01.wav",
+  "duration": 22.0,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "Agora,",
+      "startMs": 139.0,
+      "endMs": 410.0,
+      "timestampMs": 139.0,
+      "confidence": null
+    },
+    {
+      "text": "imagine ampliar essa inteligência com emplacamentos, participação de",
+      "startMs": 930.0,
+      "endMs": 4710.0,
+      "timestampMs": 930.0,
+      "confidence": null
+    },
+    {
+      "text": "mercado e preços de venda.",
+      "startMs": 4710.0,
+      "endMs": 6650.0,
+      "timestampMs": 4710.0,
+      "confidence": null
+    },
+    {
+      "text": "Nossa visão é conectar produto e mercado para orientar posicionamento",
+      "startMs": 7080.0,
+      "endMs": 11610.0,
+      "timestampMs": 7080.0,
+      "confidence": null
+    },
+    {
+      "text": "e o desenvolvimento de novos veículos.",
+      "startMs": 11760.0,
+      "endMs": 14170.0,
+      "timestampMs": 11760.0,
+      "confidence": null
+    },
+    {
+      "text": "E transformar essa análise em apresentações, documentos e artigos,",
+      "startMs": 14560.0,
+      "endMs": 18890.0,
+      "timestampMs": 14560.0,
+      "confidence": null
+    },
+    {
+      "text": "prontos para levar o contexto à reunião executiva.",
+      "startMs": 19093.0,
+      "endMs": 22000.0,
+      "timestampMs": 19093.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "Agora,",
+      "startMs": 139.0,
+      "endMs": 320.0,
+      "timestampMs": 139.0,
+      "confidence": null
+    },
+    {
+      "text": "imagine",
+      "startMs": 930.0,
+      "endMs": 1280.0,
+      "timestampMs": 930.0,
+      "confidence": null
+    },
+    {
+      "text": "ampliar",
+      "startMs": 1328.0,
+      "endMs": 1680.0,
+      "timestampMs": 1328.0,
+      "confidence": null
+    },
+    {
+      "text": "essa",
+      "startMs": 1712.0,
+      "endMs": 1840.0,
+      "timestampMs": 1712.0,
+      "confidence": null
+    },
+    {
+      "text": "inteligência",
+      "startMs": 1890.0,
+      "endMs": 2480.0,
+      "timestampMs": 1890.0,
+      "confidence": null
+    },
+    {
+      "text": "com",
+      "startMs": 2520.0,
+      "endMs": 2640.0,
+      "timestampMs": 2520.0,
+      "confidence": null
+    },
+    {
+      "text": "emplacamentos,",
+      "startMs": 2693.0,
+      "endMs": 3520.0,
+      "timestampMs": 2693.0,
+      "confidence": null
+    },
+    {
+      "text": "participação",
+      "startMs": 3964.0,
+      "endMs": 4560.0,
+      "timestampMs": 3964.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 4587.0,
+      "endMs": 4640.0,
+      "timestampMs": 4587.0,
+      "confidence": null
+    },
+    {
+      "text": "mercado",
+      "startMs": 4710.0,
+      "endMs": 5200.0,
+      "timestampMs": 4710.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 5360.0,
+      "endMs": 5520.0,
+      "timestampMs": 5360.0,
+      "confidence": null
+    },
+    {
+      "text": "preços",
+      "startMs": 5600.0,
+      "endMs": 6080.0,
+      "timestampMs": 5600.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 6107.0,
+      "endMs": 6160.0,
+      "timestampMs": 6107.0,
+      "confidence": null
+    },
+    {
+      "text": "venda.",
+      "startMs": 6227.0,
+      "endMs": 6560.0,
+      "timestampMs": 6227.0,
+      "confidence": null
+    },
+    {
+      "text": "Nossa",
+      "startMs": 7080.0,
+      "endMs": 7600.0,
+      "timestampMs": 7080.0,
+      "confidence": null
+    },
+    {
+      "text": "visão",
+      "startMs": 7660.0,
+      "endMs": 7920.0,
+      "timestampMs": 7660.0,
+      "confidence": null
+    },
+    {
+      "text": "é",
+      "startMs": 7960.0,
+      "endMs": 8000.0,
+      "timestampMs": 7960.0,
+      "confidence": null
+    },
+    {
+      "text": "conectar",
+      "startMs": 8062.0,
+      "endMs": 8560.0,
+      "timestampMs": 8062.0,
+      "confidence": null
+    },
+    {
+      "text": "produto",
+      "startMs": 8630.0,
+      "endMs": 9120.0,
+      "timestampMs": 8630.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 9260.0,
+      "endMs": 9400.0,
+      "timestampMs": 9260.0,
+      "confidence": null
+    },
+    {
+      "text": "mercado",
+      "startMs": 9435.0,
+      "endMs": 9680.0,
+      "timestampMs": 9435.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 9792.0,
+      "endMs": 10240.0,
+      "timestampMs": 9792.0,
+      "confidence": null
+    },
+    {
+      "text": "orientar",
+      "startMs": 10286.0,
+      "endMs": 10640.0,
+      "timestampMs": 10286.0,
+      "confidence": null
+    },
+    {
+      "text": "posicionamento",
+      "startMs": 10693.0,
+      "endMs": 11520.0,
+      "timestampMs": 10693.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 11760.0,
+      "endMs": 12000.0,
+      "timestampMs": 11760.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 12040.0,
+      "endMs": 12080.0,
+      "timestampMs": 12040.0,
+      "confidence": null
+    },
+    {
+      "text": "desenvolvimento",
+      "startMs": 12137.0,
+      "endMs": 12960.0,
+      "timestampMs": 12137.0,
+      "confidence": null
+    },
+    {
+      "text": "de",
+      "startMs": 12987.0,
+      "endMs": 13040.0,
+      "timestampMs": 12987.0,
+      "confidence": null
+    },
+    {
+      "text": "novos",
+      "startMs": 13120.0,
+      "endMs": 13440.0,
+      "timestampMs": 13120.0,
+      "confidence": null
+    },
+    {
+      "text": "veículos.",
+      "startMs": 13493.0,
+      "endMs": 14080.0,
+      "timestampMs": 13493.0,
+      "confidence": null
+    },
+    {
+      "text": "E",
+      "startMs": 14560.0,
+      "endMs": 14960.0,
+      "timestampMs": 14560.0,
+      "confidence": null
+    },
+    {
+      "text": "transformar",
+      "startMs": 15008.0,
+      "endMs": 15520.0,
+      "timestampMs": 15008.0,
+      "confidence": null
+    },
+    {
+      "text": "essa",
+      "startMs": 15552.0,
+      "endMs": 15680.0,
+      "timestampMs": 15552.0,
+      "confidence": null
+    },
+    {
+      "text": "análise",
+      "startMs": 15760.0,
+      "endMs": 16240.0,
+      "timestampMs": 15760.0,
+      "confidence": null
+    },
+    {
+      "text": "em",
+      "startMs": 16267.0,
+      "endMs": 16320.0,
+      "timestampMs": 16267.0,
+      "confidence": null
+    },
+    {
+      "text": "apresentações,",
+      "startMs": 16364.0,
+      "endMs": 17200.0,
+      "timestampMs": 16364.0,
+      "confidence": null
+    },
+    {
+      "text": "documentos",
+      "startMs": 17651.0,
+      "endMs": 18160.0,
+      "timestampMs": 17651.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 18200.0,
+      "endMs": 18240.0,
+      "timestampMs": 18200.0,
+      "confidence": null
+    },
+    {
+      "text": "artigos,",
+      "startMs": 18300.0,
+      "endMs": 18800.0,
+      "timestampMs": 18300.0,
+      "confidence": null
+    },
+    {
+      "text": "prontos",
+      "startMs": 19093.0,
+      "endMs": 19600.0,
+      "timestampMs": 19093.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 19648.0,
+      "endMs": 19840.0,
+      "timestampMs": 19648.0,
+      "confidence": null
+    },
+    {
+      "text": "levar",
+      "startMs": 19893.0,
+      "endMs": 20160.0,
+      "timestampMs": 19893.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 20200.0,
+      "endMs": 20240.0,
+      "timestampMs": 20200.0,
+      "confidence": null
+    },
+    {
+      "text": "contexto",
+      "startMs": 20302.0,
+      "endMs": 20800.0,
+      "timestampMs": 20302.0,
+      "confidence": null
+    },
+    {
+      "text": "à",
+      "startMs": 20840.0,
+      "endMs": 20880.0,
+      "timestampMs": 20840.0,
+      "confidence": null
+    },
+    {
+      "text": "reunião",
+      "startMs": 20933.0,
+      "endMs": 21280.0,
+      "timestampMs": 20933.0,
+      "confidence": null
+    },
+    {
+      "text": "executiva.",
+      "startMs": 21337.0,
+      "endMs": 21920.0,
+      "timestampMs": 21337.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "f7e5871a330c6f0116b34bb040a4018d7b10e4e50e524060ff25889b808c03c2"
+}

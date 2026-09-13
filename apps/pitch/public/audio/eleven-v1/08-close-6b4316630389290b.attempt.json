@@ -1,0 +1,19 @@
+{
+  "request_hash": "6b4316630389290bb81c05881140284b4b5115904895d157ae107029d50a36e2",
+  "request": {
+    "url": "https://api.elevenlabs.io/v1/text-to-speech/Uag7PYOaSMVtYRkk9R00/with-timestamps?output_format=mp3_44100_128",
+    "payload": {
+      "text": "[confident] Como entregamos. Dados na sua nuvem. Evidência rastreável. Pessoas no comando. Agentes trabalham. Sua equipe decide. [short pause] A meta é clara: de cerca de uma hora por versão, para minutos. [short pause] Mais tempo para analisar. Mais espaço para inovar. SpecSync. [short pause] Vamos construir a próxima decisão.",
+      "model_id": "eleven_v3",
+      "language_code": "pt",
+      "voice_settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "use_speaker_boost": true,
+        "speed": 1.0
+      }
+    }
+  },
+  "started_at": "2026-09-13T15:37:25.235064+00:00"
+}

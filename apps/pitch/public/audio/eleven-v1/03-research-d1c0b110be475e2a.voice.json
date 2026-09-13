@@ -1,0 +1,364 @@
+{
+  "id": "03-research",
+  "file": "audio/eleven-v1/03-research-d1c0b110be475e2a.wav",
+  "duration": 18.16,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "Os agentes pesquisam na internet, localizam fichas técnicas e reúnem",
+      "startMs": 69.0,
+      "endMs": 4373.0,
+      "timestampMs": 69.0,
+      "confidence": null
+    },
+    {
+      "text": "as evidências em uma única experiência.",
+      "startMs": 4373.0,
+      "endMs": 6570.0,
+      "timestampMs": 4373.0,
+      "confidence": null
+    },
+    {
+      "text": "Sua equipe acompanha a origem dos dados, revisa os achados e",
+      "startMs": 7040.0,
+      "endMs": 11417.0,
+      "timestampMs": 7040.0,
+      "confidence": null
+    },
+    {
+      "text": "decide o que entra no catálogo.",
+      "startMs": 11417.0,
+      "endMs": 13050.0,
+      "timestampMs": 11417.0,
+      "confidence": null
+    },
+    {
+      "text": "Cada informação validada amplia o conhecimento disponível para a",
+      "startMs": 13520.0,
+      "endMs": 17240.0,
+      "timestampMs": 13520.0,
+      "confidence": null
+    },
+    {
+      "text": "próxima análise.",
+      "startMs": 17240.0,
+      "endMs": 18160.0,
+      "timestampMs": 17240.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "Os",
+      "startMs": 69.0,
+      "endMs": 80.0,
+      "timestampMs": 69.0,
+      "confidence": null
+    },
+    {
+      "text": "agentes",
+      "startMs": 133.0,
+      "endMs": 480.0,
+      "timestampMs": 133.0,
+      "confidence": null
+    },
+    {
+      "text": "pesquisam",
+      "startMs": 540.0,
+      "endMs": 1040.0,
+      "timestampMs": 540.0,
+      "confidence": null
+    },
+    {
+      "text": "na",
+      "startMs": 1067.0,
+      "endMs": 1120.0,
+      "timestampMs": 1067.0,
+      "confidence": null
+    },
+    {
+      "text": "internet,",
+      "startMs": 1182.0,
+      "endMs": 1680.0,
+      "timestampMs": 1182.0,
+      "confidence": null
+    },
+    {
+      "text": "localizam",
+      "startMs": 2120.0,
+      "endMs": 2560.0,
+      "timestampMs": 2120.0,
+      "confidence": null
+    },
+    {
+      "text": "fichas",
+      "startMs": 2608.0,
+      "endMs": 2960.0,
+      "timestampMs": 2608.0,
+      "confidence": null
+    },
+    {
+      "text": "técnicas",
+      "startMs": 3020.0,
+      "endMs": 3520.0,
+      "timestampMs": 3020.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 3720.0,
+      "endMs": 3920.0,
+      "timestampMs": 3720.0,
+      "confidence": null
+    },
+    {
+      "text": "reúnem",
+      "startMs": 4000.0,
+      "endMs": 4320.0,
+      "timestampMs": 4000.0,
+      "confidence": null
+    },
+    {
+      "text": "as",
+      "startMs": 4373.0,
+      "endMs": 4480.0,
+      "timestampMs": 4373.0,
+      "confidence": null
+    },
+    {
+      "text": "evidências",
+      "startMs": 4544.0,
+      "endMs": 5120.0,
+      "timestampMs": 4544.0,
+      "confidence": null
+    },
+    {
+      "text": "em",
+      "startMs": 5147.0,
+      "endMs": 5200.0,
+      "timestampMs": 5147.0,
+      "confidence": null
+    },
+    {
+      "text": "uma",
+      "startMs": 5260.0,
+      "endMs": 5440.0,
+      "timestampMs": 5260.0,
+      "confidence": null
+    },
+    {
+      "text": "única",
+      "startMs": 5493.0,
+      "endMs": 5760.0,
+      "timestampMs": 5493.0,
+      "confidence": null
+    },
+    {
+      "text": "experiência.",
+      "startMs": 5817.0,
+      "endMs": 6480.0,
+      "timestampMs": 5817.0,
+      "confidence": null
+    },
+    {
+      "text": "Sua",
+      "startMs": 7040.0,
+      "endMs": 7600.0,
+      "timestampMs": 7040.0,
+      "confidence": null
+    },
+    {
+      "text": "equipe",
+      "startMs": 7646.0,
+      "endMs": 7920.0,
+      "timestampMs": 7646.0,
+      "confidence": null
+    },
+    {
+      "text": "acompanha",
+      "startMs": 7970.0,
+      "endMs": 8400.0,
+      "timestampMs": 7970.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 8440.0,
+      "endMs": 8480.0,
+      "timestampMs": 8440.0,
+      "confidence": null
+    },
+    {
+      "text": "origem",
+      "startMs": 8544.0,
+      "endMs": 8880.0,
+      "timestampMs": 8544.0,
+      "confidence": null
+    },
+    {
+      "text": "dos",
+      "startMs": 8920.0,
+      "endMs": 9040.0,
+      "timestampMs": 8920.0,
+      "confidence": null
+    },
+    {
+      "text": "dados,",
+      "startMs": 9120.0,
+      "endMs": 9520.0,
+      "timestampMs": 9120.0,
+      "confidence": null
+    },
+    {
+      "text": "revisa",
+      "startMs": 9907.0,
+      "endMs": 10320.0,
+      "timestampMs": 9907.0,
+      "confidence": null
+    },
+    {
+      "text": "os",
+      "startMs": 10347.0,
+      "endMs": 10400.0,
+      "timestampMs": 10347.0,
+      "confidence": null
+    },
+    {
+      "text": "achados",
+      "startMs": 10440.0,
+      "endMs": 10960.0,
+      "timestampMs": 10440.0,
+      "confidence": null
+    },
+    {
+      "text": "e",
+      "startMs": 11160.0,
+      "endMs": 11360.0,
+      "timestampMs": 11160.0,
+      "confidence": null
+    },
+    {
+      "text": "decide",
+      "startMs": 11417.0,
+      "endMs": 11760.0,
+      "timestampMs": 11417.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 11800.0,
+      "endMs": 11840.0,
+      "timestampMs": 11800.0,
+      "confidence": null
+    },
+    {
+      "text": "que",
+      "startMs": 11880.0,
+      "endMs": 12000.0,
+      "timestampMs": 11880.0,
+      "confidence": null
+    },
+    {
+      "text": "entra",
+      "startMs": 12053.0,
+      "endMs": 12320.0,
+      "timestampMs": 12053.0,
+      "confidence": null
+    },
+    {
+      "text": "no",
+      "startMs": 12347.0,
+      "endMs": 12400.0,
+      "timestampMs": 12347.0,
+      "confidence": null
+    },
+    {
+      "text": "catálogo.",
+      "startMs": 12460.0,
+      "endMs": 12960.0,
+      "timestampMs": 12460.0,
+      "confidence": null
+    },
+    {
+      "text": "Cada",
+      "startMs": 13520.0,
+      "endMs": 14080.0,
+      "timestampMs": 13520.0,
+      "confidence": null
+    },
+    {
+      "text": "informação",
+      "startMs": 14126.0,
+      "endMs": 14640.0,
+      "timestampMs": 14126.0,
+      "confidence": null
+    },
+    {
+      "text": "validada",
+      "startMs": 14693.0,
+      "endMs": 15200.0,
+      "timestampMs": 14693.0,
+      "confidence": null
+    },
+    {
+      "text": "amplia",
+      "startMs": 15264.0,
+      "endMs": 15680.0,
+      "timestampMs": 15264.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 15720.0,
+      "endMs": 15760.0,
+      "timestampMs": 15720.0,
+      "confidence": null
+    },
+    {
+      "text": "conhecimento",
+      "startMs": 15794.0,
+      "endMs": 16320.0,
+      "timestampMs": 15794.0,
+      "confidence": null
+    },
+    {
+      "text": "disponível",
+      "startMs": 16366.0,
+      "endMs": 16960.0,
+      "timestampMs": 16366.0,
+      "confidence": null
+    },
+    {
+      "text": "para",
+      "startMs": 16976.0,
+      "endMs": 17040.0,
+      "timestampMs": 16976.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 17120.0,
+      "endMs": 17200.0,
+      "timestampMs": 17120.0,
+      "confidence": null
+    },
+    {
+      "text": "próxima",
+      "startMs": 17240.0,
+      "endMs": 17520.0,
+      "timestampMs": 17240.0,
+      "confidence": null
+    },
+    {
+      "text": "análise.",
+      "startMs": 17584.0,
+      "endMs": 18080.0,
+      "timestampMs": 17584.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "d1c0b110be475e2aa20120ac95d40fe9dffa56357007c46b6dffc574f39ec01b"
+}

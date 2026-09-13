@@ -1,0 +1,19 @@
+{
+  "request_hash": "d1c0b110be475e2aa20120ac95d40fe9dffa56357007c46b6dffc574f39ec01b",
+  "request": {
+    "url": "https://api.elevenlabs.io/v1/text-to-speech/Uag7PYOaSMVtYRkk9R00/with-timestamps?output_format=mp3_44100_128",
+    "payload": {
+      "text": "[confident] Os agentes pesquisam na internet, localizam fichas técnicas e reúnem as evidências em uma única experiência. Sua equipe acompanha a origem dos dados, revisa os achados e decide o que entra no catálogo. Cada informação validada amplia o conhecimento disponível para a próxima análise.",
+      "model_id": "eleven_v3",
+      "language_code": "pt",
+      "voice_settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.8,
+        "style": 0.2,
+        "use_speaker_boost": true,
+        "speed": 1.0
+      }
+    }
+  },
+  "started_at": "2026-09-13T15:14:54.607241+00:00"
+}

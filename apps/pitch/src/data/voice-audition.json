@@ -1,0 +1,19 @@
+{
+  "model": "gemini-2.5-pro-tts",
+  "text": "Quanto tempo sua equipe precisa para entender um concorrente?\n\nNo desafio apresentado pela Ford, a pesquisa manual leva cerca de uma hora por versão.\n\nCom o SpecSync, você começa pela pergunta. A plataforma busca informações na internet, compara especificações de veículos e mantém as fontes acessíveis.\n\nA equipe confere as evidências e avança para o que importa: a próxima decisão.",
+  "direction": "# AUDIO PROFILE\nYou are a Brazilian product specialist in your mid-thirties, speaking native Brazilian Portuguese with a subtle neutral São Paulo accent. Your voice is clear, grounded, warm and natural.\n\n## THE SCENE\nRecord a professional technology product film for a small group of Ford executives and vehicle research specialists. They are intelligent, busy people. You understand their work. Speak directly to one person in a quiet, acoustically treated studio. Produce only clean, dry, isolated speech.\n\n### DIRECTOR'S NOTES\nDeliver only the exact Portuguese words in the TRANSCRIPT. Do not read headings or directions. Make each thought meaningful: an honest question about their daily work; a factual research burden; a welcoming transition into SpecSync; a fluent description of the workflow; a thoughtful landing on the decision.\nUse natural changes of pitch and sentence stress. Preserve the full qualification 'No desafio apresentado pela Ford' and 'cerca de'. Give selective emphasis to 'uma hora por versão', 'SpecSync' and 'próxima decisão'. Everything around those phrases should flow conversationally. Subtle breaths between ideas are welcome. No background music or sound effects.\nPronounce SpecSync as the English compound 'spec sync', /spɛk sɪŋk/, joined smoothly. Never say 'especi cinco'. Say Ford naturally as a Brazilian Portuguese speaker would.\nAvoid a trailer-announcer bass, exaggerated commercial enthusiasm, artificial vocal fry, whispers, laughter, theatrical sighs and mechanically equal pauses. Do not add interjections or other words.",
+  "takes": [
+    {
+      "id": "a-executivo-proximo",
+      "voice": "Algieba",
+      "label": "Especialista executivo próximo",
+      "direction": "### THIS TAKE\nUnderstated, human, confident and close. Approximately 140 words per minute, with breathing room. Ask the first question with genuine curiosity and a small upward inflection. Allow about half a second to reflect after the question, and a shorter pause after 'versão'. 'Uma hora por versão' is a fact, not a dramatic revelation. Let a slight vocal smile enter at 'Com o SpecSync'. The three product actions form one flowing thought. Take a short deliberate pause before 'a próxima decisão', and finish with a calm, resolved downward inflection. Do not accelerate to meet a fixed duration."
+    },
+    {
+      "id": "b-tech-energia-contida",
+      "voice": "Algieba",
+      "label": "Lançamento tech com energia contida",
+      "direction": "### THIS TAKE\nA professional product launch, with restrained energy and a brighter vocal attack. Approximately 150 words per minute. Keep the opening question crisp and curious. A brief thoughtful pause after the question, then give 'uma hora por versão' factual weight. The arrival of 'Com o SpecSync' brings a modest lift in energy. Flow forward through 'busca', 'compara' and 'mantém' as connected actions. Gradually relax the pace over the last sentence. Take a brief pause before 'a próxima decisão' and land with quiet conviction. Speak to one executive, not to a stadium. Do not accelerate to meet a fixed duration."
+    }
+  ]
+}

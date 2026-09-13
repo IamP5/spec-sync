@@ -1,0 +1,3259 @@
+{
+  "configurations": [
+    {
+      "id": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+      "brand": "Ford",
+      "model": "Ranger Raptor",
+      "name": "Raptor 3.0 V6 Bi-turbo 4WD AT",
+      "market": "BR",
+      "modelYear": 2026,
+      "identityStatus": "RESOLVED_FROM_PRIMARY_SOURCE",
+      "identityNote": "Current Ford Brasil configuration verified on 2026-09-12; source terminology is preserved.",
+      "identityEvidenceId": "e28bc544-5711-5b3f-a86d-c33119a72301",
+      "primaryImage": {
+        "url": "https://storage.googleapis.com/fiap-challenge-ford-specsync-dev-vehicle-images/vehicles/primary/ca6081a3dd73b2ba9e4ae791311d7b52fffd588d31535e8eeda4dca540c9b8a4/ranger-raptor.jpg",
+        "sha256": "ca6081a3dd73b2ba9e4ae791311d7b52fffd588d31535e8eeda4dca540c9b8a4",
+        "width": 1920,
+        "height": 1080,
+        "altText": "Ford Ranger Raptor Raptor 3.0 V6 Bi-turbo 4WD AT — official manufacturer image",
+        "matchScope": "ILLUSTRATIVE",
+        "sourcePageUrl": "https://www.ford.com.br/picapes/ranger-raptor/raptor-4wd-at/"
+      }
+    },
+    {
+      "id": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+      "brand": "Volkswagen",
+      "model": "Amarok",
+      "name": "V6 Extreme",
+      "market": "BR",
+      "modelYear": 2026,
+      "identityStatus": "RESOLVED_FROM_PRIMARY_SOURCE",
+      "identityNote": "Current Brazilian configuration captured on 2026-09-12; identity and applicability are backed by the cited official manufacturer source.",
+      "identityEvidenceId": "490aabce-daa4-5e37-ae46-5100e1d8fa08",
+      "primaryImage": {
+        "url": "https://storage.googleapis.com/fiap-challenge-ford-specsync-dev-vehicle-images/vehicles/primary/033ac2d21eefd19aa83161ac97a0c321b1ae32a4614935a273d1a81e2dbe8582/volkswagen-amarok.jpg",
+        "sha256": "033ac2d21eefd19aa83161ac97a0c321b1ae32a4614935a273d1a81e2dbe8582",
+        "width": 1934,
+        "height": 1359,
+        "altText": "Volkswagen Amarok V6 Extreme — official manufacturer image",
+        "matchScope": "ILLUSTRATIVE",
+        "sourcePageUrl": "https://www.vw.com.br/pt/carros.html/__app/amarok.app"
+      }
+    },
+    {
+      "id": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+      "brand": "BYD",
+      "model": "Shark",
+      "name": "BYD SHARK GS",
+      "market": "BR",
+      "modelYear": 2025,
+      "identityStatus": "RESOLVED_FROM_PRIMARY_SOURCE",
+      "identityNote": "Current Brazilian configuration captured on 2026-09-12; identity and applicability are backed by the cited official manufacturer source.",
+      "identityEvidenceId": "a2eaf209-2f49-50ab-a694-ddc8887342cf",
+      "primaryImage": {
+        "url": "https://storage.googleapis.com/fiap-challenge-ford-specsync-dev-vehicle-images/vehicles/primary/c926d3cd785a93799643d17995e6314052462de225306732051b551528a0e91a/byd-shark.jpg",
+        "sha256": "c926d3cd785a93799643d17995e6314052462de225306732051b551528a0e91a",
+        "width": 5000,
+        "height": 2813,
+        "altText": "BYD Shark BYD SHARK GS — official manufacturer image",
+        "matchScope": "ILLUSTRATIVE",
+        "sourcePageUrl": "https://www.byd.com/br/car/shark"
+      }
+    }
+  ],
+  "rows": [
+    {
+      "attribute": {
+        "id": "644cccfb-2d9b-5fcc-abfa-24a2b0b95040",
+        "code": "acceleration_0_100",
+        "label": "Aceleração de 0 a 100 km/h",
+        "description": "Manufacturer-reported 0–100 km/h time.",
+        "valueType": "NUMBER",
+        "unit": "s"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "1093cf2a-dabd-580b-ac5a-5a1078407553",
+        "code": "ac_charge_power",
+        "label": "Potência máxima de recarga CA",
+        "description": "Maximum alternating-current charging power.",
+        "valueType": "NUMBER",
+        "unit": "kW"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "308ede72-7a6f-5fa5-895e-9545664afca8",
+        "code": "adaptive_cruise",
+        "label": "Piloto automático adaptativo",
+        "description": "Adaptive cruise availability. Stop-and-go support is a separate qualifier.",
+        "valueType": "AVAILABILITY",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "deb39a04-d184-5d5b-a609-879b4b0f822c",
+          "observations": [
+            {
+              "id": "deb39a04-d184-5d5b-a609-879b4b0f822c",
+              "value": null,
+              "availability": "STANDARD",
+              "qualifiers": {},
+              "rawValue": "Piloto automático adaptativo: STANDARD",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "9babafa7-0bbb-5c42-a5a0-fc58f676660d",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Piloto automático adaptativo: STANDARD"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "850e7864-43c2-5e3d-aad1-c13a63969a29",
+        "code": "adblue_tank",
+        "label": "Tanque de Arla 32",
+        "description": "Diesel exhaust-fluid tank volume.",
+        "valueType": "NUMBER",
+        "unit": "L"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "3a29cf16-b2d6-56c8-a78c-1b9d6b55350f",
+        "code": "battery_usable_capacity",
+        "label": "Capacidade útil da bateria",
+        "description": "Usable high-voltage battery capacity.",
+        "valueType": "NUMBER",
+        "unit": "kWh"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "72b28e86-da5f-5c6f-a447-266c7d9cbaf1",
+        "code": "body_style",
+        "label": "Carroceria",
+        "description": "Manufacturer body or roof-and-length code.",
+        "valueType": "TEXT",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Verified against the cited current official Brazilian manufacturer source.",
+          "selectedObservationId": "d90d3d86-561a-5fac-a518-e55a0add6742",
+          "observations": [
+            {
+              "id": "d1d9b35d-fe00-5003-ab41-623612840eec",
+              "value": "Picape cabine dupla",
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Picape cabine dupla",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "7eb7d7d0-ecd5-5e28-a4ef-e44088a2adeb",
+                  "sourceRevisionId": "32935278-5441-533f-aa97-9736af494f30",
+                  "title": "Volkswagen Amarok — variantes",
+                  "path": "/pt/carros.html/__app/amarok.app",
+                  "sha256": "fe727cb74a232e3138568ed07d119598c5612ba310dece74a67af19f29c98124",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.vw.com.br/pt/carros.html/__app/amarok.app"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Official current Brazilian product/version material",
+                  "excerpt": "Picape cabine dupla"
+                }
+              ]
+            },
+            {
+              "id": "d90d3d86-561a-5fac-a518-e55a0add6742",
+              "value": "Picape cabine dupla",
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Picape cabine dupla",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "7eb7d7d0-ecd5-5e28-a4ef-e44088a2adeb",
+                  "sourceRevisionId": "32935278-5441-533f-aa97-9736af494f30",
+                  "title": "Volkswagen Amarok — variantes",
+                  "path": "/pt/carros.html/__app/amarok.app",
+                  "sha256": "fe727cb74a232e3138568ed07d119598c5612ba310dece74a67af19f29c98124",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.vw.com.br/pt/carros.html/__app/amarok.app"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Official current Brazilian product/version material",
+                  "excerpt": "Picape cabine dupla"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Verified against the cited current official Brazilian manufacturer source.",
+          "selectedObservationId": "8599cdbe-23fd-5631-a345-86c6234965b8",
+          "observations": [
+            {
+              "id": "8599cdbe-23fd-5631-a345-86c6234965b8",
+              "value": "Picape cabine dupla",
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Picape cabine dupla",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "f71c0797-b9d5-5d08-a9f6-17acc73dd07e",
+                  "sourceRevisionId": "1820a2bf-0852-5cb9-a92f-48379ffdd639",
+                  "title": "BYD Shark — produto",
+                  "path": "/br/car/shark",
+                  "sha256": "7818bd31db6c12b6e3cdb765520f66ba5d26da60d9ab4a967e7315a69246bef1",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Official current Brazilian product/version material",
+                  "excerpt": "Picape cabine dupla"
+                }
+              ]
+            },
+            {
+              "id": "f69819b2-8d6e-5775-af0a-3df392e83005",
+              "value": "Picape cabine dupla",
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Picape cabine dupla",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "f71c0797-b9d5-5d08-a9f6-17acc73dd07e",
+                  "sourceRevisionId": "1820a2bf-0852-5cb9-a92f-48379ffdd639",
+                  "title": "BYD Shark — produto",
+                  "path": "/br/car/shark",
+                  "sha256": "7818bd31db6c12b6e3cdb765520f66ba5d26da60d9ab4a967e7315a69246bef1",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Official current Brazilian product/version material",
+                  "excerpt": "Picape cabine dupla"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "a521929b-22b2-5b72-a3b0-772dbaac2650",
+        "code": "camera_360",
+        "label": "Câmera 360°",
+        "description": "Surround-view camera availability; off-road and object detection remain qualifiers.",
+        "valueType": "AVAILABILITY",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "a377668a-bc75-5bda-abd4-0f1b5ec22aa0",
+          "observations": [
+            {
+              "id": "a377668a-bc75-5bda-abd4-0f1b5ec22aa0",
+              "value": null,
+              "availability": "STANDARD",
+              "qualifiers": {},
+              "rawValue": "Câmera 360°: STANDARD",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "ba1c1d24-7c14-5d7a-a773-dfd66d5bbac1",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Câmera 360°: STANDARD"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "cc9207bc-4ce3-5e79-af85-f24794e68c78",
+        "code": "cargo_area_height",
+        "label": "Altura da zona de carga",
+        "description": "Usable cargo-area height.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "bb19c7d9-4bdb-5114-a3e2-31cabe531444",
+        "code": "cargo_area_length",
+        "label": "Comprimento da zona de carga",
+        "description": "Usable cargo-area length.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "dd0a9d8d-4f73-50ab-a0a2-9f59df81345a",
+        "code": "cargo_area_width",
+        "label": "Largura da zona de carga",
+        "description": "Usable cargo-area width.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "ac000000-0000-0000-0000-000000000004",
+        "code": "cargo_bed_volume",
+        "label": "Capacidade da caçamba",
+        "description": "Cargo bed volume. Separate from payload mass and enclosed luggage volume.",
+        "valueType": "NUMBER",
+        "unit": "L"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "KNOWN",
+          "reason": "revisado",
+          "selectedObservationId": "821e007a-ba0a-3af5-a1aa-d2fdce473032",
+          "observations": [
+            {
+              "id": "821e007a-ba0a-3af5-a1aa-d2fdce473032",
+              "value": 1200,
+              "availability": null,
+              "qualifiers": {
+                "scope": "model",
+                "originalTerm": "Volume de caçamba",
+                "originalUnit": "l",
+                "readerRevision": "specsync-source-v2-embedded-html",
+                "ontologyRevision": 1,
+                "normalizerVersion": "numeric-v3"
+              },
+              "rawValue": "1.200",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "823fc477-a5e9-3250-a1b1-518373c11a6d",
+                  "sourceRevisionId": "d5a9fdc2-1df9-3481-b67b-6afe74208965",
+                  "title": "BYD SHARK | A Força do Super Híbrido Plug-in | BYD Brasil",
+                  "path": "ingestion/d5a9fdc2-1df9-3481-b67b-6afe74208965/source.txt",
+                  "sha256": "2d6bcba35565eac453b6d07ac6da40b3ca1dfa5b86ad6a4f43ae8b91162e1329",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-10",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 150,
+                  "lineEnd": 150,
+                  "locator": "p. 1, Super capacidade off-road",
+                  "excerpt": "Volume de caçamba: 1.200l"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "1db796c5-7d59-5230-aee7-5cb19ccc8d70",
+        "code": "cargo_volume",
+        "label": "Volume máximo de carga",
+        "description": "Maximum enclosed cargo volume.",
+        "valueType": "NUMBER",
+        "unit": "m3"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "c3cd9171-0861-5418-ae51-2699547de332",
+        "code": "cargo_volume_vda",
+        "label": "Volume de carga VDA",
+        "description": "Enclosed cargo volume under the VDA method.",
+        "valueType": "NUMBER",
+        "unit": "m3"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "263a3a4f-0801-5669-af66-1784630ccd67",
+        "code": "curb_weight",
+        "label": "Peso em ordem de marcha",
+        "description": "Vehicle mass in running order.",
+        "valueType": "NUMBER",
+        "unit": "kg"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "fa9b0cad-b307-5a29-aab8-cc5211cca6ce",
+          "observations": [
+            {
+              "id": "fa9b0cad-b307-5a29-aab8-cc5211cca6ce",
+              "value": 2415,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Peso em ordem de marcha: 2415",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "6c5b3436-91fc-5b90-a425-1096081bbb14",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Peso em ordem de marcha: 2415"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "f53181cc-9675-51f4-a284-df36f757f079",
+        "code": "dc_charge_power",
+        "label": "Potência máxima de recarga CC",
+        "description": "Maximum direct-current charging power.",
+        "valueType": "NUMBER",
+        "unit": "kW"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "444d6c87-1cfc-5350-b1d0-0acd902ebab0",
+        "code": "displacement",
+        "label": "Cilindrada",
+        "description": "Engine displacement.",
+        "valueType": "NUMBER",
+        "unit": "cm3"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "db544e26-454b-5689-8fb7-da6d673ec082",
+        "code": "drivetrain",
+        "label": "Tração",
+        "description": "Reported drivetrain terminology; 4WD is not assumed identical to 4x4.",
+        "valueType": "TEXT",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "18656f99-dddb-5d7d-af21-1c37ef0e7878",
+          "observations": [
+            {
+              "id": "18656f99-dddb-5d7d-af21-1c37ef0e7878",
+              "value": "4WD",
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Tração: 4WD",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "0873c167-ef4b-5415-a9cf-af111665b069",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Tração: 4WD"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "KNOWN",
+          "reason": "revisado",
+          "selectedObservationId": "d7dd11e3-232d-31ef-93a5-ba56450b5f90",
+          "observations": [
+            {
+              "id": "d7dd11e3-232d-31ef-93a5-ba56450b5f90",
+              "value": "tração elétrica inteligente nas quatro rodas",
+              "availability": null,
+              "qualifiers": {
+                "scope": "model",
+                "originalUnit": "",
+                "readerRevision": "specsync-source-v2-embedded-html",
+                "ontologyRevision": 1,
+                "normalizerVersion": "numeric-v3"
+              },
+              "rawValue": "tração elétrica inteligente nas quatro rodas",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "2ee6a3ef-ea4a-377d-bfb3-453934732a49",
+                  "sourceRevisionId": "d5a9fdc2-1df9-3481-b67b-6afe74208965",
+                  "title": "BYD SHARK | A Força do Super Híbrido Plug-in | BYD Brasil",
+                  "path": "ingestion/d5a9fdc2-1df9-3481-b67b-6afe74208965/source.txt",
+                  "sha256": "2d6bcba35565eac453b6d07ac6da40b3ca1dfa5b86ad6a4f43ae8b91162e1329",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-10",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 140,
+                  "lineEnd": 140,
+                  "locator": "p. 1, Plataforma super híbrida plug-in DMO Off-road Pickup",
+                  "excerpt": "Superpotência com tração elétrica inteligente nas quatro rodas, priorizando a potência"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "7198f64e-0abf-5018-96f8-a4ce13a5e48d",
+        "code": "driving_modes",
+        "label": "Modos de condução",
+        "description": "Modes explicitly mentioned; completeness is recorded in qualifiers.",
+        "valueType": "LIST",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "bf68ed00-2bd1-5d34-a8ce-7176c07878f8",
+          "observations": [
+            {
+              "id": "bf68ed00-2bd1-5d34-a8ce-7176c07878f8",
+              "value": [
+                "Normal",
+                "Esportivo",
+                "Escorregadio",
+                "Lama/Terra",
+                "Areia",
+                "Baja",
+                "Rock Crawl"
+              ],
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Modos de condução: Normal; Esportivo; Escorregadio; Lama/Terra; Areia; Baja; Rock Crawl",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "7672fabd-aa61-5ea4-afb4-13770ba1c498",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Modos de condução: Normal; Esportivo; Escorregadio; Lama/Terra; Areia; Baja; Rock Crawl"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "KNOWN",
+          "reason": "revisado",
+          "selectedObservationId": "227c1f23-1208-3c9a-a4ac-7206faa45560",
+          "observations": [
+            {
+              "id": "227c1f23-1208-3c9a-a4ac-7206faa45560",
+              "value": ["Areia", "Lama", "Neve"],
+              "availability": null,
+              "qualifiers": {
+                "scope": "model",
+                "originalTerm": "Três modos de terreno",
+                "originalUnit": "",
+                "readerRevision": "specsync-source-v2-embedded-html",
+                "ontologyRevision": 1,
+                "normalizerVersion": "numeric-v3"
+              },
+              "rawValue": "Três modos de terreno",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "0ff85ebf-c527-3b81-99a9-0de4fee4152c",
+                  "sourceRevisionId": "d5a9fdc2-1df9-3481-b67b-6afe74208965",
+                  "title": "BYD SHARK | A Força do Super Híbrido Plug-in | BYD Brasil",
+                  "path": "ingestion/d5a9fdc2-1df9-3481-b67b-6afe74208965/source.txt",
+                  "sha256": "2d6bcba35565eac453b6d07ac6da40b3ca1dfa5b86ad6a4f43ae8b91162e1329",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-10",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 151,
+                  "lineEnd": 151,
+                  "locator": "p. 1, Super capacidade off-road",
+                  "excerpt": "Três modos de terreno: Areia, Lama e Neve"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "69e78aa5-30cb-594f-a3a3-0d8f74883b1e",
+        "code": "electric_range_inmetro",
+        "label": "Autonomia Inmetro",
+        "description": "Electric range under the Brazilian Inmetro cycle.",
+        "valueType": "NUMBER",
+        "unit": "km"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "6972fb8c-73c2-5ab7-a8a8-9cdee8ecb492",
+        "code": "electric_range_unspecified",
+        "label": "Autonomia sem ciclo identificado",
+        "description": "Electric range reported without an identified test cycle.",
+        "valueType": "NUMBER",
+        "unit": "km"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "aadfe453-9ae1-5f79-a91b-77ff55b92320",
+        "code": "electric_range_wltp",
+        "label": "Autonomia WLTP",
+        "description": "Electric range under the WLTP cycle.",
+        "valueType": "NUMBER",
+        "unit": "km"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "c81734b7-4820-580e-a477-fe375c0ae698",
+        "code": "engine",
+        "label": "Motor",
+        "description": "Engine description; original terminology retained.",
+        "valueType": "TEXT",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "e3c646d8-e3eb-5318-a217-971ac9fe1de2",
+          "observations": [
+            {
+              "id": "e3c646d8-e3eb-5318-a217-971ac9fe1de2",
+              "value": "3.0L V6 Bi-turbo",
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Motor: 3.0L V6 Bi-turbo",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "c3fc7ca6-00e4-5d8f-a3e7-b6b1ccdb6688",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Motor: 3.0L V6 Bi-turbo"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "KNOWN",
+          "reason": "revisado",
+          "selectedObservationId": "5f2b10da-0766-35e8-9dff-ee114da7164e",
+          "observations": [
+            {
+              "id": "5f2b10da-0766-35e8-9dff-ee114da7164e",
+              "value": "Motor 1.5T de alta potência",
+              "availability": null,
+              "qualifiers": {
+                "scope": "model",
+                "originalUnit": "",
+                "readerRevision": "specsync-source-v2-embedded-html",
+                "ontologyRevision": 1,
+                "normalizerVersion": "numeric-v3"
+              },
+              "rawValue": "Motor 1.5T de alta potência",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "43de4703-607d-327f-a67d-e5d264e6bb82",
+                  "sourceRevisionId": "d5a9fdc2-1df9-3481-b67b-6afe74208965",
+                  "title": "BYD SHARK | A Força do Super Híbrido Plug-in | BYD Brasil",
+                  "path": "ingestion/d5a9fdc2-1df9-3481-b67b-6afe74208965/source.txt",
+                  "sha256": "2d6bcba35565eac453b6d07ac6da40b3ca1dfa5b86ad6a4f43ae8b91162e1329",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-10",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 141,
+                  "lineEnd": 141,
+                  "locator": "p. 1, Plataforma super híbrida plug-in DMO Off-road Pickup",
+                  "excerpt": "Motor 1.5T de alta potência"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "093295ed-25c7-5843-a240-390ee4eff844",
+        "code": "exterior_colors",
+        "label": "Cores externas",
+        "description": "Manufacturer-reported exterior colors.",
+        "valueType": "LIST",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "074dc8df-95b8-5ff8-a4ed-e745f2b4de8c",
+        "code": "exterior_features",
+        "label": "Equipamentos externos",
+        "description": "Manufacturer-reported exterior equipment.",
+        "valueType": "LIST",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "2079aff5-100a-5cca-a891-3585cfa8830e",
+        "code": "front_cargo_volume",
+        "label": "Volume do compartimento dianteiro",
+        "description": "Front luggage-compartment volume.",
+        "valueType": "NUMBER",
+        "unit": "L"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "5a484135-57ce-5e25-afe6-b1eeb23be057",
+        "code": "front_overhang",
+        "label": "Balanço dianteiro",
+        "description": "Front overhang.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "549a0c41-6740-597f-af05-88eb8007e73a",
+        "code": "front_suspension",
+        "label": "Suspensão dianteira",
+        "description": "Manufacturer-reported front suspension.",
+        "valueType": "TEXT",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "8a2c7630-b249-5fb0-b701-ad12bf6caf9c",
+        "code": "fuel_tank",
+        "label": "Tanque de combustível",
+        "description": "Fuel tank capacity.",
+        "valueType": "NUMBER",
+        "unit": "L"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "799b0949-f665-5f75-a7cf-7d6b9a9256b0",
+          "observations": [
+            {
+              "id": "799b0949-f665-5f75-a7cf-7d6b9a9256b0",
+              "value": 77,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Tanque de combustível: 77",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "5a649895-0cc5-5b50-aef2-2e24772c88fd",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Tanque de combustível: 77"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "ac000000-0000-0000-0000-000000000001",
+        "code": "fuel_type",
+        "label": "Combustível",
+        "description": "Energy carriers explicitly reported by the source; combinations are supported. Hybrid is a powertrain type, not a fuel.",
+        "valueType": "LIST",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "97baa3ce-2e1e-5d96-abcb-9f2340ef3727",
+          "observations": [
+            {
+              "id": "97baa3ce-2e1e-5d96-abcb-9f2340ef3727",
+              "value": ["GASOLINE"],
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Combustível: GASOLINE",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "4434b9cb-9af7-5c5f-a637-ae5d59da85ac",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Combustível: GASOLINE"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Verified against the cited current official Brazilian manufacturer source.",
+          "selectedObservationId": "2ee043d5-1fcb-578d-ac77-69e9dc825dee",
+          "observations": [
+            {
+              "id": "2ee043d5-1fcb-578d-ac77-69e9dc825dee",
+              "value": ["Diesel"],
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Diesel",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "4e7e5b89-5b61-500a-a300-e65ab55c3576",
+                  "sourceRevisionId": "32935278-5441-533f-aa97-9736af494f30",
+                  "title": "Volkswagen Amarok — variantes",
+                  "path": "/pt/carros.html/__app/amarok.app",
+                  "sha256": "fe727cb74a232e3138568ed07d119598c5612ba310dece74a67af19f29c98124",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.vw.com.br/pt/carros.html/__app/amarok.app"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Official current Brazilian product/version material",
+                  "excerpt": "Diesel"
+                }
+              ]
+            },
+            {
+              "id": "9fe38f0d-cb69-58b4-a62d-4c334ea0723b",
+              "value": ["Diesel"],
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Diesel",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "4e7e5b89-5b61-500a-a300-e65ab55c3576",
+                  "sourceRevisionId": "32935278-5441-533f-aa97-9736af494f30",
+                  "title": "Volkswagen Amarok — variantes",
+                  "path": "/pt/carros.html/__app/amarok.app",
+                  "sha256": "fe727cb74a232e3138568ed07d119598c5612ba310dece74a67af19f29c98124",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.vw.com.br/pt/carros.html/__app/amarok.app"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Official current Brazilian product/version material",
+                  "excerpt": "Diesel"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Verified against the cited current official Brazilian manufacturer source.",
+          "selectedObservationId": "b210c0fe-6140-539d-aee9-5c3a6d2c42a2",
+          "observations": [
+            {
+              "id": "9196b373-8e26-5097-aaba-c4f648d34d8f",
+              "value": ["Gasolina", "Eletricidade"],
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Gasolina,Eletricidade",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "7f468f88-d268-50fb-a2fd-8aafa92f3134",
+                  "sourceRevisionId": "1820a2bf-0852-5cb9-a92f-48379ffdd639",
+                  "title": "BYD Shark — produto",
+                  "path": "/br/car/shark",
+                  "sha256": "7818bd31db6c12b6e3cdb765520f66ba5d26da60d9ab4a967e7315a69246bef1",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Official current Brazilian product/version material",
+                  "excerpt": "Gasolina / Eletricidade"
+                }
+              ]
+            },
+            {
+              "id": "b210c0fe-6140-539d-aee9-5c3a6d2c42a2",
+              "value": ["Gasolina", "Eletricidade"],
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Gasolina,Eletricidade",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "7f468f88-d268-50fb-a2fd-8aafa92f3134",
+                  "sourceRevisionId": "1820a2bf-0852-5cb9-a92f-48379ffdd639",
+                  "title": "BYD Shark — produto",
+                  "path": "/br/car/shark",
+                  "sha256": "7818bd31db6c12b6e3cdb765520f66ba5d26da60d9ab4a967e7315a69246bef1",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Official current Brazilian product/version material",
+                  "excerpt": "Gasolina / Eletricidade"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "ab5cc465-ef5c-5383-ad79-c53090f58bf8",
+        "code": "gross_combination_weight",
+        "label": "Peso bruto total combinado",
+        "description": "Gross combined vehicle weight.",
+        "valueType": "NUMBER",
+        "unit": "kg"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "7a079130-645e-5c8d-ad77-dcbaf8150134",
+        "code": "gross_vehicle_weight",
+        "label": "Peso bruto total homologado",
+        "description": "Homologated gross vehicle weight.",
+        "valueType": "NUMBER",
+        "unit": "kg"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "cc44169a-7959-50dd-991f-85d80f4349f3",
+        "code": "height",
+        "label": "Altura",
+        "description": "Overall height; preserve configuration-specific footnotes.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "47aad95d-9622-5ce9-ad48-84471f3eb151",
+          "observations": [
+            {
+              "id": "47aad95d-9622-5ce9-ad48-84471f3eb151",
+              "value": 1922,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Altura: 1922",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "96ed80e7-7ad7-5a52-a401-5b3eb6a5a3a9",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Altura: 1922"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "76c2ecb2-9865-52c0-ace7-a8b701df3a28",
+        "code": "interior_features",
+        "label": "Equipamentos internos",
+        "description": "Manufacturer-reported interior equipment.",
+        "valueType": "LIST",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "09f07e19-3d37-58ae-810a-baa571ea7dd6",
+        "code": "length",
+        "label": "Comprimento",
+        "description": "Overall vehicle length.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "536085b4-8c30-53cf-a758-45d34106b1af",
+          "observations": [
+            {
+              "id": "536085b4-8c30-53cf-a758-45d34106b1af",
+              "value": 5381,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Comprimento: 5381",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "7061a9ea-4ece-5d57-a829-73a2d77b608d",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Comprimento: 5381"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "110f35c6-5e9f-5d0e-a2d5-c833f8a6c78c",
+        "code": "length_with_extension",
+        "label": "Comprimento com extensão",
+        "description": "Overall length including the manufacturer-specified frame extension.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "77675a18-0f3d-5d88-a20b-a4c822f20887",
+        "code": "luggage_volume",
+        "label": "Volume do porta-malas",
+        "description": "Luggage-compartment volume with seats in use.",
+        "valueType": "NUMBER",
+        "unit": "L"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "b71e4ff7-3cb7-5b79-a083-1c4d69ba962f",
+        "code": "luggage_volume_seats_folded",
+        "label": "Volume do porta-malas com bancos rebatidos",
+        "description": "Luggage volume with rear seats folded.",
+        "valueType": "NUMBER",
+        "unit": "L"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "32135972-29ef-56df-a4d1-1066b183745a",
+        "code": "multimedia_features",
+        "label": "Sistema multimídia",
+        "description": "Manufacturer-reported multimedia equipment.",
+        "valueType": "LIST",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "ac000000-0000-0000-0000-000000000003",
+        "code": "passenger_capacity",
+        "label": "Número de passageiros",
+        "description": "Nonnegative integer occupant count as reported. driverIncluded must be YES, NO or UNKNOWN; unknown must not be interpreted as total seats.",
+        "valueType": "NUMBER",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "7af530e0-f4ad-5cce-811e-c316d02a172b",
+        "code": "payload",
+        "label": "Capacidade de carga",
+        "description": "Configuration-specific payload; model-level ranges do not supply a scalar.",
+        "valueType": "NUMBER",
+        "unit": "kg"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "046775ce-e758-506f-a49d-b236c33083f7",
+          "observations": [
+            {
+              "id": "046775ce-e758-506f-a49d-b236c33083f7",
+              "value": 715,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Capacidade de carga: 715",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "e4d5079c-1cbe-5e76-aa7a-271e460a8081",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Capacidade de carga: 715"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "94b12905-ba08-5746-92af-9bb97d705acc",
+        "code": "power_max",
+        "label": "Potência máxima",
+        "description": "Maximum metric horsepower, with engine speed qualifiers.",
+        "valueType": "NUMBER",
+        "unit": "cv"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "db4eaa44-a491-5758-ae46-ab7a545ffe29",
+          "observations": [
+            {
+              "id": "db4eaa44-a491-5758-ae46-ab7a545ffe29",
+              "value": 397,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Potência máxima: 397",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "9aff967b-7e40-51fb-a480-c23bc8a152c4",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Potência máxima: 397"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "64926857-caca-5d04-a865-a66d6b77bc90",
+        "code": "rear_door_height",
+        "label": "Altura do vão da porta traseira",
+        "description": "Rear cargo-door opening height.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "47cab196-5b23-5e31-ae66-5106c44be15d",
+        "code": "rear_door_width",
+        "label": "Largura do vão da porta traseira",
+        "description": "Rear cargo-door opening width.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "7d4f9f62-b319-5130-a1ca-22a663d6d6e3",
+        "code": "rear_overhang",
+        "label": "Balanço traseiro",
+        "description": "Rear overhang.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "436de057-a3c8-5e8e-aae9-c8e967221779",
+        "code": "rear_suspension",
+        "label": "Suspensão traseira",
+        "description": "Rear suspension construction, without inferred functional equivalence.",
+        "valueType": "TEXT",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "KNOWN",
+          "reason": "revisado",
+          "selectedObservationId": "c9c538c5-c9a5-3aac-a631-333651cc0037",
+          "observations": [
+            {
+              "id": "c9c538c5-c9a5-3aac-a631-333651cc0037",
+              "value": "independente",
+              "availability": null,
+              "qualifiers": {
+                "scope": "model",
+                "originalUnit": "",
+                "readerRevision": "specsync-source-v2-embedded-html",
+                "ontologyRevision": 1,
+                "normalizerVersion": "numeric-v3"
+              },
+              "rawValue": "independente",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "27a6c1f9-99b2-364c-8ac4-b66fe2feb252",
+                  "sourceRevisionId": "d5a9fdc2-1df9-3481-b67b-6afe74208965",
+                  "title": "BYD SHARK | A Força do Super Híbrido Plug-in | BYD Brasil",
+                  "path": "ingestion/d5a9fdc2-1df9-3481-b67b-6afe74208965/source.txt",
+                  "sha256": "2d6bcba35565eac453b6d07ac6da40b3ca1dfa5b86ad6a4f43ae8b91162e1329",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-10",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 157,
+                  "lineEnd": 157,
+                  "locator": "p. 1, Super conforto",
+                  "excerpt": "A arquitetura superhíbrida prioriza a propulsão do motor elétrico em até 80% do total de viagens, resultando em uma condução excepcionalmente suave. A suspensão independente dianteira e traseira da BYD SHARK equilibra melhor condução e conforto."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "bee8b324-9542-5655-81c9-e36ff0bbd846",
+        "code": "reference_price",
+        "label": "Preço de referência (sem data de vigência)",
+        "description": "Undated price reported in supplied notes; not a current market price.",
+        "valueType": "NUMBER",
+        "unit": "BRL"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "3d17f04a-bb37-5cc5-a310-929a60446199",
+        "code": "safety_features",
+        "label": "Equipamentos de segurança",
+        "description": "Manufacturer-reported safety equipment.",
+        "valueType": "LIST",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "f15be185-fd69-5c17-ac09-a305a40343b8",
+        "code": "side_door_height",
+        "label": "Altura do vão da porta lateral",
+        "description": "Side cargo-door opening height.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "7c8f43ea-72d9-5e6d-a0c2-4eed2ec48eb0",
+        "code": "side_door_width",
+        "label": "Largura do vão da porta lateral",
+        "description": "Side cargo-door opening width.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "d2fc70f7-d6c2-55b8-bd8a-70e496bf9d44",
+        "code": "stability_control",
+        "label": "Controle de estabilidade",
+        "description": "Presence of stability control; brand-specific implementation retained in qualifiers.",
+        "valueType": "AVAILABILITY",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "55ac5bc1-e8b0-55f8-a892-9084b2b9532a",
+          "observations": [
+            {
+              "id": "55ac5bc1-e8b0-55f8-a892-9084b2b9532a",
+              "value": null,
+              "availability": "STANDARD",
+              "qualifiers": {},
+              "rawValue": "Controle de estabilidade: STANDARD",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "807abe34-b64f-5cf9-a1d3-1d823688ad2f",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Controle de estabilidade: STANDARD"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "117f6d68-4e97-5182-a446-c5b6eb8e5cf8",
+        "code": "standard_features",
+        "label": "Equipamentos de série",
+        "description": "Complete manufacturer-reported standard-equipment list for the configuration.",
+        "valueType": "LIST",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "ea162fb7-4a31-57a2-a5f0-66e11c63382c",
+          "observations": [
+            {
+              "id": "ea162fb7-4a31-57a2-a5f0-66e11c63382c",
+              "value": [
+                "Diferencial dianteiro blocante",
+                "Diferencial traseiro blocante",
+                "Suspensão FOX 2.5 Live Valve Racing",
+                "Faróis Matrix LED",
+                "Câmera 360 graus",
+                "Piloto automático adaptativo com Stop & Go",
+                "Piloto automático off-road Trail Control",
+                "SYNC 4 com navegador off-road",
+                "Sistema de som Bang & Olufsen com 8 alto-falantes",
+                "7 airbags"
+              ],
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Equipamentos de série: Diferencial dianteiro blocante; Diferencial traseiro blocante; Suspensão FOX 2.5 Live Valve Racing; Faróis Matrix LED; Câmera 360 graus; Piloto automático adaptativo com Stop & Go; Piloto automático off-road Trail Control; SYNC 4 com navegador off-road; Sistema de som Bang & Olufsen com 8 alto-falantes; 7 airbags",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "f47b399f-fdee-5122-a583-1f3a9fe8df64",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Equipamentos de série: Diferencial dianteiro blocante; Diferencial traseiro blocante; Suspensão FOX 2.5 Live Valve Racing; Faróis Matrix LED; Câmera 360 graus; Piloto automático adaptativo com Stop & Go; Piloto automático off-road Trail Control; SYNC 4 com navegador off-road; Sistema de som Bang & Olufsen com 8 alto-falantes; 7 airbags"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "df472cec-080f-5d59-bf26-b859101f1f24",
+        "code": "sunroof",
+        "label": "Teto solar",
+        "description": "Sunroof availability; lack of a source entry is not absence.",
+        "valueType": "AVAILABILITY",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "92fb581a-c6f3-5cbd-a06f-71671bdc488b",
+        "code": "technology_features",
+        "label": "Tecnologia e conveniência",
+        "description": "Manufacturer-reported technology and convenience equipment.",
+        "valueType": "LIST",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "3296e4d3-cebd-534e-a4dd-e418e293859e",
+        "code": "tire_spec",
+        "label": "Pneus",
+        "description": "Manufacturer-reported tire specification.",
+        "valueType": "TEXT",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "3a168746-28a0-5918-a5e8-7e034a20805a",
+          "observations": [
+            {
+              "id": "3a168746-28a0-5918-a5e8-7e034a20805a",
+              "value": "285/70 R17 General Grabber",
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Pneus: 285/70 R17 General Grabber",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "15da29ce-423f-5ce3-a961-f9b2bf7bf8bd",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Pneus: 285/70 R17 General Grabber"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "871df36a-a88f-511f-ab5d-ab65be0aa918",
+        "code": "top_speed",
+        "label": "Velocidade máxima",
+        "description": "Manufacturer-reported maximum speed.",
+        "valueType": "NUMBER",
+        "unit": "km/h"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "23068fe9-aefe-5fdb-8b1f-8c911f0a1e14",
+        "code": "torque_max",
+        "label": "Torque máximo",
+        "description": "Maximum torque normalized to newton metres; source units and speed retained.",
+        "valueType": "NUMBER",
+        "unit": "Nm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "c08e9d25-9e75-50fe-a29c-62e86a83bc1d",
+          "observations": [
+            {
+              "id": "c08e9d25-9e75-50fe-a29c-62e86a83bc1d",
+              "value": 583,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Torque máximo: 583",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "2f2eb690-2c81-5d2e-a0f3-781b6a271e85",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Torque máximo: 583"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "ad6151b6-48d2-5613-a0de-babf295fca2a",
+        "code": "torque_max_kgfm",
+        "label": "Torque máximo",
+        "description": "Maximum manufacturer-reported torque in kilogram-force metres.",
+        "valueType": "NUMBER",
+        "unit": "kgf.m"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "ac000000-0000-0000-0000-000000000002",
+        "code": "towing_capacity",
+        "label": "Capacidade de reboque",
+        "description": "Maximum reported towing mass; braking and test conditions must remain qualified or UNKNOWN. Never payload.",
+        "valueType": "NUMBER",
+        "unit": "kg"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "KNOWN",
+          "reason": "revisado",
+          "selectedObservationId": "0bb46910-7303-34cf-b6bf-be9e11ee0ad4",
+          "observations": [
+            {
+              "id": "0bb46910-7303-34cf-b6bf-be9e11ee0ad4",
+              "value": 2500,
+              "availability": null,
+              "qualifiers": {
+                "scope": "model",
+                "braking": "UNKNOWN",
+                "originalUnit": "kg",
+                "readerRevision": "specsync-source-v2-embedded-html",
+                "brakingCondition": "UNKNOWN",
+                "ontologyRevision": 1,
+                "normalizerVersion": "numeric-v3"
+              },
+              "rawValue": "2.500",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "58e5414e-d498-386a-83fa-186dc18472b8",
+                  "sourceRevisionId": "d5a9fdc2-1df9-3481-b67b-6afe74208965",
+                  "title": "BYD SHARK | A Força do Super Híbrido Plug-in | BYD Brasil",
+                  "path": "ingestion/d5a9fdc2-1df9-3481-b67b-6afe74208965/source.txt",
+                  "sha256": "2d6bcba35565eac453b6d07ac6da40b3ca1dfa5b86ad6a4f43ae8b91162e1329",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-10",
+                  "publishedOn": null,
+                  "upstreamUrls": ["https://www.byd.com/br/car/shark"],
+                  "lineStart": 148,
+                  "lineEnd": 148,
+                  "locator": "p. 1, Super capacidade off-road",
+                  "excerpt": "Capacidade máxima de reboque de 2.500kg"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "05a82f0a-f7f8-5017-a8b0-5742728186d2",
+        "code": "towing_capacity_unbraked",
+        "label": "Capacidade de reboque sem freio",
+        "description": "Maximum unbraked towing mass.",
+        "valueType": "NUMBER",
+        "unit": "kg"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "e69fe8f5-431c-5dd2-9657-4e3770bd3140",
+        "code": "transmission",
+        "label": "Transmissão",
+        "description": "Transmission description, including gear count.",
+        "valueType": "TEXT",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "c93e84e2-9e8e-5451-a409-da3fc57d47d9",
+          "observations": [
+            {
+              "id": "c93e84e2-9e8e-5451-a409-da3fc57d47d9",
+              "value": "Automática de 10 velocidades",
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Transmissão: Automática de 10 velocidades",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "c43e5386-28f3-5578-ad56-4c1f4db62a63",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Transmissão: Automática de 10 velocidades"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "03f5430d-2cd8-5e9c-ad41-c6836914d7db",
+        "code": "wading_depth",
+        "label": "Capacidade de imersão",
+        "description": "Maximum manufacturer-reported wading depth.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "af04060a-9e6e-556a-aab8-657c7d95a346",
+          "observations": [
+            {
+              "id": "af04060a-9e6e-556a-aab8-657c7d95a346",
+              "value": 850,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Capacidade de imersão: 850",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "8ed8406e-c553-5f57-a343-10ac52349a29",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Capacidade de imersão: 850"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "f3b5d42f-2710-50a2-8f6d-f0761b0720c3",
+        "code": "wheelbase",
+        "label": "Entre eixos",
+        "description": "Wheelbase length.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "321cf8ed-c80c-5786-ae97-121ce4c885b7",
+          "observations": [
+            {
+              "id": "321cf8ed-c80c-5786-ae97-121ce4c885b7",
+              "value": 3270,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Entre eixos: 3270",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "93f0762a-56b8-5c88-a6c8-a37665b009c6",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Entre eixos: 3270"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "282b0ece-6d90-5a31-a83d-a0affdfef5f3",
+        "code": "wheel_spec",
+        "label": "Rodas",
+        "description": "Manufacturer-reported wheel specification.",
+        "valueType": "TEXT",
+        "unit": null
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "e2bf5a76-1a06-5b2f-ac2a-f16330300249",
+          "observations": [
+            {
+              "id": "e2bf5a76-1a06-5b2f-ac2a-f16330300249",
+              "value": "Liga leve 17 polegadas",
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Rodas: Liga leve 17 polegadas",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "89b1a391-3647-58ab-a081-4dd9f305f8bf",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Rodas: Liga leve 17 polegadas"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "84ad4f7d-b31e-5a1c-9a86-3dce10a5c795",
+        "code": "width_unspecified",
+        "label": "Largura (escopo não informado)",
+        "description": "Source does not specify mirror scope; never equate to either scoped width.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "558f51f7-9f01-5039-b93d-744d1508f3e8",
+        "code": "width_with_mirrors",
+        "label": "Largura com espelhos",
+        "description": "Only values explicitly including mirrors.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "KNOWN",
+          "reason": "Selected from the current official Ford Brasil source captured on 2026-09-12.",
+          "selectedObservationId": "0ec6c96f-890f-5fa9-a591-300826e5b61d",
+          "observations": [
+            {
+              "id": "0ec6c96f-890f-5fa9-a591-300826e5b61d",
+              "value": 2208,
+              "availability": null,
+              "qualifiers": {},
+              "rawValue": "Largura com espelhos: 2208",
+              "reviewStatus": "VERIFIED",
+              "evidence": [
+                {
+                  "id": "b8cb96b7-659c-58bb-ad0a-9690a2b7e7ad",
+                  "sourceRevisionId": "59aa12f8-512a-5ad3-a18d-12cbbe194f83",
+                  "title": "Ranger Raptor — Ficha técnica",
+                  "path": "/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf",
+                  "sha256": "dc83c3671974587fcf80dd3f3cabfbf1dd724053b3f4e6eb31f4f54afc1080cf",
+                  "provenance": "PRIMARY_SOURCE",
+                  "capturedOn": "2026-09-12",
+                  "publishedOn": null,
+                  "upstreamUrls": [
+                    "https://www.ford.com.br/content/dam/Ford/website-assets/latam/br/nameplate/2025/ranger-raptor/pdf/fbr-ranger-raptor-ficha-tecnica.pdf"
+                  ],
+                  "lineStart": 1,
+                  "lineEnd": 1,
+                  "locator": "Performance off-road, dimensions and standard-equipment tables",
+                  "excerpt": "Largura com espelhos: 2208"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    },
+    {
+      "attribute": {
+        "id": "f6134e17-739e-506c-95a1-2d63d3727ce8",
+        "code": "width_without_mirrors",
+        "label": "Largura sem espelhos",
+        "description": "Only values explicitly excluding mirrors.",
+        "valueType": "NUMBER",
+        "unit": "mm"
+      },
+      "cells": [
+        {
+          "configurationId": "c51da533-1b0a-5f44-a0cf-0f448673d56b",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "76a46a27-9f22-5903-a83b-ce8bcfa87307",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        },
+        {
+          "configurationId": "2d8b575a-51b1-4bc4-87b0-8cd2b2d17908",
+          "knowledgeStatus": "NOT_REPORTED",
+          "reason": "No accepted observation is available.",
+          "selectedObservationId": null,
+          "observations": []
+        }
+      ]
+    }
+  ]
+}

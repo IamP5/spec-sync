@@ -1,0 +1,203 @@
+{
+  "id": "08-close",
+  "file": "audio/eleven-v1/08-close-1d0fa70b7d695ab2.wav",
+  "duration": 11.76,
+  "offset": 0.75,
+  "voice": "Uag7PYOaSMVtYRkk9R00",
+  "rate": 0,
+  "captions": [
+    {
+      "text": "SpecSync. Conhecimento conectado.",
+      "startMs": 269.0,
+      "endMs": 2330.0,
+      "timestampMs": 269.0,
+      "confidence": null
+    },
+    {
+      "text": "Decisões que movem o próximo projeto.",
+      "startMs": 2500.0,
+      "endMs": 4890.0,
+      "timestampMs": 2500.0,
+      "confidence": null
+    },
+    {
+      "text": "Vamos colocar essa inteligência a serviço da Ford.",
+      "startMs": 5560.0,
+      "endMs": 8010.0,
+      "timestampMs": 5560.0,
+      "confidence": null
+    },
+    {
+      "text": "E construir, juntos, a próxima decisão.",
+      "startMs": 9560.0,
+      "endMs": 11760.0,
+      "timestampMs": 9560.0,
+      "confidence": null
+    }
+  ],
+  "words": [
+    {
+      "text": "SpecSync.",
+      "startMs": 269.0,
+      "endMs": 560.0,
+      "timestampMs": 269.0,
+      "confidence": null
+    },
+    {
+      "text": "Conhecimento",
+      "startMs": 1010.0,
+      "endMs": 1680.0,
+      "timestampMs": 1010.0,
+      "confidence": null
+    },
+    {
+      "text": "conectado.",
+      "startMs": 1726.0,
+      "endMs": 2240.0,
+      "timestampMs": 1726.0,
+      "confidence": null
+    },
+    {
+      "text": "Decisões",
+      "startMs": 2500.0,
+      "endMs": 3280.0,
+      "timestampMs": 2500.0,
+      "confidence": null
+    },
+    {
+      "text": "que",
+      "startMs": 3320.0,
+      "endMs": 3440.0,
+      "timestampMs": 3320.0,
+      "confidence": null
+    },
+    {
+      "text": "movem",
+      "startMs": 3500.0,
+      "endMs": 3760.0,
+      "timestampMs": 3500.0,
+      "confidence": null
+    },
+    {
+      "text": "o",
+      "startMs": 3800.0,
+      "endMs": 3840.0,
+      "timestampMs": 3800.0,
+      "confidence": null
+    },
+    {
+      "text": "próximo",
+      "startMs": 3890.0,
+      "endMs": 4240.0,
+      "timestampMs": 3890.0,
+      "confidence": null
+    },
+    {
+      "text": "projeto.",
+      "startMs": 4310.0,
+      "endMs": 4800.0,
+      "timestampMs": 4310.0,
+      "confidence": null
+    },
+    {
+      "text": "Vamos",
+      "startMs": 5560.0,
+      "endMs": 5680.0,
+      "timestampMs": 5560.0,
+      "confidence": null
+    },
+    {
+      "text": "colocar",
+      "startMs": 5733.0,
+      "endMs": 6080.0,
+      "timestampMs": 5733.0,
+      "confidence": null
+    },
+    {
+      "text": "essa",
+      "startMs": 6112.0,
+      "endMs": 6240.0,
+      "timestampMs": 6112.0,
+      "confidence": null
+    },
+    {
+      "text": "inteligência",
+      "startMs": 6290.0,
+      "endMs": 6800.0,
+      "timestampMs": 6290.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 6840.0,
+      "endMs": 6880.0,
+      "timestampMs": 6840.0,
+      "confidence": null
+    },
+    {
+      "text": "serviço",
+      "startMs": 6950.0,
+      "endMs": 7440.0,
+      "timestampMs": 6950.0,
+      "confidence": null
+    },
+    {
+      "text": "da",
+      "startMs": 7493.0,
+      "endMs": 7600.0,
+      "timestampMs": 7493.0,
+      "confidence": null
+    },
+    {
+      "text": "Ford.",
+      "startMs": 7664.0,
+      "endMs": 7920.0,
+      "timestampMs": 7664.0,
+      "confidence": null
+    },
+    {
+      "text": "E",
+      "startMs": 9560.0,
+      "endMs": 9600.0,
+      "timestampMs": 9560.0,
+      "confidence": null
+    },
+    {
+      "text": "construir,",
+      "startMs": 9611.0,
+      "endMs": 9840.0,
+      "timestampMs": 9611.0,
+      "confidence": null
+    },
+    {
+      "text": "juntos,",
+      "startMs": 9960.0,
+      "endMs": 10400.0,
+      "timestampMs": 9960.0,
+      "confidence": null
+    },
+    {
+      "text": "a",
+      "startMs": 10760.0,
+      "endMs": 10800.0,
+      "timestampMs": 10760.0,
+      "confidence": null
+    },
+    {
+      "text": "próxima",
+      "startMs": 10850.0,
+      "endMs": 11200.0,
+      "timestampMs": 10850.0,
+      "confidence": null
+    },
+    {
+      "text": "decisão.",
+      "startMs": 11253.0,
+      "endMs": 11680.0,
+      "timestampMs": 11253.0,
+      "confidence": null
+    }
+  ],
+  "model": "eleven_v3",
+  "requestHash": "1d0fa70b7d695ab28043cd541893e73fe13dcc16be136e1304b4ac86ce5c8b1b"
+}

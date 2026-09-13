@@ -1,0 +1,305 @@
+{
+  "identity": {
+    "text": "Por trás dessa experiência, uma ontologia relaciona veículos, especificações e termos dos fabricantes. Os dados ganham um significado comum, preservando unidades e condições. Essa base pode ser alinhada ao vocabulário da Ford. Conhecimento compartilhado pelos agentes.",
+    "voice": "pt-BR-AntonioNeural"
+  },
+  "result": {
+    "id": "04-ontology",
+    "file": "audio/04-ontology.mp3",
+    "duration": 18.264,
+    "offset": 0.75,
+    "voice": "pt-BR-AntonioNeural",
+    "rate": 8,
+    "captions": [
+      {
+        "text": "Por trás dessa experiência uma ontologia relaciona veículos",
+        "startMs": 96.291,
+        "endMs": 3496.499,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "especificações e termos dos fabricantes Os dados",
+        "startMs": 3637.958,
+        "endMs": 7277.499,
+        "timestampMs": 3637.958,
+        "confidence": null
+      },
+      {
+        "text": "ganham um significado comum preservando unidades e condições",
+        "startMs": 7199.083,
+        "endMs": 10981.208,
+        "timestampMs": 7199.083,
+        "confidence": null
+      },
+      {
+        "text": "Essa base pode ser alinhada ao vocabulário da Ford",
+        "startMs": 11689.833,
+        "endMs": 14499.708,
+        "timestampMs": 11689.833,
+        "confidence": null
+      },
+      {
+        "text": "Conhecimento compartilhado pelos agentes",
+        "startMs": 15208.333,
+        "endMs": 17642.166,
+        "timestampMs": 15208.333,
+        "confidence": null
+      }
+    ],
+    "words": [
+      {
+        "text": "Por",
+        "startMs": 96.291,
+        "endMs": 246.749,
+        "timestampMs": 96.291,
+        "confidence": null
+      },
+      {
+        "text": "trás",
+        "startMs": 258.333,
+        "endMs": 512.958,
+        "timestampMs": 258.333,
+        "confidence": null
+      },
+      {
+        "text": "dessa",
+        "startMs": 524.541,
+        "endMs": 709.707,
+        "timestampMs": 524.541,
+        "confidence": null
+      },
+      {
+        "text": "experiência",
+        "startMs": 721.291,
+        "endMs": 1311.582,
+        "timestampMs": 721.291,
+        "confidence": null
+      },
+      {
+        "text": "uma",
+        "startMs": 1624.083,
+        "endMs": 1762.958,
+        "timestampMs": 1624.083,
+        "confidence": null
+      },
+      {
+        "text": "ontologia",
+        "startMs": 1774.541,
+        "endMs": 2318.541,
+        "timestampMs": 1774.541,
+        "confidence": null
+      },
+      {
+        "text": "relaciona",
+        "startMs": 2330.083,
+        "endMs": 2862.499,
+        "timestampMs": 2330.083,
+        "confidence": null
+      },
+      {
+        "text": "veículos",
+        "startMs": 2874.083,
+        "endMs": 3406.499,
+        "timestampMs": 2874.083,
+        "confidence": null
+      },
+      {
+        "text": "especificações",
+        "startMs": 3637.958,
+        "endMs": 4436.583,
+        "timestampMs": 3637.958,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 4448.166,
+        "endMs": 4587.041,
+        "timestampMs": 4448.166,
+        "confidence": null
+      },
+      {
+        "text": "termos",
+        "startMs": 4598.625,
+        "endMs": 4899.541,
+        "timestampMs": 4598.625,
+        "confidence": null
+      },
+      {
+        "text": "dos",
+        "startMs": 4911.125,
+        "endMs": 5084.75,
+        "timestampMs": 4911.125,
+        "confidence": null
+      },
+      {
+        "text": "fabricantes",
+        "startMs": 5096.291,
+        "endMs": 5848.624,
+        "timestampMs": 5096.291,
+        "confidence": null
+      },
+      {
+        "text": "Os",
+        "startMs": 6643.5,
+        "endMs": 6793.958,
+        "timestampMs": 6643.5,
+        "confidence": null
+      },
+      {
+        "text": "dados",
+        "startMs": 6805.541,
+        "endMs": 7187.499,
+        "timestampMs": 6805.541,
+        "confidence": null
+      },
+      {
+        "text": "ganham",
+        "startMs": 7199.083,
+        "endMs": 7557.874,
+        "timestampMs": 7199.083,
+        "confidence": null
+      },
+      {
+        "text": "um",
+        "startMs": 7569.458,
+        "endMs": 7638.916,
+        "timestampMs": 7569.458,
+        "confidence": null
+      },
+      {
+        "text": "significado",
+        "startMs": 7650.458,
+        "endMs": 8321.749,
+        "timestampMs": 7650.458,
+        "confidence": null
+      },
+      {
+        "text": "comum",
+        "startMs": 8333.333,
+        "endMs": 8703.708,
+        "timestampMs": 8333.333,
+        "confidence": null
+      },
+      {
+        "text": "preservando",
+        "startMs": 8981.5,
+        "endMs": 9537.041,
+        "timestampMs": 8981.5,
+        "confidence": null
+      },
+      {
+        "text": "unidades",
+        "startMs": 9548.625,
+        "endMs": 9988.458,
+        "timestampMs": 9548.625,
+        "confidence": null
+      },
+      {
+        "text": "e",
+        "startMs": 10000.0,
+        "endMs": 10115.75,
+        "timestampMs": 10000.0,
+        "confidence": null
+      },
+      {
+        "text": "condições",
+        "startMs": 10127.333,
+        "endMs": 10891.208,
+        "timestampMs": 10127.333,
+        "confidence": null
+      },
+      {
+        "text": "Essa",
+        "startMs": 11689.833,
+        "endMs": 11979.166,
+        "timestampMs": 11689.833,
+        "confidence": null
+      },
+      {
+        "text": "base",
+        "startMs": 11990.75,
+        "endMs": 12326.416,
+        "timestampMs": 11990.75,
+        "confidence": null
+      },
+      {
+        "text": "pode",
+        "startMs": 12337.958,
+        "endMs": 12534.708,
+        "timestampMs": 12337.958,
+        "confidence": null
+      },
+      {
+        "text": "ser",
+        "startMs": 12546.291,
+        "endMs": 12685.166,
+        "timestampMs": 12546.291,
+        "confidence": null
+      },
+      {
+        "text": "alinhada",
+        "startMs": 12696.75,
+        "endMs": 13125.0,
+        "timestampMs": 12696.75,
+        "confidence": null
+      },
+      {
+        "text": "ao",
+        "startMs": 13136.583,
+        "endMs": 13206.041,
+        "timestampMs": 13136.583,
+        "confidence": null
+      },
+      {
+        "text": "vocabulário",
+        "startMs": 13217.583,
+        "endMs": 13819.416,
+        "timestampMs": 13217.583,
+        "confidence": null
+      },
+      {
+        "text": "da",
+        "startMs": 13831.0,
+        "endMs": 13946.75,
+        "timestampMs": 13831.0,
+        "confidence": null
+      },
+      {
+        "text": "Ford",
+        "startMs": 13958.333,
+        "endMs": 14409.708,
+        "timestampMs": 13958.333,
+        "confidence": null
+      },
+      {
+        "text": "Conhecimento",
+        "startMs": 15208.333,
+        "endMs": 15902.791,
+        "timestampMs": 15208.333,
+        "confidence": null
+      },
+      {
+        "text": "compartilhado",
+        "startMs": 15914.333,
+        "endMs": 16585.624,
+        "timestampMs": 15914.333,
+        "confidence": null
+      },
+      {
+        "text": "pelos",
+        "startMs": 16597.208,
+        "endMs": 16782.374,
+        "timestampMs": 16597.208,
+        "confidence": null
+      },
+      {
+        "text": "agentes",
+        "startMs": 16794.0,
+        "endMs": 17442.166,
+        "timestampMs": 16794.0,
+        "confidence": null
+      }
+    ]
+  }
+}
