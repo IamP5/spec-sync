@@ -13,6 +13,12 @@
     background-color: var(--background);
   }
 
+  /* The shell fills app-root, so one element decides the app height (see the mobile rule below). */
+  app-root {
+    display: block;
+    height: 100dvh;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

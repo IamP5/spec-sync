@@ -43,7 +43,8 @@ const MOBILE_SCREEN = '(max-width: 767px)';
   templateUrl: './app-layout-overview.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'block h-dvh overflow-hidden',
+    // app-root owns the height: 100dvh, or the visual viewport above a mobile keyboard.
+    class: 'block h-full overflow-hidden',
     '[style.--visual-viewport-height.px]': 'viewportHeight()',
     '[style.--visual-viewport-top.px]': 'viewportTop()',
     '(document:pointerover)': 'onOutsideInteraction($event)',
