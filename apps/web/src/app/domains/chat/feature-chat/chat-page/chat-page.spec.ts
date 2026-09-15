@@ -468,7 +468,7 @@ describe('ChatPage', () => {
       expect(TestBed.inject(Router).url).toMatch(/^\/c\//);
       expect(
         element.querySelector('[data-role="user"]')?.textContent,
-      ).toContain('Show me the current vehicle catalog');
+      ).toContain('Show me the Ford vehicle catalog');
       expect(element.querySelector('app-vehicle-catalog-card')).not.toBeNull();
       expect(element.textContent).toContain('showing 2 of 2 on this page');
     } finally {
@@ -772,7 +772,9 @@ describe('ChatPage', () => {
     await fixture.whenStable();
 
     const turns = element.querySelectorAll('[data-slot="message"]');
-    expect(turns[0].textContent).toContain('Compare Ranger Black and Limited');
+    expect(turns[0].textContent).toContain(
+      'Compare the Ford F-150 Lariat with the RAM 2500 Laramie',
+    );
     expect(element.querySelector('[aria-label="Suggestions"]')).toBeNull();
   });
 

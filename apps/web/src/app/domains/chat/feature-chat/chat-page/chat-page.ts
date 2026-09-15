@@ -37,8 +37,6 @@ import {
   lucideCheck,
   lucideCopy,
   lucideCornerDownLeft,
-  lucideFileInput,
-  lucideFileSearch,
   lucidePenLine,
   lucideRefreshCw,
   lucideSquare,
@@ -113,28 +111,13 @@ const COMPOSER_COLLAPSE_DISTANCE_PX = 160;
 const SUGGESTIONS = [
   {
     icon: 'lucidePenLine',
-    label: $localize`Compare vehicles`,
-    prompt: $localize`Compare Ranger Black and Limited, BR 2026, on power, torque and 360 camera.`,
-  },
-  {
-    icon: 'lucideFileSearch',
-    label: $localize`Find related reviews`,
-    prompt: $localize`Find articles and videos reviewing the Ford Ranger ride comfort.`,
-  },
-  {
-    icon: 'lucideFileInput',
-    label: $localize`Import specifications`,
-    prompt: $localize`Import the official specifications of the Ford Ranger 2026 (Brazil): find the manufacturer PDF or page, show me which versions it lists, and start a reviewed import for the ones I choose.`,
-  },
-  {
-    icon: 'lucideCarFront',
-    label: $localize`Build a research workspace`,
-    prompt: $localize`Start a research workspace by showing Ford Ranger and Toyota Hilux together in one interactive catalog, Brazil, model year 2026. Let me inspect configurations and choose what to compare.`,
+    label: $localize`Compare F-150 and RAM 2500`,
+    prompt: $localize`Compare the Ford F-150 Lariat with the RAM 2500 Laramie, Brazil, model year 2026, on power, transmission and drivetrain.`,
   },
 ] as const;
 
 /** The prompt behind the catalog card on an empty conversation. */
-const CATALOG_SUGGESTION = $localize`Show me the current vehicle catalog. Search all available configurations with an empty query and display the interactive catalog.`;
+const CATALOG_SUGGESTION = $localize`Show me the Ford vehicle catalog. Search the Ford configurations available in Brazil and display the interactive catalog, listing first the models with the most complete specifications: Transit, E-Transit, Mustang Mach-E, Bronco Sport, F-150, Maverick, Territory and Ranger.`;
 
 const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
   CopilotKitCoreErrorCode.RUNTIME_INFO_FETCH_FAILED,
@@ -210,8 +193,6 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
       lucideCarFront,
       lucideCheck,
       lucideCopy,
-      lucideFileInput,
-      lucideFileSearch,
       lucidePenLine,
       lucideRefreshCw,
       lucideSquare,
