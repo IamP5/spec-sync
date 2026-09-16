@@ -65,9 +65,11 @@ export class VehicleCatalogOverview implements OnChanges {
   protected readonly detailsOpen = signal(false);
   private pendingQuestion?: VehicleQuestion;
 
-  protected readonly summaries = this.searchStore.summariesValue;
+  protected readonly summaries = this.searchStore.highlights;
   protected readonly summariesLoading = this.searchStore.summariesIsLoading;
   protected readonly summariesError = this.searchStore.summariesError;
+  protected readonly nextPageLoading = this.searchStore.nextPageIsPending;
+  protected readonly nextPageFailed = this.searchStore.nextPageFailed;
   protected readonly detail = this.detailStore.detailValue;
   protected readonly detailLoading = this.detailStore.detailIsLoading;
   protected readonly detailError = this.detailStore.detailError;
@@ -82,7 +84,25 @@ export class VehicleCatalogOverview implements OnChanges {
   protected readonly sortMode = computed(() => sortMode(this.filters().sort));
   protected readonly shortlistedIds = signal<ReadonlySet<string>>(new Set());
   protected readonly shortlistMessage = signal('');
-  protected readonly configurations = computed(() => this.page()?.items ?? []);
+  /** The page as returned plus every continuation page loaded in place. */
+  protected readonly configurations = computed(() => [
+    ...(this.page()?.items ?? []),
+    ...this.searchStore.continuation(),
+  ]);
+  /** What the card renders: the grown list and the paging that remains. */
+  protected readonly view = computed<CatalogPage | undefined>(() => {
+    const page = this.page();
+    if (!page) return undefined;
+    const nextSearches = this.searchStore.nextSearches();
+    return {
+      ...page,
+      items: this.configurations(),
+      hasMore: nextSearches.length > 0,
+      limit:
+        nextSearches.reduce((sum, search) => sum + search.limit, 0) ||
+        page.limit,
+    };
+  });
   protected readonly modelSummaries = computed(() =>
     modelSummaries(this.configurations()),
   );
@@ -144,7 +164,7 @@ export class VehicleCatalogOverview implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['page']) return;
     const page = this.page();
-    if (page) this.searchStore.load(page.items.map(({ id }) => id));
+    if (page) this.searchStore.load(page);
   }
 
   protected openDetails(vehicle: VehicleConfiguration): void {
@@ -178,15 +198,9 @@ export class VehicleCatalogOverview implements OnChanges {
     if (vehicles.length >= 2) this.comparisonRequested.emit(vehicles);
   }
 
-  /** Asks the host for the page after the loaded one, with the same search. */
+  /** Loads the next page of the same search into this catalog. */
   protected requestNextPage(): void {
-    const page = this.page();
-    if (page?.hasMore)
-      this.questionRequested.emit({
-        kind: 'catalog-page',
-        offset: page.offset + page.items.length,
-        limit: page.limit,
-      });
+    this.searchStore.loadNextPage();
   }
 
   protected retrySummaries(): void {

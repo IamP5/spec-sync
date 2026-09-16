@@ -6,7 +6,6 @@ import {
   input,
   linkedSignal,
   output,
-  signal,
 } from '@angular/core';
 import { type FieldTree, FormField } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -91,6 +90,8 @@ export class VehicleCatalogCard {
   readonly modelSummaries = input<ModelSummary[]>([]);
   readonly activeFilterCount = input(0);
   readonly shortlistMessage = input('');
+  readonly nextPageLoading = input(false);
+  readonly nextPageFailed = input(false);
   readonly vehicleSelected = output<VehicleConfiguration>();
   readonly shortlistToggled = output<VehicleConfiguration>();
   readonly shortlistCompared = output<void>();
@@ -109,8 +110,18 @@ export class VehicleCatalogCard {
   protected readonly layout = linkedSignal(() =>
     defaultCatalogLayout(this.pageSize()),
   );
-  /** How many of the filtered configurations are rendered. */
-  protected readonly limit = signal(CATALOG_PAGE_STEP);
+  /**
+   * How many of the filtered configurations are rendered. A page that grows
+   * (a next page loaded in place) reveals exactly what it gained, so the
+   * loaded configurations appear instead of hiding behind "show more".
+   */
+  protected readonly limit = linkedSignal<number, number>({
+    source: this.pageSize,
+    computation: (size, previous) =>
+      previous === undefined
+        ? CATALOG_PAGE_STEP
+        : previous.value + Math.max(0, size - previous.source),
+  });
   protected readonly shown = computed(() =>
     this.visibleConfigurations().slice(0, this.limit()),
   );

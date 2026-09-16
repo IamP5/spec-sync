@@ -22,12 +22,14 @@
 </z-drawer>
 
 <app-vehicle-catalog-card
-  [page]="page()"
+  [page]="view()"
   [failure]="failure()"
   [complete]="complete()"
   [summaries]="summaries()"
   [summariesLoading]="summariesLoading()"
   [summariesError]="!!summariesError()"
+  [nextPageLoading]="nextPageLoading()"
+  [nextPageFailed]="nextPageFailed()"
   [searchField]="filterForm.query"
   [sortField]="filterForm.sort"
   [searchQuery]="searchQuery()"

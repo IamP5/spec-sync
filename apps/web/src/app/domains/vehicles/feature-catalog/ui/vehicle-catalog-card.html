@@ -10,7 +10,7 @@
       <span class="font-medium" i18n>Vehicle catalog</span>
       <span class="text-muted-foreground" role="status" i18n
         >· showing {{ shown().length }} of {{ visibleConfigurations().length }}
-        on this page @if (page.hasMore) { · more in the catalog }</span
+        loaded @if (page.hasMore) { · more in the catalog }</span
       >
       <div
         class="ml-auto flex items-center rounded-full bg-muted p-0.5"
@@ -143,6 +143,7 @@
     [shortlistedConfigurations]="shortlistedConfigurations()"
     [hidden]="hidden()"
     [nextPageSize]="nextPageSize()"
+    [nextPageLoading]="nextPageLoading()"
     (vehicleSelected)="vehicleSelected.emit($event)"
     (shortlistToggled)="shortlistToggled.emit($event)"
     (moreRequested)="showMore()"
@@ -202,13 +203,25 @@
     } @if (nextPageSize()) {
     <button
       type="button"
-      class="inline-flex h-7 items-center gap-1 rounded-full border border-border px-2.5 font-medium hover:bg-muted"
+      class="inline-flex h-7 items-center gap-1 rounded-full border border-border px-2.5 font-medium hover:bg-muted disabled:opacity-60"
+      data-action="next-page"
+      [disabled]="nextPageLoading()"
+      [attr.aria-busy]="nextPageLoading()"
       (click)="nextPageRequested.emit()"
-      i18n
     >
-      Load next {{ nextPageSize() }} from the catalog
+      @if (nextPageLoading()) {
+      <ng-container i18n>Loading more from the catalog…</ng-container>
+      } @else {
+      <ng-container i18n
+        >Load next {{ nextPageSize() }} from the catalog</ng-container
+      >
       <ng-icon name="lucideArrowRight" aria-hidden="true" />
+      }
     </button>
+    } @if (nextPageFailed()) {
+    <span role="alert" class="text-destructive" i18n
+      >Could not load more of the catalog.</span
+    >
     } @if (shortlistedConfigurations().length) {
     <span class="text-muted-foreground" i18n
       ><span class="font-medium text-foreground"

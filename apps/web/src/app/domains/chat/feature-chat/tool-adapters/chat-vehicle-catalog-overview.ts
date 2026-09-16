@@ -9,7 +9,9 @@ import {
 import { AngularToolCall, ToolRenderer } from '@copilotkit/angular';
 
 import {
+  type CatalogPage,
   catalogPageSchema,
+  catalogSearchSchema,
   failureSchema,
   type VehicleConfiguration,
   type VehicleQuestion,
@@ -18,7 +20,6 @@ import { VehicleCatalogOverview } from '../../../vehicles/api/features';
 import { parseResult } from '../../util/parse-result';
 import { CHAT_CARD_ACTIONS } from './chat-card-actions';
 import {
-  catalogPagePrompt,
   vehicleComparisonPrompt,
   vehicleQuestionPrompt,
 } from './vehicle-prompts';
@@ -39,7 +40,7 @@ import {
       }
     } @else {
       <app-vehicle-catalog-overview
-        [page]="result()"
+        [page]="page()"
         [failure]="failure()?.message"
         [complete]="toolCall().status === 'complete'"
         [shortlist]="shortlist()"
@@ -69,6 +70,28 @@ export class ChatVehicleCatalogOverview
   protected readonly failure = computed(() =>
     parseResult(this.resultText(), failureSchema),
   );
+  /**
+   * The page with its continuation. A result recorded before the server
+   * returned continuation queries names its search only in the tool
+   * arguments, so the continuation is derived from them once, here, and the
+   * catalog feature pages on without knowing about tool calls.
+   */
+  protected readonly page = computed<CatalogPage | undefined>(() => {
+    const page = this.result();
+    if (!page || page.nextSearches || !page.hasMore) return page;
+    const args = this.toolCall().args;
+    const continuation = catalogSearchSchema.safeParse({
+      q: typeof args['q'] === 'string' ? args['q'] : '',
+      market: typeof args['market'] === 'string' ? args['market'] : undefined,
+      modelYear:
+        typeof args['modelYear'] === 'number' ? args['modelYear'] : undefined,
+      limit: Math.min(20, Math.max(1, page.limit)),
+      offset: page.offset + page.items.length,
+    });
+    return continuation.success
+      ? { ...page, nextSearches: [continuation.data] }
+      : page;
+  });
   protected readonly query = computed(() => {
     const args = this.toolCall().args;
     return [
@@ -80,17 +103,7 @@ export class ChatVehicleCatalogOverview
       .join(' · ');
   });
   protected ask(question: VehicleQuestion): void {
-    // The next page is navigation, not a question: it is sent with the
-    // original search arguments instead of being drafted for editing.
-    if (question.kind === 'catalog-page')
-      this.actions?.send(
-        catalogPagePrompt(
-          question,
-          this.toolCall().args,
-          this.result()?.nextSearches,
-        ),
-      );
-    else this.actions?.draft(vehicleQuestionPrompt(question));
+    this.actions?.draft(vehicleQuestionPrompt(question));
   }
   protected compare(vehicles: VehicleConfiguration[]): void {
     this.actions?.send(vehicleComparisonPrompt(vehicles));

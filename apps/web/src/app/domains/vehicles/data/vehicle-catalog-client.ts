@@ -1,8 +1,17 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, resource, type Signal } from '@angular/core';
-import { firstValueFrom, fromEvent, takeUntil } from 'rxjs';
+import {
+  firstValueFrom,
+  fromEvent,
+  map,
+  type Observable,
+  takeUntil,
+} from 'rxjs';
 
 import {
+  type CatalogPage,
+  catalogPageSchema,
+  type CatalogSearch,
   type Comparison,
   comparisonSchema,
   type VehicleImageMetadata,
@@ -50,6 +59,24 @@ export class VehicleCatalogClient {
         );
       },
     });
+  }
+
+  /**
+   * One continuation query of a rendered catalog, answered by the same
+   * catalog endpoint the AI service searches, so the page grows in place.
+   */
+  searchConfigurations(search: CatalogSearch): Observable<CatalogPage> {
+    const params = new URLSearchParams({
+      q: search.q,
+      limit: String(search.limit),
+      offset: String(search.offset),
+    });
+    if (search.market) params.set('market', search.market);
+    if (search.modelYear !== undefined)
+      params.set('modelYear', String(search.modelYear));
+    return this.http
+      .get<unknown>(`/api/vehicle-configurations?${params}`)
+      .pipe(map((value) => catalogPageSchema.parse(value)));
   }
 
   detailResource(configurationId: Signal<string | undefined>) {

@@ -18,23 +18,23 @@ describe('VehicleCatalogOverview', () => {
       matches: false,
       breakpoints: {},
     });
+    nextPage = undefined;
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockImplementation((input: string | URL | Request) =>
-        Promise.resolve(
-          new Response(
-            JSON.stringify(
-              String(input).includes('/api/vehicle-specifications')
-                ? detail
-                : summary,
-            ),
-            {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' },
-            },
-          ),
-        ),
-      ),
+      vi.fn().mockImplementation((input: string | URL | Request) => {
+        const url = String(input);
+        const body = url.includes('/api/vehicle-configurations')
+          ? nextPage
+          : url.includes('/api/vehicle-specifications')
+            ? detail
+            : summary;
+        return Promise.resolve(
+          new Response(JSON.stringify(body), {
+            status: body ? 200 : 503,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        );
+      }),
     );
     await TestBed.configureTestingModule({
       imports: [VehicleCatalogOverview],
@@ -50,6 +50,7 @@ describe('VehicleCatalogOverview', () => {
       limit: 20,
       offset: 0,
       hasMore: true,
+      nextSearches: [{ q: '', limit: 20, offset: 3 }],
     });
     fixture.componentRef.setInput('complete', true);
     fixture.componentInstance.questionRequested.subscribe(draft);
@@ -110,7 +111,7 @@ describe('VehicleCatalogOverview', () => {
     ]);
   });
 
-  it('opens a large page as a list, reveals it in steps and asks for the next page', async () => {
+  it('opens a large page as a list, reveals it in steps and grows with the next page', async () => {
     const large = TestBed.createComponent(VehicleCatalogOverview);
     const items = Array.from({ length: 9 }, (_, index) =>
       configuration(crypto.randomUUID(), 'Ford', 'Ranger', `Trim ${index}`),
@@ -120,6 +121,7 @@ describe('VehicleCatalogOverview', () => {
       limit: 20,
       offset: 0,
       hasMore: true,
+      nextSearches: [{ q: '', limit: 20, offset: 9 }],
     });
     const questions = vi.fn();
     large.componentInstance.questionRequested.subscribe(questions);
@@ -127,7 +129,7 @@ describe('VehicleCatalogOverview', () => {
     const element = large.nativeElement as HTMLElement;
     expect(element.querySelector('app-vehicle-catalog-list')).not.toBeNull();
     expect(rows(element)).toHaveLength(4);
-    expect(element.textContent).toContain('showing 4 of 9 on this page');
+    expect(element.textContent).toContain('showing 4 of 9 loaded');
     expect(element.textContent).toContain('more in the catalog');
     expect(element.textContent).not.toContain('Load next');
 
@@ -142,12 +144,29 @@ describe('VehicleCatalogOverview', () => {
       items.map(({ id }) => id),
     );
 
+    const loaded = [
+      configuration(crypto.randomUUID(), 'Ford', 'Ranger', 'Trim 9'),
+      configuration(crypto.randomUUID(), 'Ford', 'Ranger', 'Trim 10'),
+    ];
+    nextPage = { items: loaded, limit: 20, offset: 9, hasMore: false };
     buttonNamed(element, 'Load next 20 from the catalog').click();
-    expect(questions).toHaveBeenCalledWith({
-      kind: 'catalog-page',
-      offset: 9,
-      limit: 20,
-    });
+    await large.whenStable();
+    await large.whenStable();
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes('/api/vehicle-configurations'))
+        .map((url) => url.slice(url.indexOf('/api/'))),
+    ).toEqual(['/api/vehicle-configurations?q=&limit=20&offset=9']);
+    expect(questions).not.toHaveBeenCalled();
+    // The loaded configurations are revealed, not hidden behind "show more".
+    expect(rows(element)).toHaveLength(11);
+    expect(rows(element).map((row) => row.dataset['configurationId'])).toEqual(
+      [...items, ...loaded].map(({ id }) => id),
+    );
+    expect(element.textContent).toContain('showing 11 of 11 loaded');
+    expect(element.textContent).not.toContain('Load next');
 
     buttonNamed(element, 'Show less').click();
     await large.whenStable();
@@ -230,7 +249,7 @@ describe('VehicleCatalogOverview', () => {
   it('filters the loaded page and sorts known highlights before unknowns', async () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(rows(element)).toHaveLength(3);
-    expect(element.textContent).toContain('showing 3 of 3 on this page');
+    expect(element.textContent).toContain('showing 3 of 3 loaded');
     expect(element.textContent).toContain('more in the catalog');
 
     const search = element.querySelector<HTMLInputElement>(
@@ -243,7 +262,7 @@ describe('VehicleCatalogOverview', () => {
     expect(rows(element).map((row) => row.dataset['configurationId'])).toEqual([
       HILUX_ID,
     ]);
-    expect(element.textContent).toContain('showing 1 of 1 on this page');
+    expect(element.textContent).toContain('showing 1 of 1 loaded');
 
     search.value = '';
     search.dispatchEvent(new Event('input', { bubbles: true }));
@@ -365,6 +384,8 @@ describe('VehicleCatalogOverview', () => {
 });
 
 const BLACK_ID = '08e08761-a2e7-5ae5-b2ad-387e93829fb7';
+/** The catalog page the API answers a continuation query with; undefined fails the request. */
+let nextPage: unknown;
 const LIMITED_ID = 'f94a2350-0a1a-5ad3-aef8-3c0c472c72a1';
 const HILUX_ID = 'c28c64e4-801a-5d29-b4c2-083a888a79f3';
 

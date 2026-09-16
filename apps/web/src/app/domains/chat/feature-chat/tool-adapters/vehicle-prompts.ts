@@ -1,5 +1,4 @@
 import type {
-  CatalogPage,
   IngestionStartArgs,
   VehicleConfiguration,
   VehicleQuestion,
@@ -12,29 +11,8 @@ export function vehicleComparisonPrompt(
 }
 
 /**
- * Asks for the next page of the catalog search that produced a rendered page.
- * `args` are the arguments of that search tool call, so the page keeps the
- * same query, market and model year.
- */
-export function catalogPagePrompt(
-  question: Extract<VehicleQuestion, { kind: 'catalog-page' }>,
-  args: Record<string, unknown> = {},
-  nextSearches?: CatalogPage['nextSearches'],
-): string {
-  if (nextSearches?.length)
-    return `Show the next catalog page for these searches. Call searchVehicleConfigurations once with ${JSON.stringify({ searches: nextSearches })}. Its result renders one catalog containing all returned vehicles.`;
-  const scope = ['q', 'market', 'modelYear']
-    .filter((key) => args[key] !== undefined && args[key] !== '')
-    .map((key) => `${key} ${JSON.stringify(args[key])}`);
-  return `Show the next page of the vehicle catalog: up to ${question.limit} configurations from offset ${question.offset}${scope.length ? `, keeping the same search (${scope.join(', ')})` : ''}. Call searchVehicleConfigurations with exactly this offset and limit and render the result as the catalog.`;
-}
-
-/**
- * The prompt a vehicle card hands to the chat. Every branch except
- * `catalog-page` is *drafted* into the composer, so the user reads and edits
- * it: those are translated. `catalog-page` is sent straight through and names
- * a tool with its arguments, so it stays in the source language where the
- * wording is part of the contract with the agent.
+ * The prompt a vehicle card hands to the chat. Every branch is *drafted*
+ * into the composer, so the user reads and edits it: they are translated.
  */
 export function vehicleQuestionPrompt(question: VehicleQuestion): string {
   switch (question.kind) {
@@ -70,8 +48,6 @@ export function vehicleQuestionPrompt(question: VehicleQuestion): string {
         .join('; ');
       return $localize`Find articles, blogs and videos about ${attribute}:attribute: for ${configurations}:configurations:. Distinguish discovered links from reviews that are already verified.`;
     }
-    case 'catalog-page':
-      return catalogPagePrompt(question);
   }
 }
 

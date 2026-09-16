@@ -10,6 +10,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   LOCALE_ID,
   signal,
   untracked,
@@ -31,6 +32,7 @@ import { CopilotKitCoreErrorCode } from '@copilotkit/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowDown,
+  lucideArrowLeftRight,
   lucideArrowUp,
   lucideBrain,
   lucideCarFront,
@@ -91,6 +93,12 @@ import { RunOptionsPicker } from '../ui/run-options-picker';
 import { registerChatTools } from './chat-tools';
 import { ConversationDetailStore } from './conversation-detail-store';
 import { ModelSearchStore } from './model-search-store';
+// PROTOTYPE imports — see ./prototype/README.md
+import { HomeBackdropGrid } from './prototype/home-backdrop-grid';
+import { HomeBackdropParticles } from './prototype/home-backdrop-particles';
+import { HomeBackdropRoad } from './prototype/home-backdrop-road';
+import { HomeBackdropShader } from './prototype/home-backdrop-shader';
+import { PrototypeSwitcher } from './prototype/prototype-switcher';
 
 const PROMPT_REQUIRED_MESSAGE = $localize`Type a message to send.`;
 const OFFLINE_MESSAGE = $localize`The assistant is unavailable. Make sure the AI service is running.`;
@@ -170,6 +178,11 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     ZardSpinnerComponent,
     ZardTextareaComponent,
     ZardTooltipDirective,
+    HomeBackdropGrid,
+    HomeBackdropParticles,
+    HomeBackdropRoad,
+    HomeBackdropShader,
+    PrototypeSwitcher,
   ],
   providers: [
     {
@@ -187,12 +200,14 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
   viewProviders: [
     provideIcons({
       lucideArrowDown,
+      lucideArrowLeftRight,
       lucideArrowUp,
       lucideCornerDownLeft,
       lucideBrain,
       lucideCarFront,
       lucideCheck,
       lucideCopy,
+
       lucidePenLine,
       lucideRefreshCw,
       lucideSquare,
@@ -200,7 +215,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     }),
   ],
   templateUrl: './chat-page.html',
-  styleUrl: './chat-page.css',
+  styleUrls: ['./chat-page.css', './prototype/home-hybrid.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex min-h-0 flex-1 flex-col' },
 })
@@ -222,6 +237,11 @@ export class ChatPage {
 
   /** Route parameter of `/c/:threadId`; undefined on the root route. */
   readonly threadId = input<string>();
+  /** PROTOTYPE: `?variant=` selects a home screen variant. */
+  readonly variant = input<string>();
+  readonly brand = input<string>();
+  readonly lockup = input<string>();
+  protected readonly prototypeBar = isDevMode();
   private readonly session = inject(SESSION);
   private readonly auth = inject(AuthSessionCoordinator);
   /** Formats the character limit the way the user's language writes numbers. */
@@ -608,6 +628,25 @@ export class ChatPage {
 
   protected onSuggestion(prompt: string): void {
     void this.requestSend(prompt);
+  }
+
+  /** Prototype lighting stays local to the surface, without rerendering chat state. */
+  protected onHomePointerMove(event: PointerEvent): void {
+    if (
+      event.pointerType === 'touch' ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+      return;
+    const surface = event.currentTarget as HTMLElement;
+    const bounds = surface.getBoundingClientRect();
+    surface.style.setProperty(
+      '--pointer-x',
+      `${event.clientX - bounds.left}px`,
+    );
+    surface.style.setProperty(
+      '--pointer-y',
+      `${event.clientY - bounds.top + surface.scrollTop}px`,
+    );
   }
 
   protected async onCopy(turn: ChatTurn): Promise<void> {

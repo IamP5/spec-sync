@@ -19,6 +19,8 @@ export {
 export {
   type CatalogPage,
   catalogPageSchema,
+  type CatalogSearch,
+  catalogSearchSchema,
   type Comparison,
   comparisonSchema,
   failureSchema,

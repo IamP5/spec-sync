@@ -76,6 +76,17 @@ export const comparisonSchema = z.object({
     z.object({ attribute: attributeSchema, cells: z.array(cellSchema) }),
   ),
 });
+/** One bounded catalog query; a page's continuation queries carry the offset after it. */
+export const catalogSearchSchema = z.object({
+  q: z.string().max(100),
+  market: z
+    .string()
+    .regex(/^[A-Z]{2}$/)
+    .optional(),
+  modelYear: z.number().int().min(1900).max(2200).optional(),
+  limit: z.number().int().min(1).max(20),
+  offset: z.number().int().min(0).max(100000),
+});
 export const catalogPageSchema = z.object({
   items: z.array(configurationSchema),
   limit: z.number().int(),
@@ -83,21 +94,7 @@ export const catalogPageSchema = z.object({
   hasMore: z.boolean(),
   status: z.enum(['OK', 'PARTIAL']).optional(),
   notices: z.array(z.string()).optional(),
-  nextSearches: z
-    .array(
-      z.object({
-        q: z.string().max(100),
-        market: z
-          .string()
-          .regex(/^[A-Z]{2}$/)
-          .optional(),
-        modelYear: z.number().int().min(1900).max(2200).optional(),
-        limit: z.number().int().min(1).max(20),
-        offset: z.number().int().min(0).max(100000),
-      }),
-    )
-    .max(5)
-    .optional(),
+  nextSearches: z.array(catalogSearchSchema).max(5).optional(),
 });
 export const knowledgeSchema = z.object({
   status: z.enum(['OK', 'EMPTY', 'UNAVAILABLE']),
@@ -134,5 +131,6 @@ export const searchSchema = z.object({
 export type Comparison = z.infer<typeof comparisonSchema>;
 export type VehicleConfiguration = z.infer<typeof configurationSchema>;
 export type CatalogPage = z.infer<typeof catalogPageSchema>;
+export type CatalogSearch = z.infer<typeof catalogSearchSchema>;
 
 export type VehicleImageMetadata = z.infer<typeof vehicleImageSchema>;

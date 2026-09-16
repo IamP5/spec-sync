@@ -323,7 +323,12 @@ describe('ChatPage', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('h1')?.textContent).toContain('New chat');
     expect(element.querySelector('textarea#prompt')).not.toBeNull();
-    expect(element.querySelector('[aria-label="Suggestions"]')).not.toBeNull();
+    expect(
+      element.querySelector('[aria-labelledby="home-suggested-title"]'),
+    ).not.toBeNull();
+    expect(element.querySelector('.home-brand-mono')).not.toBeNull();
+    expect(element.querySelector('.home-brand-stacked')).toBeNull();
+    expect(element.querySelector('app-prototype-switcher')).toBeNull();
   });
 
   it('shows conversation skeletons for a stored chat while the account is restored', async () => {
@@ -470,7 +475,7 @@ describe('ChatPage', () => {
         element.querySelector('[data-role="user"]')?.textContent,
       ).toContain('Show me the Ford vehicle catalog');
       expect(element.querySelector('app-vehicle-catalog-card')).not.toBeNull();
-      expect(element.textContent).toContain('showing 2 of 2 on this page');
+      expect(element.textContent).toContain('showing 2 of 2 loaded');
     } finally {
       vi.unstubAllGlobals();
     }
@@ -608,7 +613,7 @@ describe('ChatPage', () => {
     expect(TestBed.inject(ConversationDetailStore).isEmpty()).toBe(true);
     expect(
       (fixture.nativeElement as HTMLElement).querySelector(
-        '[aria-label="Suggestions"]',
+        '[aria-labelledby="home-suggested-title"]',
       ),
     ).not.toBeNull();
   });
@@ -763,7 +768,7 @@ describe('ChatPage', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     const suggestion = element.querySelector<HTMLButtonElement>(
-      '[aria-label="Suggestions"] button',
+      '[aria-labelledby="home-suggested-title"] button[title]',
     );
     expect(suggestion).not.toBeNull();
     suggestion?.click();
@@ -775,7 +780,9 @@ describe('ChatPage', () => {
     expect(turns[0].textContent).toContain(
       'Compare the Ford F-150 Lariat with the RAM 2500 Laramie',
     );
-    expect(element.querySelector('[aria-label="Suggestions"]')).toBeNull();
+    expect(
+      element.querySelector('[aria-labelledby="home-suggested-title"]'),
+    ).toBeNull();
   });
 
   it('offers copy and regenerate on the finished reply', async () => {

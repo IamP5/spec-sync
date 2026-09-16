@@ -124,14 +124,20 @@ import { VehicleCatalogItems } from './vehicle-catalog-items';
         } @else if (nextPageSize()) {
           <button
             type="button"
-            class="grid aspect-[16/10] w-40 shrink-0 snap-start place-items-center self-start rounded-2xl border border-dashed border-border px-3 text-center hover:bg-muted/50"
+            class="grid aspect-[16/10] w-40 shrink-0 snap-start place-items-center self-start rounded-2xl border border-dashed border-border px-3 text-center hover:bg-muted/50 disabled:opacity-60"
+            [disabled]="nextPageLoading()"
+            [attr.aria-busy]="nextPageLoading()"
             (click)="nextPageRequested.emit()"
           >
             <span>
               <ng-icon name="lucideArrowRight" aria-hidden="true" />
-              <span class="block text-xs font-medium" i18n
-                >Load next {{ nextPageSize() }}</span
-              >
+              @if (nextPageLoading()) {
+                <span class="block text-xs font-medium" i18n>Loading…</span>
+              } @else {
+                <span class="block text-xs font-medium" i18n
+                  >Load next {{ nextPageSize() }}</span
+                >
+              }
               <span class="block text-xs text-muted-foreground" i18n
                 >from the catalog</span
               >
@@ -147,6 +153,8 @@ export class VehicleCatalogStrip extends VehicleCatalogItems {
   readonly hidden = input(0);
   /** Size of the next catalog page to offer; zero hides the offer. */
   readonly nextPageSize = input(0);
+  /** The next page is being loaded into this catalog. */
+  readonly nextPageLoading = input(false);
   readonly moreRequested = output<void>();
   readonly nextPageRequested = output<void>();
 }
