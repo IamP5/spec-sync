@@ -417,27 +417,4 @@
   :host ::ng-deep .chat-markdown li + li {
     margin-top: 0.625rem;
   }
-
-  .chat-empty {
-    justify-content: flex-start;
-    padding: 1.5rem 0.75rem max(0.5rem, env(safe-area-inset-bottom));
-  }
-
-  .chat-empty-content {
-    flex: 1;
-    gap: 1.5rem;
-  }
-
-  .chat-empty-content > :first-child {
-    margin-top: auto;
-  }
-
-  .chat-empty-composer {
-    position: sticky;
-    bottom: 0;
-    order: 1;
-    margin-top: auto;
-    padding-top: 0.75rem;
-    background: transparent;
-  }
 }

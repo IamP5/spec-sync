@@ -327,8 +327,6 @@ describe('ChatPage', () => {
       element.querySelector('[aria-labelledby="home-suggested-title"]'),
     ).not.toBeNull();
     expect(element.querySelector('.home-brand-mono')).not.toBeNull();
-    expect(element.querySelector('.home-brand-stacked')).toBeNull();
-    expect(element.querySelector('app-prototype-switcher')).toBeNull();
   });
 
   it('shows conversation skeletons for a stored chat while the account is restored', async () => {

@@ -9,7 +9,6 @@ import {
   ElementRef,
   inject,
   input,
-  isDevMode,
   LOCALE_ID,
   signal,
   untracked,
@@ -91,13 +90,8 @@ import { CreditsPill } from '../ui/credits-pill';
 import { RunOptionsPicker } from '../ui/run-options-picker';
 import { registerChatTools } from './chat-tools';
 import { ConversationDetailStore } from './conversation-detail-store';
+import { HomeBackdrop } from './home-backdrop';
 import { ModelSearchStore } from './model-search-store';
-// PROTOTYPE imports — see ./prototype/README.md
-import { HomeBackdropGrid } from './prototype/home-backdrop-grid';
-import { HomeBackdropParticles } from './prototype/home-backdrop-particles';
-import { HomeBackdropRoad } from './prototype/home-backdrop-road';
-import { HomeBackdropShader } from './prototype/home-backdrop-shader';
-import { PrototypeSwitcher } from './prototype/prototype-switcher';
 
 const PROMPT_REQUIRED_MESSAGE = $localize`Type a message to send.`;
 const OFFLINE_MESSAGE = $localize`The assistant is unavailable. Make sure the AI service is running.`;
@@ -176,11 +170,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     ZardSpinnerComponent,
     ZardTextareaComponent,
     ZardTooltipDirective,
-    HomeBackdropGrid,
-    HomeBackdropParticles,
-    HomeBackdropRoad,
-    HomeBackdropShader,
-    PrototypeSwitcher,
+    HomeBackdrop,
   ],
   providers: [
     {
@@ -213,7 +203,7 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
     }),
   ],
   templateUrl: './chat-page.html',
-  styleUrls: ['./chat-page.css', './prototype/home-hybrid.css'],
+  styleUrls: ['./chat-page.css', './home.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex min-h-0 flex-1 flex-col' },
 })
@@ -235,11 +225,6 @@ export class ChatPage {
 
   /** Route parameter of `/c/:threadId`; undefined on the root route. */
   readonly threadId = input<string>();
-  /** PROTOTYPE: `?variant=` selects a home screen variant. */
-  readonly variant = input<string>();
-  readonly brand = input<string>();
-  readonly lockup = input<string>();
-  protected readonly prototypeBar = isDevMode();
   private readonly session = inject(SESSION);
   private readonly auth = inject(AuthSessionCoordinator);
   /** Formats the character limit the way the user's language writes numbers. */

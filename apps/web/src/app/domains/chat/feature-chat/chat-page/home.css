@@ -1,4 +1,4 @@
-/* Prototype E: neutral surfaces, restrained lighting and the Ford brand lockup. */
+/* Home screen: neutral surfaces, restrained lighting and the Ford brand lockup. */
 .home-hybrid-content {
   padding-block: clamp(2.5rem, 7vh, 5rem);
 }
@@ -48,10 +48,6 @@
   line-height: 1.1;
 }
 
-.home-brand-blue .home-wordmark {
-  color: var(--primary);
-}
-
 /* The original vector remains the accessible image; its mask follows the theme. */
 .home-brand-mono .home-ford {
   background: currentColor;
@@ -60,19 +56,6 @@
 
 .home-brand-mono img {
   opacity: 0;
-}
-
-.home-brand-stacked {
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.home-brand-stacked .home-brand-divider {
-  display: none;
-}
-
-.home-brand-stacked .home-ford {
-  width: 6rem;
 }
 
 .home-composer .chat-composer {

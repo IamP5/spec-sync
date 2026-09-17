@@ -1,23 +1,20 @@
-// PROTOTYPE variant A backdrop — Vercel-style dot grid with a slow spotlight beam. CSS only.
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+// Home screen backdrop: a dot grid, a slow beam, a light wash and a cursor light. CSS only.
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'app-home-backdrop-grid',
+  selector: 'app-home-backdrop',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'pointer-events-none absolute inset-0 overflow-hidden',
     'aria-hidden': 'true',
-    '[class.refined]': 'refined()',
   },
   template: `
     <div class="grid-dots absolute inset-0"></div>
     <div
       class="beam absolute left-1/2 top-[-40%] h-[90%] w-[60%] -translate-x-1/2"
     ></div>
-    @if (refined()) {
-      <div class="light-wash absolute inset-0"></div>
-      <div class="cursor-light absolute inset-0"></div>
-    }
+    <div class="light-wash absolute inset-0"></div>
+    <div class="cursor-light absolute inset-0"></div>
     <div
       class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
     ></div>
@@ -29,25 +26,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         color-mix(in oklab, var(--foreground) 22%, transparent) 1px,
         transparent 0
       );
-      background-size: 22px 22px;
-      mask-image: radial-gradient(
-        ellipse 70% 60% at 50% 35%,
-        #000 20%,
-        transparent 75%
-      );
-    }
-    .beam {
-      background: conic-gradient(
-        from 180deg at 50% 0%,
-        transparent 0deg,
-        color-mix(in oklab, var(--primary) 55%, transparent) 25deg,
-        transparent 50deg
-      );
-      filter: blur(28px);
-      opacity: 0.55;
-      animation: sway 9s ease-in-out infinite alternate;
-    }
-    :host(.refined) .grid-dots {
       background-size: 24px 24px;
       opacity: 0.65;
       mask-image: radial-gradient(
@@ -56,7 +34,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         transparent 85%
       );
     }
-    :host(.refined) .beam {
+    .beam {
       top: -55%;
       left: 50%;
       width: 110%;
@@ -72,7 +50,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       );
       filter: blur(40px);
       opacity: 0.7;
-      animation-duration: 18s;
+      animation: sway 18s ease-in-out infinite alternate;
     }
     .light-wash {
       background: radial-gradient(
@@ -106,6 +84,4 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     }
   `,
 })
-export class HomeBackdropGrid {
-  readonly refined = input(false);
-}
+export class HomeBackdrop {}
