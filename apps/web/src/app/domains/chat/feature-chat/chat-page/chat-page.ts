@@ -1,4 +1,3 @@
-import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 import { NgOptimizedImage, NgTemplateOutlet } from '@angular/common';
 import {
   afterRenderEffect,
@@ -125,7 +124,7 @@ const SUGGESTIONS = [
 ] as const;
 
 /** The prompt behind the catalog card on an empty conversation. */
-const CATALOG_SUGGESTION = $localize`Show me the Ford vehicle catalog. Search the Ford configurations available in Brazil and display the interactive catalog, listing first the models with the most complete specifications: Transit, E-Transit, Mustang Mach-E, Bronco Sport, F-150, Maverick, Territory and Ranger.`;
+const CATALOG_SUGGESTION = $localize`Show me the Ford vehicle catalog. Search the Ford configurations available in Brazil and display them in one interactive catalog, listing Ranger, F-150, Territory, Maverick and Mustang first and the rest of the Ford lineup after them.`;
 
 const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
   CopilotKitCoreErrorCode.RUNTIME_INFO_FETCH_FAILED,
@@ -153,7 +152,6 @@ const OFFLINE_CODES: ReadonlySet<CopilotKitCoreErrorCode> = new Set([
 @Component({
   selector: 'app-chat-page',
   imports: [
-    CdkTextareaAutosize,
     FormField,
     MarkdownPipe,
     NgIcon,
@@ -493,6 +491,35 @@ export class ChatPage {
         );
       measure();
       const observer = new ResizeObserver(measure);
+      observer.observe(element);
+      onCleanup(() => observer.disconnect());
+    });
+
+    // The prompt grows with the draft. Measuring with `height: auto` never
+    // starts a transition (auto is not animatable), so the compact fold keeps
+    // its motion while typing stays still. CDK autosize was dropped: it zeroes
+    // the height on Firefox while measuring, and the prompt's height transition
+    // turned every keystroke into a shrink-and-grow.
+    afterRenderEffect(() => {
+      const draft = this.model().prompt;
+      const element = this.prompt()?.nativeElement;
+      if (!element) return;
+      // The stylesheet pins an empty prompt to one line.
+      if (!draft) element.style.height = '';
+      else untracked(() => this.fitPrompt());
+    });
+
+    // Wrapping changes with the width (sidebar, viewport, layout motion).
+    afterRenderEffect((onCleanup) => {
+      const element = this.prompt()?.nativeElement;
+      if (!element || typeof ResizeObserver === 'undefined') return;
+      let previousWidth = element.clientWidth;
+      const observer = new ResizeObserver(() => {
+        const width = element.clientWidth;
+        if (width === previousWidth) return;
+        previousWidth = width;
+        this.fitPrompt();
+      });
       observer.observe(element);
       onCleanup(() => observer.disconnect());
     });
@@ -871,6 +898,17 @@ export class ChatPage {
   private clearPrompt(): void {
     this.model.set({ prompt: '' });
     this.promptForm.prompt().reset();
+  }
+
+  /** Size the prompt to its content; the stylesheet caps it with max-height. */
+  private fitPrompt(): void {
+    const element = this.prompt()?.nativeElement;
+    if (!element || element.clientWidth === 0) return;
+    const style = getComputedStyle(element);
+    const padding =
+      parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    element.style.height = 'auto';
+    element.style.height = `${Math.max(element.scrollHeight - padding, 0)}px`;
   }
 
   private isLastAssistant(turn: ChatTurn): boolean {

@@ -162,8 +162,7 @@
   }
 }
 
-/* CDK autosizing also supports Safari versions without field-sizing. */
-/* One line at rest; the textarea grows with the draft up to max-height. */
+/* One line at rest; chat-page.ts sizes the textarea to the draft up to max-height. */
 .chat-prompt {
   field-sizing: fixed;
   box-sizing: content-box;
@@ -179,7 +178,7 @@
     padding var(--composer-motion);
 }
 
-/* An empty prompt is exactly one line, whatever CDK autosize measured inline. */
+/* An empty prompt is exactly one line, whatever height was measured inline. */
 .chat-prompt:placeholder-shown {
   height: 1lh !important;
 }
@@ -317,7 +316,7 @@
 }
 
 @media (min-width: 640px) {
-  /* CDK autosize writes the prompt height inline; the single compact line must win. */
+  /* The measured prompt height is inline; the single compact line must win. */
   .chat-composer-compact .chat-prompt {
     height: 1lh !important;
     min-height: 0;
