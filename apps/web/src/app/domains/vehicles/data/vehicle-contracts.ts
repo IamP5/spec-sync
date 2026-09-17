@@ -94,7 +94,7 @@ export const catalogPageSchema = z.object({
   hasMore: z.boolean(),
   status: z.enum(['OK', 'PARTIAL']).optional(),
   notices: z.array(z.string()).optional(),
-  nextSearches: z.array(catalogSearchSchema).max(5).optional(),
+  nextSearches: z.array(catalogSearchSchema).max(8).optional(),
 });
 export const knowledgeSchema = z.object({
   status: z.enum(['OK', 'EMPTY', 'UNAVAILABLE']),

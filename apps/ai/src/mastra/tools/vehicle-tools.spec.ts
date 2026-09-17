@@ -143,6 +143,71 @@ it('returns both vehicles from one tool call with independent continuation scope
   });
 });
 
+it('lists a brand lineup in search order, the broad brand query last, in one result without duplicates', async () => {
+  let sequence = 0;
+  const configuration = (model: string, name: string) => ({
+    id: `f94a2350-0a1a-5ad3-aef8-${String(++sequence).padStart(12, '0')}`,
+    primaryImage: null,
+    brand: 'Ford',
+    model,
+    name,
+    market: 'BR',
+    modelYear: 2026,
+    identityStatus: 'VERIFIED',
+    identityNote: null,
+    identityEvidenceId: null,
+  });
+  const ranger = configuration('Ranger', 'Limited');
+  const f150 = configuration('F-150', 'Lariat');
+  const territory = configuration('Territory', 'Titanium');
+  const maverick = configuration('Maverick', 'Lariat');
+  const mustang = configuration('Mustang', 'Dark Horse');
+  const bronco = configuration('Bronco Sport', 'Wildtrak');
+  const byQuery: Record<string, unknown[]> = {
+    'Ford Ranger': [ranger],
+    'Ford F-150': [f150],
+    'Ford Territory': [territory],
+    'Ford Maverick': [maverick],
+    'Ford Mustang': [mustang],
+    Ford: [bronco, f150, maverick, mustang, ranger, territory],
+  };
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      async (url: URL) =>
+        new Response(
+          JSON.stringify({
+            items: byQuery[url.searchParams.get('q') ?? ''] ?? [],
+            limit: 20,
+            offset: 0,
+            hasMore: url.searchParams.get('q') === 'Ford',
+          }),
+        ),
+    ),
+  );
+  const searches = [
+    'Ford Ranger',
+    'Ford F-150',
+    'Ford Territory',
+    'Ford Maverick',
+    'Ford Mustang',
+    'Ford',
+  ].map((q) => ({ q, market: 'BR', limit: 20, offset: 0 }));
+  expect(catalogSearchInputSchema.safeParse({ searches }).success).toBe(true);
+  const result = await searchVehicleConfigurations.execute?.(
+    { searches },
+    { observe: noopObserve },
+  );
+  expect(result).toMatchObject({
+    status: 'OK',
+    items: [ranger, f150, territory, maverick, mustang, bronco],
+    hasMore: true,
+    // The browser pages the rest of the lineup itself; the agent never calls again.
+    nextSearches: [{ q: 'Ford', market: 'BR', limit: 20, offset: 6 }],
+    notices: [],
+  });
+});
+
 it('preserves successful configurations while explicitly reporting failed and empty queries', async () => {
   vi.stubGlobal(
     'fetch',
@@ -195,7 +260,7 @@ it('bounds complete search intent and rejects cancelled runs before retrieval', 
   );
   expect(
     catalogSearchInputSchema.safeParse({
-      searches: Array.from({ length: 6 }, () => ({ q: 'Ranger' })),
+      searches: Array.from({ length: 9 }, () => ({ q: 'Ranger' })),
     }).success,
   ).toBe(false);
   expect(

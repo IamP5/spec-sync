@@ -21,11 +21,23 @@ import { attributeCodeSchema, retrieveGraph } from '../graph/retrieval';
 export const searchVehicleConfigurations = createTool({
   id: 'searchVehicleConfigurations',
   description:
-    'Find and display ONE interactive vehicle catalog. Put ALL vehicles named in the request into the searches array in ONE call, for example searches: [{q: "BYD Shark"}, {q: "Ford Ranger"}]. The server retrieves and returns their authoritative configurations together; CopilotKit renders that single result. Do not issue one tool call per vehicle or copy facts into a separate UI tool. Broaden only searches reported empty, preserve requested market/year, and never select an ambiguous trim silently. For more results, pass the returned nextSearches as searches.',
+    'Find and display ONE interactive vehicle catalog. Put ALL vehicles named in the request into the searches array in ONE call (up to 8), for example searches: [{q: "BYD Shark"}, {q: "Ford Ranger"}]. For a brand lineup, list the models to show first and end with one broad brand query, for example [{q: "Ford Ranger"}, {q: "Ford F-150"}, {q: "Ford"}]: results keep the search order and duplicates are dropped. The server retrieves and returns the authoritative configurations together; CopilotKit renders that single result as an interactive catalog in which the user searches, filters, opens details and loads the next pages without you. Never call this tool again to page, refine, narrow or re-display a catalog already shown in the conversation; call it again only for a different set of vehicles the user asks for. Do not issue one tool call per vehicle or copy facts into a separate UI tool. Broaden only searches reported empty, preserve requested market/year, and never select an ambiguous trim silently.',
   inputSchema: catalogSearchInputSchema,
   outputSchema: catalogSearchOutputSchema,
   inputExamples: [
     { input: { searches: [{ q: 'BYD Shark' }, { q: 'Ford Ranger' }] } },
+    {
+      input: {
+        searches: [
+          { q: 'Ford Ranger', market: 'BR' },
+          { q: 'Ford F-150', market: 'BR' },
+          { q: 'Ford Territory', market: 'BR' },
+          { q: 'Ford Maverick', market: 'BR' },
+          { q: 'Ford Mustang', market: 'BR' },
+          { q: 'Ford', market: 'BR' },
+        ],
+      },
+    },
   ],
   execute: (input, context) => searchCatalog(input, context?.abortSignal),
 });
