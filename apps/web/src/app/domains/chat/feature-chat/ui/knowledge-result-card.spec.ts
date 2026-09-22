@@ -223,3 +223,41 @@ it('labels external specification sources without presenting them as manufacture
     'https://www.webmotors.com.br/catalogo/byd/shark',
   );
 });
+
+it('renders a failed graph lookup as one quiet line instead of a card', async () => {
+  const fixture = TestBed.createComponent(KnowledgeResultCard);
+  fixture.componentRef.setInput('toolCall', {
+    name: 'resolveComparisonConcepts',
+    status: 'complete',
+    args: {},
+    result: JSON.stringify({
+      status: 'UNAVAILABLE',
+      message:
+        'Graph retrieval failed or was cancelled. Retry or use the catalog comparison; no missing-data conclusion can be drawn.',
+      items: [],
+    }),
+  });
+  await fixture.whenStable();
+  const element = fixture.nativeElement as HTMLElement;
+  expect(element.querySelector('z-card')).toBeNull();
+  expect(element.textContent).toContain('Specification identification');
+  expect(element.textContent).toContain('Unavailable right now');
+  expect(element.textContent).not.toContain('Graph retrieval failed');
+  expect(element.querySelector('[role="status"]')?.className).toContain(
+    'max-w-3xl',
+  );
+});
+
+it('keeps the card only for results with items', async () => {
+  const fixture = TestBed.createComponent(KnowledgeResultCard);
+  fixture.componentRef.setInput('toolCall', {
+    name: 'searchReviewEvidence',
+    status: 'complete',
+    args: {},
+    result: JSON.stringify({ status: 'OK', items: [] }),
+  });
+  await fixture.whenStable();
+  const element = fixture.nativeElement as HTMLElement;
+  expect(element.querySelector('z-card')).toBeNull();
+  expect(element.textContent).toContain('No matching results');
+});

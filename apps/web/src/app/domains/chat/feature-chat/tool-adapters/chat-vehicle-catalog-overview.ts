@@ -27,14 +27,24 @@ import {
 @Component({
   selector: 'app-chat-vehicle-catalog-overview',
   imports: [VehicleCatalogOverview],
+  // Notices and the empty outcome are quiet lines in the reply column, the
+  // same column the assistant text and the tool notes use; only a catalog
+  // with vehicles takes the wider surface.
   template: `@for (notice of result()?.notices ?? []; track $index) {
-      <p class="mb-2 text-sm text-muted-foreground" role="status">
+      <p
+        class="mx-auto mb-2 w-full max-w-3xl text-sm text-muted-foreground"
+        role="status"
+      >
         {{ notice }}
       </p>
     }
     @if (result()?.items?.length === 0 && !result()?.hasMore) {
       @if (!result()?.notices?.length) {
-        <p class="text-sm text-muted-foreground" role="status" i18n>
+        <p
+          class="mx-auto w-full max-w-3xl text-sm text-muted-foreground"
+          role="status"
+          i18n
+        >
           No configurations found for {{ query() }}.
         </p>
       }
