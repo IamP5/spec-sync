@@ -50,13 +50,20 @@ export async function projectReviews() {
 }
 
 export async function seedAttributeAliases() {
-  await postgres(
-    await readFile(
-      new URL(
-        '../../api/src/main/resources/db/migration/V4__attribute_terminology.sql',
-        import.meta.url,
+  // Alias migrations join catalog.attribute_definition, so they are re-run after
+  // the seed creates the definitions they name.
+  for (const migration of [
+    'V4__attribute_terminology.sql',
+    'V18__raptor_terminology.sql',
+  ]) {
+    await postgres(
+      await readFile(
+        new URL(
+          `../../api/src/main/resources/db/migration/${migration}`,
+          import.meta.url,
+        ),
+        'utf8',
       ),
-      'utf8',
-    ),
-  );
+    );
+  }
 }

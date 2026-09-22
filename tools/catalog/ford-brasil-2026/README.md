@@ -2,7 +2,7 @@
 
 This directory reproduces the Ford Brasil catalog captured on 2026-09-12.
 The checked-in manifest contains 12 current product lines, 44 configurations,
-65 catalog attribute definitions, official-source provenance, and two explicit
+71 catalog attribute definitions, official-source provenance, and two explicit
 supersessions for obsolete local Ranger identities. Future-launch cards are not
 included.
 
