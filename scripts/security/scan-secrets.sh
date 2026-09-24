@@ -17,6 +17,9 @@ args=(git "file://$(git rev-parse --show-toplevel)" --branch HEAD
 if [ "$#" -eq 1 ]; then
   git cat-file -e "$1^{commit}"
   args+=(--since-commit "$1")
+  echo "TruffleHog: scanning $(git rev-list --count "$1..HEAD") commits ($(git rev-parse --short "$1")..$(git rev-parse --short HEAD))."
+else
+  echo "TruffleHog: scanning full reachable history ($(git rev-list --count HEAD) commits up to $(git rev-parse --short HEAD))."
 fi
 
 if ! "$trufflehog" "${args[@]}" >"$result" 2>"$error"; then

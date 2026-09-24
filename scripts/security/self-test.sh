@@ -8,16 +8,28 @@ tmp="$(mktemp -d)"
 trap 'rm -r -- "$tmp"' EXIT
 
 cat >"$tmp/Unsafe.java" <<'JAVA'
+import javax.crypto.Cipher;
+
 class Unsafe {
     void run() throws Exception {
         Runtime.getRuntime().exec("true");
     }
+
+    Cipher cipher() throws Exception {
+        return Cipher.getInstance("AES");
+    }
 }
 JAVA
+cat >"$tmp/unsafe.ts" <<'TS'
+export function render(element: HTMLElement, sanitizer: { bypassSecurityTrustHtml(value: string): unknown }) {
+  element.innerHTML = location.hash;
+  return sanitizer.bypassSecurityTrustHtml(location.hash);
+}
+TS
 
 if "$semgrep" scan --config "$root/.semgrep/security.yml" --metrics=off --error \
-  --json --output "$tmp/semgrep.json" --quiet "$tmp/Unsafe.java"; then
-  echo "Semgrep accepted a synthetic process invocation." >&2
+  --json --output "$tmp/semgrep.json" --quiet "$tmp/Unsafe.java" "$tmp/unsafe.ts"; then
+  echo "Semgrep accepted the synthetic fixtures." >&2
   exit 1
 else
   status=$?
@@ -32,11 +44,16 @@ import sys
 
 with open(sys.argv[1], encoding="utf-8") as result:
     scan = json.load(result)
-assert not scan["errors"], "Semgrep could not analyze the synthetic Java file"
-assert any(
-    finding["check_id"].endswith("java-runtime-exec")
+assert not scan["errors"], "Semgrep could not analyze the synthetic fixtures"
+detected = {
+    (finding["check_id"].rsplit(".", 1)[-1], finding["path"].rsplit("/", 1)[-1], finding["start"]["line"])
     for finding in scan["results"]
-), "Semgrep did not detect the synthetic process invocation"
+}
+expected = {"java-runtime-exec", "java-weak-cipher", "dom-html-injection", "angular-bypass-security-trust"}
+missing = expected - {rule for rule, _, _ in detected}
+assert not missing, f"Semgrep did not detect the synthetic fixtures for: {sorted(missing)}"
+for rule, path, line in sorted(detected):
+    print(f"Semgrep fixture: {rule} detected at {path}:{line}")
 PY
 
 git -C "$tmp" init -q
@@ -60,5 +77,6 @@ else
     exit 1
   fi
 fi
+grep -E '^TruffleHog: |"detector"' "$tmp/trufflehog-summary" | sed 's/^/TruffleHog fixture: /'
 
-echo "Security self-test passed: Semgrep detected the Java fixture and TruffleHog rejected the Git fixture."
+echo "Security self-test passed: Semgrep detected the Java and TypeScript fixtures and TruffleHog rejected the Git fixture."

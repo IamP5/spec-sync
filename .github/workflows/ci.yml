@@ -39,23 +39,52 @@ jobs:
           SEMGREP_SEND_METRICS: 'off'
         run: |
           result="$RUNNER_TEMP/semgrep.json"
-          trap 'rm -f "$result"' EXIT
+          unsuppressed="$RUNNER_TEMP/semgrep-nosem.json"
+          trap 'rm -f "$result" "$unsuppressed"' EXIT
           semgrep scan --config .semgrep/security.yml --metrics=off --json --output "$result" --quiet .
-          python3 - "$result" <<'PY'
+          # Second pass ignores nosemgrep so every triaged suppression is listed, not hidden.
+          semgrep scan --config .semgrep/security.yml --metrics=off --json --output "$unsuppressed" --quiet --disable-nosem .
+          python3 - "$result" "$unsuppressed" "$(semgrep --version)" <<'PY'
+          import collections
           import json
+          import re
           import sys
 
-          with open(sys.argv[1], encoding="utf-8") as output:
-              scan = json.load(output)
+          def load(path):
+              with open(path, encoding="utf-8") as output:
+                  return json.load(output)
+
+          def key(finding):
+              return (finding["check_id"].rsplit(".", 1)[-1], finding["path"], finding["start"]["line"])
+
+          scan, unsuppressed, version = load(sys.argv[1]), load(sys.argv[2]), sys.argv[3]
+          with open(".semgrep/security.yml", encoding="utf-8") as config:
+              rules = re.findall(r"^\s*- id:\s*(\S+)", config.read(), re.MULTILINE)
           findings = scan["results"]
           errors = scan["errors"]
+          suppressed = sorted(set(map(key, unsuppressed["results"])) - set(map(key, findings)))
+
+          print(f"Semgrep {version}: {len(rules)} rules from .semgrep/security.yml")
           print(f"Semgrep: {len(scan['paths']['scanned'])} files, "
-                f"{len(findings)} findings, {len(errors)} scan warnings/errors.")
+                f"{len(findings)} findings, {len(suppressed)} triaged suppressions, "
+                f"{len(errors)} scan warnings/errors.")
+          per_rule = collections.Counter(key(finding)[0] for finding in findings)
+          for rule in rules:
+              print(f"  {rule}: {per_rule[rule]}")
           for finding in findings:
+              rule, path, line = key(finding)
+              print(json.dumps({"rule": rule, "file": path, "line": line}, ensure_ascii=True))
+          for rule, path, line in suppressed:
+              print(json.dumps({"suppressed": rule, "file": path, "line": line}, ensure_ascii=True))
+          for error in errors:
+              kind = error.get("type")
+              kind = kind[0] if isinstance(kind, list) else kind
+              spans = error.get("spans") or [{}]
               print(json.dumps({
-                  "rule": finding["check_id"],
-                  "file": finding["path"],
-                  "line": finding["start"]["line"],
+                  "warning": kind,
+                  "level": error.get("level"),
+                  "file": error.get("path") or spans[0].get("file"),
+                  "line": spans[0].get("start", {}).get("line"),
               }, ensure_ascii=True))
           if findings or any(error.get("level") == "error" for error in errors):
               sys.exit(1)
