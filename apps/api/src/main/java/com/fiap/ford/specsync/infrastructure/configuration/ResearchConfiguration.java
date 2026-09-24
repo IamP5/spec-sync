@@ -22,8 +22,13 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(ResearchProperties.class)
+@EnableConfigurationProperties({ResearchProperties.class, FieldEncryptionProperties.class})
 public class ResearchConfiguration {
+
+    @Bean
+    FieldCipher fieldCipher(final FieldEncryptionProperties properties) {
+        return new FieldCipher(properties);
+    }
 
     /** Base path of the internal research API; everything below it needs {@code ROLE_AI_RESEARCH}. */
     public static final String PATH = "/api/internal/research/**";
