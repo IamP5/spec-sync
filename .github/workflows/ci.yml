@@ -68,6 +68,12 @@ jobs:
           tar -xzOf "$RUNNER_TEMP/trufflehog.tar.gz" trufflehog > "$RUNNER_TEMP/trufflehog"
           chmod 700 "$RUNNER_TEMP/trufflehog"
 
+      - name: Verify scanners detect synthetic findings
+        env:
+          TRUFFLEHOG_BIN: ${{ runner.temp }}/trufflehog
+          SEMGREP_SEND_METRICS: 'off'
+        run: bash scripts/security/self-test.sh
+
       - name: Scan new commits for secret candidates
         env:
           TRUFFLEHOG_BIN: ${{ runner.temp }}/trufflehog
