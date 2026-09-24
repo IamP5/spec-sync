@@ -1,0 +1,30 @@
+rules:
+  - id: java-runtime-exec
+    languages: [java]
+    severity: ERROR
+    message: Avoid invoking operating-system commands from the API.
+    pattern: Runtime.getRuntime().exec(...)
+
+  - id: java-process-builder
+    languages: [java]
+    severity: ERROR
+    message: Review process execution; prefer a dedicated API without shell input.
+    pattern: new ProcessBuilder(...)
+
+  - id: java-unparameterized-jdbc
+    languages: [java]
+    severity: WARNING
+    message: Review Statement usage; prefer parameterized JDBC queries.
+    pattern: $CONNECTION.createStatement()
+
+  - id: javascript-eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Do not execute dynamically constructed JavaScript.
+    pattern: eval(...)
+
+  - id: javascript-function-constructor
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Do not compile dynamically constructed JavaScript.
+    pattern: new Function(...)

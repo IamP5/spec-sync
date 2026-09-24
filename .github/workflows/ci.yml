@@ -18,6 +18,73 @@ jobs:
   affected:
     uses: ./.github/workflows/affected.yml
 
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository and history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Semgrep
+        run: python -m pip install semgrep==1.178.0
+
+      - name: Scan source with local Semgrep rules
+        env:
+          SEMGREP_SEND_METRICS: 'off'
+        run: |
+          result="$RUNNER_TEMP/semgrep.json"
+          trap 'rm -f "$result"' EXIT
+          semgrep scan --config .semgrep/security.yml --metrics=off --json --output "$result" --quiet .
+          python3 - "$result" <<'PY'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as output:
+              scan = json.load(output)
+          findings = scan["results"]
+          errors = scan["errors"]
+          print(f"Semgrep: {len(scan['paths']['scanned'])} files, "
+                f"{len(findings)} findings, {len(errors)} scan warnings/errors.")
+          for finding in findings:
+              print(json.dumps({
+                  "rule": finding["check_id"],
+                  "file": finding["path"],
+                  "line": finding["start"]["line"],
+              }, ensure_ascii=True))
+          if findings or any(error.get("level") == "error" for error in errors):
+              sys.exit(1)
+          PY
+
+      - name: Install TruffleHog
+        run: |
+          curl -fsSL https://github.com/trufflesecurity/trufflehog/releases/download/v3.97.9/trufflehog_3.97.9_linux_amd64.tar.gz -o "$RUNNER_TEMP/trufflehog.tar.gz"
+          echo '40377e6572495412fb9ba0bc21c9401f73b72f1d2afd11b9931bc4a5ed622866  '"$RUNNER_TEMP/trufflehog.tar.gz" | sha256sum -c -
+          tar -xzOf "$RUNNER_TEMP/trufflehog.tar.gz" trufflehog > "$RUNNER_TEMP/trufflehog"
+          chmod 700 "$RUNNER_TEMP/trufflehog"
+
+      - name: Scan new commits for secret candidates
+        env:
+          TRUFFLEHOG_BIN: ${{ runner.temp }}/trufflehog
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              BASE="$(git rev-parse HEAD~1)"
+              echo "Base commit unavailable; scanning the last commit."
+            else
+              echo "No base commit available; scanning full reachable history."
+              bash scripts/security/scan-secrets.sh
+              exit
+            fi
+          fi
+          bash scripts/security/scan-secrets.sh "$BASE"
+
   checks:
     needs: affected
     runs-on: ubuntu-latest
