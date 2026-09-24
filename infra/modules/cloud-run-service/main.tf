@@ -110,7 +110,8 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
   name     = google_cloud_run_v2_service.this.name
   location = google_cloud_run_v2_service.this.location
   role     = "roles/run.invoker"
-  member   = "allUsers"
+  # Only the gateway sets allow_unauthenticated; it verifies the Firebase token itself.
+  member = "allUsers" # nosemgrep: terraform-public-principal
 }
 
 # Optional custom domain. Cloud Run domain mappings are a preview feature limited to a few

@@ -1,3 +1,5 @@
+set -e
+
 # Format staged files (see lint-staged in package.json)
 npx lint-staged
 
