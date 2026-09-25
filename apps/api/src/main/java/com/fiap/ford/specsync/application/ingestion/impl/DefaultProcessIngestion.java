@@ -20,9 +20,10 @@ public class DefaultProcessIngestion extends ProcessIngestion {
     }
 
     @Override
-    public void execute(Boolean projection) {
+    public Boolean execute(Boolean projection) {
         if (projection) {
-            gateway.claimProjection().ifPresent(work -> {
+            var claimed = gateway.claimProjection();
+            claimed.ifPresent(work -> {
                 try {
                     extraction.project(work);
                     gateway.finishProjection(work, null);
@@ -30,22 +31,24 @@ public class DefaultProcessIngestion extends ProcessIngestion {
                     gateway.finishProjection(work, "Graph update failed; automatic retry pending.");
                 }
             });
-        } else {
-            gateway.claim().ifPresent(work -> {
-                try {
-                    gateway.complete(
-                            work,
-                            extraction.extract(
-                                    work,
-                                    work.ontology() == null
-                                            ? catalog.attributes()
-                                            : work.ontology().attributes()));
-                } catch (RuntimeException e) {
-                    gateway.fail(
-                            work,
-                            "Source processing failed. Check source support, worker configuration and server logs, then submit a new run after three attempts.");
-                }
-            });
+            return claimed.isPresent();
         }
+        var claimed = gateway.claim();
+        claimed.ifPresent(work -> {
+            try {
+                gateway.complete(
+                        work,
+                        extraction.extract(
+                                work,
+                                work.ontology() == null
+                                        ? catalog.attributes()
+                                        : work.ontology().attributes()));
+            } catch (RuntimeException e) {
+                gateway.fail(
+                        work,
+                        "Source processing failed. Check source support, worker configuration and server logs, then submit a new run after three attempts.");
+            }
+        });
+        return claimed.isPresent();
     }
 }

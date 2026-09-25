@@ -5,10 +5,16 @@ import com.fiap.ford.specsync.infrastructure.configuration.IngestionProperties;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+/**
+ * Resident poller for local development. On Cloud Run the instance scales to zero, so polling is
+ * switched off and Cloud Scheduler drives the queue through {@code POST /api/internal/ingestion/drain}.
+ */
 @Component
+@ConditionalOnProperty(name = "specsync.ingestion.poll", havingValue = "true", matchIfMissing = true)
 public class IngestionWorker {
     private static final Logger LOG = LoggerFactory.getLogger(IngestionWorker.class);
     private final ProcessIngestion process;
