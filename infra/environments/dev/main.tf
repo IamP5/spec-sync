@@ -128,9 +128,9 @@ module "api" {
 
   cpu    = "1"
   memory = "1Gi"
-  # The durable queue is consumed by a scheduled API worker, outside HTTP requests.
-  min_instances             = 1
-  cpu_idle                  = false
+  # Scales to zero with CPU billed per request: Cloud Scheduler drives the durable queue through
+  # the API (ingestion-worker.tf), and one drain can take up to about 28 minutes.
+  request_timeout           = "1800s"
   max_instances             = 2
   startup_cpu_boost         = true
   startup_failure_threshold = 24
@@ -152,6 +152,9 @@ module "api" {
     SPECSYNC_INGESTION_ENABLED                    = "true"
     SPECSYNC_RESEARCH_POLICY_VERSION              = "br-v1"
     SPECSYNC_INGESTION_WORKER_URL                 = "https://${local.name}-ai-${data.google_project.current.number}.${var.region}.run.app"
+    SPECSYNC_INGESTION_POLL                       = "false"
+    SPECSYNC_INGESTION_TRIGGER_SERVICE_ACCOUNT    = google_service_account.ingestion_trigger.email
+    SPECSYNC_INGESTION_TRIGGER_AUDIENCE           = local.api_url
     SPRING_CLOUD_GCP_PROJECT_ID                   = var.project_id
     SPRING_CLOUD_GCP_SQL_INSTANCE_CONNECTION_NAME = module.database.connection_name
     SPRING_CLOUD_GCP_SQL_DATABASE_NAME            = module.database.database_name
