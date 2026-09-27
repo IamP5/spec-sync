@@ -53,5 +53,24 @@ class GreetingControllerWebMvcTest {
                 .andExpect(jsonPath("$.errors[0].property").value("name"));
     }
 
+    @Test
+    void hidesUnexpectedFailuresBehindAGeneric500Problem() throws Exception {
+        when(createGreeting.execute(any(CreateGreeting.Input.class)))
+                .thenThrow(new IllegalStateException("database password is hunter2"));
+
+        mockMvc.perform(get("/api/greeting").param("name", "Tuba"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.detail").value("An unexpected error occurred"));
+    }
+
+    @Test
+    void answersMissingParameterWith400Problem() throws Exception {
+        mockMvc.perform(get("/api/greeting"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.instance").value("/api/greeting"));
+    }
+
     private record Output(String message, String hash) implements CreateGreeting.Output {}
 }

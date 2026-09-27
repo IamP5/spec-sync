@@ -26,11 +26,14 @@ cross-site session cookies and no custom OAuth callback/exchange implementation.
 `GET /auth/session` returns only `{ uid }` for session verification.
 `GET /user/me` returns `{ uid, email, displayName, photoUrl, roles }` from verified claims.
 Roles are informational application data in Angular, never a UI permission check or
-editable preference. Business authorization remains a future backend policy. New users
-receive no implicit role. Operators can assign roles using ADC:
+editable preference. The gateway authenticates; the API authorises. It re-validates the
+forwarded ID token and grants access by its `roles` claim: `curator` for ingestion
+review and ontology activation, and `admin` for everything a curator may do (see
+`apps/api/docs/adr/0004-gateway-authenticates-api-authorises.md`). New users receive no
+role and are plain users. Operators assign roles using ADC:
 
 ```sh
-node apps/gateway/ops/set-user-roles.mjs PROJECT_ID UID reviewer
+node apps/gateway/ops/set-user-roles.mjs PROJECT_ID UID curator
 # Omitting roles clears them. Every change revokes tokens and requires a new login.
 ```
 
@@ -52,13 +55,16 @@ node apps/gateway/ops/set-user-roles.mjs PROJECT_ID UID reviewer
   The wrapper filters headers, forbids upstream redirects and prevents shared caching.
 - Hono's official CORS middleware allows `FRONTEND_ORIGIN` and the exact, optional
   comma-separated `ADDITIONAL_FRONTEND_ORIGINS`, including preflight
-  and the headers needed for streaming and curator workflows. CORS is not authentication;
+  and the headers needed for streaming. CORS is not authentication;
   even non-browser clients must supply valid tokens.
 - The gateway adds an ADC Cloud Run ID token in `X-Serverless-Authorization` for the
-  exact upstream audience. Browser cookies, bearer authorization and forged identity
-  headers are removed. Existing `X-Ingestion-Key` curator credentials are preserved.
-- `X-SpecSync-Token` carries the original signed Identity Platform token to API/AI;
-  future user policies must verify it with `verifyIdToken`, including expected project.
+  exact upstream audience. Browser cookies, the browser's own headers and forged
+  identity headers are removed. The retired `X-Ingestion-Key` curator key is no longer
+  forwarded.
+- The verified Identity Platform token reaches the API as `Authorization: Bearer`. The
+  API is an OAuth 2.0 resource server that validates the JWT (signature, issuer,
+  audience = project, expiry) and authorises by role. The AI service receives the same
+  token in `X-SpecSync-Token` and verifies it with `verifyIdToken`.
   `X-SpecSync-User` is normalized base64url JSON for context, not an authorization proof.
 - API and AI also use workload identity for their existing internal calls.
 

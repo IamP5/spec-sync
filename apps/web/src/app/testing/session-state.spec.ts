@@ -13,7 +13,6 @@ import { WEB_CONFIG } from '../domains/shared/util-config';
 import { UserProfileClient } from '../domains/user/data/user-profile-client';
 import { PreferencesDetailStore } from '../domains/user/state/preferences-detail-store';
 import { USER_STORAGE_SCOPE } from '../domains/user/util/storage-scope';
-import { CuratorSessionClient } from '../domains/vehicles/data/curator-session-client';
 import { provideFakeAuth } from './fake-auth';
 import { testUser } from './fake-user';
 
@@ -50,14 +49,11 @@ describe('account-owned state lifecycle', () => {
   afterEach(() => TestBed.inject(HttpTestingController).verify());
   it('initializes late consumers from the verified UID and resets each owner synchronously', () => {
     const preferences = TestBed.inject(PreferencesDetailStore);
-    const curator = TestBed.inject(CuratorSessionClient);
     preferences.update({ displayName: 'Alice', theme: 'dark' });
-    curator.set('private-key');
     const session = TestBed.inject(SessionContext);
     session.invalidate();
     expect(preferences.displayName()).toBe('');
     expect(preferences.theme()).toBe('system');
-    expect(curator.key()).toBe('');
     session.establish('bob', session.begin('bob'));
     expect(preferences.displayName()).toBe('');
     preferences.update({ displayName: 'Bob' });

@@ -45,11 +45,8 @@ public class CreditsConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.ignoringRequestMatchers(PATH))
                 .authorizeHttpRequests(requests -> requests.anyRequest().hasRole("AI_CREDITS"))
-                .exceptionHandling(handling -> handling.authenticationEntryPoint((request, response, failure) -> {
-                    response.setStatus(401);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"detail\":\"Credits service authentication required\"}");
-                }))
+                .exceptionHandling(handling -> handling.authenticationEntryPoint(
+                        ProblemResponses.unauthorized("Credits service authentication required")))
                 .addFilterBefore(new ServiceKeyFilter(properties), AnonymousAuthenticationFilter.class);
         return http.build();
     }

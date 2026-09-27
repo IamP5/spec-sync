@@ -1,63 +1,56 @@
 package com.fiap.ford.specsync.infrastructure.configuration;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.List;
+import com.fiap.ford.specsync.domain.access.Role;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
-import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * Curator surface: vehicle ingestion review and ontology activation. The caller is the user the
+ * gateway authenticated; access needs the {@code curator} role (or {@code admin}, which implies it)
+ * in the verified token, validated exactly like every other user request ({@link
+ * SecurityConfiguration}). While ingestion is disabled the surface is closed for everyone.
+ */
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(IngestionProperties.class)
 @EnableScheduling
 public class IngestionConfiguration {
+
+    static final String[] PATHS = {"/api/ingestions/**", "/api/ontology/**"};
+
     @Bean
     @Order(1)
-    public SecurityFilterChain ingestionSecurity(HttpSecurity http, IngestionProperties properties) throws Exception {
-        http.securityMatcher("/api/ingestions/**", "/api/ontology/**")
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(c -> c.ignoringRequestMatchers("/api/ingestions/**", "/api/ontology/**"))
-                .authorizeHttpRequests(a -> a.anyRequest().hasRole("INGESTION"))
-                .exceptionHandling(e -> e.authenticationEntryPoint((request, response, ex) -> {
-                    response.setStatus(401);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"detail\":\"Curator authentication required\"}");
-                }))
-                .addFilterBefore(
-                        new OncePerRequestFilter() {
-                            @Override
-                            protected void doFilterInternal(
-                                    HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-                                    throws ServletException, IOException {
-                                String key = properties.reviewerKey(), supplied = request.getHeader("X-Ingestion-Key");
-                                if (properties.enabled()
-                                        && key != null
-                                        && key.length() >= 32
-                                        && supplied != null
-                                        && MessageDigest.isEqual(
-                                                key.getBytes(StandardCharsets.UTF_8),
-                                                supplied.getBytes(StandardCharsets.UTF_8))) {
-                                    var context = SecurityContextHolder.createEmptyContext();
-                                    context.setAuthentication(new UsernamePasswordAuthenticationToken(
-                                            "curator", null, List.of(new SimpleGrantedAuthority("ROLE_INGESTION"))));
-                                    SecurityContextHolder.setContext(context);
-                                }
-                                chain.doFilter(request, response);
-                            }
-                        },
-                        AnonymousAuthenticationFilter.class);
+    SecurityFilterChain ingestionSecurity(
+            final HttpSecurity http,
+            final IngestionProperties properties,
+            final JwtAuthenticationConverter userTokenConverter)
+            throws Exception {
+        final var unauthorized = ProblemResponses.unauthorized("Curator authentication required");
+        final var forbidden = ProblemResponses.forbidden(
+                properties.enabled() ? "The curator role is required" : "Vehicle ingestion is disabled");
+        http.securityMatcher(PATHS)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authorize -> {
+                    if (properties.enabled()) {
+                        authorize.anyRequest().hasRole(Role.CURATOR.name());
+                    } else {
+                        authorize.anyRequest().denyAll();
+                    }
+                })
+                .oauth2ResourceServer(resourceServer -> resourceServer
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(userTokenConverter))
+                        .authenticationEntryPoint(unauthorized)
+                        .accessDeniedHandler(forbidden))
+                .exceptionHandling(handling ->
+                        handling.authenticationEntryPoint(unauthorized).accessDeniedHandler(forbidden));
         return http.build();
     }
 }

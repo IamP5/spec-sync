@@ -1,31 +1,7 @@
-@if (!hasKey()) {
-<form
-  (submit)="connect($event)"
-  class="flex flex-wrap items-end gap-2 rounded-xl border p-4"
-  i18n-aria-label
-  aria-label="Curator access"
->
-  <label class="min-w-0 flex-1 text-sm">
-    <span class="mb-1 flex items-center gap-1 font-medium">
-      <ng-icon name="lucideKeyRound" aria-hidden="true" />
-      <span i18n>Curator key</span>
-    </span>
-    <input
-      z-input
-      type="password"
-      autocomplete="off"
-      [formField]="keyForm.key"
-      i18n-placeholder
-      placeholder="Enter your curator key to open this import"
-    />
-  </label>
-  <button z-button type="submit" [zDisabled]="keyForm().invalid()" i18n>
-    Connect
-  </button>
-  <p class="w-full text-xs text-muted-foreground" i18n>
-    The key stays in memory for this page load and is only sent to the API.
-  </p>
-</form>
+@if (!signedIn()) {
+<p class="rounded-xl border p-4 text-sm text-muted-foreground" i18n>
+  Sign in to open this import.
+</p>
 } @else if (run(); as run) {
 <div class="space-y-4">
   <header class="flex flex-wrap items-start justify-between gap-3">
@@ -91,7 +67,7 @@
       [source]="draft.source"
       [warnings]="draft.warnings"
       [downloading]="store.downloadSourceIsPending()"
-      [downloadFailed]="!!store.downloadSourceError()"
+      [downloadError]="store.downloadFailure()"
       (downloadRequested)="store.downloadSource()"
     />
   </div>

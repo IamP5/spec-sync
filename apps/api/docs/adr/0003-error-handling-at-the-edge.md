@@ -31,3 +31,21 @@ to HTTP and cannot be reused by a message consumer or a second endpoint.
 - The Angular app receives one error shape for every business failure.
 - Adding a new failure kind means adding a domain exception subtype and one
   handler method; controllers stay untouched.
+
+## Addendum (2026-09-27): one error shape for every status
+
+Every error body is an RFC 9457 `ProblemDetail` (`application/problem+json`)
+with `type`, `title`, `status`, `detail` and `instance`. When properties failed,
+it also carries `errors: [{property, message}]`.
+
+| Status          | Raised by                                                     | Notes                                                                                                         |
+| --------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 400             | Bean Validation, malformed JSON, missing/unparsable parameter | `errors` lists the failed fields (`GlobalExceptionHandler.handleMethodArgumentNotValid`)                      |
+| 401             | Spring Security, before any controller                        | `ProblemResponses.unauthorized`; `WWW-Authenticate: Bearer`, plus `reason` when a presented token was refused |
+| 402             | `InsufficientCreditsException`                                | carries `code`, `available`, `minimumCharge`, `cheaperModels`                                                 |
+| 403             | Spring Security (role missing)                                | `ProblemResponses.forbidden`                                                                                  |
+| 404             | `CreditRunNotFoundException`, unknown route                   |                                                                                                               |
+| 405 / 406 / 415 | Spring MVC                                                    | defaults of `ResponseEntityExceptionHandler`                                                                  |
+| 409             | `CreditRun*` conflicts                                        |                                                                                                               |
+| 422             | `DomainException` and subtypes                                | business invariant violated                                                                                   |
+| 500             | anything unexpected                                           | logged; the body never exposes internals                                                                      |

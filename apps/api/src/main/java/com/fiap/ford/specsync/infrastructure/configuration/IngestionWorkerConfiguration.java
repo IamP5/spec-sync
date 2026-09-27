@@ -55,11 +55,8 @@ public class IngestionWorkerConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.ignoringRequestMatchers(PATH))
                 .authorizeHttpRequests(requests -> requests.anyRequest().hasRole("INGESTION_WORKER"))
-                .exceptionHandling(handling -> handling.authenticationEntryPoint((request, response, failure) -> {
-                    response.setStatus(401);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"detail\":\"Ingestion trigger authentication required\"}");
-                }))
+                .exceptionHandling(handling -> handling.authenticationEntryPoint(
+                        ProblemResponses.unauthorized("Ingestion trigger authentication required")))
                 .addFilterBefore(
                         new SchedulerTokenFilter(properties, ingestionTriggerTokenVerifier),
                         AnonymousAuthenticationFilter.class);

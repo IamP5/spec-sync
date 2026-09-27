@@ -79,8 +79,8 @@ import { parseResult } from '../../util/parse-result';
       } @else {
         <strong i18n>Start this import?</strong>
         <p class="mt-1 mb-3 text-muted-foreground" i18n>
-          Check the scope, then start the extraction with your curator key. The
-          agent never receives the key.
+          Check the scope, then start the extraction from your signed-in curator
+          account.
         </p>
         <app-vehicle-ingestion-launch-edit
           [prefill]="prefill()"

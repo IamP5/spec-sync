@@ -96,7 +96,8 @@ class CatalogControllerWebMvcTest {
 
     @Test
     void keepsUnrelatedRoutesProtected() throws Exception {
-        mvc.perform(get("/api/private")).andExpect(status().isForbidden());
-        mvc.perform(post("/api/comparisons")).andExpect(status().isForbidden());
+        // Anonymous callers are unauthenticated (401), not forbidden: only reads are public.
+        mvc.perform(get("/api/private")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/comparisons")).andExpect(status().isUnauthorized());
     }
 }

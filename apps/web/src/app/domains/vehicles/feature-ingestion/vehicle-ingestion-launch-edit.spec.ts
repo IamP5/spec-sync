@@ -8,20 +8,19 @@ import {
 } from './vehicle-ingestion-launch-edit';
 
 describe('Vehicle ingestion launch', () => {
-  function fakeStore(hasKey: boolean) {
+  function fakeStore(signedIn: boolean) {
     return {
-      hasKey: signal(hasKey),
+      signedIn: signal(signedIn),
       createIsPending: signal(false),
-      createError: signal(undefined),
-      setKey: vi.fn(),
+      createError: signal<Error | undefined>(undefined),
       create: vi.fn().mockResolvedValue({
         status: 'success',
         value: { id: 'run-1', status: 'QUEUED', request: {} },
       }),
     };
   }
-  async function setup(hasKey: boolean) {
-    const store = fakeStore(hasKey);
+  async function setup(signedIn: boolean) {
+    const store = fakeStore(signedIn);
     await TestBed.configureTestingModule({
       imports: [VehicleIngestionLaunchEdit],
     })
@@ -64,7 +63,7 @@ describe('Vehicle ingestion launch', () => {
     ]);
   });
 
-  it('starts a prefilled run with the parsed configurations once the session has a key', async () => {
+  it('starts a prefilled run with the parsed configurations for the signed-in user', async () => {
     const { fixture, store, started, element } = await setup(true);
     expect(element.querySelector('input[type="password"]')).toBeNull();
     expect(
@@ -90,31 +89,35 @@ describe('Vehicle ingestion launch', () => {
     expect(started).toHaveLength(1);
   });
 
-  it('requires the curator key when the session has none and stores it before creating', async () => {
+  it('asks for no curator key and waits for a signed-in session', async () => {
     const { fixture, store, element } = await setup(false);
+    expect(element.querySelector('input[type="password"]')).toBeNull();
     const start = element.querySelector<HTMLButtonElement>(
       '[data-action="start"]',
     )!;
     expect(start.disabled).toBe(true);
-    type(
-      element.querySelector<HTMLInputElement>('input[type="password"]')!,
-      'k'.repeat(40),
-    );
+    store.signedIn.set(true);
     type(element.querySelector('textarea')!, '');
     await fixture.whenStable();
     expect(start.disabled).toBe(false);
     start.click();
     await fixture.whenStable();
-    expect(store.setKey).toHaveBeenCalledWith('k'.repeat(40));
     expect(store.create.mock.calls[0][0].request.configurations).toEqual([]);
   });
 
-  it('keeps the typed key and edits when an equivalent prefill is set again', async () => {
-    const { fixture, element } = await setup(false);
-    const key = element.querySelector<HTMLInputElement>(
-      'input[type="password"]',
-    )!;
-    type(key, 'k'.repeat(64));
+  it('shows the reason the API refused to start the import', async () => {
+    const { fixture, store, element } = await setup(true);
+    store.createError.set(
+      new Error('Your account does not have the curator role.'),
+    );
+    await fixture.whenStable();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'curator role',
+    );
+  });
+
+  it('keeps the typed edits when an equivalent prefill is set again', async () => {
+    const { fixture, element } = await setup(true);
     type(
       element.querySelector<HTMLInputElement>('input[placeholder="Ranger"]')!,
       'Ranger Raptor',

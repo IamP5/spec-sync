@@ -18,7 +18,7 @@ import {
   validate,
 } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideKeyRound, lucidePlay } from '@ng-icons/lucide';
+import { lucidePlay } from '@ng-icons/lucide';
 
 import { ZardButtonComponent } from '@/ui/components/button';
 import { ZardInputComponent } from '@/ui/components/input';
@@ -45,7 +45,6 @@ export function parseConfigurationNames(value: string): string[] {
 }
 
 interface LaunchModel {
-  key: string;
   sourceUrl: string;
   brand: string;
   model: string;
@@ -55,7 +54,8 @@ interface LaunchModel {
 
 /**
  * Starts one import: source, brand, model, model year and the configurations
- * to import, plus the curator key when the session has none. Used by the
+ * to import. The signed-in user's ID token authorises the request; the API
+ * answers 403 when the account lacks the curator role. Used by the
  * ingestion page and, prefilled by the agent, inside chat cards.
  */
 @Component({
@@ -68,7 +68,7 @@ interface LaunchModel {
     ZardTextareaComponent,
   ],
   providers: [IngestionDetailStore],
-  viewProviders: [provideIcons({ lucideKeyRound, lucidePlay })],
+  viewProviders: [provideIcons({ lucidePlay })],
   templateUrl: './vehicle-ingestion-launch-edit.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block min-w-0 w-full' },
@@ -86,18 +86,17 @@ export class VehicleIngestionLaunchEdit {
   protected readonly startLabel = $localize`Start extraction`;
 
   protected readonly store = inject(IngestionDetailStore);
-  protected readonly hasKey = this.store.hasKey;
+  protected readonly signedIn = this.store.signedIn;
   protected readonly maxConfigurations = MAX_INGESTION_CONFIGURATIONS;
   // Hosts such as the chat card re-emit an equivalent prefill on every
   // agent event; only a prefill with different content resets the fields,
-  // so what the curator typed (the key above all) survives.
+  // so what the curator typed survives.
   protected readonly model = linkedSignal<IngestionLaunchPrefill, LaunchModel>({
     source: this.prefill,
     computation: (prefill, previous) =>
       previous && samePrefill(previous.source, prefill)
         ? previous.value
         : {
-            key: '',
             sourceUrl: prefill.sourceUrl ?? '',
             brand: prefill.brand ?? '',
             model: prefill.model ?? '',
@@ -140,13 +139,8 @@ export class VehicleIngestionLaunchEdit {
 
   protected async start(event: Event): Promise<void> {
     event.preventDefault();
-    if (this.launchForm().invalid() || this.busy()) return;
+    if (this.launchForm().invalid() || this.busy() || !this.signedIn()) return;
     const value = this.model();
-    if (!this.hasKey()) {
-      if (!value.key.trim()) return;
-      this.store.setKey(value.key);
-      this.model.update((current) => ({ ...current, key: '' }));
-    }
     const request: IngestionRequest = {
       sourceUrl: value.sourceUrl.trim(),
       brand: value.brand.trim(),

@@ -18,53 +18,11 @@
     <div class="flex flex-wrap items-center gap-2">
       @if (runId()) {
       <a z-button zType="outline" routerLink="/ingestion" i18n>All imports</a>
-      } @if (hasKey()) {
-      <button
-        z-button
-        zType="ghost"
-        type="button"
-        data-action="disconnect"
-        (click)="disconnect()"
-      >
-        <ng-icon name="lucideLogOut" aria-hidden="true" />
-        <span i18n>Forget key</span>
-      </button>
       }
     </div>
   </header>
 
-  @if (!hasKey()) {
-  <form
-    (submit)="connect($event)"
-    class="rounded-xl border p-4"
-    i18n-aria-label
-    aria-label="Curator access"
-  >
-    <label for="curator-key" class="mb-2 flex items-center gap-1 font-medium">
-      <ng-icon name="lucideKeyRound" aria-hidden="true" />
-      <span i18n>Curator key</span>
-    </label>
-    <div class="flex flex-wrap gap-2">
-      <input
-        z-input
-        id="curator-key"
-        type="password"
-        autocomplete="off"
-        class="min-w-0 flex-1"
-        [formField]="keyForm.key"
-        i18n-placeholder
-        placeholder="Enter your curator key"
-      />
-      <button z-button type="submit" [zDisabled]="keyForm().invalid()" i18n>
-        Connect
-      </button>
-    </div>
-    <p class="mt-2 text-sm text-muted-foreground" i18n>
-      The key stays in memory for this page load, is shared with the chat, and
-      is cleared when you reload or leave.
-    </p>
-  </form>
-  } @if (runId(); as id) {
+  @if (runId(); as id) {
   <section
     class="rounded-xl border p-5"
     i18n-aria-label

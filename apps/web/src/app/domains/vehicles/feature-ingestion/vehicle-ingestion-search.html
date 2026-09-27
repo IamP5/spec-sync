@@ -5,7 +5,7 @@
     zType="ghost"
     zSize="sm"
     type="button"
-    [zDisabled]="!hasKey()"
+    [zDisabled]="!signedIn()"
     (click)="reload()"
     i18n-aria-label
     aria-label="Refresh imports"
@@ -14,9 +14,9 @@
     <span i18n>Refresh</span>
   </button>
 </div>
-@if (!hasKey()) {
+@if (!signedIn()) {
 <p class="mt-3 text-sm text-muted-foreground" i18n>
-  Enter the curator key to list your imports.
+  Sign in to list your imports.
 </p>
 } @else if (loading() && !runs().length) {
 <div
@@ -28,10 +28,8 @@
   <z-skeleton class="h-8 w-full" />
   <z-skeleton class="h-8 w-full" />
 </div>
-} @else if (failed()) {
-<p class="mt-3 text-sm text-destructive" role="alert" i18n>
-  Could not load the imports. Check the curator key and refresh.
-</p>
+} @else if (failure()) {
+<p class="mt-3 text-sm text-destructive" role="alert">{{ failure() }}</p>
 } @else if (!runs().length) {
 <p class="mt-3 text-sm text-muted-foreground" i18n>
   No imports yet. Start one above, or ask the assistant to find an official

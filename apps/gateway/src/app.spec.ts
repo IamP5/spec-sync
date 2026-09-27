@@ -169,7 +169,7 @@ describe('gateway authentication and routing', () => {
     expect(await response.json()).toEqual(user);
     expect(response.headers.get('cache-control')).toContain('no-store');
   });
-  it('replaces spoofed context, drops cookies and forwarding headers, and preserves curator credentials', async () => {
+  it('replaces spoofed context, drops cookies, forwarding headers and the retired curator key, and hands the API the verified token as a bearer', async () => {
     const { app, fetcher, identity } = setup();
     await app.request('/api/ingestions?q=a%26b', {
       headers: {
@@ -194,11 +194,12 @@ describe('gateway authentication and routing', () => {
         Buffer.from(headers.get('x-specsync-user')!, 'base64url').toString(),
       ),
     ).toEqual(user);
-    expect(headers.get('x-specsync-token')).toBe('valid');
+    // The API validates this JWT and authorises by its roles claim; nothing else carries identity.
+    expect(headers.get('authorization')).toBe('Bearer valid');
+    expect(headers.has('x-specsync-token')).toBe(false);
     expect(headers.has('cookie')).toBe(false);
-    expect(headers.has('authorization')).toBe(false);
     expect(headers.has('x-forwarded-host')).toBe(false);
-    expect(headers.get('x-ingestion-key')).toBe('curator-key');
+    expect(headers.has('x-ingestion-key')).toBe(false);
     expect(request.redirect).toBe('manual');
   });
   it('streams AI bodies without waiting for completion and strips the prefix', async () => {

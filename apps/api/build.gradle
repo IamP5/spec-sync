@@ -38,6 +38,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-restclient'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// Issues and validates the API's own JWT access tokens (NimbusJwtEncoder/Decoder).
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'com.google.cloud:spring-cloud-gcp-starter'
 	implementation 'com.google.cloud:spring-cloud-gcp-starter-pubsub'
@@ -70,6 +72,23 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	// Evidence of every run: one line per test plus a final count, so the console output of
+	// `nx run api:test` doubles as the execution report (the HTML report stays in build/reports).
+	testLogging {
+		events 'passed', 'skipped', 'failed'
+		exceptionFormat 'full'
+	}
+	addTestListener([
+		beforeSuite: { descriptor -> },
+		beforeTest: { descriptor -> },
+		afterTest: { descriptor, result -> },
+		afterSuite: { descriptor, result ->
+			if (descriptor.parent == null) {
+				println "test: ${result.testCount} tests, ${result.successfulTestCount} passed, " +
+						"${result.failedTestCount} failed, ${result.skippedTestCount} skipped (${result.resultType})"
+			}
+		}
+	] as TestListener)
 }
 
 // Architecture rules only (src/test/java/.../architecture, tagged with ArchUnit's

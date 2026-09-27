@@ -4,12 +4,14 @@ import com.fiap.ford.specsync.web.dto.response.IngestionDrainResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /** Scheduler-driven ingestion worker; replaces a resident poller so the API can scale to zero. */
 @Tag(name = "Ingestion worker")
+@SecurityRequirement(name = "schedulerToken")
 @RequestMapping("/api/internal/ingestion")
 public interface IngestionWorkerApi {
 
