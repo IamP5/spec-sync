@@ -66,3 +66,9 @@ output "gateway_url" {
   description = "Public authenticated gateway for browser API requests."
   value       = local.gateway_origin
 }
+
+output "mobile_identity_api_key" {
+  description = "Firebase API key for the Expo app (EXPO_PUBLIC_FIREBASE_NATIVE_API_KEY): sign-in APIs only."
+  value       = google_apikeys_key.identity_mobile.key_string
+  sensitive   = true
+}
