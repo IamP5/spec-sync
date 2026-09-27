@@ -111,7 +111,8 @@ module "vehicle_images" {
   labels                   = local.labels
   public_access_prevention = "inherited"
   iam_members = {
-    "allUsers" = "roles/storage.objectViewer"
+    # Vehicle photos are public catalog content by design; the bucket holds nothing else.
+    "allUsers" = "roles/storage.objectViewer" # nosemgrep: terraform-public-principal
   }
 }
 

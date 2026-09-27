@@ -18,6 +18,108 @@ jobs:
   affected:
     uses: ./.github/workflows/affected.yml
 
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository and history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Semgrep
+        run: python -m pip install semgrep==1.178.0
+
+      - name: Scan source with local Semgrep rules
+        env:
+          SEMGREP_SEND_METRICS: 'off'
+        run: |
+          result="$RUNNER_TEMP/semgrep.json"
+          unsuppressed="$RUNNER_TEMP/semgrep-nosem.json"
+          trap 'rm -f "$result" "$unsuppressed"' EXIT
+          semgrep scan --config .semgrep/security.yml --metrics=off --json --output "$result" --quiet .
+          # Second pass ignores nosemgrep so every triaged suppression is listed, not hidden.
+          semgrep scan --config .semgrep/security.yml --metrics=off --json --output "$unsuppressed" --quiet --disable-nosem .
+          python3 - "$result" "$unsuppressed" "$(semgrep --version)" <<'PY'
+          import collections
+          import json
+          import re
+          import sys
+
+          def load(path):
+              with open(path, encoding="utf-8") as output:
+                  return json.load(output)
+
+          def key(finding):
+              return (finding["check_id"].rsplit(".", 1)[-1], finding["path"], finding["start"]["line"])
+
+          scan, unsuppressed, version = load(sys.argv[1]), load(sys.argv[2]), sys.argv[3]
+          with open(".semgrep/security.yml", encoding="utf-8") as config:
+              rules = re.findall(r"^\s*- id:\s*(\S+)", config.read(), re.MULTILINE)
+          findings = scan["results"]
+          errors = scan["errors"]
+          suppressed = sorted(set(map(key, unsuppressed["results"])) - set(map(key, findings)))
+
+          print(f"Semgrep {version}: {len(rules)} rules from .semgrep/security.yml")
+          print(f"Semgrep: {len(scan['paths']['scanned'])} files, "
+                f"{len(findings)} findings, {len(suppressed)} triaged suppressions, "
+                f"{len(errors)} scan warnings/errors.")
+          per_rule = collections.Counter(key(finding)[0] for finding in findings)
+          for rule in rules:
+              print(f"  {rule}: {per_rule[rule]}")
+          for finding in findings:
+              rule, path, line = key(finding)
+              print(json.dumps({"rule": rule, "file": path, "line": line}, ensure_ascii=True))
+          for rule, path, line in suppressed:
+              print(json.dumps({"suppressed": rule, "file": path, "line": line}, ensure_ascii=True))
+          for error in errors:
+              kind = error.get("type")
+              kind = kind[0] if isinstance(kind, list) else kind
+              spans = error.get("spans") or [{}]
+              print(json.dumps({
+                  "warning": kind,
+                  "level": error.get("level"),
+                  "file": error.get("path") or spans[0].get("file"),
+                  "line": spans[0].get("start", {}).get("line"),
+              }, ensure_ascii=True))
+          if findings or any(error.get("level") == "error" for error in errors):
+              sys.exit(1)
+          PY
+
+      - name: Install TruffleHog
+        run: |
+          curl -fsSL https://github.com/trufflesecurity/trufflehog/releases/download/v3.97.9/trufflehog_3.97.9_linux_amd64.tar.gz -o "$RUNNER_TEMP/trufflehog.tar.gz"
+          echo '40377e6572495412fb9ba0bc21c9401f73b72f1d2afd11b9931bc4a5ed622866  '"$RUNNER_TEMP/trufflehog.tar.gz" | sha256sum -c -
+          tar -xzOf "$RUNNER_TEMP/trufflehog.tar.gz" trufflehog > "$RUNNER_TEMP/trufflehog"
+          chmod 700 "$RUNNER_TEMP/trufflehog"
+
+      - name: Verify scanners detect synthetic findings
+        env:
+          TRUFFLEHOG_BIN: ${{ runner.temp }}/trufflehog
+          SEMGREP_SEND_METRICS: 'off'
+        run: bash scripts/security/self-test.sh
+
+      - name: Scan new commits for secret candidates
+        env:
+          TRUFFLEHOG_BIN: ${{ runner.temp }}/trufflehog
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              BASE="$(git rev-parse HEAD~1)"
+              echo "Base commit unavailable; scanning the last commit."
+            else
+              echo "No base commit available; scanning full reachable history."
+              bash scripts/security/scan-secrets.sh
+              exit
+            fi
+          fi
+          bash scripts/security/scan-secrets.sh "$BASE"
+
   checks:
     needs: affected
     runs-on: ubuntu-latest

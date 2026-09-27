@@ -1,0 +1,132 @@
+rules:
+  - id: java-runtime-exec
+    languages: [java]
+    severity: ERROR
+    message: Avoid invoking operating-system commands from the API.
+    pattern: Runtime.getRuntime().exec(...)
+
+  - id: java-process-builder
+    languages: [java]
+    severity: ERROR
+    message: Review process execution; prefer a dedicated API without shell input.
+    pattern: new ProcessBuilder(...)
+
+  - id: java-unparameterized-jdbc
+    languages: [java]
+    severity: WARNING
+    message: Review Statement usage; prefer parameterized JDBC queries.
+    pattern: $CONNECTION.createStatement()
+
+  - id: javascript-eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Do not execute dynamically constructed JavaScript.
+    pattern: eval(...)
+
+  - id: javascript-function-constructor
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Do not compile dynamically constructed JavaScript.
+    pattern: new Function(...)
+
+  # --- Cryptography (OWASP A04) -------------------------------------------------
+  - id: java-weak-hash
+    languages: [java]
+    severity: ERROR
+    message: MD5/SHA-1 are broken for integrity and passwords; use SHA-256+ (or Argon2/bcrypt for passwords).
+    pattern-either:
+      - pattern: MessageDigest.getInstance("MD2")
+      - pattern: MessageDigest.getInstance("MD5")
+      - pattern: MessageDigest.getInstance("SHA1")
+      - pattern: MessageDigest.getInstance("SHA-1")
+
+  - id: java-weak-cipher
+    languages: [java]
+    severity: ERROR
+    message: DES/RC4/Blowfish and ECB mode (the JDK default for bare "AES") are insecure; use AES/GCM/NoPadding.
+    patterns:
+      - pattern: Cipher.getInstance($ALG, ...)
+      - metavariable-regex:
+          metavariable: $ALG
+          regex: (?i)^["']?((DES|DESede|RC2|RC4|Blowfish|AES)(/ECB(/.*)?)?|.*/ECB/.*)["']?$
+
+  - id: java-hardcoded-secret-key
+    languages: [java]
+    severity: ERROR
+    message: Keys must come from Secret Manager/configuration, never from a string literal.
+    pattern: new SecretKeySpec("...".getBytes(...), ...)
+
+  - id: java-insecure-random
+    languages: [java]
+    severity: WARNING
+    message: java.util.Random is predictable; use SecureRandom for tokens, keys and IVs.
+    pattern-either:
+      - pattern: new java.util.Random(...)
+      - pattern: new Random(...)
+
+  # --- Access control and configuration (OWASP A01/A02) -------------------------
+  - id: spring-permit-all-any-request
+    languages: [java]
+    severity: ERROR
+    message: anyRequest().permitAll() opens every unmatched route; deny by default and allowlist public GETs.
+    pattern: $HTTP.anyRequest().permitAll()
+
+  - id: spring-csrf-disabled
+    languages: [java]
+    severity: WARNING
+    message: Do not disable CSRF globally; ignore it only for stateless, token-authenticated paths.
+    pattern-either:
+      - pattern: $HTTP.csrf(AbstractHttpConfigurer::disable)
+      - pattern: $HTTP.csrf($C -> $C.disable())
+
+  - id: terraform-public-principal
+    languages: [hcl]
+    severity: WARNING
+    message: allUsers/allAuthenticatedUsers makes the resource public; justify each grant with a nosemgrep reason.
+    pattern-regex: '"(allUsers|allAuthenticatedUsers)"'
+
+  # --- Deserialization (OWASP A08) ----------------------------------------------
+  - id: java-object-deserialization
+    languages: [java]
+    severity: ERROR
+    message: Java native deserialization of untrusted data enables remote code execution; use JSON DTOs.
+    pattern: new ObjectInputStream(...)
+
+  # --- XSS in the Angular front end (OWASP A05) ---------------------------------
+  - id: angular-bypass-security-trust
+    languages: [typescript]
+    severity: ERROR
+    message: bypassSecurityTrust* disables Angular's sanitizer; the value must never contain untrusted input.
+    pattern-either:
+      - pattern: $S.bypassSecurityTrustHtml(...)
+      - pattern: $S.bypassSecurityTrustScript(...)
+      - pattern: $S.bypassSecurityTrustStyle(...)
+      - pattern: $S.bypassSecurityTrustUrl(...)
+      - pattern: $S.bypassSecurityTrustResourceUrl(...)
+
+  - id: dom-html-injection
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Writing raw HTML to the DOM bypasses Angular's sanitizer; use bindings or textContent.
+    pattern-either:
+      - pattern: $EL.innerHTML = $VALUE
+      - pattern: $EL.outerHTML = $VALUE
+      - pattern: $EL.insertAdjacentHTML(...)
+      - pattern: document.write(...)
+
+  # --- Command execution in runtime services (OWASP A05) ------------------------
+  - id: node-child-process-in-service
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Runtime services must not spawn processes; tooling under scripts/ and tools/ is out of scope.
+    pattern-regex: (from\s+|require\(\s*)['"](node:)?child_process['"]
+    paths:
+      include:
+        - 'apps/ai/src/**'
+        - 'apps/gateway/src/**'
+        - 'apps/web/src/**'
+        - 'libs/**'
+      exclude:
+        - '*.spec.ts'
+        - '*.test.ts'
+        - '*.integration.ts'

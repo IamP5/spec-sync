@@ -68,3 +68,7 @@ crash.log
 
 # Runtime browser configuration for local development
 apps/web/public/app-config.json
+
+# Local Sprint 3 report and assignment reference
+/CYBERSECURITY-SPRINT-3.md
+/[[]Extra] Entregas Esperadas - Sprint 3.pdf
