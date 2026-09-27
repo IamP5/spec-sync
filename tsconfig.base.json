@@ -16,7 +16,8 @@
     "strict": false,
     "paths": {
       "ui": ["./libs/ui/index.ts"],
-      "@/*": ["./libs/*"]
+      "@/*": ["./libs/*"],
+      "@mobile/*": ["./apps/mobile/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,0 +1,47 @@
+{
+  "name": "mobile",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/mobile/src",
+  "projectType": "application",
+  "tags": ["type:app", "scope:mobile"],
+  "// targets": "start, run-ios, run-android, export, prebuild, build, submit, test are inferred by @nx/expo and @nx/jest; lint by @nx/eslint. To see all targets run: nx show project mobile --web",
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "options": {
+        "command": "tsc -p tsconfig.app.json --noEmit",
+        "cwd": "apps/mobile"
+      }
+    },
+    "test-arch": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/sheriff.config.ts",
+        "{workspaceRoot}/apps/web/sheriff.config.ts"
+      ],
+      "options": {
+        "command": "vitest run --config vitest.arch.config.ts",
+        "cwd": "apps/mobile"
+      },
+      "metadata": {
+        "description": "Architecture tests (tsarch, feature boundaries, Sheriff rules); see apps/mobile/docs/architecture-boundaries.md"
+      }
+    },
+    "doctor": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "npx expo-doctor",
+        "cwd": "apps/mobile"
+      },
+      "metadata": {
+        "description": "Expo's project health check (SDK-compatible versions, config)"
+      }
+    }
+  }
+}

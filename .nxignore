@@ -1,0 +1,3 @@
+# Agent skills are not Nx projects; some ship their own package.json.
+**/.agents/
+**/.claude/
