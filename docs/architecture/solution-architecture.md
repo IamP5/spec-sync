@@ -1,47 +1,47 @@
-# SpecSync solution architecture
+# Arquitetura da solução SpecSync
 
-SpecSync compares vehicle specifications with source evidence. Users talk to an
-AI chat that searches a curated catalog, researches official sources and lets
-curators review what enters the catalog. This document covers the deployed
-components, what each one is responsible for, and how requests are
-authenticated and authorised. The main rule is that the **gateway
-authenticates** and the **API authorises**.
+O SpecSync compara especificações de veículos com evidências das fontes. Os
+usuários conversam com um chat de IA que consulta um catálogo curado, pesquisa
+fontes oficiais e permite que curadores revisem o que entra no catálogo. Este
+documento descreve os componentes publicados, a responsabilidade de cada um e
+como as requisições são autenticadas e autorizadas. A regra central é: o
+**gateway autentica** e a **API autoriza**.
 
-## Components
+## Componentes
 
 ```mermaid
 flowchart LR
-  subgraph Browser
-    SPA["Angular SPA<br/>(apps/web)"]
+  subgraph Browser["Navegador"]
+    SPA["SPA Angular<br/>(apps/web)"]
   end
 
   subgraph Google["Google Cloud · southamerica-east1"]
-    WEB["web<br/>Cloud Run · nginx<br/>public"]
-    GW["gateway<br/>Cloud Run · Hono<br/>public"]
-    API["api<br/>Cloud Run · Spring Boot<br/>internal only"]
-    AI["ai<br/>Cloud Run · Mastra<br/>internal only"]
+    WEB["web<br/>Cloud Run · nginx<br/>público"]
+    GW["gateway<br/>Cloud Run · Hono<br/>público"]
+    API["api<br/>Cloud Run · Spring Boot<br/>somente interno"]
+    AI["ai<br/>Cloud Run · Mastra<br/>somente interno"]
     SQL[("Cloud SQL<br/>PostgreSQL")]
-    GCS[("Cloud Storage<br/>files · vehicle images")]
-    PS[["Pub/Sub<br/>events"]]
-    SCH["Cloud Scheduler<br/>ingestion drain"]
+    GCS[("Cloud Storage<br/>arquivos · imagens de veículos")]
+    PS[["Pub/Sub<br/>eventos"]]
+    SCH["Cloud Scheduler<br/>drain da ingestão"]
     SM[("Secret Manager")]
     IDP["Identity Platform<br/>(Firebase Auth)"]
     VTX["Vertex AI"]
   end
 
-  NEO[("Neo4j Aura<br/>knowledge graph")]
-  OR["OpenRouter<br/>LLM routing"]
-  CF["Cloudflare<br/>custom domain"]
+  NEO[("Neo4j Aura<br/>grafo de conhecimento")]
+  OR["OpenRouter<br/>roteamento de LLMs"]
+  CF["Cloudflare<br/>domínio próprio"]
 
   SPA -- "assets, /app-config.json" --> CF --> WEB
-  SPA -- "Google sign-in" --> IDP
+  SPA -- "login Google" --> IDP
   SPA -- "Bearer ID token<br/>/api · /ai · /user · /auth" --> GW
   GW -- "verifyIdToken" --> IDP
-  GW -- "Authorization: Bearer ID token<br/>+ Cloud Run ID token" --> API
-  GW -- "x-specsync-token<br/>+ Cloud Run ID token" --> AI
-  AI -- "service key + Cloud Run ID token<br/>/api/internal/**" --> API
-  API -- "worker key + Cloud Run ID token<br/>extraction jobs" --> AI
-  SCH -- "Google OIDC token<br/>POST /api/internal/ingestion/drain" --> API
+  GW -- "Authorization: Bearer ID token<br/>+ ID token do Cloud Run" --> API
+  GW -- "x-specsync-token<br/>+ ID token do Cloud Run" --> AI
+  AI -- "chave de serviço + ID token do Cloud Run<br/>/api/internal/**" --> API
+  API -- "chave do worker + ID token do Cloud Run<br/>jobs de extração" --> AI
+  SCH -- "token OIDC do Google<br/>POST /api/internal/ingestion/drain" --> API
   API --> SQL
   API --> GCS
   API --> PS
@@ -50,167 +50,168 @@ flowchart LR
   AI --> NEO
   AI --> OR
   AI --> VTX
-  API -. secrets .-> SM
-  AI -. secrets .-> SM
+  API -. segredos .-> SM
+  AI -. segredos .-> SM
 ```
 
-Terraform sources: `infra/environments/dev/*.tf` (`main.tf` for api, ai, web,
-database, buckets and Pub/Sub; `gateway.tf` for the gateway and Identity
-Platform; `ingestion-worker.tf` for Cloud Scheduler; `ai-credits.tf`,
-`research.tf`, `openrouter.tf` and `aura.tf` for secrets and external
-services).
+Fontes no Terraform: `infra/environments/dev/*.tf` (`main.tf` para api, ai,
+web, banco de dados, buckets e Pub/Sub; `gateway.tf` para o gateway e o
+Identity Platform; `ingestion-worker.tf` para o Cloud Scheduler;
+`ai-credits.tf`, `research.tf`, `openrouter.tf` e `aura.tf` para segredos e
+serviços externos).
 
-## Responsibilities
+## Responsabilidades
 
-| Component                    | Responsibility                                                                                                                                                                                                                                                                       | Does not                                                                                             |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| **web** (`apps/web`)         | Angular SPA and static hosting. Google sign-in through the Firebase SDK. Sends the ID token to the gateway only.                                                                                                                                                                     | Decide permissions. Roles are informational in the UI; the API's 401/403 drives what the user sees.  |
-| **gateway** (`apps/gateway`) | **Authentication.** Verifies the Identity Platform ID token (signature, expiry, audience, issuer, revocation, disabled user, verified Google e-mail). Routes an allow-list of paths to API and AI. Adds the Cloud Run invocation token. Applies CORS and security headers.           | Hold business rules or permissions. Forward browser cookies, forged identity headers or credentials. |
-| **api** (`apps/api`)         | **Authorisation** and the system of record: catalog, comparisons, ingestion review, ontology, shared research, AI credits. Validates the forwarded JWT and grants access by its `roles` claim. Clean architecture (domain → application → infrastructure/web), enforced by ArchUnit. | Log users in, store passwords or issue user tokens.                                                  |
-| **ai** (`apps/ai`)           | Chat agent (CopilotKit/AG-UI on Mastra), source research and extraction workers, chat history. Calls the API's internal endpoints for catalog data, research and credits.                                                                                                            | Expose its internal routes publicly. The gateway forwards only the browser contract.                 |
-| **Cloud SQL**                | Catalog, evidence, ingestion queue, credits ledger (Flyway migrations in `apps/api`), plus the AI's chat memory under a separate user.                                                                                                                                               | —                                                                                                    |
-| **Cloud Scheduler**          | Drives the durable ingestion queue every minute (08:00–23:00), so the API can scale to zero.                                                                                                                                                                                         | —                                                                                                    |
-| **Identity Platform**        | Google sign-in, ID tokens, operator-assigned `roles` custom claims.                                                                                                                                                                                                                  | —                                                                                                    |
+| Componente                   | Responsabilidade                                                                                                                                                                                                                                                                                          | Não faz                                                                                                               |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **web** (`apps/web`)         | SPA Angular e hospedagem estática. Login com Google pelo SDK do Firebase. Envia o ID token somente ao gateway.                                                                                                                                                                                            | Decidir permissões. As roles são apenas informativas na interface; o 401/403 da API define o que o usuário vê.        |
+| **gateway** (`apps/gateway`) | **Autenticação.** Verifica o ID token do Identity Platform (assinatura, expiração, audience, issuer, revogação, usuário desativado, e-mail Google verificado). Encaminha uma lista fechada de caminhos para a API e a IA. Adiciona o token de invocação do Cloud Run. Aplica CORS e headers de segurança. | Conter regras de negócio ou permissões. Repassar cookies do navegador, headers de identidade forjados ou credenciais. |
+| **api** (`apps/api`)         | **Autorização** e sistema de registro: catálogo, comparações, revisão de ingestões, ontologia, pesquisas compartilhadas e créditos de IA. Valida o JWT repassado e concede acesso pela claim `roles`. Arquitetura limpa (domain → application → infrastructure/web), garantida pelo ArchUnit.             | Fazer login de usuários, guardar senhas ou emitir tokens de usuário.                                                  |
+| **ai** (`apps/ai`)           | Agente de chat (CopilotKit/AG-UI sobre Mastra), workers de pesquisa e extração de fontes, histórico do chat. Chama os endpoints internos da API para catálogo, pesquisa e créditos.                                                                                                                       | Expor publicamente suas rotas internas. O gateway repassa apenas o contrato do navegador.                             |
+| **Cloud SQL**                | Catálogo, evidências, fila de ingestão, razão de créditos (migrações Flyway em `apps/api`) e a memória do chat da IA, com um usuário separado.                                                                                                                                                            | —                                                                                                                     |
+| **Cloud Scheduler**          | Processa a fila durável de ingestão a cada minuto (08:00–23:00), para que a API possa escalar a zero.                                                                                                                                                                                                     | —                                                                                                                     |
+| **Identity Platform**        | Login com Google, ID tokens e as custom claims `roles` atribuídas por operadores.                                                                                                                                                                                                                         | —                                                                                                                     |
 
-## Authentication and authorisation
+## Autenticação e autorização
 
-### User requests: the gateway authenticates, the API authorises
+### Requisições de usuário: o gateway autentica, a API autoriza
 
 ```mermaid
 sequenceDiagram
   autonumber
-  actor U as User
-  participant W as Angular SPA
+  actor U as Usuário
+  participant W as SPA Angular
   participant IDP as Identity Platform
   participant G as Gateway
   participant A as API (Spring Security)
-  participant K as Google JWKS
+  participant K as JWKS do Google
 
-  U->>W: Sign in with Google
+  U->>W: Entra com o Google
   W->>IDP: signInWithPopup
   IDP-->>W: ID token (JWT, RS256, 1 h, claims sub, email, roles)
   W->>G: GET /api/ingestions<br/>Authorization: Bearer <ID token>
   G->>IDP: verifyIdToken(token, checkRevoked=true)
-  alt invalid, expired, revoked or e-mail not verified
+  alt inválido, expirado, revogado ou e-mail não verificado
     G-->>W: 401 {error: "Authentication required"}
   end
-  G->>A: GET /api/ingestions<br/>Authorization: Bearer <same ID token><br/>X-Serverless-Authorization: <Cloud Run ID token>
-  Note over G,A: Cloud Run IAM admits only the gateway's service account
-  A->>K: fetch signing keys (cached, rotated automatically)
-  A->>A: validate signature, iss, aud, exp/nbf, sub
-  alt token rejected
+  G->>A: GET /api/ingestions<br/>Authorization: Bearer <mesmo ID token><br/>X-Serverless-Authorization: <ID token do Cloud Run>
+  Note over G,A: o IAM do Cloud Run só admite a service account do gateway
+  A->>K: busca as chaves de assinatura (em cache, rotação automática)
+  A->>A: valida assinatura, iss, aud, exp/nbf, sub
+  alt token recusado
     A-->>G: 401 application/problem+json + WWW-Authenticate: Bearer error="invalid_token"
-  else roles lack CURATOR
+  else roles sem CURATOR
     A-->>G: 403 application/problem+json
-  else authorised
+  else autorizado
     A-->>G: 200 JSON
   end
-  G-->>W: response (cache-control: private, no-store)
+  G-->>W: resposta (cache-control: private, no-store)
 ```
 
-The API validates the token again for two reasons. First, the JWT is the only
-credential it can check cryptographically: a forged `roles` claim fails the
-signature. Second, anything else that can reach the internal service, such as
-another workload with invoker rights, cannot impersonate a user. The API never
-authenticates a person itself: it has no login, no passwords and no token
-issuance. It checks the JWT that the gateway already authenticated and uses its
-claims for access decisions:
+A API valida o token de novo por dois motivos. Primeiro, o JWT é a única
+credencial que ela consegue verificar criptograficamente: uma claim `roles`
+forjada falha na assinatura. Segundo, qualquer outra coisa que alcance o
+serviço interno, como outro workload com permissão de invocação, não consegue
+se passar por um usuário. A API nunca autentica uma pessoa: não tem login, não
+tem senhas e não emite tokens. Ela confere o JWT que o gateway já autenticou e
+usa as claims nas decisões de acesso:
 
-| Claim              | Use in the API                                                                                                                      |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `sub`              | Principal name: the user's uid. Recorded as the reviewer of curator decisions and ontology activations.                             |
-| `roles`            | Authorities. `curator` becomes `CURATOR` and `admin` becomes `ADMIN`; every valid token is also `USER`. Unknown values are ignored. |
-| `exp`, `iat`/`nbf` | Token lifetime; expired tokens get 401 `invalid_token` (60 s clock skew).                                                           |
-| `iss`, `aud`       | Must be `https://securetoken.google.com/<project>` and `<project>`, so tokens of other projects are refused.                        |
-| `email`            | Informational, returned by `GET /api/me`.                                                                                           |
+| Claim              | Uso na API                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `sub`              | Nome do principal: o uid do usuário. Registrado como revisor nas decisões da curadoria e nas ativações de ontologia.                  |
+| `roles`            | Authorities. `curator` vira `CURATOR` e `admin` vira `ADMIN`; todo token válido também é `USER`. Valores desconhecidos são ignorados. |
+| `exp`, `iat`/`nbf` | Tempo de vida do token; tokens expirados recebem 401 `invalid_token` (tolerância de 60 s).                                            |
+| `iss`, `aud`       | Precisam ser `https://securetoken.google.com/<projeto>` e `<projeto>`, então tokens de outros projetos são recusados.                 |
+| `email`            | Informativo, devolvido por `GET /api/me`.                                                                                             |
 
-Roles are assigned by operators, never self-service:
+As roles são atribuídas por operadores, nunca pelo próprio usuário:
 
 ```sh
 node apps/gateway/ops/set-user-roles.mjs fiap-challenge-ford <uid> curator
 ```
 
-The script also revokes the user's refresh tokens, so the next sign-in carries
-the new claim.
+O script também revoga os refresh tokens do usuário, então o próximo login já
+traz a nova claim.
 
-### Access profiles
+### Perfis de acesso
 
-| Profile   | How it is granted                                                                          | May call                                                           |
-| --------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| Anonymous | No token (only when calling the API directly; the gateway requires sign-in for every path) | `GET` catalog reads, OpenAPI/Swagger                               |
-| `USER`    | Any valid token                                                                            | Everything anonymous may, plus `GET /api/me`                       |
-| `CURATOR` | `roles: ["curator"]`                                                                       | `/api/ingestions/**`, `/api/ontology/**`                           |
-| `ADMIN`   | `roles: ["admin"]`                                                                         | Everything a curator may (role hierarchy `ADMIN > CURATOR > USER`) |
+| Perfil    | Como é concedido                                                                  | Pode chamar                                                      |
+| --------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Anônimo   | Sem token (só ao chamar a API diretamente; o gateway exige login em todo caminho) | Leituras `GET` do catálogo, OpenAPI/Swagger                      |
+| `USER`    | Qualquer token válido                                                             | Tudo o que o anônimo pode, mais `GET /api/me`                    |
+| `CURATOR` | `roles: ["curator"]`                                                              | `/api/ingestions/**`, `/api/ontology/**`                         |
+| `ADMIN`   | `roles: ["admin"]`                                                                | Tudo o que um curador pode (hierarquia `ADMIN > CURATOR > USER`) |
 
-### Service-to-service calls
+### Chamadas entre serviços
 
-These calls do not carry a user, and they never pass through the gateway. Each
-one is gated twice: Cloud Run IAM (the caller's workload identity in
-`X-Serverless-Authorization`) and an application credential checked by the
-API's dedicated filter chain.
+Essas chamadas não carregam um usuário e nunca passam pelo gateway. Cada uma
+passa por duas barreiras: o IAM do Cloud Run (a identidade de workload de quem
+chama, em `X-Serverless-Authorization`) e uma credencial de aplicação conferida
+pela filter chain dedicada da API.
 
 ```mermaid
 sequenceDiagram
   autonumber
   participant S as Cloud Scheduler
-  participant AI as AI service
+  participant AI as Serviço de IA
   participant A as API
 
-  S->>A: POST /api/internal/ingestion/drain<br/>Bearer Google OIDC token (trigger service account, audience = API URL)
-  A->>A: verify Google signature, audience, e-mail = trigger SA
-  A->>AI: POST /internal/ingestion/extract<br/>Bearer worker key + Cloud Run ID token
-  AI->>A: POST /api/internal/ai-credits/wallets/{uid}/runs<br/>Bearer credits service key + Cloud Run ID token
-  Note over AI,A: The AI verified the user's ID token itself;<br/>the key makes the uid in the path trustworthy
-  AI->>A: PUT /api/internal/research/works/{id}/attempts/{a}/checkpoints/{key}<br/>Bearer research service key
+  S->>A: POST /api/internal/ingestion/drain<br/>Bearer token OIDC do Google (service account do gatilho, audience = URL da API)
+  A->>A: verifica assinatura do Google, audience, e-mail = service account do gatilho
+  A->>AI: POST /internal/ingestion/extract<br/>Bearer chave do worker + ID token do Cloud Run
+  AI->>A: POST /api/internal/ai-credits/wallets/{uid}/runs<br/>Bearer chave de créditos + ID token do Cloud Run
+  Note over AI,A: a IA verificou o ID token do usuário por conta própria;<br/>a chave torna confiável o uid do caminho
+  AI->>A: PUT /api/internal/research/works/{id}/attempts/{a}/checkpoints/{key}<br/>Bearer chave de pesquisa
 ```
 
-| Path                                     | Caller              | Credential                                        | Chain                          |
-| ---------------------------------------- | ------------------- | ------------------------------------------------- | ------------------------------ |
-| `/api/internal/ingestion/**`             | Cloud Scheduler     | Google OIDC token of the trigger service account  | `IngestionWorkerConfiguration` |
-| `/api/internal/research/**`              | AI service          | Research service key (Secret Manager)             | `ResearchConfiguration`        |
-| `/api/internal/ai-credits/**`            | AI service          | Credits service key (Secret Manager)              | `CreditsConfiguration`         |
-| `/api/ingestions/**`, `/api/ontology/**` | Browser via gateway | Identity Platform ID token with `curator`/`admin` | `IngestionConfiguration`       |
-| everything else under `/api`             | Browser via gateway | Identity Platform ID token                        | `SecurityConfiguration`        |
+| Caminho                                  | Quem chama             | Credencial                                          | Chain                          |
+| ---------------------------------------- | ---------------------- | --------------------------------------------------- | ------------------------------ |
+| `/api/internal/ingestion/**`             | Cloud Scheduler        | Token OIDC do Google da service account do gatilho  | `IngestionWorkerConfiguration` |
+| `/api/internal/research/**`              | Serviço de IA          | Chave de serviço de pesquisa (Secret Manager)       | `ResearchConfiguration`        |
+| `/api/internal/ai-credits/**`            | Serviço de IA          | Chave de serviço de créditos (Secret Manager)       | `CreditsConfiguration`         |
+| `/api/ingestions/**`, `/api/ontology/**` | Navegador, via gateway | ID token do Identity Platform com `curator`/`admin` | `IngestionConfiguration`       |
+| todo o resto sob `/api`                  | Navegador, via gateway | ID token do Identity Platform                       | `SecurityConfiguration`        |
 
-Keys are compared in constant time over fixed-length digests. All 401s and 403s,
-from any chain, are RFC 9457 problems.
+As chaves são comparadas em tempo constante sobre digests de tamanho fixo.
+Todos os 401 e 403, de qualquer chain, são problems da RFC 9457.
 
-## Inside the API
+## Por dentro da API
 
 ```mermaid
 flowchart TB
-  subgraph web["web (inbound HTTP adapter)"]
-    APIi["*Api interfaces<br/>mappings + OpenAPI"] --> CTRL["*Controller"]
-    DTO["request / response records"]
+  subgraph web["web (adaptador HTTP de entrada)"]
+    APIi["interfaces *Api<br/>mapeamentos + OpenAPI"] --> CTRL["*Controller"]
+    DTO["records de request / response"]
   end
   subgraph application
-    UC["abstract use cases<br/>(Input / Output)"] --> IMPL["Default* (@Service)"]
+    UC["casos de uso abstratos<br/>(Input / Output)"] --> IMPL["Default* (@Service)"]
   end
-  subgraph domain["domain (framework-free)"]
-    AGG["aggregates, value objects,<br/>Role, Caller, DomainException"]
-    PORT["*Gateway ports"]
+  subgraph domain["domain (sem frameworks)"]
+    AGG["agregados, value objects,<br/>Role, Caller, DomainException"]
+    PORT["portas *Gateway"]
   end
   subgraph infrastructure
-    SEC["SecurityConfiguration<br/>filter chains, JWT decoder"]
+    SEC["SecurityConfiguration<br/>filter chains, decoder JWT"]
     GEH["GlobalExceptionHandler<br/>ProblemResponses"]
-    ADP["*JdbcGateway, *HttpGateway,<br/>Google Cloud clients"]
+    ADP["*JdbcGateway, *HttpGateway,<br/>clientes Google Cloud"]
   end
   CTRL --> UC
   IMPL --> AGG
   IMPL --> PORT
-  ADP -. implements .-> PORT
-  SEC -. guards .-> CTRL
-  GEH -. maps failures .-> CTRL
+  ADP -. implementa .-> PORT
+  SEC -. protege .-> CTRL
+  GEH -. mapeia falhas .-> CTRL
 ```
 
-Dependencies point inwards only. `apps/api/src/test/java/.../ArchitectureTest.java`
-enforces this with 30 ArchUnit rules on every hook run (see
-`apps/api/docs/architecture-boundaries.md` and the ADRs in `apps/api/docs/adr/`).
+As dependências apontam sempre para dentro.
+`apps/api/src/test/java/.../ArchitectureTest.java` garante isso com 30 regras
+do ArchUnit a cada execução dos hooks (veja
+`apps/api/docs/architecture-boundaries.md` e as ADRs em `apps/api/docs/adr/`).
 
-## Related documents
+## Documentos relacionados
 
-- `apps/api/README.md`: running the API, endpoints, status codes, errors, tests
-- `apps/api/docs/adr/0004-gateway-authenticates-api-authorises.md`: this security design
-- `apps/api/docs/adr/0003-error-handling-at-the-edge.md`: error model
-- `apps/gateway/README.md`: gateway authentication, routing and local setup
-- `apps/api/docs/test-evidence.md`: the latest test run
+- `apps/api/README.md`: como executar a API, endpoints, status codes, erros e testes
+- `apps/api/docs/adr/0004-gateway-authenticates-api-authorises.md`: este desenho de segurança
+- `apps/api/docs/adr/0003-error-handling-at-the-edge.md`: modelo de erros
+- `apps/gateway/README.md`: autenticação, roteamento e setup local do gateway
+- `apps/api/docs/test-evidence.md`: a última execução dos testes

@@ -1,41 +1,43 @@
-# API test evidence
+# Evidência dos testes da API
 
-Result of the full API suite (unit, slice, integration and architecture tests) on
-2026-09-27, branch `claude/api-arquitetura-sprint-3-b01d8d`, Java 25, Spring Boot 4.0.8.
+Resultado da suíte completa da API (testes unitários, de fatia, de integração e
+de arquitetura) em 2026-09-27, branch `claude/api-arquitetura-sprint-3-b01d8d`,
+Java 25, Spring Boot 4.0.8.
 
 ```bash
 npm exec -- nx run api:test --skip-nx-cache
 ```
 
-The Gradle `test` task prints one line per test and a final summary
-(`apps/api/build.gradle`), so the console output of that command is the execution
-report. The HTML report is written to `apps/api/build/reports/tests/test/index.html`.
+A task `test` do Gradle imprime uma linha por teste e um resumo final
+(`apps/api/build.gradle`), então a saída desse comando no console é o próprio
+relatório da execução. O relatório HTML é gerado em
+`apps/api/build/reports/tests/test/index.html`.
 
 ```text
 test: 204 tests, 204 passed, 0 failed, 0 skipped (SUCCESS)
 BUILD SUCCESSFUL
 ```
 
-## What the security tests prove
+## O que os testes de segurança comprovam
 
-| Scenario                                                                        | Test                                                                                                   |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Public catalog read without a token → 200                                       | `AuthorizationWebMvcTest.PublicEndpoints`                                                              |
-| OpenAPI document and Swagger UI served without a token                          | `ApiDocumentationTests`                                                                                |
-| No token → 401 problem + `WWW-Authenticate: Bearer`                             | `AuthorizationWebMvcTest.Authentication`, `ApiDocumentationTests`                                      |
-| Valid token → caller described from its claims (`sub`, `email`, `roles`, `exp`) | `AuthorizationWebMvcTest.Authentication`                                                               |
-| Expired, forged (untrusted key), other project, malformed token → 401           | `AuthorizationWebMvcTest.Authentication`, `UserTokenValidationTest`                                    |
-| Valid token without the curator role → 403 problem                              | `AuthorizationWebMvcTest.CuratorRole`, `OntologyControllerWebMvcTest`                                  |
-| Curator and admin (role hierarchy) → 200                                        | `AuthorizationWebMvcTest.CuratorRole`                                                                  |
-| Retired shared curator key alone → 401                                          | `AuthorizationWebMvcTest.CuratorRole`                                                                  |
-| `POST /api/ingestions` → 201 + `Location`                                       | `AuthorizationWebMvcTest.CuratorRole`                                                                  |
-| Invalid body → 400 with `errors[]`; business rule → 422; wrong method → 405     | `AuthorizationWebMvcTest.CuratorRole`                                                                  |
-| Unexpected failure → generic 500 without internals                              | `GreetingControllerWebMvcTest`                                                                         |
-| Internal service keys and scheduler token: success, 401, wrong key              | `AiCreditsControllerWebMvcTest`, `ResearchControllerWebMvcTest`, `IngestionWorkerControllerWebMvcTest` |
-| Role claims → roles (implicit `USER`, unknown ignored)                          | `RoleTest`, `DefaultGetCurrentCallerTest`, `UserTokenValidationTest`                                   |
-| Clean-architecture rules                                                        | `ArchitectureTest` (30 ArchUnit rules)                                                                 |
+| Cenário                                                                             | Teste                                                                                                  |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Leitura pública do catálogo sem token → 200                                         | `AuthorizationWebMvcTest.PublicEndpoints`                                                              |
+| Documento OpenAPI e Swagger UI servidos sem token                                   | `ApiDocumentationTests`                                                                                |
+| Sem token → problem 401 + `WWW-Authenticate: Bearer`                                | `AuthorizationWebMvcTest.Authentication`, `ApiDocumentationTests`                                      |
+| Token válido → chamador descrito pelas claims (`sub`, `email`, `roles`, `exp`)      | `AuthorizationWebMvcTest.Authentication`                                                               |
+| Token expirado, forjado (chave não confiável), de outro projeto ou malformado → 401 | `AuthorizationWebMvcTest.Authentication`, `UserTokenValidationTest`                                    |
+| Token válido sem a role de curador → problem 403                                    | `AuthorizationWebMvcTest.CuratorRole`, `OntologyControllerWebMvcTest`                                  |
+| Curador e admin (hierarquia de roles) → 200                                         | `AuthorizationWebMvcTest.CuratorRole`                                                                  |
+| Apenas a antiga chave compartilhada de curador → 401                                | `AuthorizationWebMvcTest.CuratorRole`                                                                  |
+| `POST /api/ingestions` → 201 + `Location`                                           | `AuthorizationWebMvcTest.CuratorRole`                                                                  |
+| Corpo inválido → 400 com `errors[]`; regra de negócio → 422; método errado → 405    | `AuthorizationWebMvcTest.CuratorRole`                                                                  |
+| Falha inesperada → 500 genérico, sem detalhes internos                              | `GreetingControllerWebMvcTest`                                                                         |
+| Chaves de serviço internas e token do Scheduler: sucesso, 401, chave errada         | `AiCreditsControllerWebMvcTest`, `ResearchControllerWebMvcTest`, `IngestionWorkerControllerWebMvcTest` |
+| Claims de roles → roles (`USER` implícito, valores desconhecidos ignorados)         | `RoleTest`, `DefaultGetCurrentCallerTest`, `UserTokenValidationTest`                                   |
+| Regras da arquitetura limpa                                                         | `ArchitectureTest` (30 regras do ArchUnit)                                                             |
 
-## Every test of the run
+## Todos os testes da execução
 
 ### ArchitectureTest (30)
 
