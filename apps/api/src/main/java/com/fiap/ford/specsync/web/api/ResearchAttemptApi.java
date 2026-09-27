@@ -3,12 +3,14 @@ package com.fiap.ford.specsync.web.api;
 import com.fiap.ford.specsync.web.dto.request.SaveResearchCheckpointRequest;
 import com.fiap.ford.specsync.web.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Research worker checkpoints")
+@SecurityRequirement(name = "serviceKey")
 @RequestMapping(value = "/api/internal/research/works/{workId}/attempts/{attemptId}", produces = "application/json")
 public interface ResearchAttemptApi {
     @PostMapping("/heartbeat")

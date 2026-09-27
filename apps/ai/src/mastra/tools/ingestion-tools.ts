@@ -245,7 +245,7 @@ export const prepareVehicleIngestion = createTool({
       request,
       url: `/ingestion?${query}`,
       message:
-        'Ready to start. The curator enters the curator key in the launch card or form, starts extraction, then reviews evidence and selects specifications to publish.',
+        'Ready to start. A signed-in account with the curator role starts extraction in the launch card or form, then reviews evidence and selects specifications to publish.',
     };
   },
 });

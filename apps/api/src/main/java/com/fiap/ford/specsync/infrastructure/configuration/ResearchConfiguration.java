@@ -36,11 +36,8 @@ public class ResearchConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.ignoringRequestMatchers(PATH))
                 .authorizeHttpRequests(requests -> requests.anyRequest().hasRole("AI_RESEARCH"))
-                .exceptionHandling(handling -> handling.authenticationEntryPoint((request, response, failure) -> {
-                    response.setStatus(401);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"detail\":\"Research service authentication required\"}");
-                }))
+                .exceptionHandling(handling -> handling.authenticationEntryPoint(
+                        ProblemResponses.unauthorized("Research service authentication required")))
                 .addFilterBefore(new ServiceKeyFilter(properties), AnonymousAuthenticationFilter.class);
         return http.build();
     }

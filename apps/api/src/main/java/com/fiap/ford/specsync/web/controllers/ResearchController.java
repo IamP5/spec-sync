@@ -4,6 +4,7 @@ import com.fiap.ford.specsync.application.ingestion.GetIngestion;
 import com.fiap.ford.specsync.application.ingestion.GetIngestionSource;
 import com.fiap.ford.specsync.application.ingestion.PublishIngestion;
 import com.fiap.ford.specsync.application.research.*;
+import com.fiap.ford.specsync.domain.ingestion.Ingestion;
 import com.fiap.ford.specsync.web.api.ResearchApi;
 import com.fiap.ford.specsync.web.dto.request.CreateResearchRequest;
 import com.fiap.ford.specsync.web.dto.request.PublishIngestionRequest;
@@ -76,14 +77,14 @@ public class ResearchController implements ResearchApi {
     @Override
     public IngestionResponse review(String uid, UUID id) {
         return review.execute(
-                new GetIngestion.Input(reviewWork(uid, id), "curator"),
+                new GetIngestion.Input(reviewWork(uid, id), Ingestion.CURATOR_WORKSPACE),
                 output -> new IngestionResponse(output.result()));
     }
 
     @Override
     public ResearchSourceResponse reviewSource(String uid, UUID id) {
         return reviewSource.execute(
-                new GetIngestionSource.Input(reviewWork(uid, id), "curator"),
+                new GetIngestionSource.Input(reviewWork(uid, id), Ingestion.CURATOR_WORKSPACE),
                 output -> new ResearchSourceResponse(
                         Base64.getEncoder().encodeToString(output.result().bytes()),
                         output.result().mimeType()));
@@ -92,7 +93,7 @@ public class ResearchController implements ResearchApi {
     @Override
     public IngestionResponse publishReview(String uid, UUID id, PublishIngestionRequest input) {
         return publish.execute(
-                new PublishIngestion.Input(reviewWork(uid, id), "curator", input.review(), uid),
+                new PublishIngestion.Input(reviewWork(uid, id), Ingestion.CURATOR_WORKSPACE, input.review(), uid),
                 output -> new IngestionResponse(output.result()));
     }
 

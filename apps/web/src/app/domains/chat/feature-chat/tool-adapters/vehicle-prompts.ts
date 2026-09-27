@@ -56,5 +56,5 @@ export function vehicleIngestionPrompt(scope: IngestionStartArgs): string {
   const configurations = scope.configurations.length
     ? `these configurations: ${scope.configurations.join('; ')}`
     : 'every configuration the source presents';
-  return `Start a reviewed specification import for ${scope.brand} ${scope.model} ${scope.modelYear} (market BR) from ${scope.sourceUrl}, importing ${configurations}. Use startVehicleIngestion; I will confirm and enter the curator key in the browser.`;
+  return `Start a reviewed specification import for ${scope.brand} ${scope.model} ${scope.modelYear} (market BR) from ${scope.sourceUrl}, importing ${configurations}. Use startVehicleIngestion; I will confirm and start it in the browser.`;
 }

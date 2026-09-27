@@ -109,7 +109,9 @@ describe('Vehicle ingestion run review', () => {
       runValue: signal<IngestionRun | undefined>(structuredClone(run)),
       runIsLoading: signal(false),
       runError: signal(undefined),
-      hasKey: signal(true),
+      runFailure: signal(''),
+      downloadFailure: signal(''),
+      signedIn: signal(true),
       sessionScope: signal({ uid: 'alice' }),
       publishError: signal(undefined),
       rejectError: signal(undefined),
@@ -120,7 +122,6 @@ describe('Vehicle ingestion run review', () => {
       rejectIsPending: signal(false),
       load: vi.fn(),
       reload: vi.fn(),
-      setKey: vi.fn(),
       publish: vi.fn().mockResolvedValue({ status: 'success', value: run }),
       reject: vi.fn(),
     };
@@ -224,9 +225,19 @@ describe('Vehicle ingestion run review', () => {
     expect(claimBox(element, 0).checked).toBe(false);
   });
 
-  it('asks for the curator key before reading a run', async () => {
+  it('explains why the API refused the run', async () => {
+    const { fixture, store, element } = await setup();
+    store.runValue.set(undefined);
+    store.runFailure.set('Your account does not have the curator role.');
+    await fixture.whenStable();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'curator role',
+    );
+  });
+
+  it('asks to sign in instead of a curator key before reading a run', async () => {
     const store = fakeStore();
-    store.hasKey.set(false);
+    store.signedIn.set(false);
     await TestBed.configureTestingModule({
       imports: [VehicleIngestionRunDetail],
       providers: [provideRouter([])],
@@ -241,14 +252,7 @@ describe('Vehicle ingestion run review', () => {
     fixture.componentRef.setInput('runId', run.id);
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    const input = element.querySelector<HTMLInputElement>(
-      'input[type="password"]',
-    )!;
-    input.value = 'k'.repeat(40);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    await fixture.whenStable();
-    element.querySelector('form')!.requestSubmit();
-    await fixture.whenStable();
-    expect(store.setKey).toHaveBeenCalledWith('k'.repeat(40));
+    expect(element.querySelector('input[type="password"]')).toBeNull();
+    expect(element.textContent).toContain('Sign in to open this import.');
   });
 });

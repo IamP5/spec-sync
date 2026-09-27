@@ -39,18 +39,12 @@ describe('gateway credentials', () => {
     });
   });
   afterEach(() => TestBed.inject(HttpTestingController).verify());
-  it('gets a current token for each API request and preserves curator headers', async () => {
+  it('gets a current token for each API request and sends no shared curator key', async () => {
     const http = TestBed.inject(HttpClient);
     const testing = TestBed.inject(HttpTestingController);
     for (const token of ['first', 'refreshed']) {
       idToken.mockResolvedValueOnce(token);
-      const result = firstValueFrom(
-        http.post(
-          '/api/ingestions',
-          {},
-          { headers: { 'X-Ingestion-Key': 'curator' } },
-        ),
-      );
+      const result = firstValueFrom(http.post('/api/ingestions', {}));
       await Promise.resolve();
       const request = testing.expectOne(
         'https://gateway.example/api/ingestions',
@@ -58,7 +52,7 @@ describe('gateway credentials', () => {
       expect(request.request.headers.get('Authorization')).toBe(
         `Bearer ${token}`,
       );
-      expect(request.request.headers.get('X-Ingestion-Key')).toBe('curator');
+      expect(request.request.headers.has('X-Ingestion-Key')).toBe(false);
       expect(request.request.credentials).toBe('omit');
       expect(request.request.redirect).toBe('error');
       request.flush({ ok: true });

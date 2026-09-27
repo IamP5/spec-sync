@@ -66,25 +66,7 @@
     </span>
     }
   </label>
-  @if (!hasKey()) {
-  <label class="block text-sm">
-    <span class="mb-1 flex items-center gap-1 font-medium">
-      <ng-icon name="lucideKeyRound" aria-hidden="true" />
-      <span i18n>Curator key</span>
-    </span>
-    <input
-      z-input
-      type="password"
-      autocomplete="off"
-      [formField]="launchForm.key"
-      i18n-placeholder
-      placeholder="Required to start an import"
-    />
-    <span class="mt-1 block text-xs text-muted-foreground" i18n>
-      Kept in memory for this page load and sent only to the API.
-    </span>
-  </label>
-  } @if (error()) {
+  @if (error()) {
   <p
     role="alert"
     class="rounded-lg border border-destructive p-3 text-sm text-destructive"
@@ -97,7 +79,7 @@
       z-button
       type="submit"
       data-action="start"
-      [zDisabled]="launchForm().invalid() || busy() || (!hasKey() && !model().key.trim())"
+      [zDisabled]="launchForm().invalid() || busy() || !signedIn()"
     >
       <ng-icon name="lucidePlay" aria-hidden="true" />
       {{ busy() ? startingLabel : startLabel }}

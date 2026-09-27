@@ -147,6 +147,24 @@ _(derived from [ADR-0002](adr/0002-use-case-and-port-conventions.md) and
 - Controllers never catch `DomainException`. The `GlobalExceptionHandler`
   maps it to HTTP 422 as an RFC 9457 problem with the `errors` list.
 
+## Security
+
+_(derived from [ADR-0004](adr/0004-gateway-authenticates-api-authorises.md))_
+
+- The API authorises; it never authenticates people. User requests carry the
+  Identity Platform ID token that the gateway verified. `SecurityConfiguration`
+  validates the JWT and maps `roles` to `USER < CURATOR < ADMIN`.
+- Access rules live in the `SecurityFilterChain`s in
+  `infrastructure.configuration`, one chain per credential type. Controllers
+  contain no access checks; they may read the verified principal to record who
+  acted.
+- Roles are the domain enum `domain.access.Role`; claims become roles only
+  through `Role.fromClaims`.
+- 401/403 bodies come from `ProblemResponses`, so they share the RFC 9457 shape
+  of `GlobalExceptionHandler`.
+- Slice tests that exercise security import `TestTokens.Keys` and send real
+  signed tokens (`TestTokens.user(uid, roles...)`).
+
 ## Changing the Architecture Rules
 
 - Modify `ArchitectureTest.java` only when explicitly instructed to do so.

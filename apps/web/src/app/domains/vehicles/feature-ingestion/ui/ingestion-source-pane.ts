@@ -80,10 +80,9 @@ export interface IngestionSourceView {
         {{ downloading() ? downloadingLabel : downloadLabel }}
       </button>
     </div>
-    @if (downloadFailed()) {
-      <p class="mt-2 text-sm text-destructive" role="alert" i18n>
-        Could not download the captured file. Check the curator key and try
-        again.
+    @if (downloadError()) {
+      <p class="mt-2 text-sm text-destructive" role="alert">
+        {{ downloadError() }}
       </p>
     }
     @if (visual()) {
@@ -134,7 +133,8 @@ export class IngestionSourcePane {
   readonly source = input.required<IngestionSourceView>();
   readonly warnings = input<string[]>([]);
   readonly downloading = input(false);
-  readonly downloadFailed = input(false);
+  /** Why the last download failed; empty while it has not. */
+  readonly downloadError = input('');
   readonly downloadRequested = output<void>();
 
   protected readonly expanded = signal(false);

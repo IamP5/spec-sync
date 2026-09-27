@@ -148,7 +148,10 @@ module "api" {
 
   # Spring Boot relaxed binding: these map to application-cloud.properties / spring-cloud-gcp.
   env = {
-    SPRING_PROFILES_ACTIVE                        = "cloud"
+    SPRING_PROFILES_ACTIVE = "cloud"
+    # The gateway authenticates users with Identity Platform and forwards the ID token; the API
+    # validates it against this project (issuer and audience) and authorises by its roles claim.
+    SPECSYNC_AUTH_FIREBASE_PROJECT_ID             = var.project_id
     SPECSYNC_INGESTION_ENABLED                    = "true"
     SPECSYNC_RESEARCH_POLICY_VERSION              = "br-v1"
     SPECSYNC_INGESTION_WORKER_URL                 = "https://${local.name}-ai-${data.google_project.current.number}.${var.region}.run.app"

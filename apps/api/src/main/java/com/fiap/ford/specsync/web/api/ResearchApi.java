@@ -6,12 +6,14 @@ import com.fiap.ford.specsync.web.dto.request.ReplayResearchRequest;
 import com.fiap.ford.specsync.web.dto.request.SaveResearchInterestRequest;
 import com.fiap.ford.specsync.web.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Private research subscriptions")
+@SecurityRequirement(name = "serviceKey")
 @RequestMapping(value = "/api/internal/research/users/{uid}/requests", produces = "application/json")
 public interface ResearchApi {
     @PostMapping

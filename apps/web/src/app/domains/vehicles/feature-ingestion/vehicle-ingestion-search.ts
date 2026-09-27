@@ -42,8 +42,8 @@ export class VehicleIngestionSearch {
     () => this.store.runsValue() ?? [],
   );
   protected readonly loading = this.store.runsIsLoading;
-  protected readonly failed = computed(() => !!this.store.runsError());
-  protected readonly hasKey = this.store.hasKey;
+  protected readonly failure = this.store.runsFailure;
+  protected readonly signedIn = this.store.signedIn;
   private readonly locale = inject(LOCALE_ID);
 
   protected openImportLabel(summary: IngestionSummary): string {

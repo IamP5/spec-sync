@@ -17,6 +17,12 @@ import java.util.*;
 public final class Ingestion {
     private Ingestion() {}
 
+    /**
+     * Owner of every curator-created run: the review queue is shared by all curators, while the
+     * individual curator is recorded as the reviewer of each decision.
+     */
+    public static final String CURATOR_WORKSPACE = "curator";
+
     /** Upper bound of configurations one source run may propose or publish. */
     public static final int MAX_CONFIGURATIONS = 8;
 

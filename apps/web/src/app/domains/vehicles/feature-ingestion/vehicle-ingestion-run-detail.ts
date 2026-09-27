@@ -10,16 +10,14 @@ import {
   linkedSignal,
   LOCALE_ID,
   output,
-  signal,
   untracked,
 } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideKeyRound, lucideSend, lucideX } from '@ng-icons/lucide';
+import { lucideSend, lucideX } from '@ng-icons/lucide';
 
 import { ZardBadgeComponent } from '@/ui/components/badge';
 import { ZardButtonComponent } from '@/ui/components/button';
-import { ZardInputComponent } from '@/ui/components/input';
 import { ZardSkeletonComponent } from '@/ui/components/skeleton';
 import { ZardTabsImports } from '@/ui/components/tabs';
 import { ZardTextareaComponent } from '@/ui/components/textarea';
@@ -69,13 +67,12 @@ interface ConfigurationReviewState {
     IngestionSourcePane,
     ZardBadgeComponent,
     ZardButtonComponent,
-    ZardInputComponent,
     ZardSkeletonComponent,
     ZardTextareaComponent,
     ...ZardTabsImports,
   ],
   providers: [IngestionDetailStore],
-  viewProviders: [provideIcons({ lucideKeyRound, lucideSend, lucideX })],
+  viewProviders: [provideIcons({ lucideSend, lucideX })],
   templateUrl: './vehicle-ingestion-run-detail.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block min-w-0 w-full' },
@@ -93,9 +90,7 @@ export class VehicleIngestionRunDetail {
   protected readonly store = inject(IngestionDetailStore);
   protected readonly run = this.store.runValue;
   protected readonly loading = this.store.runIsLoading;
-  protected readonly hasKey = this.store.hasKey;
-  protected readonly keyModel = signal({ key: '' });
-  protected readonly keyForm = form(this.keyModel, (p) => required(p.key));
+  protected readonly signedIn = this.store.signedIn;
   protected readonly title = computed(() => {
     const run = this.run();
     return run ? runTitle(run.request) : '';
@@ -157,9 +152,7 @@ export class VehicleIngestionRunDetail {
     () =>
       this.store.publishError()?.message ??
       this.store.rejectError()?.message ??
-      (this.store.runError()
-        ? $localize`The review could not be loaded. Sign in and refresh.`
-        : ''),
+      this.store.runFailure(),
   );
 
   constructor() {
@@ -236,13 +229,6 @@ export class VehicleIngestionRunDetail {
       ...state,
       selected: state.selected.map(() => false),
     }));
-  }
-
-  protected connect(event: Event): void {
-    event.preventDefault();
-    if (this.keyForm().invalid()) return;
-    this.store.setKey(this.keyModel().key);
-    this.keyModel.set({ key: '' });
   }
 
   protected async publish(event: Event): Promise<void> {

@@ -11,7 +11,6 @@ const requestHeaders = [
   'last-event-id',
   'range',
   'if-range',
-  'x-ingestion-key',
 ];
 const responseHeaders = new Set([
   'content-type',
@@ -26,6 +25,14 @@ const responseHeaders = new Set([
   'www-authenticate',
 ]);
 
+/**
+ * How the verified ID token reaches an upstream. The API is an OAuth 2.0 resource server: it gets
+ * the token as `Authorization: Bearer`, validates the JWT and authorises by its `roles` claim.
+ * The AI service reads it from `x-specsync-token`. Cloud Run IAM always uses
+ * `x-serverless-authorization`, so the two never collide.
+ */
+export type IdentityTokenHeader = 'authorization' | 'x-specsync-token';
+
 /** Fixed upstreams only; identity and Cloud Run credentials never come from browser headers. */
 export async function forward(
   request: Request,
@@ -35,6 +42,7 @@ export async function forward(
   invocationToken: string | undefined,
   identityToken: string | undefined,
   fetcher: typeof fetch = fetch,
+  identityTokenHeader: IdentityTokenHeader = 'x-specsync-token',
 ): Promise<Response> {
   const url = new URL(origin);
   // Assignment prevents //evil.example and encoded paths from replacing the upstream host.
@@ -49,7 +57,13 @@ export async function forward(
     'x-specsync-user',
     Buffer.from(JSON.stringify(user)).toString('base64url'),
   );
-  if (identityToken) headers.set('x-specsync-token', identityToken);
+  if (identityToken)
+    headers.set(
+      identityTokenHeader,
+      identityTokenHeader === 'authorization'
+        ? `Bearer ${identityToken}`
+        : identityToken,
+    );
   if (invocationToken)
     headers.set('x-serverless-authorization', invocationToken);
   const upstream = await proxy(url, {

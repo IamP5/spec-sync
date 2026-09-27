@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 
 import type { GatewayConfig } from './config.js';
 import type { IdentityService } from './identity.js';
-import { forward } from './proxy.js';
+import { forward, type IdentityTokenHeader } from './proxy.js';
 
 /** The chat history the AI service owns; Mastra's own /api/memory stays hidden. */
 export function isChatThreadPath(path: string): boolean {
@@ -62,7 +62,6 @@ export function createGateway(
       allowHeaders: [
         'Authorization',
         'Content-Type',
-        'X-Ingestion-Key',
         'X-Refresh',
         'Last-Event-ID',
       ],
@@ -103,6 +102,7 @@ export function createGateway(
     const path = c.req.path;
     let origin: string;
     let upstreamPath = path;
+    let identityTokenHeader: IdentityTokenHeader = 'x-specsync-token';
     if (path === '/ai' || path.startsWith('/ai/')) {
       // Expose only the browser's AI contract, never Studio, workflows or worker endpoints.
       if (
@@ -123,6 +123,8 @@ export function createGateway(
       upstreamPath = path.slice(3);
     } else if (/^\/(api|v3\/api-docs|swagger-ui)(\/|$)/.test(path)) {
       origin = config.apiUrl;
+      // The gateway authenticates; the API only validates the token and authorises by role.
+      identityTokenHeader = 'authorization';
     } else {
       return c.json({ error: 'Not found' }, 404);
     }
@@ -138,6 +140,7 @@ export function createGateway(
         workloadToken,
         token,
         fetcher,
+        identityTokenHeader,
       );
     } catch {
       return c.json({ error: 'Service unavailable' }, 502);

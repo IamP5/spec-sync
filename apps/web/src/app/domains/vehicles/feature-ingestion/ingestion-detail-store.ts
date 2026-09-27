@@ -18,7 +18,7 @@ import { on, withReducer } from '@ngrx/signals/events';
 
 import { sessionEvents } from '../../auth/api/events';
 import { SESSION } from '../../auth/api/session';
-import { CuratorSessionClient } from '../data/curator-session-client';
+import { ingestionAccessMessage } from '../data/ingestion-access';
 import { IngestionClient } from '../data/ingestion-client';
 import {
   type IngestionRequest,
@@ -27,41 +27,28 @@ import {
 
 /**
  * One import run: create it, read its persisted progress and draft, publish
- * the reviewed selection or reject it. The curator key comes from the
- * session client, so the run detail works on the ingestion page and inside
- * a chat card alike.
+ * the reviewed selection or reject it. Requests carry the signed-in user's
+ * ID token and the API authorises by its roles, so the run detail works on
+ * the ingestion page and inside a chat card alike.
  */
 export const IngestionDetailStore = signalStore(
   withState({ id: '', researchId: '' }),
   withProps(() => ({
     _client: inject(IngestionClient),
-    _session: inject(CuratorSessionClient),
     _auth: inject(SESSION),
     _document: inject(DOCUMENT),
   })),
   withComputed((store) => ({
-    hasKey: computed(() =>
-      store.researchId()
-        ? store._auth.authenticated()
-        : store._session.hasKey(),
-    ),
+    signedIn: store._auth.authenticated,
     sessionScope: store._auth.scope,
   })),
   withResource((store) => ({
-    run: store._client.detailResource(
-      store.id,
-      store._session.key,
-      store.researchId,
-    ),
+    run: store._client.detailResource(store.id, store.researchId),
   })),
   withMutations((store) => ({
     downloadSource: rxMutation({
       operation: (_: void) =>
-        store._client.source(
-          store.id(),
-          store._session.key(),
-          store.researchId(),
-        ),
+        store._client.source(store.id(), store.researchId()),
       onSuccess: (response) => {
         if (!response.body) return;
         const url = URL.createObjectURL(response.body);
@@ -77,23 +64,35 @@ export const IngestionDetailStore = signalStore(
     }),
     create: rxMutation({
       operation: (input: { id: string; request: IngestionRequest }) =>
-        store._client.create(input.id, input.request, store._session.key()),
+        store._client.create(input.id, input.request),
       onSuccess: (run) => patchState(store, { id: run.id }),
     }),
     publish: rxMutation({
       operation: (review: IngestionReview) =>
-        store._client.publish(
-          store.id(),
-          review,
-          store._session.key(),
-          store.researchId(),
-        ),
+        store._client.publish(store.id(), review, store.researchId()),
       onSuccess: () => store._runReload(),
     }),
     reject: rxMutation({
-      operation: (_: void) =>
-        store._client.reject(store.id(), store._session.key()),
+      operation: (_: void) => store._client.reject(store.id()),
       onSuccess: () => store._runReload(),
+    }),
+  })),
+  withComputed((store) => ({
+    /** Why the run failed to load: the API's 401/403 explained, else a generic hint. */
+    runFailure: computed(() => {
+      const error = store.runError();
+      return error
+        ? (ingestionAccessMessage(error) ??
+            $localize`The import could not be loaded. Refresh to try again.`)
+        : '';
+    }),
+    /** Why the captured source failed to download, explained the same way. */
+    downloadFailure: computed(() => {
+      const error = store.downloadSourceError();
+      return error
+        ? (ingestionAccessMessage(error) ??
+            $localize`Could not download the captured file. Try again.`)
+        : '';
     }),
   })),
   withMethods((store) => ({
@@ -103,9 +102,6 @@ export const IngestionDetailStore = signalStore(
     },
     reload() {
       store._runReload();
-    },
-    setKey(key: string) {
-      store._session.set(key);
     },
   })),
   withReducer(
