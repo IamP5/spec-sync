@@ -1,5 +1,9 @@
 import { safeSourceUrl } from '../util/vehicle-display';
-import { cellObservations, comparisonRows } from './vehicle-comparison';
+import {
+  cellObservations,
+  comparisonRows,
+  hiddenComparisonRowCount,
+} from './vehicle-comparison';
 import type { Comparison } from './vehicle-contracts';
 
 const id = '08e08761-a2e7-5ae5-b2ad-387e93829fb7';
@@ -66,6 +70,32 @@ describe('comparison semantics', () => {
       ],
     };
     expect(comparisonRows(conflict, true)).toHaveLength(1);
+  });
+  it('leaves out attributes no compared vehicle reports', () => {
+    const unknown = {
+      ...cell,
+      knowledgeStatus: 'NOT_REPORTED' as const,
+      selectedObservationId: null,
+      observations: [],
+    };
+    const sparse: Comparison = {
+      ...matrix,
+      rows: [
+        {
+          attribute,
+          cells: [unknown, { ...unknown, configurationId: second }],
+        },
+        {
+          attribute: { ...attribute, id: second, code: 'sunroof' },
+          cells: [unknown, { ...cell, configurationId: second }],
+        },
+      ],
+    };
+    expect(comparisonRows(sparse, false).map((r) => r.attribute.code)).toEqual([
+      'sunroof',
+    ]);
+    expect(comparisonRows(sparse, true)).toHaveLength(1);
+    expect(hiddenComparisonRowCount(sparse)).toBe(1);
   });
   it('does not expose unselected claims as accepted values', () => {
     expect(
