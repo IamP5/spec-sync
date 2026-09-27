@@ -46,12 +46,23 @@ on every run.
 
 ## Consequences
 
-- **Auth is still missing.** The gateway requires a Firebase ID token, so
-  chat runs return 401 until the `auth` domain supplies the `Authorization`
-  header through the provider's `headers` function. That is the next slice.
+- **Auth (added 2026-09-27).** The gateway requires a Firebase ID token.
+  The provider always carries the runtime URL, because `useAgent` throws when
+  no URL is set, so the signed-out handshake fails with 401 and the agent
+  stays a provisional stand-in. Once the session is verified,
+  `ChatConversationStore` calls `setHeaders({ Authorization })` and
+  reconnects. It refreshes the header before every run and clears it on
+  sign-out. The provider's `onError` is a no-op; the store reports failures.
 - **Upgrades move together.** CopilotKit upgrades must move web, ai and mobile
   together, and `@copilotkit/react-native` must stay on the runtime's version
   line.
-- **No thread switching yet.** `useAgent` on React Native does not yet take a
-  `threadId`, so the mobile app cannot switch threads the way web does.
-  Thread lists still come from `/ai/chat/threads` over HTTP.
+- **Thread switching like web.** The store binds the shared `chat` agent and
+  switches threads the way the web `ChatAgentClient` does: it sets
+  `agent.threadId` and `setMessages` with the history from
+  `/ai/chat/threads/<id>`. The mobile `ChatAgentClient` (`data/`) receives the
+  CopilotKit core from the store, so the store stays the only CopilotKit
+  caller.
+- **Tool components come from a mobile registry.** Tool calls render through
+  `feature-chat/tool-adapters/chat-tool-registry.ts` (tool name → component),
+  with the generic card as the fallback. The legacy `startVehicleIngestion`
+  human-in-the-loop tool and the curator ingestion flow are not ported.

@@ -47,6 +47,37 @@ function withJoseBrowserBuild(config) {
   };
 }
 
+/**
+ * Uniwind 1.12 maps every react-native-web component it knows to
+ * `uniwind/components/<name>`, but ships no web build of
+ * `InputAccessoryView` (react-native-web 0.21 does export one). Keep the
+ * react-native-web component on web so the web bundle (`nx serve mobile`)
+ * resolves.
+ */
+function withWebInputAccessoryView(config) {
+  const upstream = config.resolver.resolveRequest;
+  return {
+    ...config,
+    resolver: {
+      ...config.resolver,
+      resolveRequest: (context, moduleName, platform) => {
+        const resolve = upstream ?? context.resolveRequest;
+        if (
+          platform === 'web' &&
+          moduleName === 'uniwind/components/InputAccessoryView'
+        ) {
+          return resolve(
+            context,
+            'react-native-web/dist/exports/InputAccessoryView',
+            platform,
+          );
+        }
+        return resolve(context, moduleName, platform);
+      },
+    },
+  };
+}
+
 module.exports = Promise.resolve(
   withNxMetro(mergeConfig(defaultConfig, customConfig), {
     // Change this to true to see debugging info.
@@ -59,7 +90,7 @@ module.exports = Promise.resolve(
   }),
 ).then((config) =>
   // Uniwind must wrap the final config (https://docs.uniwind.dev).
-  withUniwindConfig(withJoseBrowserBuild(config), {
+  withUniwindConfig(withWebInputAccessoryView(withJoseBrowserBuild(config)), {
     cssEntryFile: './src/global.css',
     dtsFile: './uniwind-types.d.ts',
   }),

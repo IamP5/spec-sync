@@ -40,9 +40,10 @@ apps/mobile/src/
 ```
 
 **Domains** carry the same names as web: `auth`, `user`, `chat`, `vehicles`,
-`shared`. Only `chat` and `shared` exist today. `shared` holds technical code
-only: runtime configuration (`util-config`), the query cache (`util-query`),
-and gateway helpers. It never depends on a business domain.
+`shared`. `shared` holds technical code only: runtime configuration
+(`util-config`) and the query cache (`util-query`). Authenticated gateway
+requests (`gatewayFetch`, `gatewayJson`) belong to the session runtime and are
+reached through `auth/api/session`. It never depends on a business domain.
 
 **A feature is a workflow boundary**, not one folder per component. Code that
 changes together stays together. Move code down only when a second consumer

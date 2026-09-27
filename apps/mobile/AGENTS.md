@@ -116,6 +116,16 @@ The reasoning is recorded in `apps/mobile/docs/adr/`.
 - The app reaches the local gateway (`nx serve gateway`, port 3000) at
   `localhost`, or at `10.0.2.2` on the Android emulator. Release builds need
   `EXPO_PUBLIC_GATEWAY_URL` (https).
+- Sign-in needs the Identity Platform values of the web `app-config.json` in
+  `apps/mobile/.env.local` (gitignored): `EXPO_PUBLIC_FIREBASE_API_KEY`,
+  `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN` and `EXPO_PUBLIC_FIREBASE_PROJECT_ID`.
+  Native Google sign-in also needs the OAuth client ids
+  `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`
+  and `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`.
+- For a quick check in a browser, run the web build on port 4200:
+  `cd apps/mobile && npx expo start --web --port 4200`. That is the only
+  local origin the dev Firebase browser key and the gateway's CORS allow, so
+  stop `nx serve web` first. Sign-in there uses the Firebase Google popup.
 
 ## React and React Native practices
 

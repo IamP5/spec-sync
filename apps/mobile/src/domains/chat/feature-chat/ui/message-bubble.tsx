@@ -1,22 +1,16 @@
 import { View } from 'react-native';
 
 import { Text } from '../../../../design-system/components/ui/text';
-import { cn } from '../../../../design-system/lib/utils';
-import type { ChatMessage } from '../../data/chat-message';
 
-/** One transcript line: user text in a capsule, assistant text full width. */
-export function MessageBubble({ message }: { message: ChatMessage }) {
-  const fromUser = message.role === 'user';
+/** The user's turn: plain text in a capsule on the trailing side. */
+export function MessageBubble({ text }: { text: string }) {
   return (
     <View
-      className={cn(
-        'max-w-full',
-        fromUser && 'bg-muted max-w-[85%] self-end rounded-3xl px-4 py-2.5',
-      )}
-      accessibilityLabel={fromUser ? 'You' : 'Assistant'}
+      className="bg-muted max-w-[85%] self-end rounded-3xl px-4 py-2.5"
+      accessibilityLabel={`You: ${text}`}
     >
       <Text selectable className="text-base leading-6">
-        {message.text}
+        {text}
       </Text>
     </View>
   );

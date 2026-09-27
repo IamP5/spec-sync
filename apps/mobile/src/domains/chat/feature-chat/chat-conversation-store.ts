@@ -1,54 +1,307 @@
+import type { Message } from '@ag-ui/client';
 import { useAgent, useCopilotKit } from '@copilotkit/react-native/headless';
-import { useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
+import { create } from 'zustand';
 
+import { session, useSession } from '../../auth/api/session';
+import { mobileConfig } from '../../shared/util-config/mobile-config';
 import {
   CHAT_AGENT_ID,
-  CHAT_LOCALE,
-  CHAT_LOCALE_PROPERTY,
+  type ChatAgentError,
+  type ChatRunOptions,
+  chatRuntimeUrl,
+  normalizeThread,
 } from '../data/chat-agent';
-import { chatMessagesOf } from '../data/chat-message';
+import { chatAgentClient } from '../data/chat-agent-client';
+import { transcriptOf } from '../data/chat-message';
+import { fetchResearchUpdates, findThread } from '../data/thread-client';
+
+/** How often research started from the thread is checked for completion. */
+const RESEARCH_POLL_MS = 8000;
+
+const RESEARCH_TOOLS = new Set([
+  'researchVehicleSpecifications',
+  'getVehicleResearch',
+  'replayVehicleResearch',
+  'reviewVehicleResearch',
+]);
+
+interface ConversationState {
+  error: ChatAgentError | undefined;
+  /** The user stopped the last reply. */
+  stopped: boolean;
+  /** Id of the stored thread being read, if any. */
+  loadingThreadId: string | undefined;
+  /** Whether research of this thread may still announce its completion. */
+  researchPending: boolean;
+  /** The thread was sent to in this app session (reveals and title refresh). */
+  sentHere: boolean;
+}
+
+/** State that must outlive a screen (the thread survives a remount). */
+const useConversationState = create<ConversationState>(() => ({
+  error: undefined,
+  stopped: false,
+  loadingThreadId: undefined,
+  researchPending: true,
+  sentHere: false,
+}));
+
+/** `uid:generation` the runtime is connected for; empty while signed out. */
+let connectedScope: string | undefined;
+
+function set(state: Partial<ConversationState>): void {
+  useConversationState.setState(state);
+}
+
+function subscribeClient(listener: () => void) {
+  return chatAgentClient.subscribe(listener);
+}
 
 /**
- * The conversation with the chat agent: its transcript, whether a run is in
- * progress, and the last run failure. It is the only place in the feature
- * that talks to CopilotKit.
+ * The conversation with the chat agent (web `ConversationDetailStore` +
+ * `ChatConnectionCoordinator`): it connects CopilotKit to the runtime once the
+ * session is verified, opens stored threads, sends, stops and regenerates, and
+ * follows research completions. It is the only place that talks to CopilotKit
+ * (docs/adr/0003-chat-runtime.md).
  */
 export function useChatConversationStore() {
   // The AG-UI agent mutates its message list in place, so the React Compiler
   // must not memoize values derived from it.
   'use no memo';
-  const { agent } = useAgent({ agentId: CHAT_AGENT_ID });
+  const { agent, isReady } = useAgent({ agentId: CHAT_AGENT_ID });
   const { copilotkit } = useCopilotKit();
-  const [error, setError] = useState<string>();
+  const snapshot = useSession();
+  const scope = snapshot.scope;
+  const state = useConversationState();
+  const threadId = useSyncExternalStore(
+    subscribeClient,
+    () => chatAgentClient.threadId,
+  );
+  const placements = useSyncExternalStore(
+    subscribeClient,
+    () => chatAgentClient.placements,
+  );
 
-  async function send(text: string): Promise<void> {
-    const content = text.trim();
-    if (!agent || !content || agent.isRunning) return;
-    setError(undefined);
-    agent.addMessage({
-      id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-      role: 'user',
-      content,
-    });
+  // Connect the runtime with the user's token once the session is verified;
+  // disconnect and forget the conversation when it ends.
+  useEffect(() => {
+    const key = scope ? `${scope.uid}:${scope.generation}` : '';
+    if (connectedScope === key) return;
+    connectedScope = key;
+    if (!scope) {
+      copilotkit.setHeaders({});
+      if (agent.messages.length) chatAgentClient.reset(copilotkit, agent);
+      set({ error: undefined, stopped: false, loadingThreadId: undefined });
+      return;
+    }
+    session.idToken().then(
+      (token) => {
+        if (connectedScope !== key) return;
+        copilotkit.setHeaders({ Authorization: `Bearer ${token}` });
+        // The handshake made without a token failed; run it again.
+        const url = chatRuntimeUrl(mobileConfig.gatewayUrl);
+        copilotkit.setRuntimeUrl(undefined);
+        copilotkit.setRuntimeUrl(url);
+      },
+      () => undefined,
+    );
+    // Reconnect only when the verified user or session generation changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scope?.uid, scope?.generation, copilotkit]);
+
+  useEffect(
+    () =>
+      chatAgentClient.onError(copilotkit, (error) => {
+        // Signed out, the runtime refuses the handshake; that is expected.
+        if (session.snapshot().scope) set({ error, stopped: false });
+      }),
+    [copilotkit],
+  );
+
+  const running = isReady && agent.isRunning;
+  const loading = state.loadingThreadId !== undefined;
+  const messages = isReady
+    ? normalizeThread(agent.messages, placements)
+    : ([] as Message[]);
+
+  // Research started from this thread persists a completion message; ask for
+  // it every 8 s while the chat is idle (web `ConversationDetailStore`).
+  useEffect(() => {
+    if (!isReady || !scope || running || loading || !state.researchPending) {
+      return;
+    }
+    if (!hasResearchCall(agent.messages)) {
+      set({ researchPending: false });
+      return;
+    }
+    let cancelled = false;
+    const controller = new AbortController();
+    const polledThread = chatAgentClient.threadId;
+    const tick = async () => {
+      try {
+        const updates = await fetchResearchUpdates(
+          polledThread,
+          controller.signal,
+        );
+        if (
+          cancelled ||
+          polledThread !== chatAgentClient.threadId ||
+          agent.isRunning
+        ) {
+          return;
+        }
+        chatAgentClient.appendPersisted(agent, updates.messages);
+        if (!updates.pending) set({ researchPending: false });
+      } catch {
+        // The next tick asks again.
+      }
+    };
+    void tick();
+    const timer = setInterval(() => void tick(), RESEARCH_POLL_MS);
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, [
+    isReady,
+    scope,
+    running,
+    loading,
+    state.researchPending,
+    threadId,
+    agent,
+  ]);
+
+  async function authenticate(): Promise<void> {
+    const token = await session.idToken();
+    copilotkit.setHeaders({ Authorization: `Bearer ${token}` });
+  }
+
+  function current(): boolean {
+    return scope !== null && session.isCurrent(scope);
+  }
+
+  async function guarded(work: () => Promise<void>): Promise<void> {
+    set({ error: undefined, stopped: false, researchPending: true });
     try {
-      await copilotkit.runAgent({
-        agent,
-        forwardedProps: { [CHAT_LOCALE_PROPERTY]: CHAT_LOCALE },
-      });
+      await work();
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : 'The assistant is unavailable.',
-      );
+      set({
+        error: {
+          code: 'agent_run_failed' as ChatAgentError['code'],
+          error:
+            cause instanceof Error
+              ? cause
+              : new Error('The assistant could not answer.'),
+        },
+      });
+    }
+  }
+
+  /** Sends a user turn and runs the agent on it. */
+  async function send(text: string, options: ChatRunOptions): Promise<void> {
+    const content = text.trim();
+    if (!content || !isReady || agent.isRunning || !scope) return;
+    chatAgentClient.append(agent, content);
+    set({ sentHere: true });
+    await guarded(() =>
+      chatAgentClient.run(copilotkit, agent, options, authenticate, current),
+    );
+  }
+
+  /** Runs the last user turn again (also the retry after a failure). */
+  async function regenerate(options: ChatRunOptions): Promise<void> {
+    if (!isReady || agent.isRunning || !scope) return;
+    set({ sentHere: true });
+    await guarded(() =>
+      chatAgentClient.regenerate(
+        copilotkit,
+        agent,
+        options,
+        authenticate,
+        current,
+      ),
+    );
+  }
+
+  function stop(): void {
+    chatAgentClient.stop(copilotkit);
+    set({ stopped: true });
+  }
+
+  /** Starts an empty conversation with a new thread id. */
+  function startNew(): void {
+    chatAgentClient.reset(copilotkit, agent);
+    set({
+      error: undefined,
+      stopped: false,
+      loadingThreadId: undefined,
+      researchPending: true,
+      sentHere: false,
+    });
+  }
+
+  /**
+   * Opens a stored thread. Resolves false when it does not exist (anymore)
+   * or does not belong to the user.
+   */
+  async function open(id: string): Promise<boolean> {
+    if (chatAgentClient.threadId === id) return true;
+    set({ loadingThreadId: id, error: undefined, stopped: false });
+    try {
+      const thread = await findThread(id);
+      if (useConversationState.getState().loadingThreadId !== id) return true;
+      if (!thread) {
+        set({ loadingThreadId: undefined });
+        return false;
+      }
+      chatAgentClient.load(copilotkit, agent, thread.id, thread.messages);
+      set({
+        loadingThreadId: undefined,
+        researchPending: true,
+        sentHere: false,
+      });
+      return true;
+    } catch {
+      if (useConversationState.getState().loadingThreadId === id) {
+        set({ loadingThreadId: undefined });
+      }
+      return false;
     }
   }
 
   return {
-    ready: agent !== undefined,
-    messages: chatMessagesOf(agent?.messages ?? []),
-    running: agent?.isRunning ?? false,
-    error,
+    /** Signed in and connected to the runtime. */
+    ready: scope !== null && isReady,
+    signedIn: scope !== null,
+    checkingSession:
+      snapshot.status === 'restoring' || snapshot.status === 'verifying',
+    threadId,
+    messages,
+    transcript: transcriptOf(messages, running),
+    empty: messages.length === 0,
+    running,
+    loading,
+    loadingThreadId: state.loadingThreadId,
+    error: state.error,
+    stopped: state.stopped,
+    sentHere: state.sentHere,
     send,
+    regenerate,
+    stop,
+    startNew,
+    open,
   };
+}
+
+function hasResearchCall(messages: readonly Message[]): boolean {
+  return messages.some(
+    (message) =>
+      message.role === 'assistant' &&
+      (message.toolCalls ?? []).some((call) =>
+        RESEARCH_TOOLS.has(call.function.name),
+      ),
+  );
 }

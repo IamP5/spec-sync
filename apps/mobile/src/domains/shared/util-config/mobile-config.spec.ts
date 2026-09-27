@@ -7,7 +7,33 @@ describe('resolveMobileConfig', () => {
         gatewayUrl: 'https://gateway.example.com/',
         development: false,
       }),
-    ).toEqual({ gatewayUrl: 'https://gateway.example.com' });
+    ).toMatchObject({ gatewayUrl: 'https://gateway.example.com' });
+  });
+
+  it('reads the Firebase project only when it is complete', () => {
+    const firebase = {
+      apiKey: 'key',
+      authDomain: 'project.firebaseapp.com',
+      projectId: 'project',
+    };
+    expect(
+      resolveMobileConfig({ development: true, firebase }).firebase,
+    ).toEqual(firebase);
+    expect(
+      resolveMobileConfig({
+        development: true,
+        firebase: { apiKey: 'key' },
+      }).firebase,
+    ).toBeUndefined();
+  });
+
+  it('drops blank Google client ids', () => {
+    expect(
+      resolveMobileConfig({
+        development: true,
+        googleClientIds: { ios: ' ', android: 'android-id' },
+      }).googleClientIds,
+    ).toEqual({ ios: undefined, android: 'android-id', web: undefined });
   });
 
   it('falls back to the local gateway in development', () => {
