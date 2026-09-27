@@ -30,7 +30,6 @@ export function useThreadSearchStore() {
     query,
     setQuery,
     loading: scope !== null && threads.isLoading,
-    refreshing: threads.isRefetching,
     failed: threads.isError,
     threads: all,
     groups: groupThreads(
@@ -39,5 +38,9 @@ export function useThreadSearchStore() {
     ),
     titleOf: (id: string) => all.find((thread) => thread.id === id)?.title,
     refresh: () => void threads.refetch(),
+    /** Refetches and resolves once the list is back (pull to refresh). */
+    reload: async () => {
+      await threads.refetch();
+    },
   };
 }

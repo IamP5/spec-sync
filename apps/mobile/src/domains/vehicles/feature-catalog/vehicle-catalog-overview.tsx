@@ -1,12 +1,12 @@
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
-import { Modal } from 'react-native';
 
 import type {
   CatalogPage,
   VehicleConfiguration,
 } from '../data/vehicle-contracts';
 import type { VehicleQuestion } from '../data/vehicle-interactions';
+import { PageSheet } from '../ui/page-sheet';
 import { safeSourceUrl } from '../util/vehicle-display';
 import {
   catalogView,
@@ -139,12 +139,7 @@ export function VehicleCatalogOverview({
         }}
         onNextPage={search.loadNextPage}
       />
-      <Modal
-        visible={detailOpen}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setDetailOpen(false)}
-      >
+      <PageSheet visible={detailOpen} onClose={() => setDetailOpen(false)}>
         {focused ? (
           <VehicleDetailPane
             vehicle={focused}
@@ -157,7 +152,7 @@ export function VehicleCatalogOverview({
             onOpenLink={openLink}
           />
         ) : null}
-      </Modal>
+      </PageSheet>
     </>
   );
 }

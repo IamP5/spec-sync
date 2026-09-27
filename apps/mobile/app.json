@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "specsync",
+    "scheme": ["specsync", "com.specsync.mobile"],
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
@@ -16,8 +16,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true
+      }
     },
     "web": {
       "bundler": "metro",
@@ -37,7 +36,8 @@
             "backgroundColor": "#0f0f0f"
           }
         }
-      ]
+      ],
+      "./plugins/with-release-signing"
     ],
     "experiments": {
       "typedRoutes": true,

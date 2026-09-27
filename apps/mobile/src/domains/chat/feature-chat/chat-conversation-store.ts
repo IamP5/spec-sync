@@ -50,6 +50,40 @@ const useConversationState = create<ConversationState>(() => ({
 /** `uid:generation` the runtime is connected for; empty while signed out. */
 let connectedScope: string | undefined;
 
+/**
+ * The handshake (runtime info) can fail on a flaky network, or when Android
+ * sends it on a connection Cloud Run already closed; it is tried again after
+ * these delays before the chat reports the assistant as unavailable.
+ */
+const HANDSHAKE_RETRY_MS = [1000, 3000, 8000];
+const HANDSHAKE_ERROR_CODES = new Set([
+  'runtime_info_fetch_failed',
+  'agent_connect_failed',
+]);
+let handshakeAttempts = 0;
+
+/** Errors that mean the runtime was never reached (web `ChatCoordinator`). */
+const UNAVAILABLE_CODES = new Set([
+  ...HANDSHAKE_ERROR_CODES,
+  'agent_not_found',
+]);
+
+type CopilotKitClient = ReturnType<typeof useCopilotKit>['copilotkit'];
+
+/** Puts the user's token on the runtime and runs the handshake again. */
+function connectRuntime(copilotkit: CopilotKitClient, key: string): void {
+  session.idToken().then(
+    (token) => {
+      if (connectedScope !== key) return;
+      copilotkit.setHeaders({ Authorization: `Bearer ${token}` });
+      const url = chatRuntimeUrl(mobileConfig.gatewayUrl);
+      copilotkit.setRuntimeUrl(undefined);
+      copilotkit.setRuntimeUrl(url);
+    },
+    () => undefined,
+  );
+}
+
 function set(state: Partial<ConversationState>): void {
   useConversationState.setState(state);
 }
@@ -95,17 +129,9 @@ export function useChatConversationStore() {
       set({ error: undefined, stopped: false, loadingThreadId: undefined });
       return;
     }
-    session.idToken().then(
-      (token) => {
-        if (connectedScope !== key) return;
-        copilotkit.setHeaders({ Authorization: `Bearer ${token}` });
-        // The handshake made without a token failed; run it again.
-        const url = chatRuntimeUrl(mobileConfig.gatewayUrl);
-        copilotkit.setRuntimeUrl(undefined);
-        copilotkit.setRuntimeUrl(url);
-      },
-      () => undefined,
-    );
+    // The handshake made without a token failed; run it again.
+    handshakeAttempts = 0;
+    connectRuntime(copilotkit, key);
     // Reconnect only when the verified user or session generation changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scope?.uid, scope?.generation, copilotkit]);
@@ -114,10 +140,28 @@ export function useChatConversationStore() {
     () =>
       chatAgentClient.onError(copilotkit, (error) => {
         // Signed out, the runtime refuses the handshake; that is expected.
-        if (session.snapshot().scope) set({ error, stopped: false });
+        if (!session.snapshot().scope) return;
+        const key = connectedScope;
+        const delay = HANDSHAKE_RETRY_MS[handshakeAttempts];
+        if (key && HANDSHAKE_ERROR_CODES.has(error.code) && delay) {
+          handshakeAttempts += 1;
+          setTimeout(() => {
+            if (connectedScope === key) connectRuntime(copilotkit, key);
+          }, delay);
+          return;
+        }
+        set({ error, stopped: false });
       }),
     [copilotkit],
   );
+
+  // Once connected, a failed handshake is behind us: clear what it reported.
+  useEffect(() => {
+    if (!isReady) return;
+    handshakeAttempts = 0;
+    const error = useConversationState.getState().error;
+    if (error && UNAVAILABLE_CODES.has(error.code)) set({ error: undefined });
+  }, [isReady]);
 
   const running = isReady && agent.isRunning;
   const loading = state.loadingThreadId !== undefined;
@@ -226,6 +270,14 @@ export function useChatConversationStore() {
     );
   }
 
+  /** Runs the handshake again (the retry when the assistant was unavailable). */
+  function reconnect(): void {
+    if (!scope || !connectedScope) return;
+    handshakeAttempts = 0;
+    set({ error: undefined });
+    connectRuntime(copilotkit, connectedScope);
+  }
+
   function stop(): void {
     chatAgentClient.stop(copilotkit);
     set({ stopped: true });
@@ -290,6 +342,7 @@ export function useChatConversationStore() {
     sentHere: state.sentHere,
     send,
     regenerate,
+    reconnect,
     stop,
     startNew,
     open,

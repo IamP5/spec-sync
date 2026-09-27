@@ -1,13 +1,13 @@
 import * as Clipboard from 'expo-clipboard';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useNavigation, useRouter } from 'expo-router';
+import { DrawerActions } from 'expo-router/react-navigation';
 import * as WebBrowser from 'expo-web-browser';
 import {
+  ArrowDown,
   Brain,
-  ChevronDown,
   CircleAlert,
-  MessageSquarePlus,
   PanelLeft,
-  Settings,
+  SquarePen,
 } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   Alert,
@@ -37,11 +38,13 @@ import { ChatComposer, MAX_PROMPT_LENGTH } from './ui/chat-composer';
 import { ChatEmptyState } from './ui/chat-empty-state';
 import { CreditsPill } from './ui/credits-pill';
 import { DisclosurePane } from './ui/disclosure-pane';
+import { HomeBackdrop } from './ui/home-backdrop';
 import { MarkdownText } from './ui/markdown-text';
 import { MessageBubble } from './ui/message-bubble';
 import { MessageList } from './ui/message-list';
 import { ModePicker } from './ui/mode-picker';
 import { RunStatus, StoppedMarker } from './ui/run-status';
+import { TranscriptFade } from './ui/transcript-fade';
 
 /** The prompt behind the catalog suggestion (web `CATALOG_SUGGESTION`). */
 const CATALOG_SUGGESTION =
@@ -52,8 +55,10 @@ const COMPARISON_SUGGESTION =
 const COPIED_FEEDBACK_MS = 1500;
 /** Distance from the end that still counts as "at the bottom". */
 const AT_BOTTOM_THRESHOLD = 32;
-/** How far from the end the "scroll to the latest message" button appears. */
-const JUMP_THRESHOLD = 480;
+/** How far up the reader must be before the composer folds away. */
+const COMPOSER_COLLAPSE_DISTANCE = 160;
+/** Room between the last message and the composer (web: 80px). */
+const TRANSCRIPT_CLEARANCE = 32;
 
 /**
  * The chat (web `ChatPage`): a new conversation at `/`, a stored one at
@@ -64,6 +69,7 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
   'use no memo';
   const chat = useChatCoordinator();
   const router = useRouter();
+  const navigation = useNavigation();
   const listRef = useRef<FlatList<TranscriptItem>>(null);
   const [draft, setDraft] = useState('');
   const [pendingPrompt, setPendingPrompt] = useState<string>();
@@ -71,8 +77,15 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
   // runs in the same frame as the content change).
   const following = useRef(true);
   const lastOffset = useRef(0);
-  const [farFromEnd, setFarFromEnd] = useState(false);
+  const [atBottom, setAtBottom] = useState(true);
+  // The composer folds into a slim pill while the reader looks back through
+  // the conversation (web `compactComposer`), and unfolds when they return,
+  // focus it, or start typing.
+  const [readingEarlier, setReadingEarlier] = useState(false);
+  const [composerFocused, setComposerFocused] = useState(false);
+  const [composerHeight, setComposerHeight] = useState(120);
   const [copiedId, setCopiedId] = useState<string>();
+  const insets = useSafeAreaInsets();
 
   // Route sync: open the stored thread, or start a new one at `/`.
   useEffect(() => {
@@ -85,6 +98,8 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
       chat.startNew();
     }
     following.current = true;
+    setAtBottom(true);
+    setReadingEarlier(false);
     // Only a route or session change re-syncs; the conversation's own
     // updates must not reopen the thread.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,6 +128,8 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
     if (!canSend) return;
     setDraft('');
     following.current = true;
+    setAtBottom(true);
+    setReadingEarlier(false);
     requestAnimationFrame(() =>
       listRef.current?.scrollToEnd({ animated: true }),
     );
@@ -154,8 +171,17 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
     void WebBrowser.openBrowserAsync(url);
   }
 
+  // Only turns that render take a place (and a gap) in the list.
+  const visibleItems = chat.transcript.filter((item) =>
+    item.kind === 'user'
+      ? true
+      : item.kind === 'reasoning'
+        ? chat.showActivity
+        : hasContent(item, chat.showActivity),
+  );
+
   function goToResearch(researchId: string) {
-    const index = chat.transcript.findIndex(
+    const index = visibleItems.findIndex(
       (item) =>
         item.kind === 'assistant' &&
         item.toolCalls.some((call) => researchIdOf(call) === researchId),
@@ -174,7 +200,23 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
     if (distance <= AT_BOTTOM_THRESHOLD) following.current = true;
     else if (contentOffset.y < lastOffset.current) following.current = false;
     lastOffset.current = contentOffset.y;
-    setFarFromEnd(distance > JUMP_THRESHOLD);
+    setAtBottom(following.current);
+    if (following.current) setReadingEarlier(false);
+    else if (distance > COMPOSER_COLLAPSE_DISTANCE) setReadingEarlier(true);
+  }
+
+  function scrollToLatest() {
+    following.current = true;
+    setAtBottom(true);
+    setReadingEarlier(false);
+    listRef.current?.scrollToEnd({ animated: true });
+  }
+
+  function onComposerFocus(focused: boolean) {
+    setComposerFocused(focused);
+    // Focusing ends the reading pause; leaving keeps the composer open until
+    // the transcript scrolls again.
+    if (focused) setReadingEarlier(false);
   }
 
   function follow() {
@@ -225,8 +267,9 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
       options={{
         title: chat.title,
         headerTitle: () => (
-          <View className="max-w-44">
-            <Text numberOfLines={1} className="text-base font-semibold">
+          <View className="max-w-48 flex-row items-center gap-3">
+            <View className="bg-border h-4 w-px" />
+            <Text numberOfLines={1} className="shrink text-sm font-medium">
               {chat.title}
             </Text>
           </View>
@@ -235,12 +278,7 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
           <HeaderButton
             icon={PanelLeft}
             label="Conversations"
-            onPress={() =>
-              router.push({
-                pathname: '/threads',
-                params: { active: chat.threadId },
-              })
-            }
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
           />
         ),
         headerRight: () => (
@@ -257,15 +295,10 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
               onPress={() => chat.setShowActivity(!chat.showActivity)}
             />
             <HeaderButton
-              icon={MessageSquarePlus}
+              icon={SquarePen}
               label="New chat"
               disabled={chat.empty || chat.running}
               onPress={newChat}
-            />
-            <HeaderButton
-              icon={Settings}
-              label="Settings"
-              onPress={() => router.push('/settings')}
             />
           </View>
         ),
@@ -274,86 +307,113 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
   );
 
   const loadingThread = chat.loading && chat.transcript.length === 0;
+  const home = chat.empty && !loadingThread;
+  const compact =
+    !home &&
+    !loadingThread &&
+    !atBottom &&
+    readingEarlier &&
+    !composerFocused &&
+    draft.length === 0;
 
   return (
     <KeyboardAvoidingView behavior="padding" className="bg-background flex-1">
       {header}
-      {loadingThread ? (
-        <View
-          className="flex-1 gap-5 px-4 py-6"
-          accessibilityLabel="Loading conversation…"
-        >
-          <Skeleton className="h-10 w-3/5 self-end rounded-3xl" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-4/5" />
-          <Skeleton className="h-24 w-full rounded-xl" />
-        </View>
-      ) : (
-        <MessageList
-          listRef={listRef}
-          items={chat.transcript}
-          renderItem={renderItem}
-          onScroll={onScroll}
-          onContentSizeChange={follow}
-          empty={
-            <ChatEmptyState
-              greeting={chat.displayName ? `Hello, ${chat.displayName}.` : ''}
-              disabled={chat.checkingSession || chat.running}
-              onCatalog={() => submit(CATALOG_SUGGESTION)}
-              onComparison={() => submit(COMPARISON_SUGGESTION)}
-            />
-          }
-          footer={
-            chat.running ? (
-              <RunStatus label={runStatus(chat.transcript)} />
-            ) : chat.stopped ? (
-              <StoppedMarker onRetry={() => void chat.regenerate()} />
-            ) : undefined
-          }
-        />
-      )}
-      {farFromEnd && chat.transcript.length > 0 ? (
-        <View className="absolute bottom-44 right-4">
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-11 rounded-full"
-            onPress={() => {
-              following.current = true;
-              setFarFromEnd(false);
-              listRef.current?.scrollToEnd({ animated: true });
-            }}
-            accessibilityLabel="Scroll to the latest message"
+      <View className="flex-1">
+        {home ? <HomeBackdrop /> : null}
+        {loadingThread ? (
+          <View
+            className="flex-1 gap-7 px-4 pt-4"
+            accessibilityLabel="Loading conversation…"
           >
-            <Icon as={ChevronDown} className="text-foreground size-5" />
-          </Button>
-        </View>
-      ) : null}
-      <ChatAlerts chat={chat} />
-      <ChatComposer
-        value={draft}
-        onChangeText={setDraft}
-        onSubmit={() => submit(draft)}
-        onStop={chat.stop}
-        running={chat.running}
-        disabled={chat.signedIn ? !canSend : chat.checkingSession}
-        controls={
-          <>
-            {chat.signedIn ? (
-              <ModePicker
-                modes={chat.modes}
-                selected={chat.selectedMode}
-                disabled={chat.running}
-                costOf={chat.modeCost}
-                needsConfirmation={chat.needsConfirmation}
-                messagesCovered={chat.messagesCovered}
-                onChange={chat.setMode}
+            <Skeleton className="h-11 w-3/5 self-end rounded-3xl" />
+            <View className="gap-3">
+              <Skeleton className="h-4 w-11/12" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-4/5" />
+              <Skeleton className="h-4 w-3/5" />
+            </View>
+            <Skeleton className="h-11 w-2/5 self-end rounded-3xl" />
+          </View>
+        ) : (
+          <MessageList
+            listRef={listRef}
+            items={visibleItems}
+            renderItem={renderItem}
+            onScroll={onScroll}
+            onContentSizeChange={follow}
+            bottomInset={composerHeight + (home ? 0 : TRANSCRIPT_CLEARANCE)}
+            empty={
+              <ChatEmptyState
+                disabled={chat.checkingSession || chat.running}
+                onCatalog={() => submit(CATALOG_SUGGESTION)}
+                onComparison={() => submit(COMPARISON_SUGGESTION)}
               />
-            ) : null}
-            {chat.wallet ? <CreditsPill wallet={chat.wallet} /> : null}
-          </>
-        }
-      />
+            }
+            footer={
+              chat.running ? (
+                <RunStatus label={runStatus(chat.transcript)} />
+              ) : chat.stopped ? (
+                <StoppedMarker onRetry={() => void chat.regenerate()} />
+              ) : undefined
+            }
+          />
+        )}
+        {home ? null : <TranscriptFade solidHeight={composerHeight - 16} />}
+        {!atBottom && chat.transcript.length > 0 ? (
+          <View
+            className="absolute inset-x-0 items-center"
+            style={{ bottom: composerHeight + 16 }}
+            pointerEvents="box-none"
+          >
+            <Button
+              variant="outline"
+              size="icon"
+              className="bg-background size-11 rounded-full shadow-md"
+              onPress={scrollToLatest}
+              accessibilityLabel="Scroll to the latest message"
+            >
+              <Icon as={ArrowDown} className="text-foreground size-5" />
+            </Button>
+          </View>
+        ) : null}
+        <View
+          className="absolute inset-x-0 bottom-0 px-4 pt-2"
+          style={{ paddingBottom: Math.max(12, insets.bottom) }}
+          pointerEvents="box-none"
+          onLayout={(event) =>
+            setComposerHeight(Math.ceil(event.nativeEvent.layout.height))
+          }
+        >
+          <ChatAlerts chat={chat} />
+          <ChatComposer
+            value={draft}
+            onChangeText={setDraft}
+            onSubmit={() => submit(draft)}
+            onStop={chat.stop}
+            onFocusChange={onComposerFocus}
+            running={chat.running}
+            compact={compact}
+            disabled={chat.signedIn ? !canSend : chat.checkingSession}
+            controls={
+              <>
+                {chat.signedIn ? (
+                  <ModePicker
+                    modes={chat.modes}
+                    selected={chat.selectedMode}
+                    disabled={chat.running}
+                    costOf={chat.modeCost}
+                    needsConfirmation={chat.needsConfirmation}
+                    messagesCovered={chat.messagesCovered}
+                    onChange={chat.setMode}
+                  />
+                ) : null}
+                {chat.wallet ? <CreditsPill wallet={chat.wallet} /> : null}
+              </>
+            }
+          />
+        </View>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -362,7 +422,7 @@ export function ChatScreen({ threadId }: { threadId?: string }) {
 function ChatAlerts({ chat }: { chat: ReturnType<typeof useChatCoordinator> }) {
   if (chat.exhausted) {
     return (
-      <View className="px-4 pb-2">
+      <View className="pb-2">
         <Alert icon={CircleAlert} variant="destructive">
           <AlertTitle>Credits used up</AlertTitle>
           <AlertDescription>
@@ -375,7 +435,7 @@ function ChatAlerts({ chat }: { chat: ReturnType<typeof useChatCoordinator> }) {
   }
   if (chat.creditsError?.code === 'INSUFFICIENT_CREDITS') {
     return (
-      <View className="gap-2 px-4 pb-2">
+      <View className="gap-2 pb-2">
         <Alert icon={CircleAlert} variant="destructive">
           <AlertTitle>Not enough credits</AlertTitle>
           <AlertDescription>{chat.creditsError.message}</AlertDescription>
@@ -405,7 +465,7 @@ function ChatAlerts({ chat }: { chat: ReturnType<typeof useChatCoordinator> }) {
     return (
       <RetryAlert
         message={chat.errorMessage}
-        onRetry={() => void chat.regenerate()}
+        onRetry={() => void chat.retry()}
       />
     );
   }
@@ -420,7 +480,7 @@ function RetryAlert({
   onRetry: () => void;
 }) {
   return (
-    <View className="gap-2 px-4 pb-2">
+    <View className="gap-2 pb-2">
       <Alert icon={CircleAlert} variant="destructive">
         <AlertDescription>{message}</AlertDescription>
       </Alert>
@@ -443,7 +503,7 @@ function HeaderButton({
   disabled = false,
   active = false,
 }: {
-  icon: typeof Settings;
+  icon: typeof Brain;
   label: string;
   onPress: () => void;
   disabled?: boolean;
@@ -451,7 +511,7 @@ function HeaderButton({
 }) {
   return (
     <Button
-      variant="ghost"
+      variant={active ? 'secondary' : 'ghost'}
       size="icon"
       className="size-11"
       onPress={onPress}
@@ -459,10 +519,7 @@ function HeaderButton({
       accessibilityLabel={label}
       accessibilityState={{ selected: active, disabled }}
     >
-      <Icon
-        as={icon}
-        className={active ? 'text-primary size-5' : 'text-foreground size-5'}
-      />
+      <Icon as={icon} className="text-foreground size-5" />
     </Button>
   );
 }

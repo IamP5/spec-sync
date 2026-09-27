@@ -56,7 +56,7 @@ export function ModePicker({
         disabled={disabled}
         onPress={() => setOpen(true)}
         className={cn(
-          'border-border min-h-11 flex-row items-center gap-1.5 rounded-full border px-3',
+          'active:bg-accent min-h-11 flex-row items-center gap-1.5 rounded-full px-3.5',
           disabled && 'opacity-50',
         )}
       >
@@ -65,13 +65,15 @@ export function ModePicker({
             <View
               key={mode.id}
               className={cn(
-                'size-1.5 rounded-full',
-                dot <= index ? 'bg-foreground' : 'bg-border',
+                'size-1 rounded-full',
+                dot <= index ? 'bg-foreground' : 'bg-foreground/25',
               )}
             />
           ))}
         </View>
-        <Text className="text-sm font-medium">{current?.label}</Text>
+        <Text className="text-foreground/80 text-sm font-medium">
+          {current?.label}
+        </Text>
         <Icon as={ChevronDown} className="text-muted-foreground size-3.5" />
       </Pressable>
       <Modal

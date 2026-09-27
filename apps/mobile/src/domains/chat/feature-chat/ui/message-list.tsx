@@ -3,14 +3,15 @@ import {
   FlatList,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  View,
 } from 'react-native';
 
 import type { TranscriptItem } from '../../data/chat-message';
 
 /**
- * The transcript, virtualized; the newest turn sits at the bottom. The screen
- * decides how each item renders and follows new content while the reader is
- * at the bottom.
+ * The transcript, virtualized; the newest turn sits at the bottom, clear of
+ * the floating composer. The screen decides how each item renders and
+ * follows new content while the reader is at the bottom.
  */
 export function MessageList({
   items,
@@ -20,6 +21,7 @@ export function MessageList({
   listRef,
   onScroll,
   onContentSizeChange,
+  bottomInset = 0,
 }: {
   items: TranscriptItem[];
   renderItem: (item: TranscriptItem, index: number) => ReactElement | null;
@@ -28,6 +30,8 @@ export function MessageList({
   listRef?: Ref<FlatList<TranscriptItem>>;
   onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   onContentSizeChange?: () => void;
+  /** Room under the last item for the floating composer. */
+  bottomInset?: number;
 }) {
   return (
     <FlatList
@@ -36,8 +40,18 @@ export function MessageList({
       keyExtractor={keyOf}
       renderItem={({ item, index }) => renderItem(item, index)}
       ListEmptyComponent={empty}
-      ListFooterComponent={footer}
-      contentContainerClassName="grow gap-5 px-4 py-4"
+      // Spacing and the room for the composer live inside cells, not in the
+      // container's gap or padding: `scrollToEnd` only measures cells.
+      ItemSeparatorComponent={TurnGap}
+      ListFooterComponent={
+        <View
+          className={footer ? 'pt-7' : undefined}
+          style={{ paddingBottom: bottomInset }}
+        >
+          {footer}
+        </View>
+      }
+      contentContainerClassName="grow px-4 pt-4"
       contentInsetAdjustmentBehavior="automatic"
       keyboardDismissMode="interactive"
       keyboardShouldPersistTaps="handled"
@@ -47,6 +61,11 @@ export function MessageList({
       onScrollToIndexFailed={() => undefined}
     />
   );
+}
+
+/** The space between turns (web `gap-7`). */
+function TurnGap() {
+  return <View className="h-7" />;
 }
 
 function keyOf(item: TranscriptItem): string {

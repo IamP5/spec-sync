@@ -5,7 +5,8 @@ import { cn } from '../../../design-system/lib/utils';
 
 /**
  * A pill that toggles one filter (model family, "Differences only", a review
- * format). The pill stays compact while the touch target keeps 44pt.
+ * format): plain text until selected, then filled, as on the web cards. The
+ * pill stays compact while the touch target keeps 44pt.
  */
 export function FilterChip({
   label,
@@ -33,7 +34,7 @@ export function FilterChip({
           'h-8 flex-row items-center gap-1 rounded-full border px-3',
           selected
             ? 'border-foreground bg-foreground'
-            : 'border-border bg-background',
+            : 'border-transparent bg-transparent',
         )}
       >
         <Text

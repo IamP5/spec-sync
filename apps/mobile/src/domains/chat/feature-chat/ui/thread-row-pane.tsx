@@ -10,7 +10,9 @@ import { cn } from '../../../../design-system/lib/utils';
 import { MAX_TITLE_LENGTH } from '../../data/thread';
 
 /**
- * One conversation in the chat list: tap to open, rename in place, delete.
+ * One conversation in the side panel: tap to open, rename in place, delete.
+ * The row stays a plain title (phone chat apps); the rename and delete
+ * buttons show on the open conversation, or on any row after a long press.
  * The rename field commits on submit and cancels with the close button.
  */
 export function ThreadRowPane({
@@ -35,6 +37,8 @@ export function ThreadRowPane({
   onDelete: () => void;
 }) {
   const [draft, setDraft] = useState(title);
+  const [revealed, setRevealed] = useState(false);
+  const actions = active || revealed;
 
   if (renaming) {
     return (
@@ -76,43 +80,58 @@ export function ThreadRowPane({
 
   return (
     <View
-      className={cn('flex-row items-center rounded-lg', active && 'bg-accent')}
+      className={cn(
+        'flex-row items-center rounded-xl',
+        active && 'bg-sidebar-accent',
+      )}
     >
       <Pressable
         role="link"
         accessibilityLabel={title}
+        accessibilityHint="Long press to rename or delete"
         accessibilityState={{ selected: active }}
         onPress={onOpen}
-        onLongPress={onStartRename}
-        className="active:bg-accent min-h-11 flex-1 justify-center rounded-lg px-3 py-2"
+        onLongPress={() => setRevealed(!revealed)}
+        className="active:bg-sidebar-accent min-h-11 flex-1 justify-center rounded-xl px-3 py-2"
       >
-        <Text numberOfLines={1} className={cn(active && 'font-medium')}>
+        <Text
+          numberOfLines={1}
+          className={cn('text-sm', active && 'font-medium')}
+        >
           {title}
         </Text>
       </Pressable>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-11"
-        onPress={() => {
-          setDraft(title);
-          onStartRename();
-        }}
-        disabled={disabled}
-        accessibilityLabel={`Rename ${title}`}
-      >
-        <Icon as={Pencil} className="text-muted-foreground size-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-11"
-        onPress={onDelete}
-        disabled={disabled}
-        accessibilityLabel={`Delete ${title}`}
-      >
-        <Icon as={Trash2} className="text-muted-foreground size-4" />
-      </Button>
+      {actions ? (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-11"
+            onPress={() => {
+              setDraft(title);
+              setRevealed(false);
+              onStartRename();
+            }}
+            disabled={disabled}
+            accessibilityLabel={`Rename ${title}`}
+          >
+            <Icon as={Pencil} className="text-muted-foreground size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-11"
+            onPress={() => {
+              setRevealed(false);
+              onDelete();
+            }}
+            disabled={disabled}
+            accessibilityLabel={`Delete ${title}`}
+          >
+            <Icon as={Trash2} className="text-muted-foreground size-4" />
+          </Button>
+        </>
+      ) : null}
     </View>
   );
 }

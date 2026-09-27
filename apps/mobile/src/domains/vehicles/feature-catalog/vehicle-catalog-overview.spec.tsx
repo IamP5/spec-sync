@@ -23,6 +23,9 @@ jest.mock('../data/vehicle-catalog-client', () => ({
   loadSpecifications: jest.fn(),
   searchConfigurations: jest.fn(),
 }));
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
 // Reanimated and the portal-based select have no native side under jest.
 jest.mock('../../../design-system/components/ui/skeleton', () => ({
   Skeleton: () => null,
@@ -109,7 +112,7 @@ describe('VehicleCatalogOverview', () => {
       hasMore: false,
     });
     const handlers = renderCatalog();
-    expect(screen.getByText(/showing 2 of 2 loaded/)).toBeTruthy();
+    expect(screen.getByText(/Showing 2 of 2 loaded/)).toBeTruthy();
 
     await act(async () => {
       // The strip's end card and the footer both offer the next page.
@@ -119,7 +122,7 @@ describe('VehicleCatalogOverview', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByText(/showing 3 of 3 loaded/)).toBeTruthy(),
+      expect(screen.getByText(/Showing 3 of 3 loaded/)).toBeTruthy(),
     );
     expect(searchConfigurations).toHaveBeenCalledWith({
       q: 'Ford',
@@ -147,7 +150,7 @@ describe('VehicleCatalogOverview', () => {
         screen.getByText('Could not load more of the catalog.'),
       ).toBeTruthy(),
     );
-    expect(screen.getByText(/showing 2 of 2 loaded/)).toBeTruthy();
+    expect(screen.getByText(/Showing 2 of 2 loaded/)).toBeTruthy();
   });
 
   it('narrows to a model family and clears it when selected again', async () => {
@@ -157,11 +160,11 @@ describe('VehicleCatalogOverview', () => {
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Maverick, 1 configurations'));
     });
-    expect(screen.getByText(/showing 1 of 1 loaded/)).toBeTruthy();
+    expect(screen.getByText(/Showing 1 of 1 loaded/)).toBeTruthy();
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Maverick, 1 configurations'));
     });
-    expect(screen.getByText(/showing 3 of 3 loaded/)).toBeTruthy();
+    expect(screen.getByText(/Showing 3 of 3 loaded/)).toBeTruthy();
   });
 
   it('compares only the explicit shortlist', async () => {

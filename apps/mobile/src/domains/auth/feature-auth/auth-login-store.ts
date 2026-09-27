@@ -33,6 +33,10 @@ export function useAuthLoginStore() {
       const token = await google.prompt();
       if (token) await signInWithGoogleIdToken(token);
     },
+    // The sentence on screen stays generic; the cause goes to the dev log.
+    onError: (error) => {
+      if (__DEV__) console.warn('Google sign-in failed:', error);
+    },
   });
   const logout = useMutation({ mutationFn: signOutOfFirebase });
 

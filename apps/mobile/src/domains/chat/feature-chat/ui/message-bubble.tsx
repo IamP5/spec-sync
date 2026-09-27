@@ -6,7 +6,8 @@ import { Text } from '../../../../design-system/components/ui/text';
 export function MessageBubble({ text }: { text: string }) {
   return (
     <View
-      className="bg-muted max-w-[85%] self-end rounded-3xl px-4 py-2.5"
+      className="bg-sidebar-accent max-w-[85%] self-end rounded-3xl px-4 py-3"
+      style={{ borderCurve: 'continuous' }}
       accessibilityLabel={`You: ${text}`}
     >
       <Text selectable className="text-base leading-6">

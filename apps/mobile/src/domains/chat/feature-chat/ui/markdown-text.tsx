@@ -51,7 +51,7 @@ function Block({
     }
     case 'paragraph':
       return (
-        <Text selectable className="text-base leading-6">
+        <Text selectable className="text-base leading-7">
           <Inline
             tokens={(token as Tokens.Paragraph).tokens}
             onOpenLink={onOpenLink}
@@ -62,10 +62,10 @@ function Block({
       const list = token as Tokens.List;
       const start = typeof list.start === 'number' ? list.start : 1;
       return (
-        <View className="gap-1.5">
+        <View className="gap-2.5">
           {list.items.map((item, index) => (
             <View key={index} className="flex-row gap-2 pr-2">
-              <Text className="text-muted-foreground min-w-5 text-base leading-6">
+              <Text className="text-muted-foreground min-w-5 text-base leading-7">
                 {list.ordered ? `${start + index}.` : '•'}
               </Text>
               <View className="flex-1 gap-1.5">
@@ -85,7 +85,7 @@ function Block({
     case 'text': {
       const text = token as Tokens.Text;
       return (
-        <Text selectable className="text-base leading-6">
+        <Text selectable className="text-base leading-7">
           {text.tokens ? (
             <Inline tokens={text.tokens} onOpenLink={onOpenLink} />
           ) : (
@@ -118,7 +118,7 @@ function Block({
       return null;
     default:
       return 'text' in token && typeof token.text === 'string' ? (
-        <Text selectable className="text-base leading-6">
+        <Text selectable className="text-base leading-7">
           {token.text}
         </Text>
       ) : null;

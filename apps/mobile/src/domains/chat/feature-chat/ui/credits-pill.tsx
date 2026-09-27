@@ -19,21 +19,21 @@ export function CreditsPill({ wallet }: { wallet: CreditsWallet }) {
         role="button"
         accessibilityLabel={`AI credits: ${formatCredits(wallet.balance)}`}
         onPress={() => setOpen(true)}
-        className="border-border min-h-11 justify-center gap-1 rounded-full border px-3"
+        className="active:bg-accent min-h-11 flex-row items-center gap-1.5 rounded-full px-2.5"
       >
         <Text
           className={cn(
-            'text-xs font-medium',
+            'text-foreground/80 text-xs font-medium tabular-nums',
             wallet.exhausted && 'text-destructive',
           )}
         >
           {`${formatCredits(wallet.balance)} credits`}
         </Text>
-        <View className="bg-muted h-0.5 w-full overflow-hidden rounded-full">
+        <View className="bg-foreground/10 h-1 w-8 overflow-hidden rounded-full">
           <View
             className={cn(
-              'h-full',
-              wallet.exhausted ? 'bg-destructive' : 'bg-foreground',
+              'h-full rounded-full',
+              wallet.exhausted ? 'bg-destructive' : 'bg-primary',
             )}
             style={{ width: `${Math.round(usedShare(wallet) * 100)}%` }}
           />

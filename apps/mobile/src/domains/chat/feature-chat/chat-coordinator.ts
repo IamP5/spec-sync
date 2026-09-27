@@ -53,6 +53,15 @@ export function useChatCoordinator() {
     afterRun();
   }
 
+  /** "Try again": reconnects when the runtime was unreachable, else reruns. */
+  async function retry() {
+    if (conversation.error && UNAVAILABLE_CODES.has(conversation.error.code)) {
+      conversation.reconnect();
+      return;
+    }
+    await regenerate();
+  }
+
   async function regenerate() {
     await conversation.regenerate(options);
     afterRun();
@@ -74,12 +83,12 @@ export function useChatCoordinator() {
     ...conversation,
     send,
     regenerate,
+    retry,
     switchToInstant,
     title: titleOf(
       threads.titleOf(conversation.threadId),
       firstUser ? textOf(firstUser) : '',
     ),
-    displayName: preferences.displayName,
     showActivity: preferences.showActivity,
     setShowActivity: (showActivity: boolean) =>
       preferences.update({ showActivity }),

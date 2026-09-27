@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import {
   Select,
@@ -17,8 +17,9 @@ import {
 } from '../catalog-presentation';
 
 /**
- * The one filter row of a catalog (web `VehicleCatalogCard` header): a text
- * search over the loaded page, a chip per model family and the order.
+ * The filters of a catalog (web `VehicleCatalogCard` header): a text search
+ * over the loaded page beside a quiet order pill, then one sideways-scrolling
+ * row with a chip per model family, so many families never stack up.
  */
 export function VehicleCatalogFilters({
   searchQuery,
@@ -43,9 +44,18 @@ export function VehicleCatalogFilters({
       SORT_OPTIONS.find((option) => option.value === sort)?.label ??
       'Catalog order',
   };
+  const families: FamilyChip[] = [
+    { model: 'all', label: 'All', accessibilityLabel: 'All models' },
+    ...modelSummaries.map((family) => ({
+      model: family.model,
+      label: family.model,
+      count: family.configurationCount,
+      accessibilityLabel: `${family.model}, ${family.configurationCount} configurations`,
+    })),
+  ];
   return (
-    <View className="border-border gap-1 border-b pb-2">
-      <View className="flex-row items-center gap-2">
+    <View className="border-border mt-2 border-b pb-1">
+      <View className="flex-row items-center gap-1">
         <SearchField
           value={searchQuery}
           onChangeText={onSearchChange}
@@ -60,9 +70,12 @@ export function VehicleCatalogFilters({
         >
           <SelectTrigger
             accessibilityLabel={`Order by: ${selectedSort.label}`}
-            className="h-11 max-w-40"
+            className="active:bg-accent h-11 shrink-0 gap-1 rounded-full border-0 bg-transparent px-3 shadow-none dark:bg-transparent"
           >
-            <SelectValue placeholder="Order by" className="text-xs" />
+            <SelectValue
+              placeholder="Order by"
+              className="text-muted-foreground text-xs"
+            />
           </SelectTrigger>
           <SelectContent>
             {SORT_OPTIONS.map((option) => (
@@ -75,24 +88,35 @@ export function VehicleCatalogFilters({
           </SelectContent>
         </Select>
       </View>
-      <View className="flex-row flex-wrap gap-x-1.5">
-        <FilterChip
-          label="All"
-          selected={modelFilter === 'all'}
-          accessibilityLabel="All models"
-          onPress={() => onModelChange('all')}
-        />
-        {modelSummaries.map((family) => (
+      <FlatList
+        horizontal
+        data={families}
+        keyExtractor={familyKey}
+        showsHorizontalScrollIndicator={false}
+        contentContainerClassName="gap-1 px-4"
+        className="-mx-4"
+        accessibilityLabel="Model families"
+        renderItem={({ item }) => (
           <FilterChip
-            key={family.model}
-            label={family.model}
-            count={family.configurationCount}
-            selected={modelFilter === family.model}
-            accessibilityLabel={`${family.model}, ${family.configurationCount} configurations`}
-            onPress={() => onModelChange(family.model)}
+            label={item.label}
+            count={item.count}
+            selected={modelFilter === item.model}
+            accessibilityLabel={item.accessibilityLabel}
+            onPress={() => onModelChange(item.model)}
           />
-        ))}
-      </View>
+        )}
+      />
     </View>
   );
+}
+
+interface FamilyChip {
+  model: string;
+  label: string;
+  count?: number;
+  accessibilityLabel: string;
+}
+
+function familyKey(chip: FamilyChip) {
+  return chip.model;
 }

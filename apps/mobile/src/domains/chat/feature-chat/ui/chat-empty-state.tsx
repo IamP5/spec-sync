@@ -1,53 +1,54 @@
-import {
-  ChevronRight,
-  GitCompareArrows,
-  LayoutGrid,
-} from 'lucide-react-native';
+import { ArrowLeftRight, ArrowUpRight, CarFront } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 
+import { FordScript } from '../../../../design-system/components/brand/ford-script';
 import { Icon } from '../../../../design-system/components/ui/icon';
 import { Text } from '../../../../design-system/components/ui/text';
 
 /**
- * The home state of a new chat (web chat page empty state): the wordmark,
- * the tagline and two suggested prompts.
+ * The home state of a new chat (web chat page home on a phone): the Ford /
+ * SpecSync lockup and the tagline centred in the free space, and two quiet
+ * suggestions just above the composer.
  */
 export function ChatEmptyState({
-  greeting,
   onCatalog,
   onComparison,
   disabled,
 }: {
-  greeting: string;
   onCatalog: () => void;
   onComparison: () => void;
   disabled: boolean;
 }) {
   return (
-    <View className="flex-1 justify-center gap-8 px-2 py-10">
-      <View className="items-center gap-2">
-        <Text className="text-primary text-4xl font-bold tracking-tight">
-          SpecSync
-        </Text>
-        <Text className="text-muted-foreground text-center">
-          {greeting || 'Every specification. A clearer decision.'}
+    <View className="flex-1">
+      <View className="flex-1 items-center justify-center gap-4 px-4 py-8">
+        <View
+          role="heading"
+          accessibilityLabel="Ford SpecSync"
+          className="flex-row items-center gap-4"
+        >
+          <FordScript width={72} height={30} />
+          <View className="bg-border h-8 w-px rotate-[18deg]" />
+          <Text className="text-[31px] font-semibold leading-[34px] tracking-[-2px]">
+            SpecSync
+          </Text>
+        </View>
+        <Text className="text-muted-foreground max-w-sm text-center text-sm leading-relaxed">
+          Every specification. A clearer decision.
         </Text>
       </View>
-      <View className="bg-card border-border gap-1 rounded-xl border p-2">
-        <Text className="text-muted-foreground px-2 pb-1 pt-1 text-xs font-medium uppercase">
-          Suggested
-        </Text>
+      <View className="mx-1 mb-1">
         <Suggestion
-          icon={LayoutGrid}
+          icon={CarFront}
           title="Explore catalog"
-          subtitle="Search, filters, details and a comparison shortlist."
+          hint="Search, filters, details and a comparison shortlist."
           onPress={onCatalog}
           disabled={disabled}
         />
         <Suggestion
-          icon={GitCompareArrows}
+          icon={ArrowLeftRight}
           title="Compare F-150 and RAM 2500"
-          subtitle="Power, transmission and drivetrain, model year 2026."
+          hint="Power, transmission and drivetrain, model year 2026."
           onPress={onComparison}
           disabled={disabled}
         />
@@ -59,13 +60,13 @@ export function ChatEmptyState({
 function Suggestion({
   icon,
   title,
-  subtitle,
+  hint,
   onPress,
   disabled,
 }: {
-  icon: typeof LayoutGrid;
+  icon: typeof CarFront;
   title: string;
-  subtitle: string;
+  hint: string;
   onPress: () => void;
   disabled: boolean;
 }) {
@@ -73,20 +74,19 @@ function Suggestion({
     <Pressable
       role="button"
       accessibilityLabel={title}
+      accessibilityHint={hint}
       onPress={onPress}
       disabled={disabled}
-      className="active:bg-accent min-h-14 flex-row items-center gap-3 rounded-lg px-2 py-2.5"
+      className="active:bg-accent min-h-11 flex-row items-center gap-3 rounded-lg px-2 py-2.5 disabled:opacity-50"
     >
-      <View className="bg-muted size-10 items-center justify-center rounded-lg">
-        <Icon as={icon} className="text-foreground size-5" />
-      </View>
-      <View className="flex-1">
-        <Text className="font-medium">{title}</Text>
-        <Text className="text-muted-foreground text-sm" numberOfLines={2}>
-          {subtitle}
-        </Text>
-      </View>
-      <Icon as={ChevronRight} className="text-muted-foreground size-4" />
+      <Icon as={icon} className="text-muted-foreground size-5" />
+      <Text className="flex-1 text-sm" numberOfLines={1}>
+        {title}
+      </Text>
+      <Icon
+        as={ArrowUpRight}
+        className="text-muted-foreground size-3.5 opacity-70"
+      />
     </Pressable>
   );
 }

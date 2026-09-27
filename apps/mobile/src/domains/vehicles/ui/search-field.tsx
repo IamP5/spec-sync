@@ -5,7 +5,10 @@ import { Icon } from '../../../design-system/components/ui/icon';
 import { Input } from '../../../design-system/components/ui/input';
 import { cn } from '../../../design-system/lib/utils';
 
-/** A text filter with a search glyph and a clear button once it holds text. */
+/**
+ * A borderless text filter (web card search) with a search glyph and a clear
+ * button once it holds text.
+ */
 export function SearchField({
   value,
   onChangeText,
@@ -24,7 +27,7 @@ export function SearchField({
   return (
     <View className={cn('min-w-40 flex-1 justify-center', className)}>
       {/* An svg ignores absolute classes; its wrapper positions it. */}
-      <View className="absolute left-3 z-10" pointerEvents="none">
+      <View className="absolute left-1 z-10" pointerEvents="none">
         <Icon as={Search} className="text-muted-foreground size-4" />
       </View>
       <Input
@@ -36,7 +39,7 @@ export function SearchField({
         autoCorrect={false}
         returnKeyType="search"
         clearButtonMode="never"
-        className="h-11 pr-11 pl-9 text-sm"
+        className="h-11 rounded-none border-0 bg-transparent pr-11 pl-8 text-sm shadow-none dark:bg-transparent"
       />
       {value ? (
         <Pressable

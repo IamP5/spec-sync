@@ -100,7 +100,12 @@ export const mobileConfig: MobileConfig = resolveMobileConfig({
   os: process.env.EXPO_OS,
   development: __DEV__,
   firebase: {
-    apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+    // The browser key only accepts the web origins' referrers; iOS and
+    // Android use the mobile key (infra `identity_mobile`).
+    apiKey:
+      process.env.EXPO_OS === 'web'
+        ? process.env.EXPO_PUBLIC_FIREBASE_API_KEY
+        : process.env.EXPO_PUBLIC_FIREBASE_NATIVE_API_KEY,
     authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
     projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
   },

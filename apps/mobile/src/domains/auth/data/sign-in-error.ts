@@ -9,7 +9,7 @@ export function signInErrorMessage(error: unknown): string {
     error !== null &&
     'code' in error &&
     typeof error.code === 'string' &&
-    /^auth\/[a-z-]{1,60}$/.test(error.code)
+    /^auth\/[\w<>.-]{1,80}$/.test(error.code)
       ? error.code
       : undefined;
   if (code === 'auth/popup-blocked')

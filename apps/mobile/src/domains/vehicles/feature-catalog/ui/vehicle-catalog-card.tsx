@@ -130,15 +130,10 @@ function LoadedCatalog({
 
   return (
     <View className="w-full py-1" accessibilityLabel="Vehicle catalog">
-      <View className="flex-row flex-wrap items-center gap-x-2">
+      <View className="flex-row items-center gap-2">
         <Icon as={CarFront} className="text-muted-foreground size-4" />
-        <Text className="text-sm font-medium">Vehicle catalog</Text>
-        <Text
-          className="text-muted-foreground flex-1 text-xs"
-          accessibilityLiveRegion="polite"
-        >
-          · showing {shown.length} of {visibleConfigurations.length} loaded
-          {page.hasMore ? ' · more in the catalog' : ''}
+        <Text className="flex-1 text-sm font-medium" numberOfLines={1}>
+          Vehicle catalog
         </Text>
         <View
           className="bg-muted flex-row rounded-full p-0.5"
@@ -158,6 +153,13 @@ function LoadedCatalog({
           />
         </View>
       </View>
+      <Text
+        className="text-muted-foreground mt-0.5 text-xs"
+        accessibilityLiveRegion="polite"
+      >
+        Showing {shown.length} of {visibleConfigurations.length} loaded
+        {page.hasMore ? ' · more in the catalog' : ''}
+      </Text>
 
       <VehicleCatalogFilters
         searchQuery={searchQuery}
@@ -272,9 +274,11 @@ function LayoutToggle({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
+      // The pill stays as small as the web toggle; the touch target keeps 44pt.
+      hitSlop={6}
       className={cn(
-        'size-11 items-center justify-center rounded-full',
-        selected && 'bg-background',
+        'size-8 items-center justify-center rounded-full',
+        selected && 'bg-background shadow-sm shadow-black/10',
       )}
       onPress={onPress}
     >

@@ -22,8 +22,8 @@ export {
 
 /**
  * Composition root: app-wide providers, the session and appearance keepers,
- * and the navigation stack. The chat is the home; conversations, settings
- * and sign-in open over it.
+ * and the navigation stack. The chat, with the conversations in its side
+ * panel, is the home; settings and sign-in open over it.
  */
 export default function RootLayout() {
   const { theme } = useUniwind();
@@ -38,14 +38,9 @@ export default function RootLayout() {
             <ThemeProvider value={NAV_THEME[scheme]}>
               <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
               <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
-                <Stack.Screen name="index" options={{ title: 'SpecSync' }} />
                 <Stack.Screen
-                  name="c/[threadId]"
-                  options={{ title: 'SpecSync', animation: 'fade' }}
-                />
-                <Stack.Screen
-                  name="threads"
-                  options={{ title: 'Conversations', presentation: 'modal' }}
+                  name="(drawer)"
+                  options={{ headerShown: false }}
                 />
                 <Stack.Screen
                   name="settings"
@@ -54,6 +49,14 @@ export default function RootLayout() {
                 <Stack.Screen
                   name="sign-in"
                   options={{ title: 'Sign in', presentation: 'modal' }}
+                />
+                <Stack.Screen
+                  name="oauthredirect"
+                  options={{
+                    headerShown: false,
+                    presentation: 'transparentModal',
+                    animation: 'none',
+                  }}
                 />
               </Stack>
               <PortalHost />

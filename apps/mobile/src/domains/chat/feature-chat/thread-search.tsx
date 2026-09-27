@@ -1,9 +1,12 @@
 import { PortalHost } from '@rn-primitives/portal';
 import { useRouter } from 'expo-router';
-import { MessageSquarePlus, Search } from 'lucide-react-native';
+import { useDrawerStatus } from 'expo-router/drawer';
+import { Search, Settings, SquarePen } from 'lucide-react-native';
 import { useState } from 'react';
-import { SectionList, View } from 'react-native';
+import { Pressable, SectionList, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { FordScript } from '../../../design-system/components/brand/ford-script';
 import { Button } from '../../../design-system/components/ui/button';
 import { Icon } from '../../../design-system/components/ui/icon';
 import { Input } from '../../../design-system/components/ui/input';
@@ -16,30 +19,50 @@ import { useThreadSearchStore } from './thread-search-store';
 import { ConfirmDeletePane } from './ui/confirm-delete-pane';
 import { ThreadRowPane } from './ui/thread-row-pane';
 
-/** Dialogs of this modal screen render above it, not under it. */
+/** Dialogs of the side panel render above it, not under the chat. */
 const PORTAL_HOST = 'thread-search';
 
 /**
- * The chat list (web sidebar `ThreadSearch`): conversations grouped by date,
- * filtered by title, opened, renamed and deleted. `activeId` is the thread
- * the chat shows underneath.
+ * The chat list in the side panel (web sidebar `ThreadSearch`):
+ * conversations grouped by date, filtered by title, opened, renamed and
+ * deleted. `activeId` is the thread the chat shows beside it; `onClose`
+ * slides the panel away once a conversation opens.
  */
-export function ThreadSearch({ activeId }: { activeId?: string }) {
+export function ThreadSearch({
+  activeId,
+  onClose,
+}: {
+  activeId?: string;
+  onClose: () => void;
+}) {
   const router = useRouter();
   const signedIn = useSession().scope !== null;
   const threads = useThreadSearchStore();
   const detail = useThreadDetailStore();
   const [renaming, setRenaming] = useState<string>();
   const [deleting, setDeleting] = useState<ChatThreadSummary>();
+  // Only a pull shows the spinner; the refresh on open stays quiet.
+  const [pulling, setPulling] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  // The list refreshes each time the panel opens, as the web sidebar does
+  // on navigation, so a conversation started meanwhile shows up.
+  const drawerOpen = useDrawerStatus() === 'open';
+  const [wasOpen, setWasOpen] = useState(drawerOpen);
+  if (wasOpen !== drawerOpen) {
+    setWasOpen(drawerOpen);
+    if (drawerOpen && signedIn) threads.refresh();
+  }
 
   function open(id: string) {
-    if (router.canDismiss()) router.dismissAll();
-    router.replace({ pathname: '/c/[threadId]', params: { threadId: id } });
+    onClose();
+    if (id !== activeId)
+      router.replace({ pathname: '/c/[threadId]', params: { threadId: id } });
   }
 
   function newChat() {
-    if (router.canDismiss()) router.dismissAll();
-    router.replace('/');
+    onClose();
+    if (activeId) router.replace('/');
   }
 
   async function rename(thread: ChatThreadSummary, title: string) {
@@ -63,52 +86,80 @@ export function ThreadSearch({ activeId }: { activeId?: string }) {
     }
   }
 
+  const settings = (
+    <Pressable
+      role="button"
+      accessibilityLabel="Settings"
+      onPress={() => router.push('/settings')}
+      className="border-sidebar-border active:bg-sidebar-accent min-h-14 flex-row items-center gap-3 border-t px-5 pt-3"
+      style={{ paddingBottom: Math.max(12, insets.bottom) }}
+    >
+      <Icon as={Settings} className="text-muted-foreground size-5" />
+      <Text className="flex-1 text-sm">Settings</Text>
+    </Pressable>
+  );
+
+  const brand = (
+    <View
+      role="heading"
+      accessibilityLabel="Ford SpecSync"
+      className="flex-row items-center gap-2.5 px-5 pb-3 pt-2"
+    >
+      <FordScript width={44} height={18} />
+      <View className="bg-border h-5 w-px rotate-[18deg]" />
+      <Text className="text-lg font-semibold tracking-tight">SpecSync</Text>
+    </View>
+  );
+
   if (!signedIn) {
     return (
-      <View className="bg-background flex-1 items-center justify-center gap-4 px-8">
-        <Text className="text-muted-foreground text-center">
-          Sign in to open your conversations.
-        </Text>
-        <Button
-          className="min-h-11"
-          onPress={() => router.push('/sign-in')}
-          accessibilityLabel="Sign in"
-        >
-          <Text>Sign in</Text>
-        </Button>
+      <View className="bg-sidebar flex-1" style={{ paddingTop: insets.top }}>
+        {brand}
+        <View className="flex-1 items-center justify-center gap-4 px-8">
+          <Text className="text-muted-foreground text-center">
+            Sign in to open your conversations.
+          </Text>
+          <Button
+            className="min-h-11"
+            onPress={() => router.push('/sign-in')}
+            accessibilityLabel="Sign in"
+          >
+            <Text>Sign in</Text>
+          </Button>
+        </View>
+        {settings}
       </View>
     );
   }
 
   return (
-    <View className="bg-background flex-1">
-      <View className="gap-3 px-4 pb-2 pt-3">
-        <View className="flex-row items-center gap-2">
-          <View className="flex-1 justify-center">
-            <View className="absolute left-3 z-10" pointerEvents="none">
-              <Icon as={Search} className="text-muted-foreground size-4" />
-            </View>
-            <Input
-              value={threads.query}
-              onChangeText={threads.setQuery}
-              placeholder="Search conversations"
-              accessibilityLabel="Search conversations"
-              className="min-h-11 pl-9"
-              returnKeyType="search"
-            />
+    <View className="bg-sidebar flex-1" style={{ paddingTop: insets.top }}>
+      {brand}
+      <View className="gap-1 px-3 pb-2">
+        <View className="justify-center">
+          <View className="absolute left-3.5 z-10" pointerEvents="none">
+            <Icon as={Search} className="text-muted-foreground size-4" />
           </View>
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-11"
-            onPress={newChat}
-            accessibilityLabel="New chat"
-          >
-            <Icon as={MessageSquarePlus} className="text-foreground size-5" />
-          </Button>
+          <Input
+            value={threads.query}
+            onChangeText={threads.setQuery}
+            placeholder="Search conversations"
+            accessibilityLabel="Search conversations"
+            className="bg-sidebar-accent dark:bg-sidebar-accent min-h-11 rounded-full border-0 pl-10 shadow-none"
+            returnKeyType="search"
+          />
         </View>
+        <Pressable
+          role="button"
+          accessibilityLabel="New chat"
+          onPress={newChat}
+          className="active:bg-sidebar-accent min-h-11 flex-row items-center gap-3 rounded-xl px-3"
+        >
+          <Icon as={SquarePen} className="text-foreground size-5" />
+          <Text className="text-sm font-medium">New chat</Text>
+        </Pressable>
         {detail.error ? (
-          <Text role="alert" className="text-destructive text-sm">
+          <Text role="alert" className="text-destructive px-3 text-sm">
             {detail.error}
           </Text>
         ) : null}
@@ -129,16 +180,18 @@ export function ThreadSearch({ activeId }: { activeId?: string }) {
             data: group.threads,
           }))}
           keyExtractor={(thread) => thread.id}
-          contentInsetAdjustmentBehavior="automatic"
           keyboardShouldPersistTaps="handled"
-          contentContainerClassName="px-2 pb-8 grow"
+          contentContainerClassName="px-3 pb-8 grow"
           stickySectionHeadersEnabled={false}
-          refreshing={threads.refreshing}
-          onRefresh={threads.refresh}
+          refreshing={pulling}
+          onRefresh={() => {
+            setPulling(true);
+            void threads.reload().finally(() => setPulling(false));
+          }}
           renderSectionHeader={({ section }) => (
             <Text
               role="heading"
-              className="text-muted-foreground px-3 pb-1 pt-4 text-xs font-medium uppercase"
+              className="text-muted-foreground px-3 pb-1 pt-5 text-xs font-medium"
             >
               {section.title}
             </Text>
@@ -169,6 +222,7 @@ export function ThreadSearch({ activeId }: { activeId?: string }) {
           }
         />
       )}
+      {settings}
       <ConfirmDeletePane
         open={deleting !== undefined}
         title="Delete this conversation?"

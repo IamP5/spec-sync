@@ -1,6 +1,5 @@
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
-import { Modal } from 'react-native';
 
 import type { Comparison } from '../data/vehicle-contracts';
 import type {
@@ -8,6 +7,7 @@ import type {
   VehicleReviewsContext,
 } from '../data/vehicle-interactions';
 import { VehicleReviewsSearch } from '../feature-reviews';
+import { PageSheet } from '../ui/page-sheet';
 import { safeSourceUrl } from '../util/vehicle-display';
 import { type ComparisonRow, filterRows } from './comparison-presentation';
 import { VehicleComparisonCard } from './ui/vehicle-comparison-card';
@@ -86,12 +86,7 @@ export function VehicleComparisonOverview({
           if (href) void WebBrowser.openBrowserAsync(href);
         }}
       />
-      <Modal
-        visible={reviewsOpen}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setReviewsOpen(false)}
-      >
+      <PageSheet visible={reviewsOpen} onClose={() => setReviewsOpen(false)}>
         {reviewContext ? (
           <VehicleReviewsSearch
             key={reviewsKey}
@@ -103,7 +98,7 @@ export function VehicleComparisonOverview({
             }}
           />
         ) : null}
-      </Modal>
+      </PageSheet>
     </>
   );
 }
