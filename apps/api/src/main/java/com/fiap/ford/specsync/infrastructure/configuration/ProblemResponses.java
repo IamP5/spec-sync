@@ -55,7 +55,7 @@ public final class ProblemResponses {
             final String reason)
             throws IOException {
         final var body = new LinkedHashMap<String, Object>();
-        body.put("type", "about:blank");
+        // No "type": RFC 9457 reads its absence as about:blank, exactly like Spring MVC renders it.
         body.put("title", status.getReasonPhrase());
         body.put("status", status.value());
         body.put("detail", detail);

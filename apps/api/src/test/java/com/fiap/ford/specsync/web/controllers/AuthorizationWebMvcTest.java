@@ -124,7 +124,9 @@ class AuthorizationWebMvcTest {
                     .andExpect(jsonPath("$.status").value(401))
                     .andExpect(jsonPath("$.title").value("Unauthorized"))
                     .andExpect(jsonPath("$.detail").value("A valid bearer token is required"))
-                    .andExpect(jsonPath("$.instance").value("/api/me"));
+                    .andExpect(jsonPath("$.instance").value("/api/me"))
+                    // Same fields as the problems Spring MVC renders: no explicit about:blank type.
+                    .andExpect(jsonPath("$.type").doesNotExist());
         }
 
         @Test

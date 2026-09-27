@@ -38,8 +38,9 @@ endpoint.
 ## Adendo (2026-09-27): um único formato de erro para todos os status
 
 Todo corpo de erro é um `ProblemDetail` da RFC 9457 (`application/problem+json`)
-com `type`, `title`, `status`, `detail` e `instance`. Quando propriedades
-falham, ele também traz `errors: [{property, message}]`.
+com `title`, `status`, `detail` e `instance`; a ausência de `type` equivale a
+`about:blank`, tanto nas respostas do Spring MVC quanto nas do Spring Security.
+Quando propriedades falham, ele também traz `errors: [{property, message}]`.
 
 | Status          | Gerado por                                                      | Observações                                                                                                         |
 | --------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
