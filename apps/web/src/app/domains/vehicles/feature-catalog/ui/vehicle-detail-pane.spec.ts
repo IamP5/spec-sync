@@ -60,6 +60,29 @@ describe('VehicleDetailPane', () => {
     expect(element.textContent).toContain('Vehicle photos unavailable');
   });
 
+  it('lists reported specifications first and reveals unreported ones on demand', async () => {
+    const element = fixture.nativeElement as HTMLElement;
+    const labels = () =>
+      [...element.querySelectorAll('dt')].map((dt) => dt.textContent?.trim());
+
+    buttonNamed(element, 'Specifications').click();
+    await fixture.whenStable();
+    expect(labels()).toEqual([
+      'Reference price',
+      'Power',
+      'Torque',
+      '360 camera',
+    ]);
+
+    buttonNamed(element, 'Show unavailable specifications (1)').click();
+    await fixture.whenStable();
+    expect(labels()[labels().length - 1]).toBe('Drivetrain');
+
+    buttonNamed(element, 'Hide unavailable specifications').click();
+    await fixture.whenStable();
+    expect(labels()).not.toContain('Drivetrain');
+  });
+
   it('emits close, retry, and ask intents from the panel controls', async () => {
     const component = fixture.componentInstance;
     const element = fixture.nativeElement as HTMLElement;

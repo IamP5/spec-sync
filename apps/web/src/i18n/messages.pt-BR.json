@@ -774,6 +774,11 @@
     "6973761041646130127": " Cada especificação. Uma decisão mais clara. ",
     "8676953981580478039": " Sugestões ",
     "2517382935560994750": "Busca, filtros, detalhes e uma lista de comparação.",
-    "1790193495064713588": "Explorar catálogo"
+    "1790193495064713588": "Explorar catálogo",
+    "2449944212078661692": " Nenhuma especificação foi informada para esta configuração ainda. ",
+    "6502689372987792145": "Ocultar especificações indisponíveis",
+    "3220666564465693539": "Mostrar especificações indisponíveis ({$INTERPOLATION})",
+    "5815060377794106697": "{VAR_PLURAL, plural, =1 {um item sem dados para nenhum veículo foi ocultado} other {{INTERPOLATION} itens sem dados para nenhum veículo foram ocultados}}",
+    "5011701388326024501": " Nenhum destes itens é informado para estes veículos. A falta de informação não significa que o equipamento está ausente. "
   }
 }

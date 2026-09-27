@@ -242,7 +242,7 @@
 
       <z-tab i18n-label label="Specifications">
         <dl class="divide-y divide-border pt-4">
-          @for (fact of facts(); track fact.code) {
+          @for (fact of visibleFacts(); track fact.code) {
           <div
             class="grid gap-1 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-6"
           >
@@ -286,12 +286,43 @@
               }
             </dd>
           </div>
-          } @empty {
+          } @empty { @if (unreportedFacts().length === 0) {
           <div class="py-8 text-center text-sm text-muted-foreground" i18n>
             No attributes were returned for this configuration.
           </div>
-          }
+          } @else {
+          <div class="py-8 text-center text-sm text-muted-foreground" i18n>
+            No specifications are reported for this configuration yet.
+          </div>
+          } }
         </dl>
+        @if (unreportedFacts().length > 0) {
+        <button
+          z-button
+          zType="ghost"
+          zSize="sm"
+          type="button"
+          class="mt-2 min-h-11 w-full justify-center text-muted-foreground sm:min-h-9"
+          data-action="toggle-unreported-specifications"
+          [attr.aria-expanded]="showUnreported()"
+          (click)="showUnreported.set(!showUnreported())"
+        >
+          <ng-icon
+            name="lucideChevronDown"
+            class="transition-transform motion-reduce:transition-none"
+            [class.rotate-180]="showUnreported()"
+            aria-hidden="true"
+          />
+          @if (showUnreported()) {
+          <span i18n>Hide unavailable specifications</span>
+          } @else {
+          <span i18n
+            >Show unavailable specifications ({{ unreportedFacts().length
+            }})</span
+          >
+          }
+        </button>
+        }
       </z-tab>
 
       <z-tab i18n-label label="Evidence">

@@ -15,6 +15,7 @@ import { ZardSkeletonComponent } from '@/ui/components/skeleton';
 import {
   cellObservations,
   comparisonRows,
+  hiddenComparisonRowCount,
 } from '../../data/vehicle-comparison';
 import type {
   Comparison,
@@ -74,6 +75,14 @@ export class VehicleComparisonCard {
       new Set(
         comparisonRows(this.result(), true).map((row) => row.attribute.id),
       ),
+  );
+  /** Rows some vehicle reports, the base the filters narrow down. */
+  protected readonly reportedCount = computed(
+    () => comparisonRows(this.result(), false).length,
+  );
+  /** Rows no vehicle reports, left out of the list. */
+  protected readonly hiddenCount = computed(() =>
+    hiddenComparisonRowCount(this.result()),
   );
   /** Configurations whose name is shown next to every one of their values. */
   protected readonly named = signal<ReadonlySet<string>>(new Set());

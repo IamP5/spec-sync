@@ -2,6 +2,10 @@ import type { z } from 'zod';
 
 import { cellSchema, type Comparison } from './vehicle-contracts';
 
+/**
+ * Rows worth showing: an attribute no compared vehicle reports carries no
+ * comparison, so it is left out (see `hiddenComparisonRowCount`).
+ */
 export function comparisonRows(
   comparison: Comparison | undefined,
   differencesOnly: boolean,
@@ -9,11 +13,19 @@ export function comparisonRows(
   return (
     comparison?.rows.filter(
       (row) =>
-        !differencesOnly ||
-        row.cells.some((c) => c.knowledgeStatus !== 'KNOWN') ||
-        new Set(row.cells.map(cellSignature)).size > 1,
+        hasReportedValue(row) &&
+        (!differencesOnly ||
+          row.cells.some((c) => c.knowledgeStatus !== 'KNOWN') ||
+          new Set(row.cells.map(cellSignature)).size > 1),
     ) ?? []
   );
+}
+/** Attributes left out because no compared vehicle reports them. */
+export function hiddenComparisonRowCount(comparison: Comparison | undefined) {
+  return comparison?.rows.filter((row) => !hasReportedValue(row)).length ?? 0;
+}
+function hasReportedValue(row: Comparison['rows'][number]): boolean {
+  return row.cells.some((cell) => cell.knowledgeStatus !== 'NOT_REPORTED');
 }
 function cellSignature(cell: z.infer<typeof cellSchema>): string {
   const o = cell.observations.find((o) => o.id === cell.selectedObservationId);

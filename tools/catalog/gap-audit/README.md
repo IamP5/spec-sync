@@ -141,9 +141,42 @@ quote style are normalised); `verify-findings.mjs` rejects anything else.
 - The workflow logs dropped sources, failed captures and skipped models; the
   completeness critic turns them into an explicit "Pendências" section.
 
+## Image-only sources
+
+Some official sheets have no text layer (scanned fichas, dimension
+diagrams). Check `pdftotext` first; for true images, two transcribers (Opus and
+Sonnet) read the page independently into
+`<outDir>/visual/transcripts/<slug>/<key>.{a,b}.json`, and
+`reconcile-transcripts.mjs` keeps only the cells both read identically as the
+capture text under `<outDir>/visual/captures/`. Both transcribers must use the
+catalog configuration name as `column`, 1-based PDF page indexes and their own
+raw folder, or nothing reconciles. `--label-prefix` matches letter-coded
+diagram rows ("A (sem antena) – altura total") on the part before the dash;
+the meaning after it then comes from one transcriber and is left to the
+refuter. `verify-findings.mjs` runs unchanged against `<outDir>/visual`.
+
+## Applying the results
+
+`apply-audit.mjs <outDir> [--hold <slug>:<attribute> ...]` turns the accepted
+fills of both runs, the `attribute(...)` blocks of report section 3.3 and the
+alias SQL of section 3.4 into:
+
+- `tools/catalog/<dataset>/gap-audit-<date>.mjs`, one generated module per
+  dataset, merged into the manifest by `merge-audit.mjs` (new source
+  revisions, attribute definitions, specifications appended to their
+  configurations). A changed revision of a known source gets its own key so
+  older specs keep their provenance.
+- `apps/api/src/main/resources/db/migration/V19__gap_audit_terminology.sql`,
+  re-run after seeding by `seedAttributeAliases`.
+- `<outDir>/apply-summary.json` with every held or skipped fill.
+
+Conflicts are never applied; `--hold` keeps editorial decisions out. Bump the
+manifest versions, then import as described in each dataset README.
+
 ## Cost
 
 Per model: 4 agents (1 Sonnet, 3 Opus). Plus 1 Opus for clustering, 2 Opus
-calls per proposal, 3 small agents. A full sweep of 53 models is roughly 250
+calls per proposal (the definition lens in batches of `definitionBatch`,
+default 8), 3 small agents. A full sweep of 53 models is roughly 250
 agents; the Territory pilot (23 agents) used about 1.5M subagent tokens.
 Pilot on a few models first.
