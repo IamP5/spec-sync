@@ -25,14 +25,14 @@ A solução tem dois serviços na fronteira de segurança:
 
 ## Guia de validação da Sprint 3
 
-| Critério                           | Peso | Onde validar                                                                                                                                      |
-| ---------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arquitetura da solução             | 20%  | [Arquitetura](#arquitetura-da-solução), [fluxo de auth](#fluxo-de-autenticação-e-controle-de-acesso), [requisito 1](#1-arquitetura-da-solução-20) |
-| Autenticação e autorização         | 20%  | [Requisito 2](#2-autenticação-e-autorização-20)                                                                                                   |
-| Maturidade REST — nível 2          | 20%  | [Requisito 3](#3-maturidade-rest--nível-2-20), [endpoints](#endpoints)                                                                            |
-| Testes automatizados               | 15%  | [Requisito 4](#4-testes-automatizados-15), [`docs/test-evidence.md`](docs/test-evidence.md)                                                       |
-| JWT                                | 15%  | [Requisito 5](#5-jwt-15)                                                                                                                          |
-| Documentação e tratamento de erros | 10%  | [Requisito 6](#6-documentação-e-tratamento-de-erros-10), [erros](#erros)                                                                          |
+| Critério                           | Onde validar                                                                                                                                   |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arquitetura da solução             | [Arquitetura](#arquitetura-da-solução), [fluxo de auth](#fluxo-de-autenticação-e-controle-de-acesso), [requisito 1](#1-arquitetura-da-solução) |
+| Autenticação e autorização         | [Requisito 2](#2-autenticação-e-autorização)                                                                                                   |
+| Maturidade REST — nível 2          | [Requisito 3](#3-maturidade-rest--nível-2), [endpoints](#endpoints)                                                                            |
+| Testes automatizados               | [Requisito 4](#4-testes-automatizados), [`docs/test-evidence.md`](docs/test-evidence.md)                                                       |
+| JWT                                | [Requisito 5](#5-jwt)                                                                                                                          |
+| Documentação e tratamento de erros | [Requisito 6](#6-documentação-e-tratamento-de-erros), [erros](#erros)                                                                          |
 
 O caminho mais rápido para validar tudo sem credenciais do Google:
 
@@ -252,7 +252,7 @@ node apps/gateway/ops/set-user-roles.mjs fiap-challenge-ford <uid> curator
 Os comandos `curl` abaixo foram executados contra esta branch rodando
 localmente. As saídas mostradas são as respostas reais.
 
-### 1. Arquitetura da solução (20%)
+### 1. Arquitetura da solução
 
 | Item                                | Onde está                                                                                                                                                                                                  |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -273,7 +273,7 @@ npm exec -- nx run api:archTest
 archTest: 30 rules checked, 0 failed
 ```
 
-### 2. Autenticação e autorização (20%)
+### 2. Autenticação e autorização
 
 | Perfil    | Como é concedido                  | Pode acessar                                          |
 | --------- | --------------------------------- | ----------------------------------------------------- |
@@ -355,7 +355,7 @@ Uma conta sem a role de curador recebe
 conta com `curator` ou `admin` recebe 200. Esses três casos também são cobertos
 pelos testes automatizados, com tokens assinados localmente.
 
-### 3. Maturidade REST — nível 2 (20%)
+### 3. Maturidade REST — nível 2
 
 - **Recursos:** substantivos no plural sob `/api` (`/api/ingestions`,
   `/api/ingestions/{id}`, `/api/ontology/proposals`,
@@ -393,7 +393,7 @@ curl -s http://localhost:8080/api/comparisons
 }
 ```
 
-### 4. Testes automatizados (15%)
+### 4. Testes automatizados
 
 ```bash
 npm exec -- nx run api:test
@@ -418,7 +418,7 @@ BUILD SUCCESSFUL
   com todos os 204 testes, está em
   [`docs/test-evidence.md`](docs/test-evidence.md).
 
-### 5. JWT (15%)
+### 5. JWT
 
 - **Geração:** o JWT é o ID token emitido pelo **Identity Platform** (Firebase
   Auth) no login com Google: RS256, validade de 1 hora e as claims `sub`,
@@ -477,7 +477,7 @@ Content-Type: application/problem+json
 {"title":"Unauthorized","status":401,"detail":"A valid bearer token is required","instance":"/api/me","reason":"An error occurred while attempting to decode the Jwt: Malformed token"}
 ```
 
-### 6. Documentação e tratamento de erros (10%)
+### 6. Documentação e tratamento de erros
 
 - **OpenAPI/Swagger:** `http://localhost:8080/swagger-ui.html` e
   `http://localhost:8080/v3/api-docs`, com os esquemas de segurança `userToken`,
