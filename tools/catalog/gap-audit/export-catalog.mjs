@@ -27,6 +27,10 @@ function psql(sql) {
     'docker',
     [
       'compose',
+      // Worktrees would otherwise derive a different project name from their
+      // directory and miss the running stack.
+      '-p',
+      process.env.COMPOSE_PROJECT_NAME ?? 'fiap-ford-spec-sync',
       'exec',
       '-T',
       'postgres',
