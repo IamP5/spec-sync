@@ -55,6 +55,7 @@ export async function seedAttributeAliases() {
   for (const migration of [
     'V4__attribute_terminology.sql',
     'V18__raptor_terminology.sql',
+    'V19__gap_audit_terminology.sql',
   ]) {
     await postgres(
       await readFile(

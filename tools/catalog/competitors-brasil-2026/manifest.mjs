@@ -1,3 +1,8 @@
+import {
+  appendAuditSpecifications,
+  auditSources,
+} from '../gap-audit/merge-audit.mjs';
+import gapAudit from './gap-audit-2026-09-21.mjs';
 import sourceMetadata from './source-metadata.mjs';
 import sourceDefinitions from './source-sources.mjs';
 
@@ -856,6 +861,13 @@ const supersessions = [
   },
 ];
 
+appendAuditSpecifications(
+  gapAudit,
+  brands.flatMap((brand) =>
+    brand.models.map((model) => ({ brand: brand.name, model })),
+  ),
+);
+
 const configurationCount = brands.reduce(
   (sum, brand) =>
     sum +
@@ -868,10 +880,10 @@ const configurationCount = brands.reduce(
 const modelCount = brands.reduce((sum, brand) => sum + brand.models.length, 0);
 
 export default {
-  version: 'ford-competitors-brasil-current-2026-09-12-v2',
+  version: 'ford-competitors-brasil-current-2026-09-22-v3',
   capturedOn,
-  sources,
-  attributes,
+  sources: [...sources, ...auditSources(gapAudit)],
+  attributes: [...attributes, ...gapAudit.attributes],
   brands,
   expected: {
     brandCount: brands.length,
