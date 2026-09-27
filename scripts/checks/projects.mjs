@@ -2,10 +2,11 @@ import { gatewayChecks } from '../../apps/gateway/checks.mjs';
 import { aiChecks } from '../../apps/ai/checks.mjs';
 import { apiChecks } from '../../apps/api/checks.mjs';
 import { webChecks } from '../../apps/web/checks.mjs';
+import { mobileChecks } from '../../apps/mobile/checks.mjs';
 import { pitchChecks } from '../../apps/pitch/checks.mjs';
 
 // Registry of per-project checks. Each app owns its definition next to its
-// code (`apps/web/checks.mjs`, `apps/api/checks.mjs`); register it here so the
+// code (`apps/web/checks.mjs`, `apps/api/checks.mjs`, ...); register it here so the
 // hooks and `npm run verify` pick it up.
 //
 // Shape of an entry:
@@ -14,6 +15,7 @@ import { pitchChecks } from '../../apps/pitch/checks.mjs';
 // least one changed file starts with one of them.
 export const projects = [
   webChecks,
+  mobileChecks,
   apiChecks,
   aiChecks,
   gatewayChecks,
@@ -35,5 +37,10 @@ export const workspacePaths = [
   'tsconfig.base.json',
   'eslint.config.mjs',
   'sheriff.config.ts',
+  '.nxignore',
+  // Root Jest/Babel files written by @nx/expo; they configure apps/mobile.
+  'babel.config.json',
+  'jest.config.ts',
+  'jest.preset.js',
   '.github/',
 ];

@@ -1,0 +1,15 @@
+---
+description: Apply the Expo/React Native architecture rules of apps/mobile
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+alwaysApply: false
+---
+
+Follow `apps/mobile/AGENTS.md`. Before changing application code, read `apps/mobile/docs/architecture-boundaries.md` and apply the architecture rules.
+
+If the change touches stores, queries, forms or the chat, also read `apps/mobile/docs/architecture-state-management.md`.
+
+Every file under `src/app` is an Expo Router route; keep routes thin and put code in `src/domains`. File-name suffixes carry architectural meaning (see "Layers and building blocks"). Renaming or moving a file across suffixes is a re-classification, not a cosmetic change — verify it against those rules first.
+
+Do not bypass documented domain boundaries. Prefer small, focused changes.
