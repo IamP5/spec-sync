@@ -393,35 +393,67 @@ Write ${outDir}/ontology-proposals.json as {"proposals":[...]} with those fields
 log(`Ontology: ${proposals.proposals.length} candidate attributes`);
 
 // ---- 7. critique (two lenses per proposal) -----------------------------
-const judged = await pipeline(
-  proposals.proposals,
-  (p) =>
-    call(
-      `Ontology critique, lens = DUPLICATE. Proposal: ${JSON.stringify(p)}. Read ${outDir}/ontology.json (attributes, aliases, vocabulary, manufacturer terms, open proposals) and the proposal's evidence in ${outDir}/ontology-proposals.json.
-Disposition: "reject" if the concept is already covered by an existing attribute (possibly with a new alias or vocabulary value instead of a new definition), if it merges two meanings, or if a single manufacturer's marketing term is being promoted to a generic concept without a generic meaning; "revise" if the concept is new but code, label or aliases must change to avoid a collision (state the replacement in "fix"); "accept" otherwise. Default to "reject" when uncertain; put the better mapping in "fix".`,
-      {
-        label: `critique:duplicate ${p.code}`,
-        phase: 'Critique',
-        model: 'opus',
-        effort: 'high',
-        schema: VERDICT,
+// The duplicate lens runs once per proposal; the definition lens runs in
+// batches because one agent per proposal exhausted the session limit on a
+// full sweep (~175 proposals).
+const DEFINITION_BATCH = args.definitionBatch ?? 8;
+const BATCH_VERDICTS = {
+  type: 'object',
+  properties: {
+    verdicts: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { code: { type: 'string' }, ...VERDICT.properties },
+        required: ['code', ...VERDICT.required],
       },
-    ),
-  (dup, p) =>
-    dup && dup.disposition !== 'reject'
-      ? call(
-          `Ontology critique, lens = DEFINITION. Proposal: ${JSON.stringify(p)}. Open each evidence excerpt in ${outDir}/captures/<slug>/<captureKey>.txt.
-Disposition: "reject" if fewer than one verbatim evidence excerpt actually contains the fact or the concept has no stable meaning across manufacturers; "revise" if the concept holds but the value type, unit, label, description or aliases must change (the dimension is ambiguous, the label would be confused with an existing label, the description does not say what the number/list means): put the full corrected attribute(...) definition in "fix"; "accept" if the definition fits every evidence example as written. Default to "reject" when uncertain.`,
-          {
-            label: `critique:definition ${p.code}`,
-            phase: 'Critique',
-            model: 'opus',
-            effort: 'medium',
-            schema: VERDICT,
-          },
-        ).then((def) => ({ proposal: p, duplicate: dup, definition: def }))
-      : { proposal: p, duplicate: dup, definition: null },
+    },
+  },
+  required: ['verdicts'],
+};
+const duplicates = await pipeline(proposals.proposals, (p) =>
+  call(
+    `Ontology critique, lens = DUPLICATE. Proposal: ${JSON.stringify(p)}. Read ${outDir}/ontology.json (attributes, aliases, vocabulary, manufacturer terms, open proposals) and the proposal's evidence in ${outDir}/ontology-proposals.json.
+Disposition: "reject" if the concept is already covered by an existing attribute (possibly with a new alias or vocabulary value instead of a new definition), if it merges two meanings, or if a single manufacturer's marketing term is being promoted to a generic concept without a generic meaning; "revise" if the concept is new but code, label or aliases must change to avoid a collision (state the replacement in "fix"); "accept" otherwise. Default to "reject" when uncertain; put the better mapping in "fix".`,
+    {
+      label: `critique:duplicate ${p.code}`,
+      phase: 'Critique',
+      model: 'opus',
+      effort: 'high',
+      schema: VERDICT,
+    },
+  ),
 );
+const survivors = proposals.proposals.filter(
+  (_, i) => duplicates[i] && duplicates[i].disposition !== 'reject',
+);
+const batches = [];
+for (let i = 0; i < survivors.length; i += DEFINITION_BATCH)
+  batches.push(survivors.slice(i, i + DEFINITION_BATCH));
+const definitionResults = await pipeline(batches, (batch, _, b) =>
+  call(
+    `Ontology critique, lens = DEFINITION, for ${batch.length} proposals (judge each independently): ${JSON.stringify(batch)}. For each, open its evidence excerpts in ${outDir}/captures/<slug>/<captureKey>.txt.
+Disposition per proposal: "reject" if fewer than one verbatim evidence excerpt actually contains the fact or the concept has no stable meaning across manufacturers; "revise" if the concept holds but the value type, unit, label, description or aliases must change (the dimension is ambiguous, the label would be confused with an existing label, the description does not say what the number/list means): put the full corrected attribute(...) definition in "fix"; "accept" if the definition fits every evidence example as written. Default to "reject" when uncertain. Return exactly one verdict per proposal, keyed by its code.`,
+    {
+      label: `critique:definition batch ${b + 1}/${batches.length}`,
+      phase: 'Critique',
+      model: 'opus',
+      effort: 'medium',
+      schema: BATCH_VERDICTS,
+    },
+  ),
+);
+const definitionByCode = new Map(
+  definitionResults
+    .filter(Boolean)
+    .flatMap((r) => r.verdicts)
+    .map((v) => [v.code, v]),
+);
+const judged = proposals.proposals.map((p, i) => ({
+  proposal: p,
+  duplicate: duplicates[i],
+  definition: definitionByCode.get(p.code) ?? null,
+}));
 const ok = (v) => v && v.disposition !== 'reject';
 const accepted = judged
   .filter(Boolean)

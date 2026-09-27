@@ -16,8 +16,15 @@
     >
     ·
     <span role="status" i18n
-      >{{ rows().length }} of {{ comparison.rows.length }} items</span
+      >{{ rows().length }} of {{ reportedCount() }} items</span
     >
+    @if (hiddenCount() > 0) { ·
+    <span i18n
+      >{hiddenCount(), plural, =1 {one item without data for any vehicle is
+      hidden} other {{{ hiddenCount() }} items without data for any vehicle are
+      hidden}}</span
+    >
+    }
   </p>
 
   <!-- Pinned 1.5rem above the scrollport edge so the transcript's top padding cannot show rows scrolling underneath. -->
@@ -264,7 +271,12 @@
       </details>
       }
     </li>
-    } @empty {
+    } @empty { @if (reportedCount() === 0) {
+    <li class="py-6 text-center text-muted-foreground" i18n>
+      None of these items is reported for these vehicles. Missing data does not
+      mean the equipment is absent.
+    </li>
+    } @else {
     <li class="py-6 text-center text-muted-foreground" i18n>
       No item matches the filters.
       <button
@@ -275,7 +287,7 @@
         Clear filters
       </button>
     </li>
-    }
+    } }
   </ul>
 
   <footer

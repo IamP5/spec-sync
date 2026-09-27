@@ -4,6 +4,7 @@ import {
   computed,
   inject,
   input,
+  linkedSignal,
   LOCALE_ID,
   output,
 } from '@angular/core';
@@ -12,6 +13,7 @@ import {
   lucideBadgeCheck,
   lucideCarFront,
   lucideCheck,
+  lucideChevronDown,
   lucideCircleAlert,
   lucideCircleHelp,
   lucideInfo,
@@ -67,6 +69,7 @@ interface DetailEvidence {
       lucideBadgeCheck,
       lucideCarFront,
       lucideCheck,
+      lucideChevronDown,
       lucideCircleAlert,
       lucideCircleHelp,
       lucideInfo,
@@ -100,6 +103,23 @@ export class VehicleDetailPane {
   private readonly locale = inject(LOCALE_ID);
   protected readonly facts = computed(() =>
     detailFacts(this.comparison(), this.vehicle().id, this.locale),
+  );
+  /** Known and conflicting facts first; unreported ones wait behind a toggle. */
+  protected readonly reportedFacts = computed(() =>
+    this.facts().filter(({ status }) => status !== 'not-reported'),
+  );
+  protected readonly unreportedFacts = computed(() =>
+    this.facts().filter(({ status }) => status === 'not-reported'),
+  );
+  /** Collapsed again whenever the pane shows another vehicle. */
+  protected readonly showUnreported = linkedSignal({
+    source: () => this.vehicle().id,
+    computation: () => false,
+  });
+  protected readonly visibleFacts = computed(() =>
+    this.showUnreported()
+      ? [...this.reportedFacts(), ...this.unreportedFacts()]
+      : this.reportedFacts(),
   );
   protected readonly knownCount = computed(
     () => this.facts().filter(({ status }) => status === 'known').length,

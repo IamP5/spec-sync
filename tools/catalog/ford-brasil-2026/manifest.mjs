@@ -1,3 +1,9 @@
+import {
+  appendAuditSpecifications,
+  auditSources,
+} from '../gap-audit/merge-audit.mjs';
+import gapAudit from './gap-audit-2026-09-21.mjs';
+
 const capturedOn = '2026-09-12';
 
 const source = (key, title, url, sha256, publishedOn = null) => ({
@@ -2313,13 +2319,19 @@ const modelsPartTwo = [
   { name: 'Transit Chassi', configurations: chassiConfigurations },
 ];
 
+const models = [...modelsPartOne, ...modelsPartTwo];
+appendAuditSpecifications(
+  gapAudit,
+  models.map((model) => ({ brand: 'Ford', model })),
+);
+
 export default {
-  version: 'ford-brasil-current-2026-09-12-v2',
+  version: 'ford-brasil-current-2026-09-22-v3',
   capturedOn,
   brand: 'Ford',
-  sources,
-  attributes,
-  models: [...modelsPartOne, ...modelsPartTwo],
+  sources: [...sources, ...auditSources(gapAudit)],
+  attributes: [...attributes, ...gapAudit.attributes],
+  models,
   expected: {
     modelCount: 12,
     configurationCount: 44,
