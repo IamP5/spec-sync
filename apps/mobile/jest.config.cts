@@ -6,6 +6,9 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'mjs', 'cjs', 'html', 'tsx', 'jsx'],
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/arch/'],
+  // The first render of a suite loads React Native, Reanimated and the design
+  // system cold; on the CI runners that alone can pass jest's 5 s default.
+  testTimeout: 30000,
   // jest-expo's list plus the design-system packages that ship untranspiled
   // JSX or ESM (React Native Reusables primitives, Uniwind, Lucide).
   transformIgnorePatterns: [
