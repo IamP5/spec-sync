@@ -160,7 +160,7 @@ sequenceDiagram
   A->>A: verifica assinatura do Google, audience, e-mail = service account do gatilho
   A->>AI: POST /internal/ingestion/extract<br/>Bearer chave do worker + ID token do Cloud Run
   AI->>A: POST /api/internal/ai-credits/wallets/{uid}/runs<br/>Bearer chave de créditos + ID token do Cloud Run
-  Note over AI,A: a IA verificou o ID token do usuário por conta própria;<br/>a chave torna confiável o uid do caminho
+  Note over AI,A: a IA verificou o ID token do usuário por conta própria#59;<br/>a chave torna confiável o uid do caminho
   AI->>A: PUT /api/internal/research/works/{id}/attempts/{a}/checkpoints/{key}<br/>Bearer chave de pesquisa
 ```
 
