@@ -149,19 +149,64 @@ passa por duas barreiras: o IAM do Cloud Run (a identidade de workload de quem
 chama, em `X-Serverless-Authorization`) e uma credencial de aplicação conferida
 pela filter chain dedicada da API.
 
+O Cloud Scheduler drena a fila. Extração comum, pesquisa compartilhada e projeção são chamadas distintas.
+
 ```mermaid
 sequenceDiagram
-  autonumber
   participant S as Cloud Scheduler
   participant A as API
   participant AI as Serviço de IA
 
-  S->>A: POST /api/internal/ingestion/drain<br/>Bearer token OIDC do Google (service account do gatilho, audience = URL da API)
-  A->>A: verifica assinatura do Google, audience, e-mail = service account do gatilho
-  A->>AI: POST /internal/ingestion/extract<br/>Bearer chave do worker + ID token do Cloud Run
-  AI->>A: POST /api/internal/ai-credits/wallets/{uid}/runs<br/>Bearer chave de créditos + ID token do Cloud Run
-  Note over AI,A: a IA verificou o ID token do usuário por conta própria#59;<br/>a chave torna confiável o uid do caminho
-  AI->>A: PUT /api/internal/research/works/{id}/attempts/{a}/checkpoints/{key}<br/>Bearer chave de pesquisa
+  Note over S,AI: Drain da fila. Nenhum ID token de usuário.
+  S->>A: POST /api/internal/ingestion/drain<br/>Authorization: Bearer token OIDC<br/>(SA do gatilho, audience = URL da API)
+  Note over A: SchedulerTokenFilter: assinatura, issuer, audience, e-mail verificado = SA do gatilho
+  loop cada ciclo, até a fila esvaziar ou o orçamento acabar
+    opt há extração sem researchPolicyVersion
+      A->>AI: POST /internal/ingestion/extract<br/>Authorization: Bearer chave do worker<br/>X-Serverless-Authorization: ID token (audience = URL da IA)
+      AI-->>A: draft
+    end
+    opt há extração com researchPolicyVersion
+      A->>AI: POST /internal/research/extract<br/>Authorization: Bearer chave de pesquisa<br/>X-Serverless-Authorization: ID token (audience = URL da IA)
+      AI->>A: POST /api/internal/research/works/{id}/attempts/{a}/heartbeat<br/>Bearer chave de pesquisa + ID token do Cloud Run
+      AI->>A: GET /api/internal/research/works/{id}/attempts/{a}/checkpoints<br/>Bearer chave de pesquisa + ID token do Cloud Run
+      AI->>A: PUT /api/internal/research/works/{id}/attempts/{a}/checkpoints/{key}<br/>Bearer chave de pesquisa + ID token do Cloud Run
+      AI-->>A: draft
+    end
+    opt há projeção
+      A->>AI: POST /internal/ingestion/project<br/>Authorization: Bearer chave do worker<br/>X-Serverless-Authorization: ID token (audience = URL da IA)
+    end
+  end
+```
+
+No chat, a IA verifica o ID token do usuário e só então fala com a carteira.
+
+```mermaid
+sequenceDiagram
+  participant G as Gateway
+  participant AI as Serviço de IA
+  participant A as API
+
+  Note over G,A: Chat. Independente do drain.
+  G->>AI: POST /copilotkit<br/>x-specsync-token: ID token do usuário<br/>+ ID token do Cloud Run
+  Note over AI: verifyIdToken(x-specsync-token)
+  AI->>A: POST /api/internal/ai-credits/wallets/{uid}/runs<br/>Authorization: Bearer chave de créditos<br/>X-Serverless-Authorization: ID token (audience = URL da API)
+  AI->>A: POST /api/internal/ai-credits/wallets/{uid}/runs/{runId}/usage<br/>mesma credencial
+  AI->>A: POST /api/internal/ai-credits/wallets/{uid}/runs/{runId}/finish<br/>mesma credencial
+```
+
+O usuário cria a pesquisa pelo gateway. Quem executa o trabalho é o drain acima.
+
+```mermaid
+sequenceDiagram
+  participant G as Gateway
+  participant AI as Serviço de IA
+  participant A as API
+
+  Note over G,A: Pesquisa pedida pelo usuário. O drain executa depois.
+  G->>AI: POST /chat/research<br/>x-specsync-token: ID token do usuário<br/>+ ID token do Cloud Run
+  Note over AI: verifyIdToken(x-specsync-token)
+  AI->>A: POST /api/internal/research/users/{uid}/requests<br/>Authorization: Bearer chave de pesquisa<br/>X-Serverless-Authorization: ID token (audience = URL da API)
+  Note over A: o trabalho entra na fila<br/>o drain chama /internal/research/extract
 ```
 
 | Caminho                                  | Quem chama             | Credencial                                          | Chain                          |
