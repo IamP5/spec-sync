@@ -153,8 +153,8 @@ pela filter chain dedicada da API.
 sequenceDiagram
   autonumber
   participant S as Cloud Scheduler
-  participant AI as Serviço de IA
   participant A as API
+  participant AI as Serviço de IA
 
   S->>A: POST /api/internal/ingestion/drain<br/>Bearer token OIDC do Google (service account do gatilho, audience = URL da API)
   A->>A: verifica assinatura do Google, audience, e-mail = service account do gatilho
