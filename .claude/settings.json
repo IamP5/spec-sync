@@ -38,7 +38,8 @@
       "Read(./**/dist/**)",
       "Read(./**/build/**)",
       "Read(./**/.angular/**)",
-      "Read(./**/coverage/**)"
+      "Read(./**/coverage/**)",
+      "Read(./**/.expo/**)"
     ]
   }
 }

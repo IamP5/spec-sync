@@ -26,14 +26,15 @@
 
 Nx monorepo:
 
-| Project   | Path       | Stack                                                        | Agent guide          |
-| --------- | ---------- | ------------------------------------------------------------ | -------------------- |
-| `web`     | `apps/web` | Angular 22, NgRx Signal Store                                | `apps/web/AGENTS.md` |
-| `api`     | `apps/api` | Spring Boot (Java 25, Gradle)                                | `apps/api/AGENTS.md` |
-| `ai`      | `apps/ai`  | Mastra (Node), Gemini on Vertex AI, AG-UI/CopilotKit runtime | `apps/ai/AGENTS.md`  |
-| `ui`      | `libs/ui`  | Zard/shadcn design system (Tailwind)                         | `apps/web/AGENTS.md` |
-| `infra`   | `infra`    | Terraform (Google Cloud)                                     | –                    |
-| `scripts` | `scripts`  | Node tooling for hooks and checks                            | this file            |
+| Project   | Path          | Stack                                                           | Agent guide             |
+| --------- | ------------- | --------------------------------------------------------------- | ----------------------- |
+| `web`     | `apps/web`    | Angular 22, NgRx Signal Store                                   | `apps/web/AGENTS.md`    |
+| `mobile`  | `apps/mobile` | Expo SDK 56 (React Native), Expo Router, React Native Reusables | `apps/mobile/AGENTS.md` |
+| `api`     | `apps/api`    | Spring Boot (Java 25, Gradle)                                   | `apps/api/AGENTS.md`    |
+| `ai`      | `apps/ai`     | Mastra (Node), Gemini on Vertex AI, AG-UI/CopilotKit runtime    | `apps/ai/AGENTS.md`     |
+| `ui`      | `libs/ui`     | Zard/shadcn design system (Tailwind)                            | `apps/web/AGENTS.md`    |
+| `infra`   | `infra`       | Terraform (Google Cloud)                                        | –                       |
+| `scripts` | `scripts`     | Node tooling for hooks and checks                               | this file               |
 
 Each app owns its own rules, docs, skills and checks. Before changing code
 under an app, read that app's `AGENTS.md` and the docs it points to. Rules
@@ -43,9 +44,20 @@ in this file are workspace-wide only.
 
 - Read `apps/web/AGENTS.md` first. It names the architecture red lines and
   points to the binding docs under `apps/web/docs/`.
-- Sheriff (`apps/web/sheriff.config.ts`, re-exported by the root stub
+- Sheriff (`apps/web/sheriff.config.ts`, merged by the root stub
   `sheriff.config.ts` because Sheriff only reads the workspace root) and
   tsarch (`apps/web/arch/`) enforce those rules on every lint / test-arch run.
+
+## Working in `apps/mobile`
+
+- Read `apps/mobile/AGENTS.md` first. It names the red lines (web's domain
+  and layer model on Expo Router, routes-only `src/app`, the design system,
+  the chat on the existing Mastra runtime) and points to the binding docs
+  under `apps/mobile/docs/`.
+- Sheriff (`apps/mobile/sheriff.config.ts`, `mobile:`-prefixed tags merged by
+  the root stub) and the architecture tests (`apps/mobile/arch/`,
+  `nx run mobile:test-arch`) enforce those rules on every hook run; the jest
+  tests and the iOS/Android bundles run in `npm run verify` and CI.
 
 ## Working in `apps/api`
 
@@ -66,7 +78,7 @@ in this file are workspace-wide only.
 ## Checks and hooks
 
 - Every app declares its checks next to its code (`apps/web/checks.mjs`,
-  `apps/api/checks.mjs`, `apps/ai/checks.mjs`) and registers them in `scripts/checks/projects.mjs`
+  `apps/mobile/checks.mjs`, `apps/api/checks.mjs`, `apps/ai/checks.mjs`) and registers them in `scripts/checks/projects.mjs`
   with the path prefixes it owns.
 - The agent Stop hooks (`.claude/settings.json` for Claude Code,
   `.cursor/hooks.json` for Cursor) and the husky pre-commit hook run only the
@@ -100,7 +112,8 @@ in this file are workspace-wide only.
   the workspace root owns the Nx skills and the `nx-mcp` server
   (`.agents/skills/`, `.agents/mcp.json`); each app owns its own
   (`apps/web/.agents/skills/` and `apps/web/.agents/mcp.json`,
-  `apps/api/.agents/skills/`; `apps/ai` has none yet).
+  `apps/mobile/.agents/skills/`, `apps/api/.agents/skills/`; `apps/ai` has
+  none yet). `.nxignore` keeps skill folders out of the Nx project graph.
 - `npm run sync:agent-config` generates, next to each `.agents/` (root and
   `apps/*`), the `.claude/skills/`, `.mcp.json` and `.cursor/mcp.json`
   copies. Never edit the generated copies; they carry DO_NOT_EDIT markers.

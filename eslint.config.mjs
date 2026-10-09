@@ -11,9 +11,9 @@ export default [
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
-      // Boundaries between Nx projects. Boundaries inside apps/web are
-      // enforced by Sheriff (see apps/web/sheriff.config.ts and
-      // apps/web/docs/architecture-boundaries.md).
+      // Boundaries between Nx projects. Boundaries inside apps/web and
+      // apps/mobile are enforced by Sheriff (see sheriff.config.ts and each
+      // app's docs/architecture-boundaries.md).
       '@nx/enforce-module-boundaries': [
         'error',
         {
@@ -54,6 +54,6 @@ export default [
   // Sheriff: domain and layer boundaries (dependency-rule + encapsulation).
   {
     ...sheriff.configs.all,
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.tsx'],
   },
 ];

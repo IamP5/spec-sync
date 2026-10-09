@@ -1,0 +1,132 @@
+@import 'tailwindcss';
+@import 'uniwind';
+@import 'tw-animate-css';
+
+/*
+ * SpecSync mobile theme: React Native Reusables (shadcn/ui on Uniwind) with
+ * the Ford tokens of the web app. The values are copied from
+ * `libs/ui/styles.css`, whose header records where each one comes from
+ * (ford.com, Ford Pro design tokens, ChatGPT's neutral chrome). Keep the two
+ * files in step: change a token there first, then mirror it here and in
+ * `design-system/theme.ts`.
+ *
+ * Brand blue is for primary actions and focus only; surfaces, hover fills and
+ * borders stay neutral gray. Uniwind needs literal values inside the theme
+ * variants, so the web's `var(--ford-action)` aliases are inlined.
+ *
+ * Shapes follow the web's concentric scale in 4px steps (`--radius` 12px):
+ *   xs 4 · sm 8 · md 10 · lg 12 controls · xl 16 cards · 2xl 20 · 3xl 24
+ *   composer/sheets · 4xl 32 · full capsules. A nested surface takes its
+ *   parent's radius minus the padding between them. Use `borderCurve:
+ *   'continuous'` (squircle) for fixed shapes of 16px and above.
+ */
+@theme {
+  --radius: 12px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+
+  --spacing-hairline: hairlineWidth();
+
+  /* Ford brand colours, invariant across light and dark. */
+  --color-ford-blue: oklch(0.519 0.189 258); /* #0562d2 accent */
+  --color-ford-action: oklch(0.568 0.21 258.3); /* #066fef button */
+  --color-ford-action-hover: oklch(0.441 0.157 257.7); /* #044ea7 */
+  --color-ford-heritage: oklch(0.225 0.139 264.2); /* #00095b Ford Blue */
+  --color-ford-deep: oklch(0.192 0.06 253.4); /* #00142e */
+}
+
+@layer theme {
+  :root {
+    @variant light {
+      --color-background: oklch(1 0 0); /* #ffffff */
+      --color-foreground: oklch(0 0 0); /* #000000 */
+      --color-card: oklch(1 0 0);
+      --color-card-foreground: oklch(0 0 0);
+      --color-popover: oklch(1 0 0);
+      --color-popover-foreground: oklch(0 0 0);
+      --color-primary: oklch(0.568 0.21 258.3); /* Ford action #066fef */
+      --color-primary-hover: oklch(0.441 0.157 257.7);
+      --color-primary-foreground: oklch(1 0 0);
+      --color-secondary: oklch(0.955 0 0);
+      --color-secondary-foreground: oklch(0.321 0 0); /* #333333 */
+      --color-muted: oklch(0.955 0 0); /* #f0f0f0 */
+      --color-muted-foreground: oklch(0.51 0 0); /* #666666 */
+      --color-accent: oklch(0.955 0 0);
+      --color-accent-foreground: oklch(0 0 0);
+      --color-destructive: oklch(0.578 0.206 29); /* #d93025 */
+      --color-destructive-foreground: oklch(1 0 0);
+      --color-border: oklch(0.922 0 0); /* #e5e5e5 */
+      --color-input: oklch(0.764 0 0); /* #b2b2b2 */
+      --color-ring: oklch(0.568 0.21 258.3);
+
+      /* Status (Ford Pro tokens, AA as text on white) */
+      --color-success: oklch(0.508 0.134 150.8); /* #097a3a */
+      --color-warning: oklch(0.557 0.157 46); /* #ba4e00 */
+      --color-info: oklch(0.529 0.18 255.9); /* #0068d0 */
+
+      --color-chart-1: oklch(0.519 0.189 258);
+      --color-chart-2: oklch(0.225 0.139 264.2);
+      --color-chart-3: oklch(0.578 0.206 29);
+      --color-chart-4: oklch(0.7 0.181 135.3);
+      --color-chart-5: oklch(0.844 0.172 84.9);
+
+      --color-sidebar: oklch(0.99 0 0); /* #fcfcfc */
+      --color-sidebar-foreground: oklch(0.205 0 0);
+      --color-sidebar-primary: oklch(0.568 0.21 258.3);
+      --color-sidebar-primary-foreground: oklch(1 0 0);
+      --color-sidebar-accent: oklch(0.935 0 0); /* #ececec */
+      --color-sidebar-accent-foreground: oklch(0.205 0 0);
+      --color-sidebar-border: oklch(0 0 0 / 6%);
+      --color-sidebar-ring: oklch(0.568 0.21 258.3);
+    }
+
+    @variant dark {
+      --color-background: oklch(0.168 0 0); /* #0f0f0f */
+      --color-foreground: oklch(0.955 0 0); /* #f0f0f0 */
+      --color-card: oklch(0.235 0 0); /* #212121 */
+      --color-card-foreground: oklch(0.955 0 0);
+      --color-popover: oklch(0.235 0 0);
+      --color-popover-foreground: oklch(0.955 0 0);
+      /* Brand blues do not flip. */
+      --color-primary: oklch(0.568 0.21 258.3);
+      --color-primary-hover: oklch(0.441 0.157 257.7);
+      --color-primary-foreground: oklch(1 0 0);
+      --color-secondary: oklch(0.29 0 0);
+      --color-secondary-foreground: oklch(0.922 0 0); /* #e5e5e5 */
+      --color-muted: oklch(0.29 0 0); /* #303030 */
+      --color-muted-foreground: oklch(0.764 0 0); /* #b2b2b2 */
+      --color-accent: oklch(0.29 0 0);
+      --color-accent-foreground: oklch(0.955 0 0);
+      --color-destructive: oklch(0.65 0.2 27);
+      --color-destructive-foreground: oklch(1 0 0);
+      --color-border: oklch(1 0 0 / 10%);
+      --color-input: oklch(1 0 0 / 18%);
+      --color-ring: oklch(0.568 0.21 258.3);
+
+      --color-success: oklch(0.76 0.18 135);
+      --color-warning: oklch(0.86 0.17 85);
+      --color-info: oklch(0.646 0.172 247.5); /* #0093f0 */
+
+      --color-chart-1: oklch(0.609 0.189 256.4);
+      --color-chart-2: oklch(0.45 0.16 262);
+      --color-chart-3: oklch(0.65 0.2 27);
+      --color-chart-4: oklch(0.76 0.18 135);
+      --color-chart-5: oklch(0.86 0.17 85);
+
+      --color-sidebar: oklch(0.205 0 0); /* #171717 */
+      --color-sidebar-foreground: oklch(0.955 0 0);
+      --color-sidebar-primary: oklch(0.568 0.21 258.3);
+      --color-sidebar-primary-foreground: oklch(1 0 0);
+      --color-sidebar-accent: oklch(0.29 0 0);
+      --color-sidebar-accent-foreground: oklch(0.955 0 0);
+      --color-sidebar-border: oklch(1 0 0 / 6%);
+      --color-sidebar-ring: oklch(0.568 0.21 258.3);
+    }
+  }
+}

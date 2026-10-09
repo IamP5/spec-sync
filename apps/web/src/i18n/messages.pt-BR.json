@@ -768,6 +768,11 @@
     "1790193495064713588": "Explorar catálogo",
     "4237418448895731116": "Sua sessão expirou. Entre novamente e tente de novo.",
     "5269685334699709477": "Sua conta não tem o papel de curador. Peça acesso a um administrador e entre novamente.",
-    "838873902986885088": "Não foi possível carregar a importação. Atualize para tentar novamente."
+    "838873902986885088": "Não foi possível carregar a importação. Atualize para tentar novamente.",
+    "2449944212078661692": " Nenhuma especificação foi informada para esta configuração ainda. ",
+    "6502689372987792145": "Ocultar especificações indisponíveis",
+    "3220666564465693539": "Mostrar especificações indisponíveis ({$INTERPOLATION})",
+    "5815060377794106697": "{VAR_PLURAL, plural, =1 {um item sem dados para nenhum veículo foi ocultado} other {{INTERPOLATION} itens sem dados para nenhum veículo foram ocultados}}",
+    "5011701388326024501": " Nenhum destes itens é informado para estes veículos. A falta de informação não significa que o equipamento está ausente. "
   }
 }

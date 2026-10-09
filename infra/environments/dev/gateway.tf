@@ -66,6 +66,26 @@ resource "google_apikeys_key" "identity" {
   depends_on = [module.services]
 }
 
+# The Expo app signs in with the Firebase JS SDK, which sends neither a referrer
+# nor the iOS bundle / Android package headers an application restriction checks,
+# so this key is limited to the two sign-in APIs only. Sign-in still needs a
+# Google ID token from one of the project's OAuth clients, and the gateway
+# verifies every session.
+resource "google_apikeys_key" "identity_mobile" {
+  name         = "${local.name}-identity-mobile"
+  display_name = "${local.name} Identity Platform mobile authentication"
+  project      = var.project_id
+  restrictions {
+    api_targets {
+      service = "identitytoolkit.googleapis.com"
+    }
+    api_targets {
+      service = "securetoken.googleapis.com"
+    }
+  }
+  depends_on = [module.services]
+}
+
 resource "google_service_account" "gateway" {
   account_id   = "${local.name}-gateway"
   display_name = "${local.name} gateway (Cloud Run)"
